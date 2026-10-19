@@ -3,6 +3,7 @@ import "./globals.css";
 import "./radar-theme.css";
 import "./workspace.css";
 import "./today-workspace.css";
+import "./opportunities-workspace.css";
 
 export const metadata: Metadata = {
   title: "Radar Produit",

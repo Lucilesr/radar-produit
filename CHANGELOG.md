@@ -2,6 +2,8 @@
 
 ## 19 octobre 2026
 
+- Opportunités : liste compacte et fiche adjacente sur ordinateur, fiche dédiée et retour à la liste sur mobile ; sélection groupée à la demande et décision confirmée avant mise à jour.
+
 - Accueil centré sur la prochaine action et les entretiens réels ; candidatures lisibles avec prochaine étape, dates et reprise après erreur.
 
 - Refonte des fondations : titre unique par page sans baseline, navigation restaurable par URL, contrôles accessibles et états de chargement/erreur distincts.
