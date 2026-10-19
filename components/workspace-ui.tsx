@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { AlertCircle, Inbox, LockKeyhole, Radar } from "lucide-react";
 import { defaultRoute, readRadarRoute, radarSearch, type RadarRoute } from "@/lib/radar-navigation";
 
@@ -28,6 +28,14 @@ export function WorkspaceState({ title, children, action, error = false }: { tit
 }
 export function WorkspaceLoading() {
   return <div className="workspace-skeleton" role="status" aria-label="Chargement de votre espace"><span className="sr-only">Chargement de votre espace…</span>{[0, 1, 2].map(i => <div key={i}><span /><span /><span /></div>)}</div>;
+}
+export class WorkspaceBoundary extends Component<{children: ReactNode}, {failed: boolean}> {
+  state = {failed: false};
+  static getDerivedStateFromError() { return {failed: true}; }
+  render() {
+    if (this.state.failed) return <WorkspaceState error title="Cette section n’a pas pu être ouverte" action={<button type="button" className="secondary-button" onClick={() => window.location.reload()}>Recharger la page</button>}>Vérifiez votre connexion puis rechargez la page pour réessayer.</WorkspaceState>;
+    return this.props.children;
+  }
 }
 export function WorkspaceBrand() { return <div className="workspace-brand"><span><Radar size={24} aria-hidden /></span><p>Radar <span>produit</span></p></div>; }
 export function PrivateLabel() { return <span className="workspace-private"><LockKeyhole size={13} aria-hidden /> Privé</span>; }
