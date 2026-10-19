@@ -9,7 +9,7 @@ type Section = "experiences" | "documents" | "presentation";
 const sections: [Section,string][]=[["experiences","Carnet d’expériences"],["documents","Mes documents"],["presentation","Ma présentation"]];
 export function ProfileWorkspace({profile,onSave,onDocumentsLinked}:{profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onDocumentsLinked:(links:DocumentLinks)=>void}) {
   const [draft,setDraft]=useState(profile),[section,setSection]=useState<Section>("experiences");
-  const [saving,setSaving]=useState(false),[filesBusy,setFilesBusy]=useState(false),[saved,setSaved]=useState(false);
+  const [saving,setSaving]=useState(false),[filesBusy,setFilesBusy]=useState(false),[saved,setSaved]=useState(false),[saveError,setSaveError]=useState("");
   const dirty=JSON.stringify(draft)!==JSON.stringify(profile);
   useEffect(()=>{
     const restore=()=>{const value=new URLSearchParams(window.location.search).get("profile");setSection(sections.some(([id])=>id===value)?value as Section:"experiences");};
@@ -25,11 +25,11 @@ export function ProfileWorkspace({profile,onSave,onDocumentsLinked}:{profile:Can
     <section id="profile-panel-presentation" hidden={section!=="presentation"} className="profile-presentation" aria-labelledby="profile-presentation-title">
       <h2 id="profile-presentation-title">Ma présentation</h2>
       <p className="workspace-caption">Ces informations décrivent votre profil. Les faits utilisés dans vos candidatures restent à valider et à autoriser dans le carnet.</p>
-      <form className="profile-presentation-form" onSubmit={async event=>{event.preventDefault();setSaving(true);setSaved(false);try{if(await onSave(draft))setSaved(true);}finally{setSaving(false);}}}>
+      <form className="profile-presentation-form" onSubmit={async event=>{event.preventDefault();setSaving(true);setSaved(false);setSaveError("");try{if(await onSave(draft))setSaved(true);else setSaveError("Présentation non enregistrée. Votre saisie est conservée ; vous pouvez réessayer.");}finally{setSaving(false);}}}>
         {field("headline","Titre ciblé")}{field("summary","Résumé professionnel",true)}
         <div className="profile-field-row">{field("location","Localisation / disponibilité")}{field("linkedinUrl","Lien LinkedIn")}</div>
         <label className="workspace-field">Compétences<textarea rows={3} value={draft.skills.join(", ")} onChange={event=>{setSaved(false);setDraft({...draft,skills:event.target.value.split(",").map(item=>item.trim()).filter(Boolean)});}}/></label>
-        <div className="profile-save"><button className="radar-add-button" disabled={saving||filesBusy}>{saving?<LoaderCircle size={16} className="animate-spin" aria-hidden />:<Check size={16} aria-hidden />}{saving?"Enregistrement…":"Enregistrer la présentation"}</button><span role="status" className="workspace-caption">{saved?"Présentation enregistrée.":dirty?"Modifications non enregistrées.":""}</span></div>
+        {saveError?<p role="alert" className="experience-error">{saveError}</p>:null}<div className="profile-save"><button className="radar-add-button" disabled={saving||filesBusy}>{saving?<LoaderCircle size={16} className="animate-spin" aria-hidden />:<Check size={16} aria-hidden />}{saving?"Enregistrement…":"Enregistrer la présentation"}</button><span role="status" className="workspace-caption">{saved?"Présentation enregistrée.":dirty?"Modifications non enregistrées.":""}</span></div>
       </form>
     </section>
   </div>;

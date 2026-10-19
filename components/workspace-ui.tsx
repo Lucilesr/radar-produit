@@ -7,7 +7,7 @@ export function useRadarNavigation() {
   const [route, setRoute] = useState(defaultRoute);
   const latest = useRef(route);
   useEffect(() => {
-    const restore = () => { const next = readRadarRoute(window.location.search); latest.current = next; setRoute(next); };
+    const restore = (event?: PopStateEvent) => { const next = readRadarRoute(window.location.search); latest.current = next; setRoute(next); if(event)requestAnimationFrame(()=>{const detail=document.getElementById("opportunity-detail-title");(detail?.getClientRects().length?detail:document.getElementById("workspace-title"))?.focus({preventScroll:true});}); };
     restore(); window.addEventListener("popstate", restore);
     return () => window.removeEventListener("popstate", restore);
   }, []);

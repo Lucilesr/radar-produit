@@ -97,3 +97,11 @@ button:disabled { cursor: not-allowed; opacity: .55; }
   .workspace-tabs { gap: 0 16px; }.workspace-tabs button { font-size: 13px; }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation: none!important; transition: none!important; scroll-behavior: auto!important; } }
+
+/* Feedback remains above mobile navigation and available while focused. */
+.radar-shell,.radar-content { background: var(--background); }
+.workspace-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:65; display:flex; align-items:center; justify-content:space-between; gap:16px; width:min(520px,calc(100% - 32px)); padding:12px 14px 12px 18px; border-radius:10px; background:var(--foreground); color:#fff; box-shadow:0 8px 28px #25252f26; font-size:14px; }
+.workspace-toast button { display:grid; place-items:center; flex:none; min-width:44px; min-height:44px; border-radius:6px; color:#fff; background:transparent; }
+.workspace-toast button:hover { background:#ffffff20; }
+.radar-app button { min-height:32px; }
+@media(max-width:640px) { .workspace-toast { bottom:calc(84px + env(safe-area-inset-bottom)); }.radar-app button { min-height:44px; } }
