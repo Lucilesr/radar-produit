@@ -60,7 +60,8 @@ export function RadarApp({ userName }: { userName: string }) {
   useEffect(()=>{if(tab==="profile"||tab==="sources")setVisited(current=>({...current,[tab]:true}));},[tab]);
   const openJob = (job: JobRecord, view: WorkspaceView = "offer") => navigate({ offer: job.id, view, ...(view === "interviews" || view === "application" ? {tab: "pipeline" as Tab} : {}) });
   const closeJob = () => navigate({ offer: undefined, view: "offer" });
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToastState] = useState<{message: string; error: boolean} | null>(null);
+  const setToast = (message: string | null, error = false) => setToastState(message ? {message, error} : null);
   const initials = userName.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase() || "RP";
 
   useEffect(() => {
@@ -95,7 +96,7 @@ export function RadarApp({ userName }: { userName: string }) {
       if (changes.candidateNote !== undefined) setProfile(current => ({ ...current, applicationNotes: { ...current.applicationNotes, [id]: job.candidateNote ?? "" } }));
       setToast(changes.candidateNote !== undefined ? "Note enregistrée dans votre espace privé." : changes.reviewState ? "Votre sélection est mise à jour." : "Statut enregistré.");
       return true;
-    } catch { setToast("La mise à jour n’a pas été enregistrée. Vos données restent inchangées."); return false; }
+    } catch { setToast("La mise à jour n’a pas été enregistrée. Vos données restent inchangées.", true); return false; }
   }
   async function changeStatus(id: string, status: JobStatus) { return updateJob(id, { status }); }
   function requestDelete(job: JobRecord) { requestDeleteMany([job]); }
@@ -125,7 +126,7 @@ export function RadarApp({ userName }: { userName: string }) {
       if (!response.ok) throw new Error("Enregistrement impossible");
       const result = await response.json() as { profile: CandidateProfile };
       setProfile(result.profile); setToast("Profil enregistré dans votre espace privé."); return true;
-    } catch { setToast("Le profil n’a pas été enregistré. Vos modifications restent disponibles à l’écran."); return false; }
+    } catch { setToast("Le profil n’a pas été enregistré. Vos modifications restent disponibles à l’écran.", true); return false; }
   }
   function onJobCreated(job: JobRecord, deduplicated?: boolean) {
     setJobs((current) => current.some((item) => item.id === job.id) ? current : [job, ...current]);
@@ -147,7 +148,7 @@ export function RadarApp({ userName }: { userName: string }) {
       setJobs(result.jobs);
       setLoadErrors(current => ({...current,jobs:false}));
       setToast("Votre radar est à jour.");
-    } catch { setToast("Actualisation impossible. Vos dernières données restent affichées."); }
+    } catch { setToast("Actualisation impossible. Vos dernières données restent affichées.", true); }
     finally { setRefreshing(false); }
   }
 
@@ -186,7 +187,7 @@ export function RadarApp({ userName }: { userName: string }) {
     {jobDialogOpen ? <JobDialog onClose={() => setJobDialogOpen(false)} onCreated={onJobCreated} /> : null}
     {selectedJob && tab !== "offers" ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} meta={<OfferSourceBadge job={selectedJob} />} onClose={closeJob}><OfferWorkspace key={selectedJob.id+":"+tab} onViewChange={view=>navigate({view})} job={selectedJob} profile={profile} initialView={workspaceView} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => navigate({tab:"pipeline",offer:selectedJob.id,view:"application"})} onChange={updated => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setToast("Dossier enregistré."); }} /><div className="mt-6 border-t pt-4">{selectedJob.deletedAt ? <button className="secondary-button" onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={16} /> Restaurer</button> : <button className="secondary-button text-red-800" onClick={() => requestDelete(selectedJob)}><Trash2 size={16} /> Corbeille</button>}</div></Modal> : null}
     {deleteTarget.length ? <Modal title={`Mettre ${deleteTarget.length === 1 ? "cette offre" : `ces ${deleteTarget.length} offres`} à la corbeille ?`} description="Choisissez une raison commune à toute la sélection." onClose={() => setDeleteTarget([])}><div className="trash-dialog-content"><ul className="max-h-48 space-y-2 overflow-y-auto rounded-xl bg-[#f5f6f8] p-4 text-sm">{deleteTarget.map(job => <li key={job.id}><strong>{job.title}</strong> · {job.company}</li>)}</ul><div className="trash-dialog-fields"><ChoiceSelect label="Pourquoi ?" value={deleteReason} onChange={value => setDeleteReason(value as DismissalReason | "")} options={[{ value: "", label: "Choisir un motif" }, ...Object.entries(dismissalLabels).map(([value, label]) => ({ value, label }))]} /><label className="trash-dialog-note"><span>Précision <em>facultative</em></span><textarea rows={2} maxLength={500} value={deleteNote} onChange={event => setDeleteNote(event.target.value)} placeholder="Une courte précision, si utile" /></label></div><p className="trash-dialog-help">L’offre reste restaurable. Si une candidature est déjà engagée, elle et ses rappels restent visibles dans Candidatures.</p><div className="trash-dialog-actions"><button className="secondary-button" onClick={() => setDeleteTarget([])}>Annuler</button><button disabled={!deleteReason || !!trashBusy || refreshing} className="secondary-button text-red-800 disabled:opacity-50" onClick={() => void changeTrash(deleteTarget, true, deleteReason as DismissalReason, deleteNote)}><Trash2 size={16} /> Corbeille{deleteTarget.length > 1 ? ` (${deleteTarget.length})` : ""}</button></div></div></Modal> : null}
-    {toast ? <Toast message={toast} onClose={() => setToast(null)} /> : null}
+    {toast ? <Toast message={toast.message} error={toast.error} onClose={() => setToast(null)} /> : null}
   </main>;
 }
 
@@ -270,9 +271,9 @@ function Modal({ title, description, meta, onClose, children }: { title: string;
   return <div data-testid="modal-backdrop" onClick={event => { if (event.target === event.currentTarget) onClose(); }} className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/35 p-0 backdrop-blur-md sm:items-center sm:p-6"><div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} className="workspace-dialog max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-[28px] border border-white bg-[#ffffff]/95 p-5 shadow-2xl outline-none sm:rounded-[28px] sm:p-7"><div className="mb-5 flex items-start justify-between gap-4 border-b border-[#eee7ec] pb-4"><div className="min-w-0"><h2 id={titleId} className="text-xl font-semibold leading-snug text-[#333333]">{title}</h2><p id={descriptionId} className="mt-1 max-w-xl text-sm leading-6 text-[#535768]">{description}</p>{meta ? <div className="mt-2">{meta}</div> : null}</div><button onClick={onClose} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-[#535768] hover:bg-[#f5f6f8]" aria-label="Fermer"><X size={20} /></button></div>{children}</div></div>;
 }
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="workspace-field"><span>{label}</span>{children}</label>; }
-function Toast({ message, onClose }: { message: string; onClose: () => void }) {
+function Toast({ message, error, onClose }: { message: string; error: boolean; onClose: () => void }) {
   const close=useRef(onClose);close.current=onClose;
   const [paused,setPaused]=useState(false);
-  useEffect(()=>{if(paused)return;const timeout=window.setTimeout(()=>close.current(),7000);return()=>window.clearTimeout(timeout);},[message,paused]);
-  return <div className="workspace-toast" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onFocusCapture={()=>setPaused(true)} onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget))setPaused(false);}}><span role="status" aria-live="polite">{message}</span><button type="button" onClick={onClose} aria-label="Fermer la notification"><X size={17} aria-hidden /></button></div>;
+  useEffect(()=>{if(paused||error)return;const timeout=window.setTimeout(()=>close.current(),7000);return()=>window.clearTimeout(timeout);},[message,paused,error]);
+  return <div className="workspace-toast" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onFocusCapture={()=>setPaused(true)} onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget))setPaused(false);}}><span role={error ? "alert" : "status"}>{message}</span><button type="button" onClick={onClose} aria-label="Fermer la notification"><X size={17} aria-hidden /></button></div>;
 }
