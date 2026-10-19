@@ -251,3 +251,13 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input[type='checkb
   .selection-dock{left:8px;right:8px;bottom:8px;transform:none;width:auto;max-height:38vh;padding:12px}
   .selection-dock .experience-actions{display:flex;flex-wrap:wrap;margin:8px 0}.selection-dock .experience-actions button{width:auto;flex:1;font-size:12px}
 }
+
+/* Trash confirmation: one dominant reason, then an optional secondary note. */
+.trash-dialog-content{display:grid;gap:22px}
+.trash-dialog-fields{display:grid;gap:20px}
+.trash-dialog-note{display:grid;gap:7px;color:#746e7c;font-size:11px;font-weight:500}
+.trash-dialog-note>span{display:flex;align-items:baseline;gap:4px}
+.trash-dialog-note em{font-style:normal;color:#918a99;font-weight:400}
+.trash-dialog-note textarea{min-height:84px}
+.trash-dialog-help{color:#625b6b;font-size:12px;line-height:1.6}
+.trash-dialog-actions{display:flex;flex-wrap:wrap;gap:10px;padding-top:2px}
