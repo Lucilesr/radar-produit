@@ -167,7 +167,7 @@ export function RadarApp({ userName }: { userName: string }) {
         </div>
       </aside>
       <section className="radar-content">
-        <div className="radar-topbar"><PrivateLabel /><div className="flex items-center gap-3"><button onClick={() => void refreshOffers()} disabled={refreshing} className="refresh-button" aria-label="Actualiser les offres"><RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /><span className="hidden sm:inline">Actualiser</span></button><span className="avatar avatar-small" aria-label="Compte personnel">{initials}</span></div></div>
+        <div className="radar-topbar"><PrivateLabel /><div className="flex items-center gap-3"><button onClick={() => void refreshOffers()} disabled={refreshing} className="refresh-button" aria-label="Actualiser les offres"><RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /><span className="hidden sm:inline">Actualiser</span></button><span className="avatar avatar-small" aria-hidden="true">{initials}</span></div></div>
         <div className="radar-page">
         <PageHeader title={tabs.find(item => item.id === tab)?.label || "Radar Produit"} />
         {loading ? <WorkspaceLoading /> : null}
