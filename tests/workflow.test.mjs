@@ -69,3 +69,14 @@ test("RSS ignore autres métiers, URL externe et protocole non web", () => {
   assert.equal(parseWwrFeed(item("Acme: Product Manager","ftp://weworkremotely.com/job")).length,0);
   assert.equal(plainFeedText("<![CDATA[<p>R&amp;D</p><p>Produit</p>]]>"),"R&D\nProduit");
 });
+
+const agendaSource = readFileSync(new URL("../lib/workspace-agenda.ts", import.meta.url), "utf8");
+const agendaJs = ts.transpileModule(agendaSource, {compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText.replace('"./application-workflow"', '"data:text/javascript;base64,'+Buffer.from("export const terminalStatuses=[\"rejected\",\"withdrawn\",\"closed\"];").toString("base64")+'"');
+const {upcomingInterviews}=await import("data:text/javascript;base64,"+Buffer.from(agendaJs).toString("base64"));
+test("agenda : rendez-vous réels triés, annulés et candidatures closes exclus, suivi conservé si offre en corbeille",()=>{
+ const event=(id,start,end,state="planned")=>({id,startAt:start,endAt:end,state});
+ const now=Date.parse("2026-10-19T10:00:00Z");
+ const job={id:"demo",status:"interview",deletedAt:"2026-10-18",interviews:[event("late","2026-10-20T10:00:00Z","2026-10-20T11:00:00Z"),event("past","2026-10-18T10:00:00Z","2026-10-18T11:00:00Z"),event("ongoing","2026-10-19T09:00:00Z","2026-10-19T11:00:00Z"),event("cancelled","2026-10-21T10:00:00Z","2026-10-21T11:00:00Z","cancelled")]};
+ assert.deepEqual(upcomingInterviews([job],now).map(x=>x.event.id),["ongoing","late"]);
+ assert.equal(upcomingInterviews([{...job,status:"rejected"}],now).length,0);
+});

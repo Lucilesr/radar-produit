@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./radar-theme.css";
 import "./workspace.css";
+import "./today-workspace.css";
 
 export const metadata: Metadata = {
   title: "Radar Produit",

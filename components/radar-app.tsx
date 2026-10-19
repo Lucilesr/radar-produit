@@ -38,6 +38,7 @@ import { ExperienceLibrary } from "@/components/experience-library";
 import { ProfileDocuments } from "@/components/profile-documents";
 import { SourceLogo } from "@/components/source-logo";
 import { PageHeader, PrivateLabel, WorkspaceBrand, WorkspaceLoading, WorkspaceState, useRadarNavigation } from "@/components/workspace-ui";
+import { TodayWorkspace, ApplicationsWorkspace } from "@/components/today-workspace";
 import { ChoiceSelect } from "@/components/choice-select";
 import type { DocumentLinks } from "@/lib/document-input";
 import { OfferSourceBadge, OfferWorkspace, StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
@@ -214,11 +215,11 @@ export function RadarApp({ userName }: { userName: string }) {
         <PageHeader title={tabs.find(item => item.id === tab)?.label || "Radar Produit"} />
         {loading ? <WorkspaceLoading /> : null}
         {!loading && (loadErrors.jobs || loadErrors.profile) ? <WorkspaceState error title={loadErrors.jobs ? "Les offres n’ont pas pu être chargées" : "Votre profil n’a pas pu être chargé"} action={<button type="button" className="secondary-button" onClick={() => setLoadAttempt(n => n+1)}>Réessayer</button>}>Vérifiez votre connexion puis réessayez. Vos données sont conservées.</WorkspaceState> : null}
-        {!loading && !loadErrors.jobs && tab === "dashboard" ? <Dashboard stats={stats} jobs={jobs} actionJobs={allJobs} profile={profile} onOpenJobs={() => selectTab("offers")} onOpenTriage={() => navigate({tab:"offers",filter:"to_review",query:"",offer:undefined})} onOpenSources={() => selectTab("sources")} onSelect={openJob} /> : null}
+        {!loading && !loadErrors.jobs && tab === "dashboard" ? <TodayWorkspace jobs={allJobs} onTriage={() => navigate({tab:"offers",filter:"to_review",query:"",offer:undefined})} onSelected={() => navigate({tab:"offers",filter:"selected",query:"",offer:undefined})} onAdd={()=>setJobDialogOpen(true)} onOpen={openJob} /> : null}
         {trashBusy ? <div role="status" className="sticky top-3 z-20 mb-4 flex items-center gap-2 rounded-2xl border bg-white p-4 text-sm shadow-sm"><LoaderCircle size={16} className="animate-spin" /> Liste mise à jour · enregistrement en cours…</div> : null}
         {trashError ? <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">{trashError}<button className="ml-3 underline" onClick={() => { setTrashError(null); void refreshOffers(); }}>Actualiser pour vérifier</button></div> : null}
         {!loading && !loadErrors.jobs && tab === "offers" ? <Offers key={`${filter}:${query}`} jobs={shownJobs} counts={viewCounts} filter={filter} setFilter={setFilter} searching={!!query.trim()} onClearSearch={() => setQuery("")} onReview={(id, reviewState) => void updateJob(id, { reviewState })} onSelect={openJob} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job => void changeTrash([job], false)} trashBusy={trashBusy || (refreshing ? "refresh" : null)} /> : null}
-        {!loading && !loadErrors.jobs && tab === "pipeline" ? <Pipeline jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onSelect={job => openJob(job,"interviews")} /> : null}
+        {!loading && !loadErrors.jobs && tab === "pipeline" ? <ApplicationsWorkspace jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
         {!loading && !loadErrors.profile && tab === "profile" ? <Profile profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /> : null}
         {!loading && tab === "sources" ? <SourcePanel jobs={jobs} onSynced={refreshOffers} /> : null}
         <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span><span>Aucune candidature envoyée automatiquement.</span></footer>
@@ -232,95 +233,6 @@ export function RadarApp({ userName }: { userName: string }) {
   </main>;
 }
 
-function Dashboard({ stats, jobs, actionJobs, profile, onOpenJobs, onOpenTriage, onOpenSources, onSelect }: { stats: Record<string, number>; jobs: JobRecord[]; actionJobs: JobRecord[]; profile: CandidateProfile; onOpenJobs: () => void; onOpenTriage: () => void; onOpenSources: () => void; onSelect: (job: JobRecord, view?: WorkspaceView) => void }) {
-  const actions = selectTriageActions(actionJobs, Date.now(), actionJobs.length).filter(action => action.kind !== "offer_check").slice(0, 2);
-  const topJobs = sortOffersForTriage(jobs).slice(0, 5);
-  const distribution = [
-    { key: "priority", label: "Score élevé", color: "#d77fa2" },
-    { key: "match", label: "Compatibles", color: "#ed9a7b" },
-    { key: "exception", label: "Critères à vérifier", color: "#e9bb85" },
-    { key: "excluded", label: "Critères incompatibles", color: "#c7bccb" },
-  ].map(item => ({ ...item, count: jobs.filter(job => job.matchTier === item.key).length }));
-  let offset = 0;
-  const segments = distribution.map(item => {
-    const from = offset; offset += jobs.length ? item.count / jobs.length * 100 : 0;
-    return item.color + " " + from + "% " + offset + "%";
-  }).join(", ");
-  const sourceCount = (name: string) => jobs.filter(job => job.source === (name === "Posts LinkedIn" ? "Post LinkedIn" : name)).length;
-  const importedSourceCount = sources.filter(([name]) => sourceCount(name) > 0).length;
-
-  return <div className="dashboard-stack">
-    <section className="glass-panel p-4 sm:p-5" aria-label="Vos prochaines actions">
-      <div className="flex flex-wrap items-center justify-between gap-2"><div><p className="eyebrow">À faire maintenant</p><h2 className="text-lg font-semibold">Par quoi commencer ?</h2></div><span className="quiet-tag">{stats.new} non examinées</span></div>
-      <div className={`action-grid action-grid-count-${actions.length + 1} mt-3`}>
-        <button onClick={onOpenTriage} className="action-card action-card-primary">
-          <span><span className="action-card-title">Trier les offres en quelques minutes</span><span className="action-card-detail">{stats.new ? `${stats.new} ${stats.new === 1 ? "offre non examinée" : "offres non examinées"} · sélectionner ou ranger.` : "Aucune offre en attente · voir la file de tri."}</span></span>
-          <ArrowRight size={18} className="action-card-arrow" />
-        </button>
-        {actions.map(action => <button key={action.job.id} onClick={() => onSelect(action.job, action.kind.startsWith("interview") ? "interviews" : "application")} className="action-card">
-          <span><span className="action-card-title">{action.title}</span><span className="action-card-detail">{action.detail}</span></span>
-          <ArrowRight size={18} className="action-card-arrow" />
-        </button>)}
-      </div>
-    </section>
-    <div className="stat-grid">
-      <Stat label="Non examinées" value={stats.new} note="Statut : nouvelle" icon={Search} tone="teal" />
-      <Stat label="Ma sélection" value={stats.priority} note="Offres choisies à préparer" icon={Flame} tone="orange" />
-      <Stat label="À vérifier" value={stats.exceptions} note="Les détails font la différence" icon={CircleAlert} tone="amber" />
-      <Stat label="Candidatures actives" value={stats.active} note="Votre prochain pas" icon={ClipboardCheck} tone="ink" />
-    </div>
-    <div className="overview-grid">
-      <section className="glass-panel criteria-panel">
-        <div className="panel-title"><span className="panel-icon"><SlidersHorizontal size={18} /></span><h2>Votre cap</h2><span className="quiet-tag">Vos critères</span></div>
-        <p className="panel-subtitle">Un cadre clair pour ne garder que l’essentiel.</p>
-        <div className="criteria-grid">
-          <div><span className="criteria-icon coral"><BriefcaseBusiness size={16} /></span><span><small>CDI</small><strong>55 k€ <em>/ an min.</em></strong></span></div>
-          <div><span className="criteria-icon rose"><Sparkles size={16} /></span><span><small>Freelance</small><strong>500 € <em>/ jour min.</em></strong></span></div>
-          <div><span className="criteria-icon lavender"><MapPin size={16} /></span><span><small>Mode de travail</small><strong>Remote <em>ou ponctuel</em></strong></span></div>
-          <div><span className="criteria-icon amber"><Target size={16} /></span><span><small>Métiers prioritaires</small><strong>Product Owner / Manager</strong></span></div>
-        </div>
-        <div className="criteria-footnote"><span>France & Europe compatibles</span><span>Français / anglais professionnel</span><span>Jusqu’à 1 j sur site / semaine : à négocier</span></div>
-      </section>
-      <section className="glass-panel distribution-panel">
-        <div className="panel-title"><span className="panel-icon"><LayoutDashboard size={18} /></span><h2>Votre radar</h2></div>
-        <p className="panel-subtitle">La répartition de vos offres enregistrées.</p>
-        <div className="distribution-body">
-          <div className="donut" role="img" aria-label={jobs.length + " offres : " + distribution.map(item => item.count + " " + item.label).join(", ")} style={{ background: jobs.length ? "conic-gradient(" + segments + ")" : "#f0e9ed" }}><div><strong>{jobs.length}</strong><span>offres</span></div></div>
-          <ul className="distribution-legend">{distribution.map(item => <li key={item.key}><span style={{ background: item.color }} /><span>{item.label}</span><strong>{item.count}</strong></li>)}</ul>
-        </div>
-        <p className="distribution-note">Une exception n’est pas un non. C’est un point à éclaircir.</p>
-      </section>
-      <aside className="profile-promo">
-        <div className="sunset-art" aria-hidden="true"><span className="sunset-orbit" /><span className="sunset-sun" /><span className="sunset-horizon" /></div>
-        <span className="promo-eyebrow">AU-DELÀ DES ANNONCES</span>
-        <h2>Une recherche<br />qui voit plus loin.</h2>
-        <p>Alertes, flux remote et réseau : élargissez la veille, puis qualifiez chaque piste.</p>
-        <button onClick={onOpenSources}>Voir les sources et la stratégie <ArrowUpRight size={17} /></button>
-      </aside>
-    </div>
-
-    <section className="glass-panel opportunities-panel">
-      <div className="opportunities-heading"><div><div className="flex flex-wrap items-center gap-2"><h2>À regarder ensuite</h2><span className="soft-count">{stats.new} à découvrir</span></div><p className="panel-subtitle">Des signaux utiles. Les inconnues restent visibles.</p></div><button onClick={onOpenJobs} className="secondary-button">Toutes les offres <ArrowRight size={14} /></button></div>
-      {topJobs.length ? <div className="opportunities-table-wrap">
-        <table className="opportunities-table">
-          <thead><tr><th>Opportunité</th><th>Contrat</th><th>Travail</th><th>Rémunération</th><th>Qualification</th><th><span className="sr-only">Ouvrir</span></th></tr></thead>
-          <tbody>{topJobs.map((job, index) => <tr key={job.id}>
-            <td><div className="table-opportunity"><span className={"company-monogram monogram-" + index % 3}>{(job.company || "?").slice(0, 1)}</span><div><button onClick={() => onSelect(job)}>{job.title}</button><p>{job.company} <span className="source-credit">· <SourceLogo name={job.source} compact />{job.source}</span></p></div></div></td>
-            <td>{job.contractType === "cdi" ? "CDI" : job.contractType === "freelance" ? "Freelance" : "À confirmer"}</td>
-            <td><span className="table-remote">{remoteCopy(job.remoteMode)}</span></td><td>{payCopy(job)}</td><td><TierBadge tier={job.matchTier} /></td>
-            <td><button onClick={() => onSelect(job)} className="table-open" aria-label={"Préparer " + job.title}><ArrowUpRight size={16} /></button></td>
-          </tr>)}</tbody>
-        </table>
-      </div> : <div className="px-5 pb-5"><EmptyJobs /></div>}
-    </section>
-
-    <section className="glass-panel sources-panel">
-      <div className="sources-heading"><div><div className="panel-title"><span className="panel-icon"><Mail size={17} /></span><h2>Vos sources de veille</h2></div><p className="panel-subtitle">Alertes importées via Gmail et Radar, ou ajoutées manuellement. Les posts LinkedIn restent volontaires.</p></div><button onClick={onOpenSources} className="secondary-button">Configurer & élargir <ArrowRight size={14} /></button></div>
-      <div className="source-grid">{sources.map(([name, detail, status]) => { const count = sourceCount(name); return <div className="source-tile" key={name}><div className="source-tile-head"><SourceLogo name={name} /><span className={count > 0 || status === "Prêt" ? "source-state is-ready" : "source-state"}>{count > 0 ? `${count} ${count === 1 ? "fiche" : "fiches"}` : status === "Prêt" ? "Ajout manuel" : "Aucune fiche importée"}</span></div><h3>{name}</h3><p>{detail}</p></div>; })}</div>
-      <p className="sources-note"><ShieldCheck size={12} /> Les fiches importées ne prouvent pas un scan exhaustif du marché. Les alertes sans détail restent à qualifier.</p>
-    </section>
-  </div>;
-}
 function Offers({ jobs, counts, filter, setFilter, searching, onClearSearch, onReview, onSelect, onDelete, onDeleteMany, onRestore, trashBusy }: { jobs: JobRecord[]; counts: Record<OfferFilter, number>; filter: OfferFilter; setFilter: (value: OfferFilter) => void; searching: boolean; onClearSearch: () => void; onReview: (id: string, state: "to_review" | "selected") => void; onSelect: (job: JobRecord) => void; onDelete: (job: JobRecord) => void; onDeleteMany: (jobs: JobRecord[]) => void; onRestore: (job: JobRecord) => void; trashBusy: string | null }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const selected = selectionInView(jobs, selectedIds);
@@ -338,29 +250,6 @@ function Offers({ jobs, counts, filter, setFilter, searching, onClearSearch, onR
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#535768]">{searching ? "Effacez la recherche pour retrouver les offres de cette vue." : filter === "trash" ? "Les offres rangées ici pourront être restaurées." : filter === "to_review" ? "Les offres choisies et les anciennes archives restent dans Toutes les offres." : "Consultez les autres vues ou modifiez votre recherche."}</p>
       {searching ? <button onClick={onClearSearch} className="secondary-button mt-5">Effacer la recherche</button> : filter !== "all" ? <button onClick={() => setFilter("all")} className="secondary-button mt-5">Voir toutes les offres</button> : null}
     </section>}
-  </div>;
-}
-
-function Pipeline({ jobs, onStatus, onSelect }: { jobs: JobRecord[]; onStatus: (id: string, status: JobStatus) => void; onSelect: (job: JobRecord) => void }) {
-  const [scope, setScope] = useState("active");
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(timer); }, []);
-  const items = jobs.filter(job => scope === "active" ? activeStatuses.includes(job.status) : scope === "closed" ? terminalStatuses.includes(job.status) : true);
-  return <div className="space-y-5">
-    <div className="glass-panel flex flex-wrap gap-2 p-3">{[["active", "En cours"], ["closed", "Closes / refus"], ["all", "Toutes les candidatures"]].map(([id, label]) => <button key={id} onClick={() => setScope(id)} className={"rounded-xl px-4 py-2 text-xs font-semibold " + (scope === id ? "bg-[#333333] text-white" : "text-[#535768]")}>{label}</button>)}</div>
-    {!items.length ? <p className="glass-panel p-8 text-sm text-[#535768]">Aucune candidature dans cette sélection. Changez le statut d’une offre pour commencer son suivi.</p> : <div className="grid gap-4 lg:grid-cols-2">{items.map(job => {
-      const next = job.interviews?.filter(event => event.state === "planned").sort((a, b) => a.startAt.localeCompare(b.startAt))[0];
-      const due = next && reviewDue(next, now);
-      return <article key={job.id} className="glass-panel p-5">
-        <div className="flex flex-wrap justify-between gap-2"><TierBadge tier={job.matchTier} /><span className="source-credit text-xs text-[#535768]"><SourceLogo name={job.source} compact />{job.source}</span></div>
-        <button onClick={() => onSelect(job)} className="mt-3 text-left text-base font-semibold">{job.title}</button>
-        <p className="mt-1 text-xs text-[#535768]">{job.company}{job.deletedAt ? " · Offre en corbeille, candidature conservée" : ""}</p>
-        <div className="mt-4"><StatusSelect value={job.status} onChange={status => onStatus(job.id, status)} label={"Statut · " + job.company} /></div>
-        {next ? <p className={"mt-4 rounded-xl p-3 text-xs leading-5 " + (due ? "bg-amber-50 text-amber-900" : "bg-[#f5f6f8] text-[#535768]")}>{due ? "Entretien passé · bilan à faire" : "Prochain entretien"}<br />{formatDate(next.startAt, next.timeZone, true)} · {next.timeZone}</p> : job.status === "interview" ? <p className="mt-4 text-xs text-amber-800">Date de l’entretien à renseigner.</p> : null}
-        {job.candidateNote ? <p className="mt-3 whitespace-pre-wrap text-xs leading-5 text-[#535768]">{job.candidateNote.slice(0, 240)}</p> : null}
-        <button onClick={() => onSelect(job)} className="secondary-button mt-4">Ouvrir le dossier et les entretiens <ArrowUpRight size={14} /></button>
-      </article>;
-    })}</div>}
   </div>;
 }
 
