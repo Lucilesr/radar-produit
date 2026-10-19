@@ -46,16 +46,16 @@ export function ExperienceLibrary({ documentId }: { documentId?: string }) {
   function correct(issue: ReviewIssue) { setFilter("active"); setSearch(""); setFocusTarget({ ...issue, nonce: Date.now() }); }
   const [navigation,setNavigation]=useState<{id:string|null;nonce:number}>();
   useEffect(()=>{
-    if(!navigation)return;
+    if(!navigation||consentPrompt.length)return;
     const frame=requestAnimationFrame(()=>{
-      if(navigation.id===null){window.scrollTo({top:0,behavior:"smooth"});return;}
+      if(navigation.id===null){document.getElementById("experience-title")?.focus({preventScroll:true});window.scrollTo({top:0,behavior:"smooth"});return;}
       const element=document.getElementById("review-"+navigation.id);
       let node=element;
       while(node){if(node instanceof HTMLDetailsElement)node.open=true;node=node.parentElement;}
-      element?.focus({preventScroll:true});element?.scrollIntoView({block:"start",behavior:"smooth"});
+      (element?.querySelector<HTMLElement>("summary")??element)?.focus({preventScroll:true});element?.scrollIntoView({block:"start",behavior:"smooth"});
     });
     return()=>cancelAnimationFrame(frame);
-  },[navigation]);
+  },[navigation,consentPrompt.length]);
 
   useEffect(() => {
     let live = true;
@@ -199,7 +199,7 @@ export function ExperienceLibrary({ documentId }: { documentId?: string }) {
   }
 
   return <section className="experience-library glass-panel mt-6 p-5 sm:p-7" aria-labelledby="experience-title" aria-busy={busy || loading}>
-    <div className="flex flex-wrap justify-between gap-4"><div><h2 id="experience-title" className="text-lg font-bold">Mon carnet d’expériences</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-[#535768]">Relisez vos missions, complétez ce que vous avez fait, puis choisissez ce qui peut servir à vos candidatures. Rien n’est publié automatiquement.</p></div><button className="secondary-button" disabled={busy || loading} onClick={() => setAdding(!adding)}>{adding ? "Annuler" : "Ajouter au parcours"}</button></div>
+    <div className="flex flex-wrap justify-between gap-4"><div><h2 id="experience-title" tabIndex={-1} className="text-lg font-bold">Mon carnet d’expériences</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-[#535768]">Relisez vos missions, complétez ce que vous avez fait, puis choisissez ce qui peut servir à vos candidatures. Rien n’est publié automatiquement.</p></div><button className="secondary-button" disabled={busy || loading} onClick={() => setAdding(!adding)}>{adding ? "Annuler" : "Ajouter au parcours"}</button></div>
     <div className="experience-reference"><FileClock size={20} /><div><strong>{state.reference ? "Document détaillé de référence" : "Document détaillé à rattacher dans Documents privés"}</strong><p>{state.reference?.name || "Les CV peuvent être consultés, mais ne remplacent pas votre document détaillé."}</p><small>Importer une nouvelle version dans « Expériences détaillées » la rend automatiquement courante. Les versions précédentes restent dans l’historique.</small>{state.extractions.find(e=>e.documentId===state.reference?.documentId)?.status==="needs_conversion"?<p role="alert" className="experience-error">{state.extractions.find(e=>e.documentId===state.reference?.documentId)?.issue || "Ce document nécessite une conversion en texte lisible."} Les versions précédentes restent dans l’historique.</p>:null}</div></div>
     <div className="experience-counts my-4 flex flex-wrap gap-2 text-xs"><span className="quiet-tag">{groups.filter(g => g.validation !== "rejected" && sectionType(g) === "experience").length} expériences</span><span className="quiet-tag">{[...groups.filter(g=>g.validation!=="rejected").flatMap(family),...ungrouped].filter(i=>i.validation==="proposed").length} éléments à relire</span>{hiddenCount ? <button className="quiet-tag underline" onClick={() => { setFilter("rejected"); setSelected([]); setConfirm(null); }}>{hiddenCount} bloc{hiddenCount > 1 ? "s" : ""} masqué{hiddenCount > 1 ? "s" : ""} — restaurer</button> : null}</div>
     <div className="experience-secondary my-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><strong>Utilisation de mon parcours</strong><p className="text-xs leading-5">{pendingConsent.length} bloc{pendingConsent.length>1?"s":""} validé{pendingConsent.length>1?"s":""} à autoriser · {deferredConsent.length} remis à plus tard · {consentItems.filter(i=>i.applicationAllowed).length} autorisé{consentItems.filter(i=>i.applicationAllowed).length>1?"s":""}.</p></div><button type="button" className="secondary-button" onClick={()=>setShowConsentManager(!showConsentManager)}>{showConsentManager?"Fermer les autorisations":"Gérer les autorisations"}</button></div>{showConsentManager?<div className="mt-4 space-y-2"><p className="text-xs">Autoriser permet de personnaliser les briefs, lettres et réponses aux recruteurs. Rien n’est publié ou envoyé automatiquement. Chaque bloc peut être révoqué.</p>{consentItems.map(i=><div key={i.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#d0d4e4] bg-white/80 p-3 text-xs"><span>{detailHeading(i)} · {i.applicationAllowed?"Autorisé":i.applicationConsent==="declined"?"Remis à plus tard":"À autoriser"}</span><button type="button" className="secondary-button" disabled={busy} onClick={()=>act({action:"applicationConsent",selection:[{id:i.id,version:i.version}],allowed:!i.applicationAllowed})}>{i.applicationAllowed?"Retirer l’autorisation":"Autoriser pour les candidatures"}</button></div>)}</div>:null}</div>
