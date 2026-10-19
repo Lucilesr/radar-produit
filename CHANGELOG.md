@@ -2,6 +2,8 @@
 
 ## 19 octobre 2026
 
+- Accueil centré sur la prochaine action et les entretiens réels ; candidatures lisibles avec prochaine étape, dates et reprise après erreur.
+
 - Refonte des fondations : titre unique par page sans baseline, navigation restaurable par URL, contrôles accessibles et états de chargement/erreur distincts.
 
 - Carnet d’expériences : exemples repliables, titre et statut visibles dans l’en-tête, ouverture automatique lors de la relecture.
