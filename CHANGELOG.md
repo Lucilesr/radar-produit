@@ -2,6 +2,10 @@
 
 ## 19 octobre 2026
 
+- Audit d’accessibilité : noms accessibles alignés sur les libellés visibles, sélecteurs mobiles utilisables au clavier, bordures de champs contrastées, textes agrandis sans troncature dans la navigation et erreurs conservées jusqu’à leur fermeture. Profil et sources chargés à la demande avec un état de reprise.
+
+- Recette de la refonte : focus restauré, arrière-plan inerte dans les dialogues, notifications accessibles au-dessus de la navigation mobile, erreurs de sauvegarde persistantes et brouillons conservés.
+
 - Profil réparti entre carnet, documents et présentation, brouillons conservés pendant la navigation ; réglages des sources repliables et confirmation d’enregistrement.
 
 - Opportunités : liste compacte et fiche adjacente sur ordinateur, fiche dédiée et retour à la liste sur mobile ; sélection groupée à la demande et décision confirmée avant mise à jour.
