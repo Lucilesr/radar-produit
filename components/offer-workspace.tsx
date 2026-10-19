@@ -27,6 +27,12 @@ async function requestJob(path: string, method: string, value: unknown) {
   const data = await response.json() as { job?: JobRecord; error?: string };
   if (!response.ok || !data.job) throw new Error(data.error ?? "Enregistrement non confirmé."); return data.job;
 }
+function coverageLabel(job: JobRecord) {
+  return job.contentCoverage === "full" ? "Description complète fournie" : job.contentCoverage === "partial" || /fiche détaillée non incluse|ne contient pas la fiche|fiche détaillée.*confirmer/i.test(job.description ?? "") ? "Notification partielle" : job.contentCoverage === "summary" ? "Synthèse disponible" : "Détails à confirmer";
+}
+export function OfferSourceBadge({ job }: { job: JobRecord }) {
+  return <span className="offer-source-badge source-credit"><SourceLogo name={job.source} compact /><span>{job.source}</span><span className="offer-source-separator" aria-hidden="true" /><span>{coverageLabel(job)}</span></span>;
+}
 export function OfferWorkspace({ job, profile, initialView, onChange, onStatus, onNote }: {
   job: JobRecord; profile: CandidateProfile; initialView: WorkspaceView; onChange: (job: JobRecord) => void;
   onStatus: (id: string, status: JobStatus) => void; onNote: (id: string, note: string) => Promise<boolean>;
@@ -34,12 +40,12 @@ export function OfferWorkspace({ job, profile, initialView, onChange, onStatus, 
   const [view, setView] = useState<WorkspaceView>(initialView); const [editing, setEditing] = useState(false);
   const [note, setNote] = useState(job.candidateNote ?? ""); const [busy, setBusy] = useState(false); const [copied, setCopied] = useState(false);
   useEffect(() => setNote(job.candidateNote ?? ""), [job.id, job.candidateNote]);
-  const coverage = job.contentCoverage === "full" ? "Description complète fournie" : job.contentCoverage === "partial" || /fiche détaillée non incluse|ne contient pas la fiche|fiche détaillée.*confirmer/i.test(job.description ?? "") ? "Notification partielle" : job.contentCoverage === "summary" ? "Synthèse disponible" : "Détails à confirmer";
+  const coverage = coverageLabel(job);
   const sourceUrl = job.sourceUrl;
   const applyUrl = job.applicationUrl && job.applicationUrl !== sourceUrl ? job.applicationUrl : !sourceUrl ? job.applicationUrl : undefined;
   const tabs: Array<[WorkspaceView, string]> = [["offer", "L’offre"], ["application", "Ma candidature"], ["interviews", `Entretiens (${job.interviews?.length ?? 0})`], ["brief", "Préparer / brief"]];
   return <div className="space-y-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><span className="quiet-tag source-credit"><SourceLogo name={job.source} compact />{job.source} · {coverage}</span><div className="flex flex-wrap gap-2">{sourceUrl ? <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} /> Voir l’annonce originale</a> : null}{applyUrl ? <a href={applyUrl} target="_blank" rel="noopener noreferrer" className="radar-add-button"><ExternalLink size={14} /> Postuler sur la plateforme</a> : null}{!sourceUrl && !applyUrl ? <span className="text-xs text-amber-800">Lien de candidature à renseigner</span> : null}</div></div>
+    <div className="flex flex-wrap justify-end gap-2">{sourceUrl ? <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} /> Voir l’annonce</a> : null}{applyUrl ? <a href={applyUrl} target="_blank" rel="noopener noreferrer" className="radar-add-button"><ExternalLink size={14} /> Postuler</a> : null}{!sourceUrl && !applyUrl ? <span className="offer-link-missing">Lien de candidature à renseigner</span> : null}</div>
     <nav aria-label="Sections du dossier" className="grid grid-cols-2 gap-1 rounded-xl bg-[#f5f6f8] p-1 sm:flex sm:overflow-x-auto">{tabs.map(([id, name]) => <button key={id} onClick={() => setView(id)} aria-current={view === id ? "page" : undefined} className={`min-h-11 rounded-lg px-3 py-2 text-xs font-semibold sm:shrink-0 ${view === id ? "bg-white text-[#4b4bd1] shadow-sm" : "text-[#535768]"}`}>{name}</button>)}</nav>
     {view === "offer" && !editing ? <>
       <div className="grid gap-3 rounded-2xl border border-[#d0d4e4] bg-white p-4 sm:grid-cols-2"><Info label="Contrat" value={job.contractType === "cdi" ? "CDI" : job.contractType === "freelance" ? "Freelance" : "À confirmer"} /><Info label="Rémunération" value={job.dailyRate ? `${formatEuro(job.dailyRate)} HT/jour` : job.annualSalary ? `${formatEuro(job.annualSalary)} brut/an` : "Non communiquée"} /><Info label="Travail annoncé" value={{ full_remote: "Full remote", exceptional: "Présence exceptionnelle", hybrid: "Hybride", onsite: "Sur site", unknown: "À confirmer" }[job.remoteMode]} /><Info label="Présence / pays" value={job.onsiteCadence || "Fréquence et pays autorisés à confirmer dans l’annonce"} /><Info label="Publication de l’annonce" value={formatDate(job.publishedAt)} /><Info label="Ajout au Radar" value={formatDate(job.createdAt)} />{job.notificationAt ? <Info label="Notification source" value={formatDate(job.notificationAt)} /> : null}<Info label="Langue" value={{ fr: "Français", en: "Anglais", professional_en: "Anglais professionnel", advanced_en: "Anglais avancé", unknown: "À confirmer" }[job.language]} /></div>
