@@ -1,0 +1,1053 @@
+{
+  "date": "2026-10-19",
+  "publicCodeRevision": "eacbc6cdfecb38d8ddbdd2e0c70a1d1325b214da",
+  "scope": "Five main views, three profile sections, fictional data; local production build.",
+  "fixture": {
+    "offers": 50,
+    "applications": 8,
+    "experiences": 1,
+    "examples": 12,
+    "approvedExamples": 2,
+    "usagePermissionsGranted": 0
+  },
+  "checks": {
+    "private": {
+      "tests": 76,
+      "typescript": "pass",
+      "productionBuild": "pass"
+    },
+    "publicPerformanceBranch": {
+      "tests": 76,
+      "typescript": "pass",
+      "productionBuild": "pass"
+    },
+    "publicAccessibilityBranch": {
+      "tests": 72,
+      "typescript": "pass",
+      "productionBuild": "pass"
+    },
+    "http": {
+      "anonymousDenied": true,
+      "ownerScopedOfferHtml": true,
+      "ownerScopedProfileHtml": true
+    }
+  },
+  "axe": {
+    "version": "4.14.0",
+    "tooling": "@axe-core/cli testPages API; explicit ChromeDriver device metrics, verified from every result.",
+    "chromeMajor": 152,
+    "cases": [
+      {
+        "group": "desktop",
+        "case": 1,
+        "route": "?tab=dashboard",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "desktop",
+        "case": 2,
+        "route": "?tab=offers",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "desktop",
+        "case": 3,
+        "route": "?tab=pipeline",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "desktop",
+        "case": 4,
+        "route": "?tab=profile&profile=experiences",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "desktop",
+        "case": 5,
+        "route": "?tab=profile&profile=documents",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "desktop",
+        "case": 6,
+        "route": "?tab=profile&profile=presentation",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "desktop",
+        "case": 7,
+        "route": "?tab=sources",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "mobile",
+        "case": 1,
+        "route": "?tab=dashboard",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "mobile",
+        "case": 2,
+        "route": "?tab=offers",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "mobile",
+        "case": 3,
+        "route": "?tab=pipeline",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "mobile",
+        "case": 4,
+        "route": "?tab=profile&profile=experiences",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "mobile",
+        "case": 5,
+        "route": "?tab=profile&profile=documents",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "mobile",
+        "case": 6,
+        "route": "?tab=profile&profile=presentation",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "mobile",
+        "case": 7,
+        "route": "?tab=sources",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "states-mobile",
+        "case": 1,
+        "route": "__audit/add-mobile.html",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "states-mobile",
+        "case": 2,
+        "route": "__audit/experience-mobile.html",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "states-mobile",
+        "case": 3,
+        "route": "__audit/experience-selected-mobile.html",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "states-desktop",
+        "case": 1,
+        "route": "__audit/add-desktop.html",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "states-desktop",
+        "case": 2,
+        "route": "__audit/experience-desktop.html",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "states-desktop",
+        "case": 3,
+        "route": "__audit/profile-error-desktop.html",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": [
+          {
+            "rule": "color-contrast",
+            "nodes": 1
+          }
+        ]
+      },
+      {
+        "group": "states-desktop",
+        "case": 4,
+        "route": "__audit/chunk-error-desktop.html",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      },
+      {
+        "group": "states-desktop",
+        "case": 5,
+        "route": "__audit/status-error-desktop.html",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": [
+          {
+            "rule": "color-contrast",
+            "nodes": 1
+          }
+        ]
+      },
+      {
+        "group": "drawer-mobile",
+        "case": 1,
+        "route": "__audit/select-mobile.html",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": [
+          {
+            "rule": "color-contrast",
+            "nodes": 6
+          }
+        ]
+      },
+      {
+        "group": "select-desktop",
+        "case": 1,
+        "route": "__audit/select-desktop.html",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "engine": "4.14.0",
+        "violations": 0,
+        "manualContrastReview": []
+      }
+    ],
+    "automaticViolations": 0,
+    "manualContrastNodes": 8,
+    "manualContrastResolutions": {
+      "drawer": [
+        {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(51, 51, 51)",
+          "opacity": "1",
+          "text": "Type de contrat",
+          "ratio": 12.63
+        },
+        {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(83, 87, 104)",
+          "opacity": "1",
+          "text": "Touchez une option pour la sélectionner.",
+          "ratio": 7.16
+        },
+        {
+          "background": "rgb(231, 236, 255)",
+          "color": "rgb(75, 75, 209)",
+          "opacity": "1",
+          "text": "À confirmer",
+          "ratio": 5.53
+        },
+        {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(51, 51, 51)",
+          "opacity": "1",
+          "text": "CDI",
+          "ratio": 12.63
+        },
+        {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(51, 51, 51)",
+          "opacity": "1",
+          "text": "Freelance",
+          "ratio": 12.63
+        },
+        {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(83, 87, 104)",
+          "opacity": "1",
+          "text": "Fermer sans changer",
+          "ratio": 7.16
+        }
+      ],
+      "toast": {
+        "background": "rgb(37, 37, 47)",
+        "foreground": "rgb(255, 255, 255)",
+        "opacity": "1",
+        "ratio": 15.17
+      }
+    },
+    "unresolvedScannerReviews": 0
+  },
+  "manual": {
+    "responsive": [
+      {
+        "headings": [
+          "H1",
+          "H2",
+          "H2",
+          "H2"
+        ],
+        "overflow": false,
+        "page": "Aujourd’hui",
+        "smallTargets": [],
+        "width": 1440
+      },
+      {
+        "headings": [
+          "H1",
+          "H2"
+        ],
+        "overflow": false,
+        "page": "Opportunités",
+        "smallTargets": [],
+        "width": 1440
+      },
+      {
+        "headings": [
+          "H1",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2"
+        ],
+        "overflow": false,
+        "page": "Candidatures",
+        "smallTargets": [],
+        "width": 1440
+      },
+      {
+        "headings": [
+          "H1",
+          "H2"
+        ],
+        "overflow": false,
+        "page": "Mon profil",
+        "smallTargets": [],
+        "width": 1440
+      },
+      {
+        "headings": [
+          "H1",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2"
+        ],
+        "overflow": false,
+        "page": "Sources",
+        "smallTargets": [],
+        "width": 1440
+      },
+      {
+        "headings": [
+          "H1",
+          "H2",
+          "H2",
+          "H2"
+        ],
+        "overflow": false,
+        "page": "Aujourd’hui",
+        "smallTargets": [],
+        "width": 320
+      },
+      {
+        "headings": [
+          "H1"
+        ],
+        "overflow": false,
+        "page": "Opportunités",
+        "smallTargets": [],
+        "width": 320
+      },
+      {
+        "headings": [
+          "H1",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2"
+        ],
+        "overflow": false,
+        "page": "Candidatures",
+        "smallTargets": [],
+        "width": 320
+      },
+      {
+        "headings": [
+          "H1",
+          "H2"
+        ],
+        "overflow": false,
+        "page": "Mon profil",
+        "smallTargets": [],
+        "width": 320
+      },
+      {
+        "headings": [
+          "H1",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2",
+          "H2"
+        ],
+        "overflow": false,
+        "page": "Sources",
+        "smallTargets": [],
+        "width": 320
+      }
+    ],
+    "textResize": {
+      "method": "Computed font sizes doubled in an inert snapshot",
+      "viewport": [
+        1440,
+        1000
+      ],
+      "headingFontPx": 68,
+      "fieldFontPx": 28,
+      "horizontalOverflow": false,
+      "clippedText": false
+    },
+    "textSpacing": {
+      "viewport": [
+        320,
+        900
+      ],
+      "lineHeight": 1.5,
+      "paragraphSpacingEm": 2,
+      "letterSpacingEm": 0.12,
+      "wordSpacingEm": 0.16,
+      "horizontalOverflow": false,
+      "clippedText": false
+    },
+    "landscape": {
+      "viewport": [
+        844,
+        390
+      ],
+      "horizontalOverflow": false
+    },
+    "focusChecks": [
+      "modal Tab and Shift+Tab loop",
+      "nested Escape and trigger return",
+      "clear empty search returns to search field",
+      "application leaving view returns to page heading",
+      "consent close resumes at next example summary"
+    ],
+    "recoveryChecks": [
+      "module load failure and reload",
+      "profile save failure retains draft and error",
+      "status failure retains confirmed value and error"
+    ],
+    "voiceOver": "Attempted with permission; native macOS control unavailable. Application inventory confirmed VoiceOver stopped."
+  },
+  "lighthouse": {
+    "runs": [
+      {
+        "page": "dashboard",
+        "device": "mobile",
+        "run": 1,
+        "fetchedAt": "2026-10-19T16:29:19.879Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1755.5,
+        "score": 96,
+        "accessibilityScore": 100,
+        "fcpMs": 2053.849,
+        "lcpMs": 2409.6980000000003,
+        "tbtMs": 7,
+        "cls": 0,
+        "transferBytes": 250166,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      },
+      {
+        "page": "dashboard",
+        "device": "mobile",
+        "run": 2,
+        "fetchedAt": "2026-10-19T16:29:36.942Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1442,
+        "score": 98,
+        "accessibilityScore": 100,
+        "fcpMs": 1572.6715,
+        "lcpMs": 1572.6715,
+        "tbtMs": 135,
+        "cls": 0,
+        "transferBytes": 250149,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      },
+      {
+        "page": "dashboard",
+        "device": "mobile",
+        "run": 3,
+        "fetchedAt": "2026-10-19T16:29:52.493Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1364,
+        "score": 98,
+        "accessibilityScore": 100,
+        "fcpMs": 1829.2433,
+        "lcpMs": 2168.36495,
+        "tbtMs": 40,
+        "cls": 0,
+        "transferBytes": 250161,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      },
+      {
+        "page": "dashboard",
+        "device": "desktop",
+        "run": 1,
+        "fetchedAt": "2026-10-19T16:30:12.609Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1477.5,
+        "score": 100,
+        "accessibilityScore": 100,
+        "fcpMs": 500.6174,
+        "lcpMs": 561.2348,
+        "tbtMs": 0,
+        "cls": 0,
+        "transferBytes": 250166,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0,
+          "cpuSlowdownMultiplier": 1
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      },
+      {
+        "page": "offers",
+        "device": "mobile",
+        "run": 1,
+        "fetchedAt": "2026-10-19T16:30:24.664Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 2108,
+        "score": 96,
+        "accessibilityScore": 100,
+        "fcpMs": 2017.9566,
+        "lcpMs": 2385.9132,
+        "tbtMs": 13,
+        "cls": 0,
+        "transferBytes": 252941,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      },
+      {
+        "page": "offers",
+        "device": "mobile",
+        "run": 2,
+        "fetchedAt": "2026-10-19T16:30:37.042Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1996.5,
+        "score": 96,
+        "accessibilityScore": 100,
+        "fcpMs": 2009.1884999999997,
+        "lcpMs": 2368.377,
+        "tbtMs": 1,
+        "cls": 0,
+        "transferBytes": 252936,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      },
+      {
+        "page": "offers",
+        "device": "mobile",
+        "run": 3,
+        "fetchedAt": "2026-10-19T16:30:48.667Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1938,
+        "score": 96,
+        "accessibilityScore": 100,
+        "fcpMs": 2013.5177,
+        "lcpMs": 2377.0353999999998,
+        "tbtMs": 4,
+        "cls": 0,
+        "transferBytes": 252931,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      },
+      {
+        "page": "offers",
+        "device": "desktop",
+        "run": 1,
+        "fetchedAt": "2026-10-19T16:31:00.269Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1841.5,
+        "score": 100,
+        "accessibilityScore": 100,
+        "fcpMs": 496.57349999999997,
+        "lcpMs": 599.0036249999999,
+        "tbtMs": 0,
+        "cls": 0,
+        "transferBytes": 252936,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0,
+          "cpuSlowdownMultiplier": 1
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      },
+      {
+        "page": "profile",
+        "device": "mobile",
+        "run": 1,
+        "fetchedAt": "2026-10-19T16:31:11.806Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 2086,
+        "score": 94,
+        "accessibilityScore": 100,
+        "fcpMs": 1994.3282,
+        "lcpMs": 2338.6564,
+        "tbtMs": 0,
+        "cls": 0.09739039192452215,
+        "transferBytes": 273812,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      },
+      {
+        "page": "profile",
+        "device": "mobile",
+        "run": 2,
+        "fetchedAt": "2026-10-19T16:31:23.232Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 2130.5,
+        "score": 91,
+        "accessibilityScore": 100,
+        "fcpMs": 1992.7004000000002,
+        "lcpMs": 2865.4514,
+        "tbtMs": 0,
+        "cls": 0.09739039192452215,
+        "transferBytes": 273820,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      },
+      {
+        "page": "profile",
+        "device": "mobile",
+        "run": 3,
+        "fetchedAt": "2026-10-19T16:31:35.009Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 2220.5,
+        "score": 94,
+        "accessibilityScore": 100,
+        "fcpMs": 1998.8247000000001,
+        "lcpMs": 2347.6494000000002,
+        "tbtMs": 0,
+        "cls": 0.09739039192452215,
+        "transferBytes": 273822,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      },
+      {
+        "page": "profile",
+        "device": "desktop",
+        "run": 1,
+        "fetchedAt": "2026-10-19T16:31:47.042Z",
+        "lighthouseVersion": "13.5.0",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1701.5,
+        "score": 99,
+        "accessibilityScore": 100,
+        "fcpMs": 507.16999999999996,
+        "lcpMs": 694.34,
+        "tbtMs": 0,
+        "cls": 0.07280653211919565,
+        "transferBytes": 273813,
+        "redundantInitialApiReads": 0,
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0,
+          "cpuSlowdownMultiplier": 1
+        },
+        "throttlingMethod": "simulate",
+        "warnings": []
+      }
+    ],
+    "summary": [
+      {
+        "page": "dashboard",
+        "device": "mobile",
+        "runs": 3,
+        "scoreMedian": 98,
+        "scoreRange": [
+          96,
+          98
+        ],
+        "fcpMs": 1829.2433,
+        "lcpMs": 2168.36495,
+        "tbtMs": 40,
+        "cls": 0
+      },
+      {
+        "page": "dashboard",
+        "device": "desktop",
+        "runs": 1,
+        "scoreMedian": 100,
+        "scoreRange": [
+          100,
+          100
+        ],
+        "fcpMs": 500.6174,
+        "lcpMs": 561.2348,
+        "tbtMs": 0,
+        "cls": 0
+      },
+      {
+        "page": "offers",
+        "device": "mobile",
+        "runs": 3,
+        "scoreMedian": 96,
+        "scoreRange": [
+          96,
+          96
+        ],
+        "fcpMs": 2013.5177,
+        "lcpMs": 2377.0353999999998,
+        "tbtMs": 4,
+        "cls": 0
+      },
+      {
+        "page": "offers",
+        "device": "desktop",
+        "runs": 1,
+        "scoreMedian": 100,
+        "scoreRange": [
+          100,
+          100
+        ],
+        "fcpMs": 496.57349999999997,
+        "lcpMs": 599.0036249999999,
+        "tbtMs": 0,
+        "cls": 0
+      },
+      {
+        "page": "profile",
+        "device": "mobile",
+        "runs": 3,
+        "scoreMedian": 94,
+        "scoreRange": [
+          91,
+          94
+        ],
+        "fcpMs": 1994.3282,
+        "lcpMs": 2347.6494000000002,
+        "tbtMs": 0,
+        "cls": 0.09739039192452215
+      },
+      {
+        "page": "profile",
+        "device": "desktop",
+        "runs": 1,
+        "scoreMedian": 99,
+        "scoreRange": [
+          99,
+          99
+        ],
+        "fcpMs": 507.16999999999996,
+        "lcpMs": 694.34,
+        "tbtMs": 0,
+        "cls": 0.07280653211919565
+      }
+    ],
+    "beforeServerRenderingMobile": [
+      {
+        "page": "dashboard",
+        "lcpMsMedian": 2984.4786,
+        "scoreMedian": 94.0,
+        "clsMedian": 0.0430653491741483
+      },
+      {
+        "page": "offers",
+        "lcpMsMedian": 1998.8078,
+        "scoreMedian": 97.0,
+        "clsMedian": 0.07844848942419988
+      },
+      {
+        "page": "profile",
+        "lcpMsMedian": 3043.7222500000007,
+        "scoreMedian": 93.0,
+        "clsMedian": 0.04869519596226107
+      }
+    ],
+    "thresholdsForThisLabCheck": {
+      "scoreMinimum": 90,
+      "lcpMsMaximum": 2500,
+      "tbtMsMaximum": 200,
+      "clsMaximum": 0.1
+    },
+    "fieldCoreWebVitalsMeasured": false
+  },
+  "reservations": [
+    "VoiceOver and NVDA speech session not validated",
+    "Native browser zoom not fully validated; 200% text snapshot used",
+    "Future imported content languages not audited",
+    "Hosted authentication, backup page, connector and attached-document content excluded"
+  ],
+  "toolVersions": {
+    "axeCli": "4.14.0",
+    "axeCore": "4.14.0",
+    "selenium": "4.47.0",
+    "axeChrome": "152.0.7977.82",
+    "lighthouse": "13.5.0",
+    "lighthouseChromeMajor": 155
+  }
+}
