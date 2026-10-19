@@ -2,6 +2,8 @@
 
 ## 19 octobre 2026
 
+- Filtre du carnet intégré au sélecteur commun : menu stylé sur ordinateur, panneau sur mobile, chevron aligné et champs espacés.
+
 - Autorisations du parcours : panneau aéré, titre et bilan mieux espacés, bouton sur sa propre ligne sur mobile.
 
 - Carnet allégé : accès directs au remplacement et à l’historique des documents, rappels répétitifs retirés et champs de saisie en graisse normale.
