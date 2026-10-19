@@ -9,9 +9,10 @@ import { StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
 import { WorkspaceState } from "@/components/workspace-ui";
 import type { JobRecord, JobStatus } from "@/lib/types";
 
-function useNow() { const [now,setNow]=useState(Date.now()); useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),60000);return()=>clearInterval(timer);},[]);return now; }
+// Recalculate deadlines on entry and explicit data changes; keep the page stable while reading.
+function useNow(jobs: JobRecord[]) { const [now,setNow]=useState(Date.now()); useEffect(()=>setNow(Date.now()),[jobs]);return now; }
 export function TodayWorkspace({ jobs, onTriage, onSelected, onAdd, onOpen }: {jobs:JobRecord[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void}) {
-  const now=useNow();
+  const now=useNow(jobs);
   const count=jobs.filter(job=>inOpportunityView(job,"to_review")).length;
   const selected=jobs.filter(job=>inOpportunityView(job,"selected")).length;
   const active=jobs.filter(job=>hasApplication(job)&&activeStatuses.includes(job.status)).length;
@@ -42,7 +43,7 @@ export function TodayWorkspace({ jobs, onTriage, onSelected, onAdd, onOpen }: {j
 
 export function ApplicationsWorkspace({jobs,onStatus,onOpen}:{jobs:JobRecord[];onStatus:(id:string,status:JobStatus)=>Promise<boolean>;onOpen:(job:JobRecord,view?:WorkspaceView)=>void}) {
   const [scope,setScope]=useState("active"),[busy,setBusy]=useState<string|null>(null),[error,setError]=useState("");
-  const now=useNow();
+  const now=useNow(jobs);
   const items=jobs.filter(job=>scope==="active"?activeStatuses.includes(job.status):scope==="closed"?terminalStatuses.includes(job.status):true);
   return <div><nav className="workspace-tabs" aria-label="Vues des candidatures">{[["active","En cours"],["closed","Closes / refus"],["all","Toutes"]].map(([id,label])=><button key={id} type="button" aria-pressed={scope===id} onClick={()=>setScope(id)}>{label}</button>)}</nav>
     {error?<WorkspaceState error title="Statut non enregistré">{error}</WorkspaceState>:null}
