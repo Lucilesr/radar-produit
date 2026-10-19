@@ -39,3 +39,16 @@
 @media(max-width:640px) {
   .experience-library label,.experience-library input:not([type=checkbox]):not([type=radio]):not([type=file]),.experience-library textarea,.experience-library select { font-size: 16px; }
 }
+
+.experience-consent-panel { margin-block: 24px; padding: 20px; border: 1px solid var(--border); border-radius: 10px; background: var(--background); }
+.experience-consent-overview { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; }
+.experience-consent-copy { flex: 1 1 280px; min-width: 0; }
+.experience-consent-copy strong { display: block; font-size: 15px; font-weight: 600; line-height: 1.5; }
+.experience-consent-copy p { margin-top: 6px; color: var(--muted-foreground); font-size: 13px; line-height: 1.65; }
+.experience-consent-overview>.secondary-button { flex: 0 1 auto; margin: 0; }
+@media(max-width:640px) {
+  .experience-consent-panel { margin-block: 20px; padding: 16px; }
+  .experience-consent-overview { gap: 16px; }
+  .experience-consent-copy { flex-basis: 100%; }
+  .experience-consent-overview>.secondary-button { width: 100%; }
+}

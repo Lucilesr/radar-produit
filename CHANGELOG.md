@@ -2,6 +2,8 @@
 
 ## 19 octobre 2026
 
+- Autorisations du parcours : panneau aéré, titre et bilan mieux espacés, bouton sur sa propre ligne sur mobile.
+
 - Carnet allégé : accès directs au remplacement et à l’historique des documents, rappels répétitifs retirés et champs de saisie en graisse normale.
 
 - Premier affichage préparé côté serveur après authentification : vue demandée présente immédiatement, profil et offres indépendants en cas d’erreur, lectures initiales API supprimées. [Audit et mesures de production locale](audits/accessibility-performance-2026-10-19.md) avec données fictives, résultats et réserves détaillés.
