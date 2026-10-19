@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { CalendarPlus, Check, Copy, ExternalLink, LoaderCircle, Pencil } from "lucide-react";
+import { Banknote, BriefcaseBusiness, CalendarDays, CalendarPlus, Check, CheckCircle2, CircleHelp, Clock3, Copy, ExternalLink, Globe2, Languages, LoaderCircle, MapPin, Pencil, type LucideIcon } from "lucide-react";
 import { ChoiceSelect, type ChoiceOption } from "@/components/choice-select";
 import { SourceLogo } from "@/components/source-logo";
 import { ApplicationQuestions } from "@/components/application-questions";
 import { formatDate, fromZonedInput, reviewDue, statusLabels, zonedInput } from "@/lib/application-workflow";
 import { formatEuro } from "@/lib/matching";
+import { hasApplication, workspaceSections } from "@/lib/opportunity-views";
 import type { CandidateProfile, InterviewRecord, JobRecord, JobStatus } from "@/lib/types";
 
 export type WorkspaceView = "offer" | "application" | "interviews" | "brief";
@@ -27,40 +28,108 @@ async function requestJob(path: string, method: string, value: unknown) {
   const data = await response.json() as { job?: JobRecord; error?: string };
   if (!response.ok || !data.job) throw new Error(data.error ?? "Enregistrement non confirmé."); return data.job;
 }
-export function OfferWorkspace({ job, profile, initialView, onChange, onStatus, onNote }: {
-  job: JobRecord; profile: CandidateProfile; initialView: WorkspaceView; onChange: (job: JobRecord) => void;
-  onStatus: (id: string, status: JobStatus) => void; onNote: (id: string, note: string) => Promise<boolean>;
+function coverageLabel(job: JobRecord) {
+  return job.contentCoverage === "full" ? "Description complète fournie" : job.contentCoverage === "partial" || /fiche détaillée non incluse|ne contient pas la fiche|fiche détaillée.*confirmer/i.test(job.description ?? "") ? "Notification partielle" : job.contentCoverage === "summary" ? "Synthèse disponible" : "Détails à confirmer";
+}
+export function OfferSourceBadge({ job }: { job: JobRecord }) {
+  return <span className="offer-source-badge source-credit"><SourceLogo name={job.source} compact /><span>{job.source}</span><span className="offer-source-separator" aria-hidden="true" /><span>{coverageLabel(job)}</span></span>;
+}
+export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication }: {
+  job: JobRecord; profile: CandidateProfile; initialView: WorkspaceView; context: "opportunity" | "application"; onChange: (job: JobRecord) => void;
+  onStatus: (id: string, status: JobStatus) => Promise<boolean>; onNote: (id: string, note: string) => Promise<boolean>; onOpenApplication: () => void;
 }) {
   const [view, setView] = useState<WorkspaceView>(initialView); const [editing, setEditing] = useState(false);
   const [note, setNote] = useState(job.candidateNote ?? ""); const [busy, setBusy] = useState(false); const [copied, setCopied] = useState(false);
+  const [startingApplication, setStartingApplication] = useState(false);
   useEffect(() => setNote(job.candidateNote ?? ""), [job.id, job.candidateNote]);
-  const coverage = job.contentCoverage === "full" ? "Description complète fournie" : job.contentCoverage === "partial" || /fiche détaillée non incluse|ne contient pas la fiche|fiche détaillée.*confirmer/i.test(job.description ?? "") ? "Notification partielle" : job.contentCoverage === "summary" ? "Synthèse disponible" : "Détails à confirmer";
+  const coverage = coverageLabel(job);
   const sourceUrl = job.sourceUrl;
   const applyUrl = job.applicationUrl && job.applicationUrl !== sourceUrl ? job.applicationUrl : !sourceUrl ? job.applicationUrl : undefined;
-  const tabs: Array<[WorkspaceView, string]> = [["offer", "L’offre"], ["application", "Ma candidature"], ["interviews", `Entretiens (${job.interviews?.length ?? 0})`], ["brief", "Préparer / brief"]];
+  const labels: Record<WorkspaceView, string> = { offer: "L’offre", application: "Ma candidature", interviews: `Entretiens (${job.interviews?.length ?? 0})`, brief: "Préparer / brief" };
+  const tabs = workspaceSections(context);
+  const activeView = context === "opportunity" && (view === "application" || view === "interviews") ? "offer" : view;
   return <div className="space-y-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><span className="quiet-tag source-credit"><SourceLogo name={job.source} compact />{job.source} · {coverage}</span><div className="flex flex-wrap gap-2">{sourceUrl ? <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} /> Voir l’annonce originale</a> : null}{applyUrl ? <a href={applyUrl} target="_blank" rel="noopener noreferrer" className="radar-add-button"><ExternalLink size={14} /> Postuler sur la plateforme</a> : null}{!sourceUrl && !applyUrl ? <span className="text-xs text-amber-800">Lien de candidature à renseigner</span> : null}</div></div>
-    <nav aria-label="Sections du dossier" className="grid grid-cols-2 gap-1 rounded-xl bg-[#f5f6f8] p-1 sm:flex sm:overflow-x-auto">{tabs.map(([id, name]) => <button key={id} onClick={() => setView(id)} aria-current={view === id ? "page" : undefined} className={`min-h-11 rounded-lg px-3 py-2 text-xs font-semibold sm:shrink-0 ${view === id ? "bg-white text-[#4b4bd1] shadow-sm" : "text-[#535768]"}`}>{name}</button>)}</nav>
-    {view === "offer" && !editing ? <>
-      <div className="grid gap-3 rounded-2xl border border-[#d0d4e4] bg-white p-4 sm:grid-cols-2"><Info label="Contrat" value={job.contractType === "cdi" ? "CDI" : job.contractType === "freelance" ? "Freelance" : "À confirmer"} /><Info label="Rémunération" value={job.dailyRate ? `${formatEuro(job.dailyRate)} HT/jour` : job.annualSalary ? `${formatEuro(job.annualSalary)} brut/an` : "Non communiquée"} /><Info label="Travail annoncé" value={{ full_remote: "Full remote", exceptional: "Présence exceptionnelle", hybrid: "Hybride", onsite: "Sur site", unknown: "À confirmer" }[job.remoteMode]} /><Info label="Présence / pays" value={job.onsiteCadence || "Fréquence et pays autorisés à confirmer dans l’annonce"} /><Info label="Publication de l’annonce" value={formatDate(job.publishedAt)} /><Info label="Ajout au Radar" value={formatDate(job.createdAt)} />{job.notificationAt ? <Info label="Notification source" value={formatDate(job.notificationAt)} /> : null}<Info label="Langue" value={{ fr: "Français", en: "Anglais", professional_en: "Anglais professionnel", advanced_en: "Anglais avancé", unknown: "À confirmer" }[job.language]} /></div>
+    <div className="flex flex-wrap justify-end gap-2">{sourceUrl ? <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} /> Voir l’annonce</a> : null}{applyUrl ? <a href={applyUrl} target="_blank" rel="noopener noreferrer" className="radar-add-button"><ExternalLink size={14} /> Postuler</a> : null}{!sourceUrl && !applyUrl ? <span className="offer-link-missing">Lien de candidature à renseigner</span> : null}</div>
+    <nav aria-label={context === "opportunity" ? "Sections de l’opportunité" : "Sections de la candidature"} className="grid grid-cols-2 gap-1 rounded-xl bg-[#f5f6f8] p-1 sm:flex sm:overflow-x-auto">{tabs.map(id => <button key={id} onClick={() => setView(id)} aria-current={activeView === id ? "page" : undefined} className={`min-h-11 rounded-lg px-3 py-2 text-xs font-semibold sm:shrink-0 ${activeView === id ? "bg-white text-[#4b4bd1] shadow-sm" : "text-[#535768]"}`}>{labels[id]}</button>)}</nav>
+    {context === "opportunity" && !job.deletedAt ? <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#eadce2] bg-[#fff8f5] p-3 sm:p-4"><p className="max-w-md text-xs leading-5 text-[#535768]">{hasApplication(job) ? "Cette offre a déjà un suivi de candidature. Retrouvez-y les échanges et entretiens." : "Vous avez envoyé votre candidature ? Démarrez son suivi ici. Radar n’envoie rien à votre place."}</p><button type="button" className="secondary-button shrink-0" disabled={startingApplication} onClick={async () => { if (hasApplication(job)) { onOpenApplication(); return; } setStartingApplication(true); try { if (await onStatus(job.id, "applied")) onOpenApplication(); } finally { setStartingApplication(false); } }}>{startingApplication ? <LoaderCircle size={14} className="animate-spin" /> : null}{hasApplication(job) ? "Voir dans Candidatures" : "J’ai postulé"}</button></div> : null}
+    {activeView === "offer" && !editing ? <>
+      <section aria-label="Informations clés de l’offre" className="offer-facts">
+        <div className="offer-facts-primary">
+          <KeyFact icon={BriefcaseBusiness} tone="violet" label="Contrat" value={job.contractType === "cdi" ? "CDI" : job.contractType === "freelance" ? "Freelance" : "À confirmer"} unknown={job.contractType !== "cdi" && job.contractType !== "freelance"} />
+          <KeyFact icon={Banknote} tone="coral" label="Rémunération" value={job.dailyRate ? `${formatEuro(job.dailyRate)} HT/jour` : job.annualSalary ? `${formatEuro(job.annualSalary)} brut/an` : "Non communiquée"} unknown={!job.dailyRate && !job.annualSalary} />
+          <KeyFact icon={Globe2} tone="teal" label="Travail annoncé" value={{ full_remote: "Full remote", exceptional: "Présence exceptionnelle", hybrid: "Hybride", onsite: "Sur site", unknown: "À confirmer" }[job.remoteMode]} unknown={job.remoteMode === "unknown"} />
+        </div>
+        <div className="offer-facts-secondary">
+          <MetaFact icon={MapPin} label="Présence / pays" value={job.onsiteCadence || "Fréquence et pays autorisés à confirmer"} />
+          <MetaFact icon={Languages} label="Langue" value={{ fr: "Français", en: "Anglais", professional_en: "Anglais professionnel", advanced_en: "Anglais avancé", unknown: "À confirmer" }[job.language]} />
+          <MetaFact icon={CalendarDays} label="Publication" value={formatDate(job.publishedAt)} />
+          <MetaFact icon={Clock3} label="Ajout au Radar" value={formatDate(job.createdAt)} />
+          {job.notificationAt ? <MetaFact icon={Clock3} label="Notification source" value={formatDate(job.notificationAt)} /> : null}
+        </div>
+      </section>
       {!job.publishedAt ? <p className="rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">La source ne donne pas de date de publication confirmée. La date d’import ou de notification ne la remplace pas.</p> : null}
+      <div className="grid gap-3 sm:grid-cols-2"><Signals title="Pourquoi c’est pertinent" items={job.reasons} tone="positive" /><Signals title="Points à vérifier" items={job.flags} tone="caution" /></div>
       <section><div className="mb-3 flex items-center justify-between gap-3"><h3 className="text-sm font-bold">Description, missions et exigences</h3>{!job.deletedAt ? <button onClick={() => setEditing(true)} className="secondary-button"><Pencil size={13} /> Compléter / corriger</button> : null}</div><p className="whitespace-pre-wrap break-words rounded-2xl bg-[#fffaf8] p-4 text-sm leading-7 text-[#535768]">{job.description || "Aucune description fournie. Ajoutez le contenu de l’annonce ou d’une alerte autorisée."}</p>{coverage !== "Description complète fournie" ? <p className="mt-2 text-xs leading-5 text-[#535768]">{coverage} : les informations absentes restent à confirmer.{!job.deletedAt ? " Vous pouvez coller une description complète ici, sans recréer une fiche." : " Restaurez l’offre pour compléter sa description."}</p> : null}</section>
-      <div className="grid gap-4 sm:grid-cols-2"><Signals title="Pourquoi c’est pertinent" items={job.reasons} /><Signals title="Points à vérifier" items={job.flags} /></div>
     </> : null}
-    {view === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); setEditing(false); }} onCancel={() => setEditing(false)} /> : null}
-    {view === "application" ? <><StatusSelect value={job.status} onChange={status => onStatus(job.id, status)} /><div className="rounded-2xl bg-[#fff2eb] p-4"><Field label="Notes privées de candidature"><textarea rows={5} maxLength={2000} value={note} onChange={event => setNote(event.target.value)} placeholder="Vos échanges, vos conditions proposées, les points encore à confirmer…" /></Field><p className="mt-2 text-xs leading-5 text-[#535768]">Ces notes restent distinctes de l’annonce. Une proposition n’est pas un accord du recruteur.</p><button disabled={busy || note === (job.candidateNote ?? "")} onClick={async () => { setBusy(true); try { await onNote(job.id, note); } finally { setBusy(false); } }} className="radar-add-button mt-3 disabled:opacity-40">{busy ? <LoaderCircle size={14} className="animate-spin" /> : <Check size={14} />} Enregistrer la note</button></div><button onClick={() => setView("interviews")} className="secondary-button"><CalendarPlus size={14} /> Planifier un entretien ou faire le bilan</button></> : null}
-    {view === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
-    {view === "brief" ? <PrivateBrief key={job.id} jobId={job.id} /> : null}
+    {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); setEditing(false); }} onCancel={() => setEditing(false)} /> : null}
+    {context === "application" && activeView === "application" ? <><StatusSelect value={job.status} onChange={status => onStatus(job.id, status)} /><div className="rounded-2xl bg-[#fff2eb] p-4"><Field label="Notes privées de candidature"><textarea rows={5} maxLength={2000} value={note} onChange={event => setNote(event.target.value)} placeholder="Vos échanges, vos conditions proposées, les points encore à confirmer…" /></Field><p className="mt-2 text-xs leading-5 text-[#535768]">Ces notes restent distinctes de l’annonce. Une proposition n’est pas un accord du recruteur.</p><button disabled={busy || note === (job.candidateNote ?? "")} onClick={async () => { setBusy(true); try { await onNote(job.id, note); } finally { setBusy(false); } }} className="radar-add-button mt-3 disabled:opacity-40">{busy ? <LoaderCircle size={14} className="animate-spin" /> : <Check size={14} />} Enregistrer la note</button></div><button onClick={() => setView("interviews")} className="secondary-button"><CalendarPlus size={14} /> Planifier un entretien ou faire le bilan</button></> : null}
+    {context === "application" && activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
+    {activeView === "brief" ? <PrivateBrief key={job.id} jobId={job.id} /> : null}
   </div>;
 }
-function PrivateBrief({jobId}:{jobId:string}){
-  const [brief,setBrief]=useState(""),[language,setLanguage]=useState<"fr"|"en">("fr"),[error,setError]=useState(""),[copied,setCopied]=useState(false);
-  const [refresh,setRefresh]=useState(0);
-  useEffect(()=>{let active=true;setBrief("");setError("");setCopied(false);fetch("/api/brief",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jobId,language})}).then(async r=>{const d=await r.json() as {error?:string;brief:string};if(!r.ok)throw new Error(d.error);if(active)setBrief(d.brief);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[jobId,language,refresh]);
-  return <div className="space-y-4"><label className="block text-xs">Langue des réponses<select value={language} onChange={e=>setLanguage(e.target.value as "fr"|"en")}><option value="fr">Français</option><option value="en">Anglais professionnel simple</option></select></label><ApplicationQuestions jobId={jobId} language={language} onSaved={()=>setRefresh(value=>value+1)} /><div className="space-y-3"><h3 className="text-sm font-bold">Brief à utiliser dans ChatGPT</h3><p className="text-xs leading-5 text-[#535768]">Le brief reprend l’annonce, vos questions enregistrées et seulement les faits approuvés et autorisés. Notes privées, entretiens, sources brutes et profil historique sont exclus. Copiez-le dans votre compte ChatGPT si vous souhaitez préparer des réponses ; aucune IA payante n’est appelée par Radar.</p>{error?<p role="alert">{error}</p>:!brief?<p>Préparation du brief…</p>:<><pre className="max-h-[50vh] overflow-auto whitespace-pre-wrap rounded-2xl bg-[#333333] p-4 text-xs leading-6 text-white">{brief}</pre><button onClick={async()=>{try{await navigator.clipboard.writeText(brief);setCopied(true);}catch{setError("Copie impossible : sélectionnez le texte.");}}} className="radar-add-button"><Copy size={14}/>{copied?"Brief copié":"Copier le brief"}</button></>}</div></div>;
+function PrivateBrief({ jobId }: { jobId: string }) {
+  const [brief, setBrief] = useState("");
+  const [language, setLanguage] = useState<"fr" | "en">("fr");
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let active = true;
+    setBrief(""); setError(""); setCopied(false); setLoading(true);
+    fetch("/api/brief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId, language }) })
+      .then(async response => {
+        const data = await response.json() as { error?: string; brief: string };
+        if (!response.ok) throw new Error(data.error ?? "Brief indisponible.");
+        if (active) setBrief(data.brief);
+      })
+      .catch(problem => { if (active) setError(problem instanceof Error ? problem.message : "Brief indisponible."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [jobId, language, refresh]);
+  return <div className="space-y-4">
+    <label className="block text-xs">Langue des réponses<select value={language} onChange={event => setLanguage(event.target.value as "fr" | "en")}><option value="fr">Français</option><option value="en">Anglais professionnel simple</option></select></label>
+    <ApplicationQuestions jobId={jobId} language={language} onSaved={() => setRefresh(value => value + 1)} />
+    <div className="space-y-3">
+      <h3 className="text-sm font-bold">Brief à utiliser dans ChatGPT</h3>
+      <p className="text-xs leading-5 text-[#535768]">Le brief reprend l’annonce, vos questions enregistrées et seulement les faits approuvés et autorisés. Notes privées, entretiens, sources brutes et profil historique sont exclus. Copiez-le dans votre compte ChatGPT si vous souhaitez préparer des réponses ; aucune IA payante n’est appelée par Radar.</p>
+      {loading ? <div role="status" aria-label="Chargement du brief" className="min-h-44 space-y-3 rounded-2xl border border-[#e8dfe5] bg-[#fffaf8] p-5">
+        <span className="sr-only">Chargement du brief en cours</span>
+        <div aria-hidden="true" className="h-4 w-2/3 animate-pulse rounded-full bg-[#e9dce3]" />
+        <div aria-hidden="true" className="h-3 w-full animate-pulse rounded-full bg-[#eee4e9]" />
+        <div aria-hidden="true" className="h-3 w-5/6 animate-pulse rounded-full bg-[#eee4e9]" />
+        <div aria-hidden="true" className="h-3 w-3/4 animate-pulse rounded-full bg-[#eee4e9]" />
+      </div> : null}
+      {error ? <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-800">{error}</p> : null}
+      {!loading && brief ? <>
+        <pre className="max-h-[50vh] overflow-auto whitespace-pre-wrap rounded-2xl bg-[#333333] p-4 text-xs leading-6 text-white">{brief}</pre>
+        <button onClick={async () => { try { await navigator.clipboard.writeText(brief); setCopied(true); } catch { setError("Copie impossible : sélectionnez le texte."); } }} className="radar-add-button"><Copy size={14} />{copied ? "Brief copié" : "Copier le brief"}</button>
+      </> : null}
+      {!loading && !brief && !error ? <p className="text-sm text-[#535768]">Aucun brief disponible pour cette offre.</p> : null}
+    </div>
+  </div>;
 }
 function Info({ label, value }: { label: string; value: string }) { return <div><p className="text-[11px] text-[#535768]">{label}</p><p className="mt-1 text-sm font-semibold leading-5">{value}</p></div>; }
-function Signals({ title, items }: { title: string; items: string[] }) { return <div><h3 className="text-xs font-semibold">{title}</h3><ul className="mt-2 space-y-1 text-xs leading-5 text-[#535768]">{items.length ? items.map(item => <li key={item}>• {item}</li>) : <li>Aucun signal confirmé.</li>}</ul></div>; }
+function KeyFact({ icon: Icon, tone, label, value, unknown = false }: { icon: LucideIcon; tone: "violet" | "coral" | "teal"; label: string; value: string; unknown?: boolean }) {
+  return <div className={`offer-key-fact offer-key-fact--${tone}${unknown ? " is-unknown" : ""}`}><div className="offer-key-fact-heading"><span className="offer-key-fact-icon"><Icon size={17} aria-hidden="true" /></span><span>{label}</span></div><strong>{value}</strong></div>;
+}
+function MetaFact({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+  return <div className="offer-meta-fact"><Icon size={16} aria-hidden="true" /><div><span>{label}</span><strong>{value}</strong></div></div>;
+}
+function Signals({ title, items, tone }: { title: string; items: string[]; tone: "positive" | "caution" }) {
+  const Icon = tone === "positive" ? CheckCircle2 : CircleHelp;
+  return <section className={`offer-signal offer-signal--${tone}`}><h3><Icon size={17} aria-hidden="true" />{title}</h3><ul>{items.length ? items.map(item => <li key={item}>{item}</li>) : <li>Aucun signal confirmé à ce stade.</li>}</ul></section>;
+}
 
 function OfferEditor({ job, onSaved, onCancel }: { job: JobRecord; onSaved: (job: JobRecord) => void; onCancel: () => void }) {
   const [description, setDescription] = useState(job.description ?? ""); const [publishedAt, setPublishedAt] = useState(job.publishedAt?.slice(0, 10) ?? "");

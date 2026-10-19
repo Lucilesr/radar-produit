@@ -239,7 +239,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input[type='checkb
   .experience-group{border-radius:12px;background:transparent;overflow:visible}
   .experience-group>summary{padding:12px}.experience-group-body{padding:8px 0}
   .experience-detail{padding:14px 10px;margin:12px -2px;border-radius:0;background:#fff}
-  .experience-detail>div:first-child{display:block}.experience-detail>div:first-child>input{float:right;margin:4px 0 8px 12px}
   .experience-company-context{padding:12px 10px;border-radius:0}.experience-group-body>.experience-actions,.experience-group-body>.experience-help,.experience-metadata>summary{margin-left:10px;margin-right:10px}
   .experience-edit-form{padding:12px 0!important;background:transparent!important;display:block!important}
   .experience-edit-form>label,.experience-edit-form>fieldset,.experience-edit-form>div,.experience-edit-form>p{margin:18px 0}
@@ -251,3 +250,67 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input[type='checkb
   .selection-dock{left:8px;right:8px;bottom:8px;transform:none;width:auto;max-height:38vh;padding:12px}
   .selection-dock .experience-actions{display:flex;flex-wrap:wrap;margin:8px 0}.selection-dock .experience-actions button{width:auto;flex:1;font-size:12px}
 }
+
+/* Offer detail: source and decision signals lead, raw description follows. */
+.offer-source-badge{display:inline-flex;max-width:100%;flex-wrap:wrap;align-items:center;gap:7px;padding:6px 10px;border:1px solid #e3d9e6;border-radius:999px;background:linear-gradient(120deg,#f7f1ff,#fff5f0);color:#51485d;font-size:11px;font-weight:650;line-height:1.35}
+.offer-source-badge .source-logo{height:17px;max-width:63px}
+.offer-source-separator{width:3px;height:3px;border-radius:50%;background:#a899ad}
+.offer-link-missing{align-self:center;border:1px solid #e9d9b6;border-radius:999px;background:#fff8e8;padding:7px 10px;color:#835918;font-size:11px}
+.offer-facts{display:grid;gap:10px}
+.offer-facts-primary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.offer-key-fact{position:relative;display:flex;min-width:0;min-height:116px;flex-direction:column;justify-content:space-between;gap:14px;overflow:hidden;border:1px solid var(--offer-border);border-radius:17px;background:var(--offer-bg);padding:15px 16px;box-shadow:0 5px 15px #382b4508}
+.offer-key-fact:before{position:absolute;inset:0 auto 0 0;width:3px;background:var(--offer-accent);content:""}
+.offer-key-fact--violet{--offer-border:#dcd4f2;--offer-bg:linear-gradient(135deg,#f1eeff,#fbf9ff);--offer-accent:#7866c8}
+.offer-key-fact--coral{--offer-border:#f1d4c6;--offer-bg:linear-gradient(135deg,#fff0e8,#fffaf5);--offer-accent:#cf7960}
+.offer-key-fact--teal{--offer-border:#cce5db;--offer-bg:linear-gradient(135deg,#e9f8f1,#f7fcf9);--offer-accent:#3c937b}
+.offer-key-fact.is-unknown{--offer-border:#e4e1e6;--offer-bg:#f8f7f8;--offer-accent:#a49ba8}
+.offer-key-fact-heading{display:flex;align-items:center;gap:7px;color:#625a69;font-size:11px;font-weight:650}
+.offer-key-fact-icon{display:grid;width:27px;height:27px;flex:0 0 auto;place-items:center;border-radius:8px;background:#ffffffae;color:var(--offer-accent)}
+.offer-key-fact strong{color:#292733;font-size:clamp(15px,1.6vw,19px);font-weight:700;letter-spacing:-.025em;line-height:1.3;overflow-wrap:anywhere}
+.offer-facts-secondary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;border:1px solid #e4dfe8;border-radius:17px;background:#fff;padding:4px 16px}
+.offer-meta-fact{display:flex;min-width:0;align-items:flex-start;gap:10px;border-bottom:1px solid #f0edf2;padding:13px 0}
+.offer-meta-fact:nth-last-child(-n+2){border-bottom:0}
+.offer-meta-fact>svg{flex:0 0 auto;margin-top:2px;color:#8a79a2}
+.offer-meta-fact>div{display:grid;gap:3px;min-width:0}
+.offer-meta-fact span{color:#716a79;font-size:11px}
+.offer-meta-fact strong{color:#36313f;font-size:12px;font-weight:600;line-height:1.5;overflow-wrap:anywhere}
+.offer-signal{min-width:0;border:1px solid var(--signal-border);border-radius:17px;background:var(--signal-bg);padding:16px 18px}
+.offer-signal--positive{--signal-border:#dcd4f2;--signal-bg:linear-gradient(140deg,#f4f0ff,#fff)}
+.offer-signal--caution{--signal-border:#f0debe;--signal-bg:linear-gradient(140deg,#fff7e8,#fff)}
+.offer-signal h3{display:flex;align-items:center;gap:8px;color:#312b3b;font-size:13px;font-weight:700}
+.offer-signal--positive h3 svg{color:#705cc2}.offer-signal--caution h3 svg{color:#ab762e}
+.offer-signal ul{display:grid;gap:8px;margin-top:11px;color:#514a59;font-size:12px;line-height:1.55}
+.offer-signal li{position:relative;padding-left:13px;overflow-wrap:anywhere}.offer-signal li:before{position:absolute;top:.61em;left:0;width:5px;height:5px;border-radius:50%;background:#8e76c9;content:""}.offer-signal--caution li:before{background:#d69d54}
+@media(max-width:640px){.offer-facts-primary,.offer-facts-secondary{grid-template-columns:1fr}.offer-key-fact{min-height:90px}.offer-meta-fact:nth-last-child(-n+2){border-bottom:1px solid #f0edf2}.offer-meta-fact:last-child{border-bottom:0}.offer-source-badge{border-radius:12px}}
+
+/* A new accomplishment belongs to its experience, never to a detached list. */
+.experience-details-heading{display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+.experience-details-heading .secondary-button{margin-left:auto;font-size:12px}
+.experience-inline-example{display:grid;gap:12px;margin:12px 0 18px;padding:18px;border:1px solid #dcd4f2;border-radius:16px;background:linear-gradient(135deg,#f5f1ff,#fff9f4)}
+.experience-inline-example>div:first-child strong{font-size:14px;color:#332b46}
+.experience-inline-example>div:first-child p{margin-top:3px;color:#665d70;font-size:12px}
+.experience-inline-example>label{display:grid;gap:5px;color:#484052;font-size:12px;font-weight:650}
+.experience-inline-example-actions{display:flex;flex-wrap:wrap;gap:9px}
+@media(max-width:640px){.experience-details-heading .secondary-button{margin-left:0}.experience-inline-example{margin:12px 0;padding:14px}.experience-inline-example input,.experience-inline-example textarea{font-size:16px!important}}
+
+/* Trash confirmation: one dominant reason, then an optional secondary note. */
+.trash-dialog-content{display:grid;gap:22px}
+.trash-dialog-fields{display:grid;gap:20px}
+.trash-dialog-note{display:grid;gap:7px;color:#746e7c;font-size:11px;font-weight:500}
+.trash-dialog-note>span{display:flex;align-items:baseline;gap:4px}
+.trash-dialog-note em{font-style:normal;color:#918a99;font-weight:400}
+.trash-dialog-note textarea{min-height:84px}
+.trash-dialog-help{color:#625b6b;font-size:12px;line-height:1.6}
+.trash-dialog-actions{display:flex;flex-wrap:wrap;gap:10px;padding-top:2px}
+
+/* Keep example titles and review status visible while their content is folded. */
+.experience-example-summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:start;gap:12px;cursor:pointer;list-style:none}
+.experience-example-summary::-webkit-details-marker{display:none}
+.experience-example-title{font-size:.875rem;font-weight:600;line-height:1.6;overflow-wrap:anywhere}
+.experience-example-summary>.experience-status{margin:0;order:0;max-width:180px}
+.experience-example-summary>svg{margin-top:2px;transition:transform .15s}
+.experience-detail[open]>.experience-example-summary>svg{transform:rotate(180deg)}
+.experience-example-summary:focus-visible{outline:3px solid #8e79da;outline-offset:5px;border-radius:4px}
+.experience-example-body{padding-top:16px}
+.experience-example-selection{display:flex;align-items:center;gap:8px;font-size:.75rem;color:#625969}
+@media(max-width:640px){.experience-example-summary{gap:8px}.experience-example-summary>.experience-status{max-width:110px}}

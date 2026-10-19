@@ -5,7 +5,7 @@ import ts from "typescript";
 
 const source = readFileSync(new URL("../lib/opportunity-views.ts", import.meta.url), "utf8");
 const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
-const { inOpportunityView } = await import("data:text/javascript;base64," + Buffer.from(code).toString("base64"));
+const { inOpportunityView, workspaceSections } = await import("data:text/javascript;base64," + Buffer.from(code).toString("base64"));
 const job = { id: "a", status: "new", matchScore: 80, matchTier: "match" };
 
 test("vues distinctes : score, choix et candidature ne se substituent pas", () => {
@@ -25,4 +25,9 @@ test("vues distinctes : score, choix et candidature ne se substituent pas", () =
   assert(!inOpportunityView({ ...job, status: "applied" }, "to_review"));
   assert(inOpportunityView({ ...job, deletedAt: "2026-10-19" }, "trash"));
   assert(!inOpportunityView({ ...job, deletedAt: "2026-10-19" }, "all"));
+});
+
+test("la fiche Opportunités prépare l’offre ; le suivi détaillé reste dans Candidatures", () => {
+  assert.deepEqual([...workspaceSections("opportunity")], ["offer", "brief"]);
+  assert.deepEqual([...workspaceSections("application")], ["offer", "application", "interviews", "brief"]);
 });

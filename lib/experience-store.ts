@@ -7,7 +7,7 @@ const fields = z.object({ title: text(180).min(1), organization: text(200), role
 const permissions = z.object({ applicationAllowed: z.boolean(), publicProfileAllowed: z.boolean() }).strict();
 const selection = z.array(z.object({ id: text(250).min(1), version: z.number().int().positive() }).strict()).min(1).max(100);
 const command = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("create"), id: z.string().uuid(), kind: z.enum(["experience", "fact"]), parentId: text(250).nullable(), data: fields }).strict(),
+  z.object({ action: z.literal("create"), id: z.string().uuid(), kind: z.enum(["experience", "fact"]), parentId: text(250).nullable(), data: fields, requestId:z.string().uuid().optional() }).strict(),
   z.object({ action: z.literal("edit"), id: text(250), version: z.number().int().positive(), data: fields, permissions, validate:z.literal(true).optional(), requestId:z.string().uuid().optional(), parentId:text(250).nullable().optional() }).strict(),
   z.object({ action: z.literal("review"), selection, validation: z.enum(["approved", "rejected"]), confirmed: z.literal(true), requestId:z.string().uuid().optional(), reason:z.enum(["hidden","duplicate"]).optional(), duplicateOf:text(250).optional() }).strict(),
   z.object({ action: z.literal("restore"), selection, requestId:z.string().uuid().optional() }).strict(),
@@ -80,7 +80,7 @@ export async function mutateLibrary(userId:string,input:unknown) {
     if(c.kind==="experience"&&c.parentId)throw new Error("Une expérience ne peut avoir de parent.");
     if(c.parentId&&requireItem(c.parentId).kind!=="experience")throw new Error("Expérience parente invalide.");
     const item=proposed(c.id,c.kind,c.parentId,{...c.data,provenance:[{type:"manual",name:"Saisie personnelle",quote:c.data.context}]});
-    await db().batch([insert(userId,item,"manual:"+c.id),revision(userId,item,"manual_create")]);
+    await db().batch([insert(userId,item,"manual:"+c.id),revision(userId,item,receipt||"manual_create")]);
   }else if(c.action==="edit"){
     const item=requireItem(c.id,c.version); const updated=revisedItem(item,c.data,c.permissions);
     if(c.parentId!==undefined&&c.parentId!==item.parentId){

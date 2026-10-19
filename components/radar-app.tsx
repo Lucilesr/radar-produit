@@ -39,7 +39,7 @@ import { ProfileDocuments } from "@/components/profile-documents";
 import { SourceLogo } from "@/components/source-logo";
 import { ChoiceSelect } from "@/components/choice-select";
 import type { DocumentLinks } from "@/lib/document-input";
-import { OfferWorkspace, StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
+import { OfferSourceBadge, OfferWorkspace, StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
 import { sourceNames } from "@/lib/source-catalog";
 import { summarizeOfferDescription } from "@/lib/offer-summary";
 import { SourcePanel } from "@/components/source-panel";
@@ -108,7 +108,11 @@ export function RadarApp({ userName }: { userName: string }) {
       if (jobResult.status === "fulfilled" && jobResult.value.ok) {
         const loaded = ((await jobResult.value.json()) as { jobs: JobRecord[] }).jobs; setJobs(loaded);
         const query = new URLSearchParams(window.location.search); const target = loaded.find(job => job.id === query.get("offer") && (!job.deletedAt || hasApplication(job)));
-        if (target) { setSelectedJob(target); setWorkspaceView(query.get("view") === "interviews" ? "interviews" : "offer"); }
+        if (target) {
+          const interviewLink = query.get("view") === "interviews" && hasApplication(target);
+          setSelectedJob(target); setWorkspaceView(interviewLink ? "interviews" : "offer");
+          if (interviewLink) setTab("pipeline");
+        }
       }
       if (profileResult.status === "fulfilled" && profileResult.value.ok) {
         const result = (await profileResult.value.json()) as { profile: CandidateProfile | null };
@@ -139,7 +143,7 @@ export function RadarApp({ userName }: { userName: string }) {
       return true;
     } catch { setToast("La mise à jour n’a pas été enregistrée. Vos données restent inchangées."); return false; }
   }
-  async function changeStatus(id: string, status: JobStatus) { await updateJob(id, { status }); }
+  async function changeStatus(id: string, status: JobStatus) { return updateJob(id, { status }); }
   function requestDelete(job: JobRecord) { requestDeleteMany([job]); }
   function requestDeleteMany(selection: JobRecord[]) { if (trashLock.current || refreshing) return; setTrashError(null); setDeleteReason(""); setDeleteNote(""); setSelectedJob(null); setDeleteTarget(selection); }
   async function changeTrash(selection: JobRecord[], deleted: boolean, reason?: DismissalReason, note?: string) {
@@ -224,8 +228,8 @@ export function RadarApp({ userName }: { userName: string }) {
       </section>
     </div>
     {jobDialogOpen ? <JobDialog onClose={() => setJobDialogOpen(false)} onCreated={onJobCreated} /> : null}
-    {selectedJob ? <Modal title={selectedJob.title} description={`${selectedJob.company} · ${selectedJob.source}`} onClose={() => setSelectedJob(null)}><OfferWorkspace job={selectedJob} profile={profile} initialView={workspaceView} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onChange={updated => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setSelectedJob(updated); setToast("Dossier enregistré."); }} /><div className="mt-6 border-t pt-4">{selectedJob.deletedAt ? <button className="secondary-button" onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={16} /> Restaurer cette offre</button> : <button className="secondary-button text-red-800" onClick={() => requestDelete(selectedJob)}><Trash2 size={16} /> Mettre cette offre à la corbeille</button>}</div></Modal> : null}
-    {deleteTarget.length ? <Modal title={`Mettre ${deleteTarget.length === 1 ? "cette offre" : `ces ${deleteTarget.length} offres`} à la corbeille ?`} description="Choisissez une raison commune à toute la sélection." onClose={() => setDeleteTarget([])}><ul className="max-h-48 space-y-2 overflow-y-auto rounded-xl bg-[#f5f6f8] p-4 text-sm">{deleteTarget.map(job => <li key={job.id}><strong>{job.title}</strong> · {job.company}</li>)}</ul><div className="mt-4"><ChoiceSelect label="Pourquoi ?" value={deleteReason} onChange={value => setDeleteReason(value as DismissalReason | "")} options={[{ value: "", label: "Choisir un motif" }, ...Object.entries(dismissalLabels).map(([value, label]) => ({ value, label }))]} /></div><Field label="Précision facultative"><textarea rows={2} maxLength={500} value={deleteNote} onChange={event => setDeleteNote(event.target.value)} placeholder="Une courte précision, si utile" /></Field><p className="mt-3 text-sm leading-6">L’offre reste restaurable. Si une candidature est déjà engagée, elle et ses rappels restent visibles dans Candidatures.</p><div className="mt-6 flex flex-wrap gap-3"><button className="secondary-button" onClick={() => setDeleteTarget([])}>Annuler</button><button disabled={!deleteReason || !!trashBusy || refreshing} className="secondary-button text-red-800 disabled:opacity-50" onClick={() => void changeTrash(deleteTarget, true, deleteReason as DismissalReason, deleteNote)}><Trash2 size={16} />Mettre à la corbeille{deleteTarget.length > 1 ? ` (${deleteTarget.length})` : ""}</button></div></Modal> : null}
+    {selectedJob ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} meta={<OfferSourceBadge job={selectedJob} />} onClose={() => setSelectedJob(null)}><OfferWorkspace job={selectedJob} profile={profile} initialView={workspaceView} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => { setSelectedJob(null); selectTab("pipeline"); }} onChange={updated => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setSelectedJob(updated); setToast("Dossier enregistré."); }} /><div className="mt-6 border-t pt-4">{selectedJob.deletedAt ? <button className="secondary-button" onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={16} /> Restaurer</button> : <button className="secondary-button text-red-800" onClick={() => requestDelete(selectedJob)}><Trash2 size={16} /> Corbeille</button>}</div></Modal> : null}
+    {deleteTarget.length ? <Modal title={`Mettre ${deleteTarget.length === 1 ? "cette offre" : `ces ${deleteTarget.length} offres`} à la corbeille ?`} description="Choisissez une raison commune à toute la sélection." onClose={() => setDeleteTarget([])}><div className="trash-dialog-content"><ul className="max-h-48 space-y-2 overflow-y-auto rounded-xl bg-[#f5f6f8] p-4 text-sm">{deleteTarget.map(job => <li key={job.id}><strong>{job.title}</strong> · {job.company}</li>)}</ul><div className="trash-dialog-fields"><ChoiceSelect label="Pourquoi ?" value={deleteReason} onChange={value => setDeleteReason(value as DismissalReason | "")} options={[{ value: "", label: "Choisir un motif" }, ...Object.entries(dismissalLabels).map(([value, label]) => ({ value, label }))]} /><label className="trash-dialog-note"><span>Précision <em>facultative</em></span><textarea rows={2} maxLength={500} value={deleteNote} onChange={event => setDeleteNote(event.target.value)} placeholder="Une courte précision, si utile" /></label></div><p className="trash-dialog-help">L’offre reste restaurable. Si une candidature est déjà engagée, elle et ses rappels restent visibles dans Candidatures.</p><div className="trash-dialog-actions"><button className="secondary-button" onClick={() => setDeleteTarget([])}>Annuler</button><button disabled={!deleteReason || !!trashBusy || refreshing} className="secondary-button text-red-800 disabled:opacity-50" onClick={() => void changeTrash(deleteTarget, true, deleteReason as DismissalReason, deleteNote)}><Trash2 size={16} /> Corbeille{deleteTarget.length > 1 ? ` (${deleteTarget.length})` : ""}</button></div></div></Modal> : null}
     {toast ? <Toast message={toast} onClose={() => setToast(null)} /> : null}
   </main>;
 }
@@ -490,8 +494,10 @@ function EmptyJobs() { return <div className="mt-6 rounded-2xl border border-das
 function SignalList({ title, items, good = false }: { title: string; items: string[]; good?: boolean }) { return <div><p className="mb-1.5 text-[11px] font-bold uppercase tracking-[.11em] text-[#968998]">{title}</p>{items.length ? <ul className="space-y-1">{items.map((item) => <li key={item} className={`flex gap-2 text-xs leading-5 ${good ? "text-[#68567a]" : "text-[#786640]"}`}><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-current" />{item}</li>)}</ul> : <p className="text-xs text-[#968998]">Aucun signal à ce stade.</p>}</div>; }
 function Stat({ label, value, note, icon: Icon, tone }: { label: string; value: number; note: string; icon: typeof Search; tone: "teal" | "orange" | "amber" | "ink" }) { return <div className={`stat-card stat-${tone}`}><div className="flex items-start justify-between gap-2"><div><p className="stat-card-label">{label}</p><p className="stat-card-value">{value}</p></div><span className="stat-card-icon"><Icon size={17} /></span></div><p className="stat-card-note">{note}</p><span className="stat-orb" aria-hidden="true" /></div>; }
 function TierBadge({ tier }: { tier: MatchTier }) { const copy = tierCopy[tier]; return <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[.07em] ring-1 ring-inset ${copy.className}`}>{copy.label}</span>; }
-function Modal({ title, description, onClose, children }: { title: string; description: string; onClose: () => void; children: React.ReactNode }) {
+function Modal({ title, description, meta, onClose, children }: { title: string; description: string; meta?: React.ReactNode; onClose: () => void; children: React.ReactNode }) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
   const titleId = useId(); const descriptionId = useId();
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null;
@@ -499,7 +505,7 @@ function Modal({ title, description, onClose, children }: { title: string; descr
     document.body.style.overflow = "hidden";
     dialogRef.current?.focus();
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") { event.preventDefault(); onClose(); }
+      if (event.key === "Escape") { event.preventDefault(); onCloseRef.current(); }
       if (event.key !== "Tab") return;
       const elements = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]') ?? []);
       const first = elements[0]; const last = elements.at(-1);
@@ -509,8 +515,8 @@ function Modal({ title, description, onClose, children }: { title: string; descr
     }
     document.addEventListener("keydown", onKeyDown);
     return () => { document.removeEventListener("keydown", onKeyDown); document.body.style.overflow = previousOverflow; previousFocus?.focus(); };
-  }, [onClose]);
-  return <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/35 p-0 backdrop-blur-md sm:items-center sm:p-6"><div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-[28px] border border-white bg-[#ffffff]/95 p-5 shadow-2xl outline-none sm:rounded-[28px] sm:p-7"><div className="mb-6 flex items-start justify-between gap-4"><div><h2 id={titleId} className="text-xl font-semibold text-[#333333]">{title}</h2><p id={descriptionId} className="mt-1 max-w-xl text-sm leading-6 text-[#535768]">{description}</p></div><button onClick={onClose} className="rounded-xl p-2 text-[#535768] hover:bg-[#f5f6f8]" aria-label="Fermer"><X size={20} /></button></div>{children}</div></div>;
+  }, []);
+  return <div data-testid="modal-backdrop" onClick={event => { if (event.target === event.currentTarget) onClose(); }} className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/35 p-0 backdrop-blur-md sm:items-center sm:p-6"><div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-[28px] border border-white bg-[#ffffff]/95 p-5 shadow-2xl outline-none sm:rounded-[28px] sm:p-7"><div className="mb-5 flex items-start justify-between gap-4 border-b border-[#eee7ec] pb-4"><div className="min-w-0"><h2 id={titleId} className="text-xl font-semibold leading-snug text-[#333333]">{title}</h2><p id={descriptionId} className="mt-1 max-w-xl text-sm leading-6 text-[#535768]">{description}</p>{meta ? <div className="mt-2">{meta}</div> : null}</div><button onClick={onClose} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-[#535768] hover:bg-[#f5f6f8]" aria-label="Fermer"><X size={20} /></button></div>{children}</div></div>;
 }
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="block"><span className="mb-1.5 block text-xs font-bold text-[#535768]">{label}</span>{children}</label>; }
 function Toast({ message, onClose }: { message: string; onClose: () => void }) { useEffect(() => { const timeout = window.setTimeout(onClose, 4300); return () => window.clearTimeout(timeout); }, [onClose]); return <div className="fixed bottom-5 left-1/2 z-[60] flex w-[min(470px,calc(100%-32px))] -translate-x-1/2 items-center justify-between gap-4 rounded-2xl bg-[#333333] px-4 py-3 text-sm text-white shadow-xl"><span>{message}</span><button onClick={onClose} className="text-white/70 hover:text-white"><X size={16} /></button></div>; }

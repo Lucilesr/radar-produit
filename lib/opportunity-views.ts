@@ -6,6 +6,12 @@ export function hasApplication(job: JobRecord) {
   return appliedStatuses.has(job.status) || !!job.interviews?.length;
 }
 
+export function workspaceSections(context: "opportunity" | "application") {
+  return context === "opportunity"
+    ? ["offer", "brief"] as const
+    : ["offer", "application", "interviews", "brief"] as const;
+}
+
 export function reviewState(job: JobRecord): "to_review" | "selected" | "none" {
   if (job.reviewState) return job.reviewState;
   if (["shortlist", "prepare", "ready"].includes(job.status)) return "selected";
