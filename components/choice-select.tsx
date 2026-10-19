@@ -22,6 +22,9 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
   const selected = options.find(option => option.value === value)?.label ?? "Choisir";
   const groups = [...new Set(options.map(option => option.group ?? ""))];
   function choose(next: T) { onChange(next); setOpen(false); }
+  function desktopOptions(group: string) {
+    return options.filter(option => (option.group ?? "") === group).map(option => <SelectItem key={option.value} value={option.value} className="min-h-10 rounded-lg px-3 py-2 text-sm text-[#333333] focus:bg-[#e7ecff] focus:text-[#4b4bd1]">{option.label}</SelectItem>);
+  }
 
   return <div className="min-w-0">
     <p id={labelId} className="mb-1.5 text-xs font-semibold text-[#535768]">{label}</p>
@@ -31,10 +34,10 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
           <SelectValue id={desktopValueId} placeholder="Choisir" />
         </SelectTrigger>
         <SelectContent position="popper" side="bottom" sideOffset={6} align="end" className="z-[80] max-h-[min(44vh,320px)] min-w-[var(--radix-select-trigger-width)] rounded-2xl border-[#d0d4e4] bg-[#ffffff] p-1 shadow-xl">
-          {groups.map(group => <SelectGroup key={group || "all"}>
-            {group ? <SelectLabel className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#686b7b]">{group}</SelectLabel> : null}
-            {options.filter(option => (option.group ?? "") === group).map(option => <SelectItem key={option.value} value={option.value} className="min-h-10 rounded-lg px-3 py-2 text-sm text-[#333333] focus:bg-[#e7ecff] focus:text-[#4b4bd1]">{option.label}</SelectItem>)}
-          </SelectGroup>)}
+          {groups.map(group => group ? <SelectGroup key={group}>
+            <SelectLabel className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#686b7b]">{group}</SelectLabel>
+            {desktopOptions(group)}
+          </SelectGroup> : desktopOptions(""))}
         </SelectContent>
       </Select>
     </div>
