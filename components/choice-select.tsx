@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import {
-  Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle,
+  Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger,
 } from "@/components/ui/drawer";
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
@@ -39,10 +39,10 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
       </Select>
     </div>
     <div className="sm:hidden">
-      <Drawer open={open} onOpenChange={setOpen}>
-        <button type="button" disabled={disabled} aria-labelledby={`${labelId} ${mobileValueId}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)} className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-[#d0d4e4] bg-white px-3 text-left text-sm font-medium text-[#333333] shadow-sm disabled:opacity-50">
+      <Drawer open={open} onOpenChange={setOpen} autoFocus>
+        <DrawerTrigger asChild><button type="button" disabled={disabled} aria-labelledby={`${labelId} ${mobileValueId}`} className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-[#d0d4e4] bg-white px-3 text-left text-sm font-medium text-[#333333] shadow-sm disabled:opacity-50">
           <span id={mobileValueId} className="min-w-0 truncate">{selected}</span><ChevronDown size={17} className="shrink-0 text-[#535768]" />
-        </button>
+        </button></DrawerTrigger>
         <DrawerContent className="z-[80] rounded-t-[26px] border-[#d0d4e4] bg-[#ffffff] shadow-2xl">
           <DrawerHeader className="border-b border-[#d0d4e4] px-5 pb-3 text-left">
             <DrawerTitle className="text-left text-base text-[#333333]">{label}</DrawerTitle>
