@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { Check, ChevronDown, FileClock, LoaderCircle, Undo2 } from "lucide-react";
+import { Check, ChevronDown, FileClock, LoaderCircle, Plus, Undo2 } from "lucide-react";
 import { structuredReview, nextReviewTarget, contextPassages, replaceContextPassage, replaceDocumentedField, reviewIssues, currentItems, detailHeading, emptyData, experienceHeading, isContextOnly, isSensitiveDetail, itemStatus, sectionType, type ExperienceItem, type ItemData, type ExperienceConflict, type ReviewIssue } from "@/lib/experience-domain";
 import { extractDocument } from "@/lib/extract-document";
 
@@ -31,7 +31,7 @@ export function ExperienceLibrary({ documentId }: { documentId?: string }) {
   const [state, setState] = useState<Library>({ items: [], conflicts: [], extractions: [] });
   const [docs, setDocs] = useState<Document[]>([]), [loading, setLoading] = useState(true), [busy, setBusy] = useState(false);
   const [error, setError] = useState(""), [notice, setNotice] = useState(""), [selected, setSelected] = useState<string[]>([]);
-  const [filter, setFilter] = useState("active"), [search, setSearch] = useState(""), [adding, setAdding] = useState(false);
+  const [filter, setFilter] = useState("active"), [search, setSearch] = useState(""), [adding, setAdding] = useState(false), [addingTo, setAddingTo] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<"approved" | "rejected" | null>(null), [reason, setReason] = useState("hidden"), [duplicateOf, setDuplicateOf] = useState("");
   const [usage, setUsage] = useState({ applicationAllowed: false, publicProfileAllowed: false });
   const [consentPrompt,setConsentPrompt]=useState<{id:string;version:number;title:string}[]>([]);
@@ -86,7 +86,7 @@ export function ExperienceLibrary({ documentId }: { documentId?: string }) {
       if (found.length) { setError("Validation non effectuée : corrigez les passages indiqués ci-dessous. Les limites réelles doivent rester documentées."); return false; }
     }
     locked.current = true; setBusy(true); setError(""); setNotice("");
-    const retryable = ["edit", "review", "restore", "usage", "applicationConsent"].includes(String(body.action));
+    const retryable = ["create", "edit", "review", "restore", "usage", "applicationConsent"].includes(String(body.action));
     const key = JSON.stringify(body);
     if (retryable && pending.current?.key !== key) pending.current = { key, requestId: crypto.randomUUID() };
     const payload = retryable ? { ...body, requestId: pending.current!.requestId } : body;
@@ -110,7 +110,7 @@ export function ExperienceLibrary({ documentId }: { documentId?: string }) {
         setFilter("active");setSearch("");setNavigation({id:nextReviewTarget(next.items,order,done),nonce:Date.now()});
       }
       if(body.action === "restore") setFilter("proposed");
-      setNotice(body.action === "applicationConsent" ? body.allowed ? "Autorisation enregistrée. Vous pouvez la retirer à tout moment." : "Choix enregistré. Ces blocs ne seront pas utilisés pour les candidatures." : body.action === "edit" ? "Bloc enregistré et validé. Si son sens a changé, ses autorisations précédentes ont été retirées." : body.action === "restore" ? "Bloc restauré dans « À relire », sans autorisation d’usage automatique." : body.validation === "rejected" ? "Bloc masqué. Retrouvez-le dans « Masqués et doublons » pour le restaurer." : body.validation==="approved" ? "Contenu validé. Son autorisation peut être gérée ci-dessus." : "Modification enregistrée.");
+      setNotice(body.action === "create" && body.kind === "fact" ? "Exemple ajouté sous l’expérience, privé et à relire avant réutilisation." : body.action === "applicationConsent" ? body.allowed ? "Autorisation enregistrée. Vous pouvez la retirer à tout moment." : "Choix enregistré. Ces blocs ne seront pas utilisés pour les candidatures." : body.action === "edit" ? "Bloc enregistré et validé. Si son sens a changé, ses autorisations précédentes ont été retirées." : body.action === "restore" ? "Bloc restauré dans « À relire », sans autorisation d’usage automatique." : body.validation === "rejected" ? "Bloc masqué. Retrouvez-le dans « Masqués et doublons » pour le restaurer." : body.validation==="approved" ? "Contenu validé. Son autorisation peut être gérée ci-dessus." : "Modification enregistrée.");
       return true;
     } catch (e) {
       if (e instanceof RequestError) setIssues(e.issues);
@@ -188,7 +188,8 @@ export function ExperienceLibrary({ documentId }: { documentId?: string }) {
           </>}
         </div>
         <details className="experience-metadata"><summary>Modifier l’entreprise, le poste, les dates ou le contexte · historique</summary><DetailCard item={g} onEditing={editingChanged} focusTarget={focusTarget} metadata experiences={groups} selected={selected.includes(g.id)} busy={busy || loading} onSelect={() => toggle([g.id])} onSave={act} />{context.map(c=><DetailCard key={c.id} item={c} onEditing={editingChanged} focusTarget={focusTarget} metadata experiences={groups} selected={selected.includes(c.id)} busy={busy || loading} onSelect={()=>toggle([c.id])} onSave={act}/>)}</details>
-        <div className="experience-details-heading"><h3>{sectionType(g) === "knowledge" ? "Détails documentés" : "Missions et réalisations"}</h3><span>{details.length} bloc{details.length > 1 ? "s" : ""}</span></div>
+        <div className="experience-details-heading"><h3>{sectionType(g) === "knowledge" ? "Détails documentés" : "Missions et réalisations"}</h3><span>{details.length} bloc{details.length > 1 ? "s" : ""}</span>{!hidden && sectionType(g) === "experience" ? <button type="button" className="secondary-button" disabled={busy || loading} onClick={() => setAddingTo(addingTo === g.id ? null : g.id)}><Plus size={15} /> {addingTo === g.id ? "Annuler" : "Ajouter un exemple"}</button> : null}</div>
+        {addingTo === g.id ? <InlineExampleForm key={g.id} parentId={g.id} busy={busy} onCancel={() => setAddingTo(null)} onSave={async body => { if (await act(body)) { setAddingTo(null); setFilter("active"); setSearch(""); } }} /> : null}
         {details.map(card)}
         {details.some(isSensitiveDetail) ? <p className="experience-help">Les questions sont séparées du récit. Répondez-y ou choisissez « Ne pas utiliser » avant de valider toute l’expérience.</p> : null}
         {!details.length ? <p className="text-sm text-[#535768]">Aucun détail documenté pour le moment. Vous pouvez compléter cette expérience.</p> : null}
@@ -198,7 +199,7 @@ export function ExperienceLibrary({ documentId }: { documentId?: string }) {
   }
 
   return <section className="experience-library glass-panel mt-6 p-5 sm:p-7" aria-labelledby="experience-title" aria-busy={busy || loading}>
-    <div className="flex flex-wrap justify-between gap-4"><div><p className="experience-eyebrow">Votre parcours, une seule référence</p><h2 id="experience-title" className="text-lg font-bold">Mon carnet d’expériences</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-[#535768]">Relisez vos missions, complétez ce que vous avez fait, puis choisissez ce qui peut servir à vos candidatures. Rien n’est publié automatiquement.</p></div><button className="secondary-button" disabled={busy || loading} onClick={() => setAdding(!adding)}>{adding ? "Fermer l’ajout" : "Ajouter une expérience ou une réalisation"}</button></div>
+    <div className="flex flex-wrap justify-between gap-4"><div><p className="experience-eyebrow">Votre parcours, une seule référence</p><h2 id="experience-title" className="text-lg font-bold">Mon carnet d’expériences</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-[#535768]">Relisez vos missions, complétez ce que vous avez fait, puis choisissez ce qui peut servir à vos candidatures. Rien n’est publié automatiquement.</p></div><button className="secondary-button" disabled={busy || loading} onClick={() => setAdding(!adding)}>{adding ? "Annuler" : "Ajouter au parcours"}</button></div>
     <div className="experience-reference"><FileClock size={20} /><div><strong>{state.reference ? "Document détaillé de référence" : "Document détaillé à rattacher dans Documents privés"}</strong><p>{state.reference?.name || "Les CV peuvent être consultés, mais ne remplacent pas votre document détaillé."}</p><small>Importer une nouvelle version dans « Expériences détaillées » la rend automatiquement courante. Les versions précédentes restent dans l’historique.</small>{state.extractions.find(e=>e.documentId===state.reference?.documentId)?.status==="needs_conversion"?<p role="alert" className="experience-error">{state.extractions.find(e=>e.documentId===state.reference?.documentId)?.issue || "Ce document nécessite une conversion en texte lisible."} Les versions précédentes restent dans l’historique.</p>:null}</div></div>
     <div className="experience-counts my-4 flex flex-wrap gap-2 text-xs"><span className="quiet-tag">{groups.filter(g => g.validation !== "rejected" && sectionType(g) === "experience").length} expériences</span><span className="quiet-tag">{[...groups.filter(g=>g.validation!=="rejected").flatMap(family),...ungrouped].filter(i=>i.validation==="proposed").length} éléments à relire</span>{hiddenCount ? <button className="quiet-tag underline" onClick={() => { setFilter("rejected"); setSelected([]); setConfirm(null); }}>{hiddenCount} bloc{hiddenCount > 1 ? "s" : ""} masqué{hiddenCount > 1 ? "s" : ""} — restaurer</button> : null}</div>
     <div className="experience-secondary my-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><strong>Utilisation de mon parcours</strong><p className="text-xs leading-5">{pendingConsent.length} bloc{pendingConsent.length>1?"s":""} validé{pendingConsent.length>1?"s":""} à autoriser · {deferredConsent.length} remis à plus tard · {consentItems.filter(i=>i.applicationAllowed).length} autorisé{consentItems.filter(i=>i.applicationAllowed).length>1?"s":""}.</p></div><button type="button" className="secondary-button" onClick={()=>setShowConsentManager(!showConsentManager)}>{showConsentManager?"Fermer les autorisations":"Gérer les autorisations"}</button></div>{showConsentManager?<div className="mt-4 space-y-2"><p className="text-xs">Autoriser permet de personnaliser les briefs, lettres et réponses aux recruteurs. Rien n’est publié ou envoyé automatiquement. Chaque bloc peut être révoqué.</p>{consentItems.map(i=><div key={i.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#d0d4e4] bg-white/80 p-3 text-xs"><span>{detailHeading(i)} · {i.applicationAllowed?"Autorisé":i.applicationConsent==="declined"?"Remis à plus tard":"À autoriser"}</span><button type="button" className="secondary-button" disabled={busy} onClick={()=>act({action:"applicationConsent",selection:[{id:i.id,version:i.version}],allowed:!i.applicationAllowed})}>{i.applicationAllowed?"Retirer l’autorisation":"Autoriser pour les candidatures"}</button></div>)}</div>:null}</div>
@@ -337,6 +338,21 @@ function ItemForm({ initial, item, focusTarget, busy, onSubmit }: { initial: Ite
 function ManualForm({ experiences, busy, onSave }: { experiences: ExperienceItem[]; busy: boolean; onSave: (body: Command) => void }) {
   const [kind, setKind] = useState<"experience" | "fact">("experience"), [parentId, setParentId] = useState("");
   return <div className="experience-secondary"><h3>Compléter mon parcours</h3><label className="text-xs">Type<select className={inputClass} value={kind} onChange={e => setKind(e.target.value as typeof kind)}><option value="experience">Expérience professionnelle</option><option value="fact">Réalisation / connaissance</option></select></label>{kind === "fact" ? <label className="text-xs">Expérience concernée<select className={inputClass} value={parentId} onChange={e => setParentId(e.target.value)}><option value="">Complément non rattaché</option>{experiences.map(g => <option key={g.id} value={g.id}>{g.data.title}</option>)}</select></label> : null}<ItemForm initial={emptyData()} busy={busy} onSubmit={data => onSave({ action: "create", id: crypto.randomUUID(), kind, parentId: kind === "fact" && parentId ? parentId : null, data })} /></div>;
+}
+function InlineExampleForm({ parentId, busy, onCancel, onSave }: { parentId: string; busy: boolean; onCancel: () => void; onSave: (body: Command) => Promise<void> }) {
+  const [id] = useState(() => crypto.randomUUID());
+  const [title, setTitle] = useState("");
+  const [context, setContext] = useState("");
+  const [contribution, setContribution] = useState("");
+  const [result, setResult] = useState("");
+  return <form className="experience-inline-example" onSubmit={e => { e.preventDefault(); void onSave({ action: "create", id, kind: "fact", parentId, data: { ...fieldsOnly(emptyData()), title: title.trim(), context: context.trim(), contribution: contribution.trim(), result: result.trim() } }); }}>
+    <div><strong>Nouvel exemple</strong><p>Ajouté à cette expérience. Privé et à relire avant toute candidature.</p></div>
+    <label>Titre de l’exemple<input className={inputClass} required maxLength={180} value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex. Authentification OAuth" /></label>
+    <label>Contexte / ce qui a été fait<textarea className={inputClass} required maxLength={6000} rows={3} value={context} onChange={e => setContext(e.target.value)} placeholder="Décrivez la situation et le travail réalisé…" /></label>
+    <label>Ma contribution<textarea className={inputClass} maxLength={4000} rows={2} value={contribution} onChange={e => setContribution(e.target.value)} placeholder="Votre rôle précis, sans déduction" /></label>
+    <label>Résultats et limites<textarea className={inputClass} maxLength={4000} rows={2} value={result} onChange={e => setResult(e.target.value)} placeholder="Résultat observé ou « non documenté »" /></label>
+    <div className="experience-inline-example-actions"><button className="radar-add-button" disabled={busy || !title.trim() || !context.trim()}>{busy ? <><LoaderCircle size={15} className="animate-spin" /> Enregistrement…</> : "Ajouter l’exemple"}</button><button type="button" className="secondary-button" disabled={busy} onClick={onCancel}>Annuler</button></div>
+  </form>;
 }
 function ConflictCard({ conflict, items, busy, onSave }: { conflict: ExperienceConflict; items: ExperienceItem[]; busy: boolean; onSave: (body: Command) => Promise<boolean> }) {
   const [choice, setChoice] = useState("both"), [note, setNote] = useState("");
