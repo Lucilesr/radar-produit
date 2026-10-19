@@ -5,14 +5,14 @@ import { ExperienceLibrary } from "@/components/experience-library";
 import { ProfileDocuments } from "@/components/profile-documents";
 import type { CandidateProfile } from "@/lib/types";
 import type { DocumentLinks } from "@/lib/document-input";
-type Section = "experiences" | "documents" | "presentation";
+import { readProfileSection, type ProfileSection as Section } from "@/lib/radar-navigation";
 const sections: [Section,string][]=[["experiences","Carnet d’expériences"],["documents","Mes documents"],["presentation","Ma présentation"]];
-export function ProfileWorkspace({profile,onSave,onDocumentsLinked}:{profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onDocumentsLinked:(links:DocumentLinks)=>void}) {
-  const [draft,setDraft]=useState(profile),[section,setSection]=useState<Section>("experiences");
+export function ProfileWorkspace({profile,onSave,onDocumentsLinked,initialSection="experiences"}:{profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onDocumentsLinked:(links:DocumentLinks)=>void;initialSection?:Section}) {
+  const [draft,setDraft]=useState(profile),[section,setSection]=useState<Section>(initialSection);
   const [saving,setSaving]=useState(false),[filesBusy,setFilesBusy]=useState(false),[saved,setSaved]=useState(false),[saveError,setSaveError]=useState("");
   const dirty=JSON.stringify(draft)!==JSON.stringify(profile);
   useEffect(()=>{
-    const restore=()=>{const value=new URLSearchParams(window.location.search).get("profile");setSection(sections.some(([id])=>id===value)?value as Section:"experiences");};
+    const restore=()=>setSection(readProfileSection(new URLSearchParams(window.location.search).get("profile")));
     restore();window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);
   },[]);
   useEffect(()=>{if(!dirty)return;const beforeUnload=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue="";};window.addEventListener("beforeunload",beforeUnload);return()=>window.removeEventListener("beforeunload",beforeUnload);},[dirty]);

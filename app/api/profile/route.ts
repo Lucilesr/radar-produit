@@ -5,13 +5,13 @@ import { profiles } from "@/db/schema";
 import { ensureSameOrigin, parseProfile } from "@/lib/server";
 import { documentLinks } from "@/lib/document-input";
 import { profileTemplate } from "@/lib/profile-template";
+import { readCandidateProfile } from "@/lib/profile-store";
 
 export async function GET() {
   const user = await getChatGPTUser();
   if (!user) return Response.json({ error: "Authentification requise" }, { status: 401 });
   try {
-    const [profile] = await getDb().select().from(profiles).where(eq(profiles.userId, user.userId)).limit(1);
-    return Response.json({ profile: profile ? JSON.parse(profile.data) : null });
+    return Response.json({ profile: await readCandidateProfile(user.userId) });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Erreur inattendue" }, { status: 500 });
   }
