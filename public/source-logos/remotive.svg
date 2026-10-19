@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 118 40" role="img">
+  <circle cx="18" cy="20" r="14" fill="#E76C8A"/>
+  <path d="M10 26V14h4v2c.8-1.5 2-2.2 3.8-2.2 2.8 0 4.2 1.8 4.2 5V26h-4v-6.6c0-1.6-.6-2.4-1.8-2.4s-2.2 1-2.2 2.6V26z" fill="#fff"/>
+  <text x="40" y="27" fill="#4A3645" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="700" letter-spacing="-.5">remotive</text>
+</svg>

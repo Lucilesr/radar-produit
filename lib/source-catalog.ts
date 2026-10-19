@@ -1,0 +1,25 @@
+export const sourceCatalog = [
+  { name: "Collective", group: "France · CDI & freelance", url: "https://app.collective.work/talent/jobs", mode: "email", note: "Conserver PO/PM en français et anglais. Ajouter une recherche hybride légère à négocier, sans exclure les rémunérations absentes." },
+  { name: "Malt", group: "France · freelance", url: "https://www.malt.fr/", mode: "email", note: "Propositions de mission et notifications. Ne pas modifier la visibilité ou le profil public sans validation." },
+  { name: "LinkedIn Jobs", group: "France / Europe", url: "https://www.linkedin.com/jobs/", mode: "email", note: "Alertes quotidiennes PO, PM et variantes, remote + hybride à qualifier. Pas de scan du fil ni de collecte automatique des posts." },
+  { name: "Apec", group: "France · CDI", url: "https://www.apec.fr/candidat/recherche-emploi.html/emploi", mode: "email", note: "CDI, PO/PM, télétravail total et partiel. Garder une recherche sans filtre salaire pour ne pas perdre les offres non chiffrées." },
+  { name: "Welcome to the Jungle", group: "France / Europe · produit", url: "https://www.welcometothejungle.com/fr", mode: "email", note: "PO/PM, CDI, télétravail total + hybride. Contrôler la fréquence réelle de présence dans la description." },
+  { name: "Free-Work", group: "France · freelance & CDI", url: "https://www.free-work.com/fr/tech-it/jobs", mode: "email", note: "Quatre alertes PO/PM, CDI et freelance ; remote total + hybride à négocier. Vérifier salaire, TJM HT/jour et intermédiaire." },
+  { name: "Indeed", group: "France · couverture large", url: "https://fr.indeed.com/", mode: "email", note: "PO/PM, télétravail et CDI / contract. Les doublons et les intitulés approximatifs sont filtrés dans Radar." },
+  { name: "HelloWork", group: "France · CDI", url: "https://www.hellowork.com/fr-fr/", mode: "email", note: "Source complémentaire française ; éviter d'imposer un salaire si cela retire les annonces non chiffrées." },
+  { name: "We Work Remotely", group: "International · remote hors US", url: "https://weworkremotely.com/categories/remote-product-jobs", mode: "rss", note: "Les annonces limitées aux États-Unis / à l'Amérique du Nord sont écartées. Les offres mondiales restent à vérifier : pays de résidence autorisés, fuseaux horaires et niveau d'anglais." },
+  { name: "Wellfound", group: "Startups · international", url: "https://wellfound.com/jobs", mode: "research", note: "À qualifier : startups, rémunération, remote Europe/worldwide, maturité et anglais. Aucun abonnement payant activé." },
+  { name: "Himalayas", group: "International · remote", url: "https://himalayas.app/jobs", mode: "research", note: "À qualifier : filtres géographiques et rôle produit. Ne pas confondre remote et autorisation de travailler depuis n'importe quel pays." },
+  { name: "Remote OK", group: "International · remote", url: "https://remoteok.com/", mode: "research", note: "Complément international à vérifier. Pas de collecte directe tant que les droits de réutilisation et le flux retenu ne sont pas confirmés." },
+  { name: "Remotive", group: "International · remote", url: "https://remotive.com/", mode: "research", note: "Complément à examiner ; accès/API et conditions de republication à vérifier. Ne pas activer d'offre payante." },
+  { name: "FreelanceRepublik", group: "France · freelance", url: "https://www.freelancerepublik.com/", mode: "research", note: "Canal de mise en relation ciblé ; vérifier sélection des profils, TJM et règles remote avant inscription." },
+  { name: "Mindquest", group: "France / Europe · freelance", url: "https://mindquest.io/", mode: "research", note: "Missions produit/IT avec interlocuteur recruteur ; qualifier durée, TJM et flexibilité réelle." },
+  { name: "Post LinkedIn", group: "Ajout volontaire", url: "https://www.linkedin.com/", mode: "manual", note: "Pas d'activation automatique : ajouter uniquement un lien et un texte fourni volontairement." },
+] as const;
+export const sourceNames: [string, ...string[]] = ["Autre", "Ajout manuel", ...sourceCatalog.map(source => source.name)];
+export const broadMailQuery = 'newer_than:14d -in:spam -in:trash {from:linkedin.com from:apec.fr from:welcometothejungle.com from:free-work.com from:indeed.com from:indeed.fr from:hellowork.com}';
+export const searchTracks = [
+  { label: "Cœur de cible", query: '"Product Owner" OR "Product Manager"', detail: "CDI ≥ 55 k€/an ou freelance ≥ 500 €/jour ; FR/EN ; remote prioritaire." },
+  { label: "Filet large", query: '"chef de produit digital" OR "chef de projet produit" OR "Proxy Product Owner" OR "Digital Product Owner"', detail: "Sans salaire annoncé et hybride léger conservés comme exceptions ; pas d'anglais natif exigé par défaut." },
+  { label: "Alternatives pertinentes", query: '"Product Builder" OR "Product Ops" OR "Product Lead" OR "AI Product Manager"', detail: "Contexte produit, delivery, secteur public, fintech/SaaS ou IA. Les variantes ne remplacent pas le cœur PO/PM." },
+];

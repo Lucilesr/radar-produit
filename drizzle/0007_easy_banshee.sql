@@ -1,0 +1,1 @@
+CREATE INDEX `application_questions_user_job_active_idx` ON `application_questions` (`user_id`,`job_id`,`archived_at`);
