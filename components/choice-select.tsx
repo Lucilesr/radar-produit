@@ -33,7 +33,7 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
         <SelectTrigger aria-labelledby={`${labelId} ${desktopValueId}`} className="h-11 w-full rounded-xl border-[#d0d4e4] bg-white px-3 text-left text-sm text-[#333333] shadow-none focus-visible:ring-[#e7ecff]">
           <SelectValue id={desktopValueId} placeholder="Choisir" />
         </SelectTrigger>
-        <SelectContent position="popper" side="bottom" sideOffset={6} align="end" className="z-[80] max-h-[min(44vh,320px)] min-w-[var(--radix-select-trigger-width)] rounded-2xl border-[#d0d4e4] bg-[#ffffff] p-1 shadow-xl">
+        <SelectContent aria-label={label} position="popper" side="bottom" sideOffset={6} align="end" className="z-[80] max-h-[min(44vh,320px)] min-w-[var(--radix-select-trigger-width)] rounded-2xl border-[#d0d4e4] bg-[#ffffff] p-1 shadow-xl">
           {groups.map(group => group ? <SelectGroup key={group}>
             <SelectLabel className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#686b7b]">{group}</SelectLabel>
             {desktopOptions(group)}
