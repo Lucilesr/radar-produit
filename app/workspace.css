@@ -45,7 +45,7 @@ body { background: var(--background); font-family: var(--font-sans); letter-spac
 .workspace-skip { position: fixed; top: -100px; left: 20px; z-index: 100; background: var(--primary); color: #fff; padding: 12px 18px; border-radius: 8px; }
 .workspace-skip:focus { top: 12px; }
 button, a, input, select, textarea, summary { -webkit-tap-highlight-color: transparent; }
-button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex="-1"]:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
 .radar-app [role=combobox],.radar-app button[aria-haspopup=dialog],.radar-app select { border-color: var(--input); }
 .radar-app :is(button,a,input,select,textarea,summary,[tabindex]) { scroll-margin-block: 20px; }
 button:disabled { cursor: not-allowed; opacity: .55; }
