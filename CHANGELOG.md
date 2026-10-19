@@ -2,6 +2,8 @@
 
 ## 19 octobre 2026
 
+- Premier affichage préparé côté serveur après authentification : vue demandée présente immédiatement, profil et offres indépendants en cas d’erreur, lectures initiales API supprimées. [Audit et mesures de production locale](audits/accessibility-performance-2026-10-19.md) avec données fictives, résultats et réserves détaillés.
+
 - Audit d’accessibilité : noms accessibles alignés sur les libellés visibles, sélecteurs mobiles utilisables au clavier, bordures de champs contrastées, textes agrandis sans troncature dans la navigation et erreurs conservées jusqu’à leur fermeture. Profil et sources chargés à la demande avec un état de reprise.
 
 - Recette de la refonte : focus restauré, arrière-plan inerte dans les dialogues, notifications accessibles au-dessus de la navigation mobile, erreurs de sauvegarde persistantes et brouillons conservés.

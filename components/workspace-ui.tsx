@@ -3,8 +3,8 @@ import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { AlertCircle, Inbox, LockKeyhole, Radar } from "lucide-react";
 import { defaultRoute, readRadarRoute, radarSearch, type RadarRoute } from "@/lib/radar-navigation";
 
-export function useRadarNavigation() {
-  const [route, setRoute] = useState(defaultRoute);
+export function useRadarNavigation(initialRoute: RadarRoute = defaultRoute) {
+  const [route, setRoute] = useState(initialRoute);
   const latest = useRef(route);
   useEffect(() => {
     const restore = (event?: PopStateEvent) => { const next = readRadarRoute(window.location.search); latest.current = next; setRoute(next); if(event)requestAnimationFrame(()=>{const detail=document.getElementById("opportunity-detail-title");(detail?.getClientRects().length?detail:document.getElementById("workspace-title"))?.focus({preventScroll:true});}); };

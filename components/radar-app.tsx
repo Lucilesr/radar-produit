@@ -14,6 +14,8 @@ import { sourceNames } from "@/lib/source-catalog";
 import { activeStatuses, terminalStatuses } from "@/lib/application-workflow";
 import { profileTemplate } from "@/lib/profile-template";
 import type { CandidateProfile, DismissalReason, JobInput, JobRecord, JobStatus, MatchTier } from "@/lib/types";
+import type { RadarInitialState } from "@/lib/radar-bootstrap";
+import type { RadarRoute, ProfileSection } from "@/lib/radar-navigation";
 
 const ProfileWorkspace = lazy(() => import("@/components/profile-workspace").then(module => ({default: module.ProfileWorkspace})));
 const SourcePanel = lazy(() => import("@/components/source-panel").then(module => ({default: module.SourcePanel})));
@@ -35,13 +37,13 @@ const tabs: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof La
 const dismissalLabels: Record<DismissalReason, string> = { filled: "Poste pourvu", applications_closed: "Candidatures fermées", not_interested: "Je ne souhaite pas postuler", other: "Autre raison" };
 const emptyDraft = (): JobDraft => ({ title: "", company: "", contractType: "other", annualSalary: "", dailyRate: "", remoteMode: "unknown", onsiteCadence: "", language: "unknown", source: "Ajout manuel", sourceUrl: "", applicationUrl: "", publishedAt: "", contentCoverage: "unknown", description: "" });
 
-export function RadarApp({ userName }: { userName: string }) {
-  const { route, navigate } = useRadarNavigation();
+export function RadarApp({ userName, initialState, initialRoute, initialProfileSection }: { userName: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection }) {
+  const { route, navigate } = useRadarNavigation(initialRoute);
   const { tab, filter, query, view: workspaceView } = route;
   const setFilter = (filter: OfferFilter) => navigate({ filter, offer: undefined });
   const setQuery = (query: string) => navigate({ query, tab: "offers", offer: undefined }, route.tab === "offers" && !!route.query);
   const searchRef = useRef<HTMLInputElement>(null);
-  const [allJobs, setJobs] = useState<JobRecord[]>([]);
+  const [allJobs, setJobs] = useState<JobRecord[]>(initialState?.jobs ?? []);
   const jobs = useMemo(() => allJobs.filter(job => !job.deletedAt), [allJobs]);
   const [deleteTarget, setDeleteTarget] = useState<JobRecord[]>([]);
   const [deleteReason, setDeleteReason] = useState<DismissalReason | "">("");
@@ -49,13 +51,13 @@ export function RadarApp({ userName }: { userName: string }) {
   const [trashBusy, setTrashBusy] = useState<string | null>(null);
   const trashLock = useRef(false);
   const [trashError, setTrashError] = useState<string | null>(null);
-  const [profile, setProfile] = useState<CandidateProfile>(profileTemplate);
-  const [profileLoaded,setProfileLoaded] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<CandidateProfile>(initialState?.profile ?? profileTemplate);
+  const [profileLoaded,setProfileLoaded] = useState(!!initialState && !initialState.errors.profile);
+  const [loading, setLoading] = useState(!initialState);
   const [refreshing, setRefreshing] = useState(false);
   const [jobDialogOpen, setJobDialogOpen] = useState(false);
   const selectedJob = allJobs.find(job => job.id === route.offer) || null;
-  const [loadErrors, setLoadErrors] = useState({ jobs: false, profile: false });
+  const [loadErrors, setLoadErrors] = useState(initialState?.errors ?? { jobs: false, profile: false });
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [visited, setVisited] = useState({profile:false,sources:false});
   useEffect(()=>{if(tab==="profile"||tab==="sources")setVisited(current=>({...current,[tab]:true}));},[tab]);
@@ -66,6 +68,7 @@ export function RadarApp({ userName }: { userName: string }) {
   const initials = userName.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase() || "RP";
 
   useEffect(() => {
+    if (initialState && loadAttempt === 0) return;
     let active = true;
     async function load() {
       setLoading(true);
@@ -79,7 +82,7 @@ export function RadarApp({ userName }: { userName: string }) {
     }
     void load();
     return () => { active = false; };
-  }, [loadAttempt]);
+  }, [loadAttempt, initialState]);
 
   const stats = useMemo(() => ({
     new: jobs.filter((job) => inOpportunityView(job, "to_review")).length,
@@ -179,7 +182,7 @@ export function RadarApp({ userName }: { userName: string }) {
         {trashError ? <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">{trashError}<button className="ml-3 underline" onClick={() => { setTrashError(null); void refreshOffers(); }}>Actualiser pour vérifier</button></div> : null}
         {!loading && !loadErrors.jobs && tab === "offers" ? <OpportunitiesWorkspace jobs={shownJobs} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>void changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>setJobs(current=>current.map(job=>job.id===updated.id?updated:job))} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing} /> : null}
         {!loading && !loadErrors.jobs && tab === "pipeline" ? <ApplicationsWorkspace jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
-        {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
+        {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace initialSection={initialProfileSection} profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
         {(tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel jobs={jobs} onSynced={refreshOffers} /></Suspense></WorkspaceBoundary></div> : null}
         <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span><span>Aucune candidature envoyée automatiquement.</span></footer>
         </div>
