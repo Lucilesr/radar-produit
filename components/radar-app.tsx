@@ -37,6 +37,7 @@ import { hasApplication, inOpportunityView, reviewState, type OpportunityView } 
 import { ExperienceLibrary } from "@/components/experience-library";
 import { ProfileDocuments } from "@/components/profile-documents";
 import { SourceLogo } from "@/components/source-logo";
+import { PageHeader, PrivateLabel, WorkspaceBrand, WorkspaceLoading, WorkspaceState, useRadarNavigation } from "@/components/workspace-ui";
 import { ChoiceSelect } from "@/components/choice-select";
 import type { DocumentLinks } from "@/lib/document-input";
 import { OfferSourceBadge, OfferWorkspace, StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
@@ -55,11 +56,11 @@ type JobDraft = {
 };
 
 const tabs: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof LayoutDashboard }> = [
-  { id: "dashboard", label: "Vue d’ensemble", mobileLabel: "Accueil", icon: LayoutDashboard },
+  { id: "dashboard", label: "Aujourd’hui", mobileLabel: "Accueil", icon: LayoutDashboard },
   { id: "offers", label: "Opportunités", mobileLabel: "Offres", icon: Search },
   { id: "pipeline", label: "Candidatures", mobileLabel: "Suivi", icon: ClipboardCheck },
   { id: "profile", label: "Mon profil", mobileLabel: "Profil", icon: UserRound },
-  { id: "sources", label: "Sources & stratégie", mobileLabel: "Sources", icon: Mail },
+  { id: "sources", label: "Sources", mobileLabel: "Sources", icon: Mail },
 ];
 const sources = [
   ["Collective", "Alertes PO/PM, remote et TJM/salaire", "À connecter"],
@@ -81,8 +82,10 @@ const dismissalLabels: Record<DismissalReason, string> = { filled: "Poste pourvu
 const emptyDraft = (): JobDraft => ({ title: "", company: "", contractType: "other", annualSalary: "", dailyRate: "", remoteMode: "unknown", onsiteCadence: "", language: "unknown", source: "Ajout manuel", sourceUrl: "", applicationUrl: "", publishedAt: "", contentCoverage: "unknown", description: "" });
 
 export function RadarApp({ userName }: { userName: string }) {
-  const [tab, setTab] = useState<Tab>("dashboard");
-  const [filter, setFilter] = useState<OfferFilter>("to_review");
+  const { route, navigate } = useRadarNavigation();
+  const { tab, filter, query, view: workspaceView } = route;
+  const setFilter = (filter: OfferFilter) => navigate({ filter, offer: undefined });
+  const setQuery = (query: string) => navigate({ query, tab: "offers", offer: undefined }, true);
   const [allJobs, setJobs] = useState<JobRecord[]>([]);
   const jobs = useMemo(() => allJobs.filter(job => !job.deletedAt), [allJobs]);
   const [deleteTarget, setDeleteTarget] = useState<JobRecord[]>([]);
@@ -94,35 +97,29 @@ export function RadarApp({ userName }: { userName: string }) {
   const [profile, setProfile] = useState<CandidateProfile>(profileTemplate);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [query, setQuery] = useState("");
   const [jobDialogOpen, setJobDialogOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<JobRecord | null>(null);
-  const [workspaceView, setWorkspaceView] = useState<WorkspaceView>("offer");
+  const selectedJob = allJobs.find(job => job.id === route.offer) || null;
+  const [loadErrors, setLoadErrors] = useState({ jobs: false, profile: false });
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const openJob = (job: JobRecord, view: WorkspaceView = "offer") => navigate({ offer: job.id, view, ...(view === "interviews" || view === "application" ? {tab: "pipeline" as Tab} : {}) });
+  const closeJob = () => navigate({ offer: undefined, view: "offer" });
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
     async function load() {
-      const [jobResult, profileResult] = await Promise.allSettled([fetch("/api/jobs?includeDeleted=true", { cache: "no-store" }), fetch("/api/profile", { cache: "no-store" })]);
+      setLoading(true);
+      const json = async <T,>(path: string): Promise<T> => { const response = await fetch(path, {cache: "no-store", signal: AbortSignal.timeout(15000)}); if (!response.ok) throw new Error("Chargement impossible"); return response.json() as Promise<T>; };
+      const [jobResult, profileResult] = await Promise.allSettled([json<{jobs:JobRecord[]}>("/api/jobs?includeDeleted=true"), json<{profile:CandidateProfile|null}>("/api/profile")]);
       if (!active) return;
-      if (jobResult.status === "fulfilled" && jobResult.value.ok) {
-        const loaded = ((await jobResult.value.json()) as { jobs: JobRecord[] }).jobs; setJobs(loaded);
-        const query = new URLSearchParams(window.location.search); const target = loaded.find(job => job.id === query.get("offer") && (!job.deletedAt || hasApplication(job)));
-        if (target) {
-          const interviewLink = query.get("view") === "interviews" && hasApplication(target);
-          setSelectedJob(target); setWorkspaceView(interviewLink ? "interviews" : "offer");
-          if (interviewLink) setTab("pipeline");
-        }
-      }
-      if (profileResult.status === "fulfilled" && profileResult.value.ok) {
-        const result = (await profileResult.value.json()) as { profile: CandidateProfile | null };
-        if (result.profile) setProfile(result.profile);
-      }
+      if (jobResult.status === "fulfilled") setJobs(jobResult.value.jobs);
+      if (profileResult.status === "fulfilled" && profileResult.value.profile) setProfile(profileResult.value.profile);
+      setLoadErrors({jobs:jobResult.status === "rejected",profile:profileResult.status === "rejected"});
       setLoading(false);
     }
     void load();
     return () => { active = false; };
-  }, []);
+  }, [loadAttempt]);
 
   const stats = useMemo(() => ({
     new: jobs.filter((job) => inOpportunityView(job, "to_review")).length,
@@ -137,7 +134,6 @@ export function RadarApp({ userName }: { userName: string }) {
       if (!response.ok) throw new Error("Mise à jour impossible");
       const { job } = (await response.json()) as { job: JobRecord };
       setJobs(current => current.map(item => item.id === id ? job : item));
-      setSelectedJob(current => current?.id === id ? job : current);
       if (changes.candidateNote !== undefined) setProfile(current => ({ ...current, applicationNotes: { ...current.applicationNotes, [id]: job.candidateNote ?? "" } }));
       setToast(changes.candidateNote !== undefined ? "Note enregistrée dans votre espace privé." : changes.reviewState ? "Votre sélection est mise à jour." : "Statut enregistré.");
       return true;
@@ -145,7 +141,7 @@ export function RadarApp({ userName }: { userName: string }) {
   }
   async function changeStatus(id: string, status: JobStatus) { return updateJob(id, { status }); }
   function requestDelete(job: JobRecord) { requestDeleteMany([job]); }
-  function requestDeleteMany(selection: JobRecord[]) { if (trashLock.current || refreshing) return; setTrashError(null); setDeleteReason(""); setDeleteNote(""); setSelectedJob(null); setDeleteTarget(selection); }
+  function requestDeleteMany(selection: JobRecord[]) { if (trashLock.current || refreshing) return; setTrashError(null); setDeleteReason(""); setDeleteNote(""); closeJob(); setDeleteTarget(selection); }
   async function changeTrash(selection: JobRecord[], deleted: boolean, reason?: DismissalReason, note?: string) {
     if (trashLock.current || refreshing || !selection.length) return;
     trashLock.current = true; setTrashBusy(selection[0].id); setTrashError(null); setDeleteTarget([]);
@@ -181,7 +177,7 @@ export function RadarApp({ userName }: { userName: string }) {
   const searchedJobs = allJobs.filter(job => `${job.title} ${job.company} ${job.source}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
   const viewCounts = Object.fromEntries((["to_review", "selected", "good_matches", "all", "trash"] as OfferFilter[]).map(view => [view, searchedJobs.filter(job => inOpportunityView(job, view)).length])) as Record<OfferFilter, number>;
   const shownJobs = filter === "to_review" ? sortOffersForTriage(searchedJobs) : searchedJobs.filter(job => inOpportunityView(job, filter));
-  function selectTab(next: Tab) { setTab(next); window.scrollTo(0, 0); }
+  function selectTab(next: Tab) { navigate({ tab: next, offer: undefined }); window.scrollTo(0, 0); requestAnimationFrame(() => document.getElementById("workspace-title")?.focus({preventScroll:true})); }
 
   async function refreshOffers() {
     if (trashLock.current) return;
@@ -191,44 +187,46 @@ export function RadarApp({ userName }: { userName: string }) {
       if (!response.ok) throw new Error("Lecture impossible");
       const result = await response.json() as { jobs: JobRecord[] };
       setJobs(result.jobs);
+      setLoadErrors(current => ({...current,jobs:false}));
       setToast("Votre radar est à jour.");
     } catch { setToast("Actualisation impossible. Vos dernières données restent affichées."); }
     finally { setRefreshing(false); }
   }
 
-  return <main className="radar-app text-[#333333]">
+  return <main className="radar-app text-[#333333]"><a href="#workspace-title" className="workspace-skip">Aller au contenu</a>
     <div className="radar-shell">
       <aside className="radar-sidebar">
         <div className="flex items-center justify-between gap-4 lg:block">
-          <div className="flex items-center gap-3"><div className="radar-logo"><Sunrise size={24} strokeWidth={1.9} /></div><div><p className="text-[18px] font-bold tracking-tight">Radar<span className="font-normal text-[#958390]"> produit</span></p><p className="mt-0.5 text-[10px] font-medium tracking-[.12em] text-[#aa8c95]">UN NOUVEL HORIZON</p></div></div>
+          <WorkspaceBrand />
           <button onClick={() => setJobDialogOpen(true)} className="radar-add-button lg:mt-8 lg:w-full" aria-label="Ajouter une offre"><Plus size={17} /><span className="hidden sm:inline">Ajouter une offre</span></button>
         </div>
-        <label className="radar-search"><Search size={16} /><input aria-label="Rechercher une offre" placeholder="Rechercher une offre…" value={query} onChange={event => { setQuery(event.target.value); selectTab("offers"); }} /></label>
-        <p className="mb-3 mt-7 hidden text-[10px] font-semibold uppercase tracking-[.14em] text-[#a897a4] lg:block">Votre espace</p>
+        <label className="radar-search"><Search size={16} /><input aria-label="Rechercher une offre" placeholder="Rechercher une offre…" value={query} onChange={event => { setQuery(event.target.value); }} /></label>
+
         <nav aria-label="Navigation principale" className="radar-nav">{tabs.map(({ id, label, mobileLabel, icon: Icon }) => <button key={id} onClick={() => selectTab(id)} aria-label={id === "offers" ? `${label} · ${stats.new} à examiner` : label} aria-current={tab === id ? "page" : undefined} className={tab === id ? "is-active" : ""}><Icon size={18} strokeWidth={1.7} /><span className="radar-nav-label">{label}</span><span className="radar-mobile-label">{mobileLabel}</span>{id === "offers" && stats.new > 0 ? <span className="nav-count" title="Offres à examiner">{stats.new}</span> : null}</button>)}</nav>
         <div className="radar-sidebar-bottom">
-          <div className="digest-card"><span className="digest-icon"><Sunrise size={19} /></span><p className="text-xs font-semibold">Exemple de point du matin</p><p className="mt-1 text-[22px] font-semibold tracking-tight">08:30 <span className="text-[11px] font-normal text-[#8a7383]">Maurice</span></p><p className="mt-2 text-[11px] leading-5 text-[#8a7383]">Exemple de digest. Connexion et automatisation à configurer.</p></div>
+
           <div className="sidebar-account"><span className="avatar">LS</span><span className="min-w-0 text-left"><span className="block truncate text-xs font-semibold">{userName}</span><span className="mt-1 block text-[10px] text-[#9a8596]">Espace personnel</span></span></div>
         </div>
       </aside>
       <section className="radar-content">
-        <div className="radar-topbar"><p className="text-sm font-semibold">{tabs.find(item => item.id === tab)?.label}</p><div className="flex items-center gap-3"><span className="private-pill"><ShieldCheck size={13} /> Privé</span><button onClick={() => void refreshOffers()} disabled={refreshing} className="refresh-button" aria-label="Actualiser les offres"><RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /><span className="hidden sm:inline">Actualiser</span></button><span className="avatar avatar-small" aria-label="Compte personnel">LS</span></div></div>
+        <div className="radar-topbar"><PrivateLabel /><div className="flex items-center gap-3"><button onClick={() => void refreshOffers()} disabled={refreshing} className="refresh-button" aria-label="Actualiser les offres"><RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /><span className="hidden sm:inline">Actualiser</span></button><span className="avatar avatar-small" aria-label="Compte personnel">LS</span></div></div>
         <div className="radar-page">
-        <header className="page-heading"><div><p className="eyebrow">Votre prochaine étape commence ici</p><h1>{tab === "dashboard" ? "Bonjour Camille — démonstration fictive." : tab === "offers" ? "Vos opportunités." : tab === "pipeline" ? "Un pas après l’autre." : tab === "profile" ? "Ce qui vous rend unique." : "Une veille plus large."}</h1><p className="mt-2 text-sm leading-6 text-[#535768]">{tab === "dashboard" ? "Les bonnes opportunités, moins de bruit. Et toujours le choix." : tab === "offers" ? "Examinez, sélectionnez ou rangez une offre, sans perdre son historique." : tab === "pipeline" ? "Gardez une vue claire sur chaque candidature, de l’idée à l’entretien." : tab === "profile" ? "Des expériences réelles pour des candidatures qui vous ressemblent." : "Sources, alertes, flux autorisés et pistes hors annonces."}</p></div></header>
-        {loading ? <LoadingState /> : null}
-        {!loading && tab === "dashboard" ? <Dashboard stats={stats} jobs={jobs} actionJobs={allJobs} profile={profile} onOpenJobs={() => selectTab("offers")} onOpenTriage={() => { setFilter("to_review"); selectTab("offers"); }} onOpenSources={() => selectTab("sources")} onSelect={(job, view = "offer") => { setWorkspaceView(view); setSelectedJob(job); }} /> : null}
+        <PageHeader title={tabs.find(item => item.id === tab)?.label || "Radar Produit"} />
+        {loading ? <WorkspaceLoading /> : null}
+        {!loading && (loadErrors.jobs || loadErrors.profile) ? <WorkspaceState error title={loadErrors.jobs ? "Les offres n’ont pas pu être chargées" : "Votre profil n’a pas pu être chargé"} action={<button type="button" className="secondary-button" onClick={() => setLoadAttempt(n => n+1)}>Réessayer</button>}>Vérifiez votre connexion puis réessayez. Vos données sont conservées.</WorkspaceState> : null}
+        {!loading && !loadErrors.jobs && tab === "dashboard" ? <Dashboard stats={stats} jobs={jobs} actionJobs={allJobs} profile={profile} onOpenJobs={() => selectTab("offers")} onOpenTriage={() => navigate({tab:"offers",filter:"to_review",query:"",offer:undefined})} onOpenSources={() => selectTab("sources")} onSelect={openJob} /> : null}
         {trashBusy ? <div role="status" className="sticky top-3 z-20 mb-4 flex items-center gap-2 rounded-2xl border bg-white p-4 text-sm shadow-sm"><LoaderCircle size={16} className="animate-spin" /> Liste mise à jour · enregistrement en cours…</div> : null}
         {trashError ? <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">{trashError}<button className="ml-3 underline" onClick={() => { setTrashError(null); void refreshOffers(); }}>Actualiser pour vérifier</button></div> : null}
-        {!loading && tab === "offers" ? <Offers key={`${filter}:${query}`} jobs={shownJobs} counts={viewCounts} filter={filter} setFilter={setFilter} searching={!!query.trim()} onClearSearch={() => setQuery("")} onReview={(id, reviewState) => void updateJob(id, { reviewState })} onSelect={job => { setWorkspaceView("offer"); setSelectedJob(job); }} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job => void changeTrash([job], false)} trashBusy={trashBusy || (refreshing ? "refresh" : null)} /> : null}
-        {!loading && tab === "pipeline" ? <Pipeline jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onSelect={job => { setWorkspaceView("interviews"); setSelectedJob(job); }} /> : null}
-        {!loading && tab === "profile" ? <Profile profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /> : null}
+        {!loading && !loadErrors.jobs && tab === "offers" ? <Offers key={`${filter}:${query}`} jobs={shownJobs} counts={viewCounts} filter={filter} setFilter={setFilter} searching={!!query.trim()} onClearSearch={() => setQuery("")} onReview={(id, reviewState) => void updateJob(id, { reviewState })} onSelect={openJob} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job => void changeTrash([job], false)} trashBusy={trashBusy || (refreshing ? "refresh" : null)} /> : null}
+        {!loading && !loadErrors.jobs && tab === "pipeline" ? <Pipeline jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onSelect={job => openJob(job,"interviews")} /> : null}
+        {!loading && !loadErrors.profile && tab === "profile" ? <Profile profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /> : null}
         {!loading && tab === "sources" ? <SourcePanel jobs={jobs} onSynced={refreshOffers} /> : null}
         <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span><span>Aucune candidature envoyée automatiquement.</span></footer>
         </div>
       </section>
     </div>
     {jobDialogOpen ? <JobDialog onClose={() => setJobDialogOpen(false)} onCreated={onJobCreated} /> : null}
-    {selectedJob ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} meta={<OfferSourceBadge job={selectedJob} />} onClose={() => setSelectedJob(null)}><OfferWorkspace job={selectedJob} profile={profile} initialView={workspaceView} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => { setSelectedJob(null); selectTab("pipeline"); }} onChange={updated => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setSelectedJob(updated); setToast("Dossier enregistré."); }} /><div className="mt-6 border-t pt-4">{selectedJob.deletedAt ? <button className="secondary-button" onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={16} /> Restaurer</button> : <button className="secondary-button text-red-800" onClick={() => requestDelete(selectedJob)}><Trash2 size={16} /> Corbeille</button>}</div></Modal> : null}
+    {selectedJob ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} meta={<OfferSourceBadge job={selectedJob} />} onClose={closeJob}><OfferWorkspace job={selectedJob} profile={profile} initialView={workspaceView} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => navigate({tab:"pipeline",offer:selectedJob.id,view:"application"})} onChange={updated => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setToast("Dossier enregistré."); }} /><div className="mt-6 border-t pt-4">{selectedJob.deletedAt ? <button className="secondary-button" onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={16} /> Restaurer</button> : <button className="secondary-button text-red-800" onClick={() => requestDelete(selectedJob)}><Trash2 size={16} /> Corbeille</button>}</div></Modal> : null}
     {deleteTarget.length ? <Modal title={`Mettre ${deleteTarget.length === 1 ? "cette offre" : `ces ${deleteTarget.length} offres`} à la corbeille ?`} description="Choisissez une raison commune à toute la sélection." onClose={() => setDeleteTarget([])}><div className="trash-dialog-content"><ul className="max-h-48 space-y-2 overflow-y-auto rounded-xl bg-[#f5f6f8] p-4 text-sm">{deleteTarget.map(job => <li key={job.id}><strong>{job.title}</strong> · {job.company}</li>)}</ul><div className="trash-dialog-fields"><ChoiceSelect label="Pourquoi ?" value={deleteReason} onChange={value => setDeleteReason(value as DismissalReason | "")} options={[{ value: "", label: "Choisir un motif" }, ...Object.entries(dismissalLabels).map(([value, label]) => ({ value, label }))]} /><label className="trash-dialog-note"><span>Précision <em>facultative</em></span><textarea rows={2} maxLength={500} value={deleteNote} onChange={event => setDeleteNote(event.target.value)} placeholder="Une courte précision, si utile" /></label></div><p className="trash-dialog-help">L’offre reste restaurable. Si une candidature est déjà engagée, elle et ses rappels restent visibles dans Candidatures.</p><div className="trash-dialog-actions"><button className="secondary-button" onClick={() => setDeleteTarget([])}>Annuler</button><button disabled={!deleteReason || !!trashBusy || refreshing} className="secondary-button text-red-800 disabled:opacity-50" onClick={() => void changeTrash(deleteTarget, true, deleteReason as DismissalReason, deleteNote)}><Trash2 size={16} /> Corbeille{deleteTarget.length > 1 ? ` (${deleteTarget.length})` : ""}</button></div></div></Modal> : null}
     {toast ? <Toast message={toast} onClose={() => setToast(null)} /> : null}
   </main>;
