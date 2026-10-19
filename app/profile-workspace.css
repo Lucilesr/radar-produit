@@ -29,3 +29,13 @@
   .profile-workspace .experience-library { padding: 0; background: none; border: 0; }.experience-library>div:first-child { margin-inline: 0; }.experience-group { border-radius: 9px; overflow: visible; }.experience-group>summary { padding: 16px; }.experience-group-body { padding: 14px; }.experience-detail { padding: 13px; margin-inline: 0; }.experience-example-summary { gap: 8px; }.experience-example-summary>.experience-status { max-width: 100px; font-size: 11px; }.experience-example-title { font-size: 14px; }.experience-rich-text { font-size: 16px; }
   .experience-group-body>.experience-actions,.experience-group-body>.experience-help,.experience-metadata>summary { margin-inline: 0; }.experience-actions button { min-height: 44px; }.selection-dock { top: 8px; left: auto; right: auto; bottom: auto; max-height: 36vh; }.experience-library:has(.selection-dock) { padding-bottom: 0; }.source-workspace .source-settings-grid { grid-template-columns: 1fr; }.source-workspace .glass-panel { padding: 20px 16px; }
 }
+
+.experience-document-links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 8px; }
+.experience-document-links a { display: inline-flex; align-items: center; min-height: 32px; color: var(--primary); text-decoration: underline; text-underline-offset: 3px; font-weight: 500; }
+.experience-library label { font-size: 14px; font-weight: 500; }
+.experience-library input:not([type=checkbox]):not([type=radio]):not([type=file]),.experience-library textarea,.experience-library select { font-size: 14px; font-weight: 400; }
+.experience-library input::placeholder,.experience-library textarea::placeholder { font-size: 1em; font-weight: 400; }
+#experience-document-history { scroll-margin-block: 24px; }
+@media(max-width:640px) {
+  .experience-library label,.experience-library input:not([type=checkbox]):not([type=radio]):not([type=file]),.experience-library textarea,.experience-library select { font-size: 16px; }
+}

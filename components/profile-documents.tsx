@@ -67,7 +67,7 @@ function DocumentCard({ slot, document, linkedId, files, busy, onUpload, onLink,
   onUpload: (file: File, slot: DocumentSlot) => Promise<void>; onLink: (id: string, slot: DocumentSlot) => Promise<void>; onError: (message: string) => void;
 }) {
   const input = useRef<HTMLInputElement>(null); const inputId = useId(); const [dragging, setDragging] = useState(false);
-  return <div className={`rounded-2xl border p-3 transition-colors ${dragging ? "border-[#6161ff] bg-[#e7ecff]" : "border-[#d0d4e4] bg-white/60"}`}
+  return <div id={"document-"+slot.id} tabIndex={-1} className={`rounded-2xl border p-3 transition-colors ${dragging ? "border-[#6161ff] bg-[#e7ecff]" : "border-[#d0d4e4] bg-white/60"}`}
     onDragOver={event => { event.preventDefault(); if (!busy) setDragging(true); }}
     onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false); }}
     onDrop={event => { event.preventDefault(); setDragging(false); if (busy) return; const list = event.dataTransfer.files; if (list.length !== 1) { onError("Déposez un seul fichier à la fois dans la zone choisie."); return; } void onUpload(list[0], slot.id); }}>

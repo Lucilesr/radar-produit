@@ -184,7 +184,7 @@ export function RadarApp({ userName, initialState, initialRoute, initialProfileS
         {!loading && !loadErrors.jobs && tab === "pipeline" ? <ApplicationsWorkspace jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
         {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace initialSection={initialProfileSection} profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
         {(tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel jobs={jobs} onSynced={refreshOffers} /></Suspense></WorkspaceBoundary></div> : null}
-        <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span><span>Aucune candidature envoyée automatiquement.</span></footer>
+        {tab !== "profile" ? <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span><span>Aucune candidature envoyée automatiquement.</span></footer> : null}
         </div>
       </section>
     </div>
