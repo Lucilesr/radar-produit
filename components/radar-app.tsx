@@ -34,17 +34,13 @@ import { formatEuro } from "@/lib/matching";
 import { applyTrashState, selectionInView } from "@/lib/offer-trash-ui";
 import { selectTriageActions, sortOffersForTriage } from "@/lib/triage";
 import { hasApplication, inOpportunityView, reviewState, type OpportunityView } from "@/lib/opportunity-views";
-import { ExperienceLibrary } from "@/components/experience-library";
-import { ProfileDocuments } from "@/components/profile-documents";
-import { SourceLogo } from "@/components/source-logo";
+import { ProfileWorkspace } from "@/components/profile-workspace";
 import { PageHeader, PrivateLabel, WorkspaceBrand, WorkspaceLoading, WorkspaceState, useRadarNavigation } from "@/components/workspace-ui";
 import { TodayWorkspace, ApplicationsWorkspace } from "@/components/today-workspace";
 import { OpportunitiesWorkspace } from "@/components/opportunities-workspace";
 import { ChoiceSelect } from "@/components/choice-select";
-import type { DocumentLinks } from "@/lib/document-input";
 import { OfferSourceBadge, OfferWorkspace, StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
 import { sourceNames } from "@/lib/source-catalog";
-import { summarizeOfferDescription } from "@/lib/offer-summary";
 import { SourcePanel } from "@/components/source-panel";
 import { activeStatuses, terminalStatuses, formatDate, reviewDue, statusLabels } from "@/lib/application-workflow";
 import { profileTemplate } from "@/lib/profile-template";
@@ -103,6 +99,8 @@ export function RadarApp({ userName }: { userName: string }) {
   const selectedJob = allJobs.find(job => job.id === route.offer) || null;
   const [loadErrors, setLoadErrors] = useState({ jobs: false, profile: false });
   const [loadAttempt, setLoadAttempt] = useState(0);
+  const [visited, setVisited] = useState({profile:false,sources:false});
+  useEffect(()=>{if(tab==="profile"||tab==="sources")setVisited(current=>({...current,[tab]:true}));},[tab]);
   const openJob = (job: JobRecord, view: WorkspaceView = "offer") => navigate({ offer: job.id, view, ...(view === "interviews" || view === "application" ? {tab: "pipeline" as Tab} : {}) });
   const closeJob = () => navigate({ offer: undefined, view: "offer" });
   const [toast, setToast] = useState<string | null>(null);
@@ -221,8 +219,8 @@ export function RadarApp({ userName }: { userName: string }) {
         {trashError ? <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">{trashError}<button className="ml-3 underline" onClick={() => { setTrashError(null); void refreshOffers(); }}>Actualiser pour vérifier</button></div> : null}
         {!loading && !loadErrors.jobs && tab === "offers" ? <OpportunitiesWorkspace jobs={shownJobs} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => setQuery("")} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>void changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>setJobs(current=>current.map(job=>job.id===updated.id?updated:job))} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing} /> : null}
         {!loading && !loadErrors.jobs && tab === "pipeline" ? <ApplicationsWorkspace jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
-        {!loading && !loadErrors.profile && tab === "profile" ? <Profile profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /> : null}
-        {!loading && tab === "sources" ? <SourcePanel jobs={jobs} onSynced={refreshOffers} /> : null}
+        {!loading && !loadErrors.profile && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><ProfileWorkspace profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></div> : null}
+        {!loading && (tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><SourcePanel jobs={jobs} onSynced={refreshOffers} /></div> : null}
         <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span><span>Aucune candidature envoyée automatiquement.</span></footer>
         </div>
       </section>
@@ -234,32 +232,6 @@ export function RadarApp({ userName }: { userName: string }) {
   </main>;
 }
 
-function Profile({ profile, onSave, onDocumentsLinked }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; onDocumentsLinked: (links: DocumentLinks) => void }) {
-  const [draft, setDraft] = useState(profile);
-  const [saving, setSaving] = useState(false);
-  const [filesBusy, setFilesBusy] = useState(false);
-  function linked(links: DocumentLinks) { setDraft(current => ({ ...current, ...links })); onDocumentsLinked(links); }
-  return <div className="profile-page"><nav aria-label="Sections du profil" className="profile-jump-nav"><a href="#experience-title">Mon carnet d’expériences <span>Relire et valider</span></a><a href="#profile-settings">Mon profil <span>Présentation générale</span></a><a href="#profile-documents">Mes documents <span>Originaux privés</span></a></nav><ExperienceLibrary documentId={draft.detailedExperienceDocumentId} /><div className="profile-layout mt-8">
-    <section className="glass-panel p-5 sm:p-7">
-      <div className="flex items-start justify-between gap-4"><div><h2 id="profile-settings" className="text-sm font-bold">Profil de pertinence</h2><p className="mt-1 text-sm leading-6 text-[#535768]">Votre profil historique reste conservé. Son enregistrement ne vaut pas approbation des faits : validez-les dans le carnet pour leur réutilisation.</p></div><Sparkles className="text-[#6161ff]" /></div>
-      <div className="mt-7 grid gap-5">
-        <Field label="Titre ciblé"><input value={draft.headline} onChange={event => setDraft({ ...draft, headline: event.target.value })} /></Field>
-        <Field label="Résumé professionnel"><textarea rows={4} value={draft.summary} onChange={event => setDraft({ ...draft, summary: event.target.value })} /></Field>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Localisation / disponibilité"><input value={draft.location} onChange={event => setDraft({ ...draft, location: event.target.value })} /></Field>
-          <Field label="Lien LinkedIn"><input placeholder="https://linkedin.com/in/..." value={draft.linkedinUrl} onChange={event => setDraft({ ...draft, linkedinUrl: event.target.value })} /></Field>
-        </div>
-        <Field label="Compétences qui comptent pour vous"><textarea rows={3} value={draft.skills.join(", ")} onChange={event => setDraft({ ...draft, skills: event.target.value.split(",").map(item => item.trim()).filter(Boolean) })} /></Field>
-      </div>
-      <button disabled={saving || filesBusy} onClick={async () => { setSaving(true); try { await onSave(draft); } finally { setSaving(false); } }} className="radar-add-button mt-7">{saving ? <LoaderCircle className="animate-spin" size={16} /> : <Check size={16} />} Enregistrer le profil</button>
-      {filesBusy ? <p className="mt-2 text-xs text-[#535768]">Le fichier est en cours d’enregistrement. Vos autres modifications restent à l’écran.</p> : null}
-    </section>
-    <aside id="profile-documents" className="profile-aside space-y-5">
-      <ProfileDocuments links={draft} onLinked={linked} onBusyChange={setFilesBusy} />
-      <section className="rounded-[24px] bg-[#e7ecff] p-5"><h2 className="text-xs font-bold uppercase tracking-[.14em] text-[#4b4bd1]">Résultats à valoriser</h2><div className="mt-4 space-y-3">{draft.achievements.map(achievement => <div key={achievement.label} className="border-b border-[#e8dacb] pb-3 last:border-0 last:pb-0"><p className="text-2xl font-semibold text-[#333333]">{achievement.label}</p><p className="mt-1 text-xs leading-5 text-[#535768]">{achievement.detail}</p></div>)}</div></section>
-    </aside>
-  </div></div>;
-}
 function JobDialog({ onClose, onCreated }: { onClose: () => void; onCreated: (job: JobRecord, deduplicated?: boolean) => void }) {
   const [draft, setDraft] = useState<JobDraft>(emptyDraft); const [paste, setPaste] = useState(""); const [parsing, setParsing] = useState(false); const [saving, setSaving] = useState(false); const [error, setError] = useState<string | null>(null);
   function update<K extends keyof JobDraft>(key: K, value: JobDraft[K]) { setDraft((current) => ({ ...current, [key]: value })); }
@@ -334,9 +306,9 @@ function Modal({ title, description, meta, onClose, children }: { title: string;
     document.addEventListener("keydown", onKeyDown);
     return () => { document.removeEventListener("keydown", onKeyDown); document.body.style.overflow = previousOverflow; previousFocus?.focus(); };
   }, []);
-  return <div data-testid="modal-backdrop" onClick={event => { if (event.target === event.currentTarget) onClose(); }} className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/35 p-0 backdrop-blur-md sm:items-center sm:p-6"><div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-[28px] border border-white bg-[#ffffff]/95 p-5 shadow-2xl outline-none sm:rounded-[28px] sm:p-7"><div className="mb-5 flex items-start justify-between gap-4 border-b border-[#eee7ec] pb-4"><div className="min-w-0"><h2 id={titleId} className="text-xl font-semibold leading-snug text-[#333333]">{title}</h2><p id={descriptionId} className="mt-1 max-w-xl text-sm leading-6 text-[#535768]">{description}</p>{meta ? <div className="mt-2">{meta}</div> : null}</div><button onClick={onClose} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-[#535768] hover:bg-[#f5f6f8]" aria-label="Fermer"><X size={20} /></button></div>{children}</div></div>;
+  return <div data-testid="modal-backdrop" onClick={event => { if (event.target === event.currentTarget) onClose(); }} className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/35 p-0 backdrop-blur-md sm:items-center sm:p-6"><div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} className="workspace-dialog max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-[28px] border border-white bg-[#ffffff]/95 p-5 shadow-2xl outline-none sm:rounded-[28px] sm:p-7"><div className="mb-5 flex items-start justify-between gap-4 border-b border-[#eee7ec] pb-4"><div className="min-w-0"><h2 id={titleId} className="text-xl font-semibold leading-snug text-[#333333]">{title}</h2><p id={descriptionId} className="mt-1 max-w-xl text-sm leading-6 text-[#535768]">{description}</p>{meta ? <div className="mt-2">{meta}</div> : null}</div><button onClick={onClose} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-[#535768] hover:bg-[#f5f6f8]" aria-label="Fermer"><X size={20} /></button></div>{children}</div></div>;
 }
-function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="block"><span className="mb-1.5 block text-xs font-bold text-[#535768]">{label}</span>{children}</label>; }
+function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="workspace-field"><span>{label}</span>{children}</label>; }
 function Toast({ message, onClose }: { message: string; onClose: () => void }) { useEffect(() => { const timeout = window.setTimeout(onClose, 4300); return () => window.clearTimeout(timeout); }, [onClose]); return <div className="fixed bottom-5 left-1/2 z-[60] flex w-[min(470px,calc(100%-32px))] -translate-x-1/2 items-center justify-between gap-4 rounded-2xl bg-[#333333] px-4 py-3 text-sm text-white shadow-xl"><span>{message}</span><button onClick={onClose} className="text-white/70 hover:text-white"><X size={16} /></button></div>; }
 function LoadingState() { return <div className="grid min-h-[45vh] place-items-center"><div className="text-center"><LoaderCircle className="mx-auto animate-spin text-[#6161ff]" size={26} /><p className="mt-3 text-sm text-[#535768]">Préparation de votre radar…</p></div></div>; }
 function remoteCopy(mode: JobInput["remoteMode"]) { return { full_remote: "Full remote", exceptional: "Présence exceptionnelle", hybrid: "Hybride", onsite: "Sur site", unknown: "Remote à confirmer" }[mode]; }
