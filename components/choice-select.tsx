@@ -16,6 +16,8 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
   onChange: (value: T) => void; disabled?: boolean;
 }) {
   const labelId = useId();
+  const desktopValueId = useId();
+  const mobileValueId = useId();
   const [open, setOpen] = useState(false);
   const selected = options.find(option => option.value === value)?.label ?? "Choisir";
   const groups = [...new Set(options.map(option => option.group ?? ""))];
@@ -25,8 +27,8 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
     <p id={labelId} className="mb-1.5 text-xs font-semibold text-[#535768]">{label}</p>
     <div className="hidden sm:block">
       <Select value={value} onValueChange={next => onChange(next as T)} disabled={disabled}>
-        <SelectTrigger aria-labelledby={labelId} className="h-11 w-full rounded-xl border-[#d0d4e4] bg-white px-3 text-left text-sm text-[#333333] shadow-none focus-visible:ring-[#e7ecff]">
-          <SelectValue placeholder="Choisir" />
+        <SelectTrigger aria-labelledby={`${labelId} ${desktopValueId}`} className="h-11 w-full rounded-xl border-[#d0d4e4] bg-white px-3 text-left text-sm text-[#333333] shadow-none focus-visible:ring-[#e7ecff]">
+          <SelectValue id={desktopValueId} placeholder="Choisir" />
         </SelectTrigger>
         <SelectContent position="popper" side="bottom" sideOffset={6} align="end" className="z-[80] max-h-[min(44vh,320px)] min-w-[var(--radix-select-trigger-width)] rounded-2xl border-[#d0d4e4] bg-[#ffffff] p-1 shadow-xl">
           {groups.map(group => <SelectGroup key={group || "all"}>
@@ -38,8 +40,8 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
     </div>
     <div className="sm:hidden">
       <Drawer open={open} onOpenChange={setOpen}>
-        <button type="button" disabled={disabled} aria-labelledby={labelId} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)} className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-[#d0d4e4] bg-white px-3 text-left text-sm font-medium text-[#333333] shadow-sm disabled:opacity-50">
-          <span className="min-w-0 truncate">{selected}</span><ChevronDown size={17} className="shrink-0 text-[#535768]" />
+        <button type="button" disabled={disabled} aria-labelledby={`${labelId} ${mobileValueId}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)} className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-[#d0d4e4] bg-white px-3 text-left text-sm font-medium text-[#333333] shadow-sm disabled:opacity-50">
+          <span id={mobileValueId} className="min-w-0 truncate">{selected}</span><ChevronDown size={17} className="shrink-0 text-[#535768]" />
         </button>
         <DrawerContent className="z-[80] rounded-t-[26px] border-[#d0d4e4] bg-[#ffffff] shadow-2xl">
           <DrawerHeader className="border-b border-[#d0d4e4] px-5 pb-3 text-left">

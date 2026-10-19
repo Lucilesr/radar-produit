@@ -6,7 +6,7 @@
   --secondary: #eeecfc; --secondary-foreground: #4943b3;
   --muted: #f2f2f0; --muted-foreground: #60616e;
   --accent: #eeecfc; --accent-foreground: #4943b3;
-  --border: #dedee6; --input: #b5b5c2; --ring: #5751cf;
+  --border: #dedee6; --input: #858593; --ring: #5751cf;
   --success: #286044; --success-surface: #edf5ef;
   --warning: #805416; --warning-surface: #fff5e4;
   --danger: #a52d39; --danger-surface: #fff1f2;
@@ -22,7 +22,7 @@ body { background: var(--background); font-family: var(--font-sans); letter-spac
 .workspace-brand>span { display: grid; place-items: center; width: 35px; height: 35px; border-radius: 10px; background: var(--primary); color: #fff; }
 .workspace-brand p { font-size: 19px; font-weight: 650; letter-spacing: -.8px; }
 .workspace-brand p span { color: var(--muted-foreground); font-weight: 400; }
-.radar-search { margin-top: 24px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); }
+.radar-search { margin-top: 24px; border: 1px solid var(--input); border-radius: 8px; background: var(--background); }
 .radar-search input:not([type=checkbox]):not([type=radio]):not([type=file]) { font-size: 13px; }
 .radar-nav { margin-top: 22px; gap: 6px; }
 .radar-nav button { min-height: 44px; color: var(--muted-foreground); font-size: 14px; font-weight: 500; padding: 11px 12px; border-radius: 8px; }
@@ -43,6 +43,8 @@ body { background: var(--background); font-family: var(--font-sans); letter-spac
 .workspace-skip:focus { top: 12px; }
 button, a, input, select, textarea, summary { -webkit-tap-highlight-color: transparent; }
 button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+.radar-app [role=combobox],.radar-app button[aria-haspopup=dialog],.radar-app select { border-color: var(--input); }
+.radar-app :is(button,a,input,select,textarea,summary,[tabindex]) { scroll-margin-block: 20px; }
 button:disabled { cursor: not-allowed; opacity: .55; }
 .radar-add-button,.secondary-button,.refresh-button,.offer-open-button,.offer-source-button,.offer-apply-button {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -85,6 +87,7 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 @media(min-width:1024px) { .radar-shell { display: grid; }.radar-sidebar .radar-add-button { width: 100%; margin-top: 26px; } }
 @media(max-width:1023px) { .radar-shell { display: block; }.radar-sidebar { position: relative; height: auto; padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }.radar-sidebar-bottom { display: none; }.radar-nav { margin-top: 18px; }.radar-topbar { padding-inline: 24px; }.radar-page { padding: 28px 24px; } }
 @media(max-width:640px) {
+  html { scroll-padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
   .radar-app { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
   .radar-sidebar { padding: 16px 16px 12px; }.radar-search { margin-top: 15px; }
   .radar-nav { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); border: 0; border-top: 1px solid var(--border); border-radius: 0; background: var(--card); box-shadow: none; backdrop-filter: none; z-index: 30; }

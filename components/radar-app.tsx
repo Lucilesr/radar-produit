@@ -1,21 +1,22 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { RefreshCw, ShieldCheck, Check, ClipboardCheck, LayoutDashboard, LoaderCircle, Mail, Plus, Search, Sparkles, Trash2, Undo2, UserRound, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
 import { hasApplication, inOpportunityView, reviewState, type OpportunityView } from "@/lib/opportunity-views";
-import { ProfileWorkspace } from "@/components/profile-workspace";
 import { PageHeader, PrivateLabel, WorkspaceBrand, WorkspaceLoading, WorkspaceState, useRadarNavigation } from "@/components/workspace-ui";
 import { TodayWorkspace, ApplicationsWorkspace } from "@/components/today-workspace";
 import { OpportunitiesWorkspace } from "@/components/opportunities-workspace";
 import { ChoiceSelect } from "@/components/choice-select";
 import { OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/components/offer-workspace";
 import { sourceNames } from "@/lib/source-catalog";
-import { SourcePanel } from "@/components/source-panel";
 import { activeStatuses, terminalStatuses } from "@/lib/application-workflow";
 import { profileTemplate } from "@/lib/profile-template";
 import type { CandidateProfile, DismissalReason, JobInput, JobRecord, JobStatus, MatchTier } from "@/lib/types";
+
+const ProfileWorkspace = lazy(() => import("@/components/profile-workspace").then(module => ({default: module.ProfileWorkspace})));
+const SourcePanel = lazy(() => import("@/components/source-panel").then(module => ({default: module.SourcePanel})));
 
 type Tab = "dashboard" | "offers" | "pipeline" | "profile" | "sources";
 type OfferFilter = OpportunityView;
@@ -159,7 +160,7 @@ export function RadarApp({ userName }: { userName: string }) {
         </div>
         <label className="radar-search"><Search size={16} /><input aria-label="Rechercher une offre" maxLength={200} placeholder="Rechercher une offre…" value={query} onChange={event => { setQuery(event.target.value); }} /></label>
 
-        <nav aria-label="Navigation principale" className="radar-nav">{tabs.map(({ id, label, mobileLabel, icon: Icon }) => <button key={id} onClick={() => selectTab(id)} aria-label={id === "offers" ? `${label} · ${stats.new} à examiner` : label} aria-current={tab === id ? "page" : undefined} className={tab === id ? "is-active" : ""}><Icon size={18} strokeWidth={1.7} /><span className="radar-nav-label">{label}</span><span className="radar-mobile-label">{mobileLabel}</span>{id === "offers" && stats.new > 0 ? <span className="nav-count" title="Offres à examiner">{stats.new}</span> : null}</button>)}</nav>
+        <nav aria-label="Navigation principale" className="radar-nav">{tabs.map(({ id, label, mobileLabel, icon: Icon }) => <button key={id} onClick={() => selectTab(id)} aria-current={tab === id ? "page" : undefined} className={tab === id ? "is-active" : ""}><Icon size={18} strokeWidth={1.7} /><span className="radar-nav-label">{label}</span><span className="radar-mobile-label">{mobileLabel}</span>{id === "offers" && stats.new > 0 ? <><span className="nav-count" aria-hidden="true">{stats.new}</span><span className="sr-only">{stats.new} à examiner</span></> : null}</button>)}</nav>
         <div className="radar-sidebar-bottom">
 
           <div className="sidebar-account"><span className="avatar">{initials}</span><span className="min-w-0 text-left"><span className="block truncate text-xs font-semibold">{userName}</span><span className="mt-1 block text-[10px] text-[#9a8596]">Espace personnel</span></span></div>
@@ -176,8 +177,8 @@ export function RadarApp({ userName }: { userName: string }) {
         {trashError ? <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">{trashError}<button className="ml-3 underline" onClick={() => { setTrashError(null); void refreshOffers(); }}>Actualiser pour vérifier</button></div> : null}
         {!loading && !loadErrors.jobs && tab === "offers" ? <OpportunitiesWorkspace jobs={shownJobs} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => setQuery("")} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>void changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>setJobs(current=>current.map(job=>job.id===updated.id?updated:job))} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing} /> : null}
         {!loading && !loadErrors.jobs && tab === "pipeline" ? <ApplicationsWorkspace jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
-        {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><ProfileWorkspace profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></div> : null}
-        {(tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><SourcePanel jobs={jobs} onSynced={refreshOffers} /></div> : null}
+        {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></div> : null}
+        {(tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><Suspense fallback={<WorkspaceLoading />}><SourcePanel jobs={jobs} onSynced={refreshOffers} /></Suspense></div> : null}
         <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span><span>Aucune candidature envoyée automatiquement.</span></footer>
         </div>
       </section>
@@ -190,6 +191,7 @@ export function RadarApp({ userName }: { userName: string }) {
 }
 
 function JobDialog({ onClose, onCreated }: { onClose: () => void; onCreated: (job: JobRecord, deduplicated?: boolean) => void }) {
+  const pasteId = useId();
   const [draft, setDraft] = useState<JobDraft>(emptyDraft); const [paste, setPaste] = useState(""); const [parsing, setParsing] = useState(false); const [saving, setSaving] = useState(false); const [error, setError] = useState<string | null>(null);
   function update<K extends keyof JobDraft>(key: K, value: JobDraft[K]) { setDraft((current) => ({ ...current, [key]: value })); }
   async function parsePaste() {
@@ -216,9 +218,9 @@ function JobDialog({ onClose, onCreated }: { onClose: () => void; onCreated: (jo
   }
   return <Modal title="Ajouter une opportunité" description="Collez une alerte, un post LinkedIn ou complétez les champs. Les faits absents restent à confirmer." onClose={onClose}>
     <div className="space-y-5">
-      <div className="rounded-2xl bg-[#fff2eb] p-4"><div className="flex items-center justify-between gap-3"><p className="text-sm font-bold">Analyser un texte</p><button disabled={!paste.trim() || parsing} onClick={() => void parsePaste()} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#333333] px-3 py-2 text-xs font-bold text-white disabled:opacity-50">{parsing ? <LoaderCircle size={14} className="animate-spin" /> : <Sparkles size={14} />} Préremplir</button></div><textarea value={paste} onChange={event => setPaste(event.target.value)} className="mt-3 min-h-24" placeholder="Collez le contenu de l’alerte ou du post LinkedIn ici…" /></div>
+      <div className="rounded-2xl bg-[#fff2eb] p-4"><div className="flex items-center justify-between gap-3"><label htmlFor={pasteId} className="text-sm font-bold">Analyser un texte</label><button disabled={!paste.trim() || parsing} onClick={() => void parsePaste()} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#333333] px-3 py-2 text-xs font-bold text-white disabled:opacity-50">{parsing ? <LoaderCircle size={14} className="animate-spin" /> : <Sparkles size={14} />} Préremplir</button></div><textarea id={pasteId} value={paste} onChange={event => setPaste(event.target.value)} className="mt-3 min-h-24" placeholder="Collez le contenu de l’alerte ou du post LinkedIn ici…" /></div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Intitulé *"><input value={draft.title} onChange={event => update("title", event.target.value)} placeholder="Senior Product Manager" /></Field>
+        <Field label="Intitulé (obligatoire)"><input required value={draft.title} onChange={event => update("title", event.target.value)} placeholder="Senior Product Manager" /></Field>
         <Field label="Entreprise"><input value={draft.company} onChange={event => update("company", event.target.value)} placeholder="Nom de l’entreprise" /></Field>
         <ChoiceSelect label="Type de contrat" value={draft.contractType} onChange={value => update("contractType", value)} options={[{value:"other",label:"À confirmer"},{value:"cdi",label:"CDI"},{value:"freelance",label:"Freelance"}]} />
         <ChoiceSelect label="Source" value={draft.source} onChange={value => update("source", value)} options={sourceNames.map(value => ({value,label:value}))} />
@@ -255,7 +257,8 @@ function Modal({ title, description, meta, onClose, children }: { title: string;
       if (event.defaultPrevented || document.querySelector('[data-slot="drawer-content"][data-state="open"], [data-slot="select-content"][data-state="open"]')) return;
       if (event.key === "Escape") { event.preventDefault(); onCloseRef.current(); }
       if (event.key !== "Tab") return;
-      const elements = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]') ?? []);
+      const elements = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex], [contenteditable="true"]') ?? [])
+        .filter(element => element.tabIndex >= 0 && element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden" && !element.closest('[inert], [hidden]'));
       const first = elements[0]; const last = elements.at(-1);
       if (!first) { event.preventDefault(); return; }
       if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) { event.preventDefault(); last?.focus(); }
