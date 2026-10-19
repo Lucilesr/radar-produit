@@ -18,18 +18,21 @@ body { background: var(--background); font-family: var(--font-sans); letter-spac
 .radar-app { padding: 0; background: var(--background); color: var(--foreground); }
 .radar-shell { max-width: 1760px; min-height: 100dvh; grid-template-columns: 224px minmax(0,1fr); border: 0; border-radius: 0; box-shadow: none; }
 .radar-sidebar { top: 0; height: 100dvh; padding: 28px 18px 20px; border-radius: 0; border-color: var(--border); background: var(--card); }
-.workspace-brand { display: flex; align-items: center; gap: 9px; white-space: nowrap; }
-.workspace-brand>span { display: grid; place-items: center; width: 35px; height: 35px; border-radius: 10px; background: var(--primary); color: #fff; }
-.workspace-brand p { font-size: 19px; font-weight: 650; letter-spacing: -.8px; }
+.workspace-brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.workspace-brand>span { display: grid; place-items: center; flex: none; width: 35px; height: 35px; border-radius: 10px; background: var(--primary); color: #fff; }
+.workspace-brand p { min-width: 0; overflow-wrap: anywhere; font-size: 19px; font-weight: 650; letter-spacing: -.8px; }
 .workspace-brand p span { color: var(--muted-foreground); font-weight: 400; }
 .radar-search { margin-top: 24px; border: 1px solid var(--input); border-radius: 8px; background: var(--background); }
 .radar-search input:not([type=checkbox]):not([type=radio]):not([type=file]) { font-size: 13px; }
 .radar-nav { margin-top: 22px; gap: 6px; }
-.radar-nav button { min-height: 44px; color: var(--muted-foreground); font-size: 14px; font-weight: 500; padding: 11px 12px; border-radius: 8px; }
+.radar-nav button { min-height: 44px; min-width: 0; white-space: normal; color: var(--muted-foreground); font-size: 14px; font-weight: 500; padding: 11px 12px; border-radius: 8px; }
+.radar-nav-label,.radar-mobile-label { min-width: 0; overflow-wrap: anywhere; }
+.radar-nav button>svg,.nav-count { flex-shrink: 0; }
 .radar-nav button:hover { color: var(--foreground); background: var(--muted); }
 .radar-nav button.is-active { color: var(--primary); background: var(--accent); }
 .nav-count { color: var(--primary); background: #e2defa; }
 .sidebar-account { border-color: var(--border); }
+.sidebar-account .truncate { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
 .sidebar-account>span>span:last-child { color: var(--muted-foreground); }
 .avatar { color: var(--primary); background: var(--accent); }
 .radar-topbar { min-height: 62px; padding: 14px 36px; border-radius: 0; background: var(--card); border-color: var(--border); }
@@ -84,7 +87,7 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 .workspace-tabs button>span { font-size: 12px; font-variant-numeric: tabular-nums; }
 .workspace-dialog { border-radius: 14px; border: 1px solid var(--border); background: var(--card); }
 .workspace-dialog h2 { font-size: 22px; }
-@media(min-width:1024px) { .radar-shell { display: grid; }.radar-sidebar .radar-add-button { width: 100%; margin-top: 26px; } }
+@media(min-width:1024px) { .radar-shell { display: grid; }.radar-sidebar { overflow-y: auto; }.radar-sidebar .radar-add-button { width: 100%; margin-top: 26px; } }
 @media(max-width:1023px) { .radar-shell { display: block; }.radar-sidebar { position: relative; height: auto; padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }.radar-sidebar-bottom { display: none; }.radar-nav { margin-top: 18px; }.radar-topbar { padding-inline: 24px; }.radar-page { padding: 28px 24px; } }
 @media(max-width:640px) {
   html { scroll-padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
