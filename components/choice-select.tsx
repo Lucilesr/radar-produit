@@ -23,17 +23,17 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
   const groups = [...new Set(options.map(option => option.group ?? ""))];
   function choose(next: T) { onChange(next); setOpen(false); }
   function desktopOptions(group: string) {
-    return options.filter(option => (option.group ?? "") === group).map(option => <SelectItem key={option.value} value={option.value} className="min-h-10 rounded-lg px-3 py-2 text-sm text-[#333333] focus:bg-[#e7ecff] focus:text-[#4b4bd1]">{option.label}</SelectItem>);
+    return options.filter(option => (option.group ?? "") === group).map(option => <SelectItem key={option.value} value={option.value} className="min-h-10 rounded-lg pl-3 pr-9 py-2 text-sm text-[#333333] focus:bg-[#e7ecff] focus:text-[#4b4bd1]">{option.label}</SelectItem>);
   }
 
-  return <div className="min-w-0">
+  return <div className="choice-select min-w-0">
     <p id={labelId} className="mb-1.5 text-xs font-semibold text-[#535768]">{label}</p>
     <div className="hidden sm:block">
       <Select value={value} onValueChange={next => onChange(next as T)} disabled={disabled}>
-        <SelectTrigger aria-labelledby={`${labelId} ${desktopValueId}`} className="h-11 w-full rounded-xl border-[#d0d4e4] bg-white px-3 text-left text-sm text-[#333333] shadow-none focus-visible:ring-[#e7ecff]">
+        <SelectTrigger aria-labelledby={`${labelId} ${desktopValueId}`} className="choice-select-trigger h-11 w-full rounded-xl border-[#d0d4e4] bg-white px-3 text-left text-sm text-[#333333] shadow-none focus-visible:ring-[#e7ecff]">
           <SelectValue id={desktopValueId} placeholder="Choisir" />
         </SelectTrigger>
-        <SelectContent aria-label={label} position="popper" side="bottom" sideOffset={6} align="end" className="z-[80] max-h-[min(44vh,320px)] min-w-[var(--radix-select-trigger-width)] rounded-2xl border-[#d0d4e4] bg-[#ffffff] p-1 shadow-xl">
+        <SelectContent aria-label={label} position="popper" side="bottom" sideOffset={6} align="start" className="choice-select-menu z-[80] max-h-[min(44vh,320px)] min-w-[var(--radix-select-trigger-width)] rounded-2xl border-[#d0d4e4] bg-[#ffffff] p-1 shadow-xl">
           {groups.map(group => group ? <SelectGroup key={group}>
             <SelectLabel className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-[#686b7b]">{group}</SelectLabel>
             {desktopOptions(group)}
@@ -43,7 +43,7 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
     </div>
     <div className="sm:hidden">
       <Drawer open={open} onOpenChange={setOpen} autoFocus>
-        <DrawerTrigger asChild><button type="button" disabled={disabled} aria-labelledby={`${labelId} ${mobileValueId}`} className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-[#d0d4e4] bg-white px-3 text-left text-sm font-medium text-[#333333] shadow-sm disabled:opacity-50">
+        <DrawerTrigger asChild><button type="button" disabled={disabled} aria-labelledby={`${labelId} ${mobileValueId}`} className="choice-select-trigger flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-[#d0d4e4] bg-white px-3 text-left text-sm font-normal text-[#333333] shadow-sm disabled:opacity-50">
           <span id={mobileValueId} className="min-w-0 truncate">{selected}</span><ChevronDown size={17} className="shrink-0 text-[#535768]" />
         </button></DrawerTrigger>
         <DrawerContent className="z-[80] rounded-t-[26px] border-[#d0d4e4] bg-[#ffffff] shadow-2xl">
