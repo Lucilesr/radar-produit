@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { RefreshCw, ShieldCheck, Check, ClipboardCheck, LayoutDashboard, LoaderCircle, Mail, Plus, Search, Sparkles, Trash2, Undo2, UserRound, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
@@ -40,6 +40,18 @@ const emptyDraft = (): JobDraft => ({ title: "", company: "", contractType: "oth
 export function RadarApp({ userName, initialState, initialRoute, initialProfileSection }: { userName: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection }) {
   const { route, navigate } = useRadarNavigation(initialRoute);
   const { tab, filter, query, view: workspaceView } = route;
+  const previousTab = useRef(tab);
+  useLayoutEffect(() => {
+    if (previousTab.current === tab) return;
+    previousTab.current = tab;
+    const reset = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.getElementById("workspace-title")?.focus({ preventScroll: true });
+    };
+    reset();
+    const frame = requestAnimationFrame(reset);
+    return () => cancelAnimationFrame(frame);
+  }, [tab]);
   const setFilter = (filter: OfferFilter) => navigate({ filter, offer: undefined });
   const setQuery = (query: string) => navigate({ query, tab: "offers", offer: undefined }, route.tab === "offers" && !!route.query);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -140,7 +152,7 @@ export function RadarApp({ userName, initialState, initialRoute, initialProfileS
   const searchedJobs = allJobs.filter(job => `${job.title} ${job.company} ${job.source}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
   const viewCounts = Object.fromEntries((["to_review", "selected", "good_matches", "all", "trash"] as OfferFilter[]).map(view => [view, searchedJobs.filter(job => inOpportunityView(job, view)).length])) as Record<OfferFilter, number>;
   const shownJobs = filter === "to_review" ? sortOffersForTriage(searchedJobs) : searchedJobs.filter(job => inOpportunityView(job, filter));
-  function selectTab(next: Tab) { navigate({ tab: next, offer: undefined }); window.scrollTo(0, 0); requestAnimationFrame(() => document.getElementById("workspace-title")?.focus({preventScroll:true})); }
+  function selectTab(next: Tab) { navigate({ tab: next, offer: undefined }); }
 
   async function refreshOffers() {
     if (trashLock.current) return;

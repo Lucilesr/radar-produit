@@ -1,5 +1,9 @@
 # Évolutions de Radar Produit
 
+## 20 octobre 2026
+
+- Navigation : retour en haut après le changement effectif d’onglet, y compris lors du retour vers une section déjà visitée.
+
 ## 19 octobre 2026
 
 - Filtre du carnet intégré au sélecteur commun : menu stylé sur ordinateur, panneau sur mobile, chevron aligné et champs espacés.
