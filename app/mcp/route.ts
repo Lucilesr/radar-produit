@@ -2,7 +2,7 @@ import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { ensureSameOrigin } from "@/lib/server";
 import { listOffers, saveOffer, updateOffer, markOfferClosedFromSource } from "@/lib/job-store";
 import { dueInterviews, markInterviewsReminded } from "@/lib/interview-store";
-import { syncAuthorizedFeed } from "@/lib/source-store";
+import { recordCollectiveAlert, syncAuthorizedFeed } from "@/lib/source-store";
 import { batchSchema, importRules, importTools, listSchema } from "@/lib/import-contract";
 import { approvedFacts } from "@/lib/experience-store";
 import { getQuestionGenerationContext, listAnswerProposals, saveAnswerProposal } from "@/lib/application-proposal-store";
@@ -84,6 +84,7 @@ export async function POST(request: Request) {
         if (!args || typeof args !== "object" || Array.isArray(args) || Object.keys(args).length) return failure(id, -32602, "Arguments invalides");
         return reply(id, toolResult(importRules));
       }
+      if (name === "radar_record_collective_alert") return reply(id, toolResult({ source: await recordCollectiveAlert(user.userId, args) }));
       if (name === "radar_list_offers") return reply(id, toolResult({ offers: await listOffers(user.userId, listSchema.parse(args).limit) }));
       if (name === "radar_update_offer") { if (!args || typeof args.id !== "string" || Object.keys(args).some(key => !["id", "offer"].includes(key))) return failure(id, -32602, "Arguments invalides"); return reply(id, toolResult({ job: await updateOffer(user.userId, args.id, args.offer) })); }
       if (name === "radar_mark_offer_closed") return reply(id, toolResult(await markOfferClosedFromSource(user.userId, args)));
