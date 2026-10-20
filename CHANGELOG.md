@@ -2,6 +2,8 @@
 
 ## 20 octobre 2026
 
+- Collecte LinkedIn : premier pilote local sans compte, recherche PO/PM tous pays et contrôle du français dans les descriptifs ; propositions séparées de l’import, lecture bornée et arrêt sur blocage. WTTJ et l’exécution récurrente ne sont pas activés.
+
 - Navigation du profil : une nouvelle visite depuis un autre onglet ouvre le carnet d’expériences, sans perdre les brouillons. Les liens directs et l’historique du navigateur conservent l’accès aux documents.
 
 - Opportunités : préremplissage local depuis le descriptif avec propositions à cocher, mode de travail et langue modifiables, présence hebdomadaire/mensuelle distincte et select du pays autorisé pour le télétravail. Migration additive pour conserver ces faits sans modifier le suivi de candidature.
