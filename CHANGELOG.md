@@ -2,6 +2,8 @@
 
 ## 20 octobre 2026
 
+- Candidatures : date d’envoi, suite attendue et statut dans des colonnes alignées sur grand écran ; cartes adaptées aux écrans étroits et action « Ouvrir » raccourcie.
+
 - Candidatures : le premier clic sur « J’ai postulé » enregistre sa date. La liste « En cours » affiche cette date et une ancienneté colorée à partir de 14 puis 30 jours. Les suivis historiques sans date restent signalés comme inconnus.
 
 - Navigation du profil : une nouvelle visite depuis un autre onglet ouvre le carnet d’expériences, sans perdre les brouillons. Les liens directs et l’historique du navigateur conservent l’accès aux documents.
