@@ -5,7 +5,7 @@ import { countryLabel } from "@/lib/countries";
 import { selectedSuggestions, suggestOfferFields, type OfferSuggestion, type SuggestedField } from "@/lib/offer-suggestions";
 import type { JobInput } from "@/lib/types";
 import { languageOptions, workOptions } from "@/components/work-arrangement-fields";
-const labels:Record<SuggestedField,string>={contractType:"Contrat",annualSalary:"Salaire annuel brut",dailyRate:"TJM HT",remoteMode:"Mode de travail",language:"Langue",onsiteDaysPerWeek:"Jours sur site par semaine",onsiteDaysPerMonth:"Jours sur site par mois",remoteCountry:"Pays de télétravail"};
+const labels:Record<SuggestedField,string>={title:"Intitulé",company:"Entreprise",contractType:"Contrat",annualSalary:"Salaire annuel brut",dailyRate:"TJM HT",remoteMode:"Mode de travail",language:"Langue",onsiteDaysPerWeek:"Jours sur site par semaine",onsiteDaysPerMonth:"Jours sur site par mois",remoteCountry:"Pays de télétravail"};
 function display(field:SuggestedField,value:unknown) {
  if(value===""||value==null||value==="unknown"||value==="other")return "À confirmer";
  if(field==="remoteMode")return workOptions.find(item=>item.value===value)?.label??String(value);

@@ -20,6 +20,8 @@ test('préremplissage : aucune fréquence de présence déduite de jours de tél
  assert.equal(value('Présence : 12 jours sur site par mois','onsiteDaysPerMonth'),12);
  assert.equal(value('6 jours sur site par semaine','onsiteDaysPerWeek'),undefined);
  assert.equal(value('32 jours sur site par mois','onsiteDaysPerMonth'),undefined);
+ assert.equal(value('123 jours sur site par mois','onsiteDaysPerMonth'),undefined);
+ assert.equal(value('-2 jours sur site par semaine','onsiteDaysPerWeek'),undefined);
  assert.equal(value('2 jours sur site par semaine\n3 jours sur site par semaine','onsiteDaysPerWeek'),undefined);
 });
 test('préremplissage : inconnues, négations et pays non attribuables restent absents',()=>{
@@ -52,4 +54,11 @@ test('offres : fréquences et pays normalisés, valeurs invalides refusées',()=
  const result=normalizeJobInput({...base,remoteCountry:'MU',onsiteDaysPerWeek:2,onsiteDaysPerMonth:4});assert.equal(result.onsiteDaysPerWeek,2);assert.equal(result.remoteCountry,'MU');
  for(const fields of [{remoteCountry:'XX'},{remoteCountry:'France'},{onsiteDaysPerWeek:6},{onsiteDaysPerWeek:1.5},{onsiteDaysPerMonth:32}])assert.throws(()=>normalizeJobInput({...base,...fields}));
  assert.equal(normalizeJobInput(base).onsiteDaysPerWeek,null);
+});
+
+test('préremplissage : titre d’en-tête et entreprise explicite, sans prendre une mission pour le poste',()=>{
+ const text='Senior Product Owner\nEntreprise : Atelier fictif\nCDI';assert.equal(value(text,'title'),'Senior Product Owner');assert.equal(value(text,'company'),'Atelier fictif');
+ assert.equal(value('Notre équipe recherche des profils.\nCollaborer avec le Product Manager.','title'),undefined);
+ assert.equal(value('Titre : Responsable produit digital','title'),'Responsable produit digital');
+ assert.equal(value('Entreprise :','company'),undefined);
 });

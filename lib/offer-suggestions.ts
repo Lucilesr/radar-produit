@@ -1,7 +1,7 @@
 import type { JobInput } from "./types";
 import { parseOfferText } from "./offer-parser";
 import { countryCodes, countryLabel } from "./countries";
-export type SuggestedField="contractType"|"annualSalary"|"dailyRate"|"remoteMode"|"language"|"onsiteDaysPerWeek"|"onsiteDaysPerMonth"|"remoteCountry";
+export type SuggestedField="title"|"company"|"contractType"|"annualSalary"|"dailyRate"|"remoteMode"|"language"|"onsiteDaysPerWeek"|"onsiteDaysPerMonth"|"remoteCountry";
 export type OfferSuggestion={field:SuggestedField;value:string|number;quote:string};
 const fold=(text:string)=>text.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 export function suggestOfferFields(text:string):OfferSuggestion[] {
@@ -10,8 +10,12 @@ export function suggestOfferFields(text:string):OfferSuggestion[] {
   function add(field:SuggestedField,value:string|number|undefined|null,pattern:RegExp) {
     const quote=lines.find(line=>pattern.test(line));
     if((field==="annualSalary"||field==="dailyRate")&&quote&&!/€|\bEUR\b|euros?/i.test(quote))return;
-    if(quote&&value!==undefined&&value!==null&&value!=="unknown"&&value!=="other")result.push({field,value,quote});
+    if(quote&&value!==undefined&&value!==null&&value!==""&&value!=="unknown"&&value!=="other")result.push({field,value,quote});
   }
+  const titleLine=lines.find(line=>/^(?:intitulé|titre|poste|job title|title)\s*:/i.test(line));
+  const header=titleLine?.replace(/^(?:intitulé|titre|poste|job title|title)\s*:\s*/i,"")??(/^(?:(?:senior|lead|junior|staff)\s+)?(?:product owner|product manager|product builder|product ops|product lead)\b/i.test(lines[0]??"")?lines[0]:undefined);
+  if(header&&header.length<=180)result.push({field:"title",value:header,quote:titleLine??lines[0]});
+  add("company",parsed.company,/^(?:chez|at|company|entreprise)\s*[:\-]/i);
   const permanent=/\bCDI\b|\bpermanent\b/i.test(text),freelance=/\bfreelance\b|\bcontractor\b/i.test(text);
   if(permanent!==freelance&&!/(?:pas de|sans|no|not)\s+(?:CDI|freelance|permanent|contractor)/i.test(text))add("contractType",permanent?"cdi":"freelance",/\bCDI\b|\bfreelance\b|\bcontractor\b|\bpermanent\b/i);
   const salaryLine=lines.find(line=>/(?:salaire|salary|rémunération|compensation)/i.test(line)&&/annuel|annual|par an|per year|\/an/i.test(line));
@@ -25,7 +29,7 @@ export function suggestOfferFields(text:string):OfferSuggestion[] {
   const professional=englishLine&&/professionnel|professional|B2/i.test(englishLine);
   if(!/anglais\s+(?:non (?:requis|exigé)|facultatif)|(?:no|not)\s+english\s+(?:required|needed)/i.test(text))add("language",englishLine?(advanced?"advanced_en":professional?"professional_en":"en"):/français|french/i.test(text)?"fr":"unknown",/anglais|english|français|french/i);
   for(const [field,period,max] of [["onsiteDaysPerWeek","semaine|week",5],["onsiteDaysPerMonth","mois|month",31]] as const) {
-    const number="([0-9]{1,2}|un|une|deux|trois|quatre|cinq|one|two|three|four|five)";
+    const number="(?<![\\d.,-])\\b([0-9]{1,2}|un|une|deux|trois|quatre|cinq|one|two|three|four|five)";
     const days="\\s*(?:jours?|days?|j)\\b";
     const site="(?:sur (?:le )?site|en presentiel|de presence|au bureau|on[ -]?site|in[ -]?office)";
     const per="\\s*(?:par|per|/|a)\\s*(?:"+period+")";
