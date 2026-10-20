@@ -2,6 +2,8 @@
 
 ## 20 octobre 2026
 
+- Navigation du profil : une nouvelle visite depuis un autre onglet ouvre le carnet d’expériences, sans perdre les brouillons. Les liens directs et l’historique du navigateur conservent l’accès aux documents.
+
 - Opportunités : préremplissage local depuis le descriptif avec propositions à cocher, mode de travail et langue modifiables, présence hebdomadaire/mensuelle distincte et select du pays autorisé pour le télétravail. Migration additive pour conserver ces faits sans modifier le suivi de candidature.
 
 - Design system : calendriers français partagés, date/heure séparées, skeletons communs, textareas redimensionnables, sélecteurs cohérents et aides secondaires accessibles au clavier et au toucher.

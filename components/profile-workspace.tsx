@@ -9,14 +9,14 @@ import type { CandidateProfile } from "@/lib/types";
 import type { DocumentLinks } from "@/lib/document-input";
 import { readProfileSection, type ProfileSection as Section } from "@/lib/radar-navigation";
 const sections: [Section,string][]=[["experiences","Carnet d’expériences"],["documents","Mes documents"],["presentation","Ma présentation"]];
-export function ProfileWorkspace({profile,onSave,onDocumentsLinked,initialSection="experiences"}:{profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onDocumentsLinked:(links:DocumentLinks)=>void;initialSection?:Section}) {
+export function ProfileWorkspace({profile,onSave,onDocumentsLinked,initialSection="experiences",active=true}:{profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onDocumentsLinked:(links:DocumentLinks)=>void;initialSection?:Section;active?:boolean}) {
   const [draft,setDraft]=useState(profile),[section,setSection]=useState<Section>(initialSection);
   const [saving,setSaving]=useState(false),[filesBusy,setFilesBusy]=useState(false),[saved,setSaved]=useState(false),[saveError,setSaveError]=useState("");
   const dirty=JSON.stringify(draft)!==JSON.stringify(profile);
   useEffect(()=>{
     const restore=()=>setSection(readProfileSection(new URLSearchParams(window.location.search).get("profile")));
-    restore();window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);
-  },[]);
+    if(active)restore();window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);
+  },[active]);
   useEffect(()=>{if(!dirty)return;const beforeUnload=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue="";};window.addEventListener("beforeunload",beforeUnload);return()=>window.removeEventListener("beforeunload",beforeUnload);},[dirty]);
   function select(next:Section){setSection(next);const url=new URL(window.location.href);url.searchParams.set("profile",next);window.history.pushState(null,"",url.pathname+url.search+url.hash);}
   function linked(links:DocumentLinks){setDraft(current=>({...current,...links}));onDocumentsLinked(links);}
