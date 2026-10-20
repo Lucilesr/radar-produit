@@ -18,6 +18,8 @@
 
 ## 20 octobre 2026
 
+- Alertes Collective : le lien de recherche reçu par email peut être conservé dans Sources et ouvert pour vérifier les annonces individuelles. Une alerte agrégée ne crée aucune fiche d’offre fictive.
+
 - Navigation du profil : une nouvelle visite depuis un autre onglet ouvre le carnet d’expériences, sans perdre les brouillons. Les liens directs et l’historique du navigateur conservent l’accès aux documents.
 
 - Opportunités : préremplissage local depuis le descriptif avec propositions à cocher, mode de travail et langue modifiables, présence hebdomadaire/mensuelle distincte et select du pays autorisé pour le télétravail. Migration additive pour conserver ces faits sans modifier le suivi de candidature.

@@ -29,11 +29,11 @@ export const batchSchema = z.object({ offers: z.array(offerSchema).min(1).max(20
 export const listSchema = z.object({ limit: z.number().int().min(1).max(100).default(50) }).strict();
 
 export const importRules = {
-  version: 5,
+  version: 6,
   query: 'newer_than:7d -in:spam -in:trash {from:collective.work from:malt.com}',
   selection: "Lire uniquement les alertes d'offres et propositions de mission. Ignorer statistiques, newsletters, discussions support et suivis de candidature dans cet import.",
   extraction: "Enregistrer seulement les faits présents dans la fiche. Ne jamais inventer salaire, TJM, contrat ou remote à partir des filtres de recherche. Null pour les montants absents ; unknown pour remote/langue non précisés.",
-  linksOnly: "Une alerte Collective qui annonce un nombre d'offres et donne seulement un lien de recherche n'est pas une offre : ne pas créer de fiche fictive. Signaler la notification comme à consulter, sans récupération automatique non autorisée du site.",
+  linksOnly: "Une alerte Collective qui annonce un nombre d'offres et donne seulement un lien de recherche n'est pas une offre : ne pas créer de fiche fictive. Enregistrer le lien et la date via radar_record_collective_alert pour l'afficher dans Sources, sans récupération automatique du site. Les annonces individuelles vérifiées peuvent ensuite être importées séparément.",
   privacy: "Ne transmettre à Radar ni email MIME/HTML brut, ni pièce jointe, ni identifiants Google. Seulement une description factuelle normalisée et le lien d'origine. Aucun changement Gmail, aucune candidature ou réponse automatique.",
   thresholds: { cdiAnnualEur: 55000, freelanceDailyEur: 500 },
   additionalMailQuery: broadMailQuery,
@@ -66,6 +66,7 @@ const offerProperties = {
 };
 
 export const importTools = [
+  { name: "radar_record_collective_alert", description: "Afficher dans Sources la dernière alerte email Collective contenant uniquement un lien de recherche. Ne crée aucune fiche d'offre et ne lit pas le site tiers.", inputSchema: { type: "object", properties: { url: { type: "string", format: "uri" }, notificationAt: { type: "string", format: "date-time" }, label: { type: "string", maxLength: 120 } }, required: ["url", "notificationAt", "label"], additionalProperties: false }, annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false } },
   { name: "radar_mark_offer_closed", description: "Mettre une offre précise en corbeille si et seulement si sa source fournit une fermeture explicite attribuable à son URL exacte. Conserve candidature, notes et entretiens. N'infère rien d'un lien indisponible.", inputSchema: { type: "object", properties: { id: { type: "string" }, reason: { type: "string", enum: ["filled", "applications_closed"] }, source: { type: "string" }, sourceUrl: { type: "string", format: "uri" }, evidence: { type: "string", minLength: 12, maxLength: 500 } }, required: ["id", "reason", "source", "sourceUrl", "evidence"], additionalProperties: false }, annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false } },
   { name: "radar_update_offer", description: "Enrichir les faits d'une offre existante : description, dates sources et lien de candidature. Ne modifie ni statut, ni notes privées, ni entretiens. Réservé au propriétaire connecté.", inputSchema: { type: "object", properties: { id: { type: "string" }, offer: { type: "object", properties: offerProperties, additionalProperties: false } }, required: ["id", "offer"], additionalProperties: false }, annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false } },
   { name: "radar_due_interviews", description: "Lister les entretiens passés qui attendent un bilan et n'ont pas encore eu de rappel. Lecture privée, aucun email envoyé.", inputSchema: { type: "object", properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true, openWorldHint: false } },
