@@ -2,7 +2,7 @@
 
 ## 20 octobre 2026
 
-- Candidatures : date d’envoi, prochaine étape et statut dans des colonnes alignées et centrées sur grand écran ; cartes rééquilibrées sur écrans étroits, statut plus discret et bouton « Ouvrir » compact. Sans date d’entretien, la prochaine étape indique « Entretien à suivre » ; le menu du statut reste dans la fenêtre et défile si nécessaire.
+- Candidatures : date d’envoi, prochaine étape et statut dans des colonnes alignées et centrées sur grand écran ; cartes rééquilibrées sur écrans étroits, statut plus discret et bouton « Ouvrir » compact. Sans date d’entretien, la prochaine étape indique « Entretien à suivre » ; le menu du statut reste dans la fenêtre, défile si nécessaire et indique le focus sans double contour.
 
 - Candidatures : le premier clic sur « J’ai postulé » enregistre sa date. La liste « En cours » affiche cette date dans un tag coloré à partir de 14 puis 30 jours, sans mention relative supplémentaire. Les suivis historiques sans date restent signalés comme inconnus.
 
