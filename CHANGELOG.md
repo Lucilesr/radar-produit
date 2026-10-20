@@ -2,6 +2,8 @@
 
 ## 20 octobre 2026
 
+- Design system : calendriers français partagés, date/heure séparées, skeletons communs, textareas redimensionnables, sélecteurs cohérents et aides secondaires accessibles au clavier et au toucher.
+
 - Navigation : retour en haut après le changement effectif d’onglet, y compris lors du retour vers une section déjà visitée.
 
 ## 19 octobre 2026

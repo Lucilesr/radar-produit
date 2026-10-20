@@ -1,4 +1,8 @@
 "use client";
+
+import { DatePicker, DateTimePicker } from "@/components/date-picker";
+import { HelpTooltip } from "@/components/help-tooltip";
+import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { Banknote, BriefcaseBusiness, CalendarDays, CalendarPlus, Check, CheckCircle2, CircleHelp, Clock3, Copy, ExternalLink, Globe2, Languages, LoaderCircle, MapPin, Pencil, type LucideIcon } from "lucide-react";
 import { ChoiceSelect, type ChoiceOption } from "@/components/choice-select";
@@ -70,12 +74,12 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
           {job.notificationAt ? <MetaFact icon={Clock3} label="Notification source" value={formatDate(job.notificationAt)} /> : null}
         </div>
       </section>
-      {!job.publishedAt ? <p className="rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">La source ne donne pas de date de publication confirmée. La date d’import ou de notification ne la remplace pas.</p> : null}
+      {!job.publishedAt ? <div className="inline-help"><span>Date de publication non précisée</span><HelpTooltip label="Date de publication">La date d’import ou de notification ne remplace pas la date réelle de publication.</HelpTooltip></div> : null}
       <div className="grid gap-3 sm:grid-cols-2"><Signals title="Pourquoi c’est pertinent" items={job.reasons} tone="positive" /><Signals title="Points à vérifier" items={job.flags} tone="caution" /></div>
       <section><div className="mb-3 flex items-center justify-between gap-3"><p className="offer-section-title">Description, missions et exigences</p>{!job.deletedAt ? <button onClick={() => setEditing(true)} className="secondary-button"><Pencil size={13} /> Compléter / corriger</button> : null}</div><p className="whitespace-pre-wrap break-words rounded-2xl bg-[#fffaf8] p-4 text-sm leading-7 text-[#535768]">{job.description || "Aucune description fournie. Ajoutez le contenu de l’annonce ou d’une alerte autorisée."}</p>{coverage !== "Description complète fournie" ? <p className="mt-2 text-xs leading-5 text-[#535768]">{coverage} : les informations absentes restent à confirmer.{!job.deletedAt ? " Vous pouvez coller une description complète ici, sans recréer une fiche." : " Restaurez l’offre pour compléter sa description."}</p> : null}</section>
     </> : null}
     {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); setEditing(false); }} onCancel={() => setEditing(false)} /> : null}
-    {context === "application" && activeView === "application" ? <><StatusSelect value={job.status} onChange={status => onStatus(job.id, status)} /><div className="rounded-2xl bg-[#fff2eb] p-4"><Field label="Notes privées de candidature"><textarea rows={5} maxLength={2000} value={note} onChange={event => setNote(event.target.value)} placeholder="Vos échanges, vos conditions proposées, les points encore à confirmer…" /></Field><p className="mt-2 text-xs leading-5 text-[#535768]">Ces notes restent distinctes de l’annonce. Une proposition n’est pas un accord du recruteur.</p><button disabled={busy || note === (job.candidateNote ?? "")} onClick={async () => { setBusy(true); try { await onNote(job.id, note); } finally { setBusy(false); } }} className="radar-add-button mt-3 disabled:opacity-40">{busy ? <LoaderCircle size={14} className="animate-spin" /> : <Check size={14} />} Enregistrer la note</button></div><button onClick={() => setView("interviews")} className="secondary-button"><CalendarPlus size={14} /> Planifier un entretien ou faire le bilan</button></> : null}
+    {context === "application" && activeView === "application" ? <><StatusSelect value={job.status} onChange={status => onStatus(job.id, status)} /><div className="rounded-2xl bg-[#fff2eb] p-4"><Field label="Notes privées de candidature"><Textarea rows={5} maxLength={2000} value={note} onChange={event => setNote(event.target.value)} placeholder="Vos échanges, vos conditions proposées, les points encore à confirmer…" /></Field><p className="mt-2 text-xs leading-5 text-[#535768]">Ces notes restent distinctes de l’annonce. Une proposition n’est pas un accord du recruteur.</p><button disabled={busy || note === (job.candidateNote ?? "")} onClick={async () => { setBusy(true); try { await onNote(job.id, note); } finally { setBusy(false); } }} className="radar-add-button mt-3 disabled:opacity-40">{busy ? <LoaderCircle size={14} className="animate-spin" /> : <Check size={14} />} Enregistrer la note</button></div><button onClick={() => setView("interviews")} className="secondary-button"><CalendarPlus size={14} /> Planifier un entretien ou faire le bilan</button></> : null}
     {context === "application" && activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
     {activeView === "brief" ? <PrivateBrief key={job.id} jobId={job.id} /> : null}
   </div>;
@@ -101,7 +105,7 @@ function PrivateBrief({ jobId }: { jobId: string }) {
     return () => { active = false; };
   }, [jobId, language, refresh]);
   return <div className="space-y-4">
-    <label className="block text-xs">Langue des réponses<select value={language} onChange={event => setLanguage(event.target.value as "fr" | "en")}><option value="fr">Français</option><option value="en">Anglais professionnel simple</option></select></label>
+    <ChoiceSelect label="Langue des réponses" value={language} onChange={value=>setLanguage(value as "fr"|"en")} options={[{value:"fr",label:"Français"},{value:"en",label:"Anglais professionnel simple"}]} />
     <ApplicationQuestions jobId={jobId} language={language} onSaved={() => setRefresh(value => value + 1)} />
     <div className="space-y-3">
       <p className="offer-section-title">Brief à utiliser dans ChatGPT</p>
@@ -143,10 +147,10 @@ function OfferEditor({ job, onSaved, onCancel }: { job: JobRecord; onSaved: (job
   async function save() { setBusy(true); setError(""); try { const updated = await requestJob(`/api/jobs/${job.id}`, "PUT", { description, publishedAt, contentCoverage: coverage, ...(sourceUrl ? { sourceUrl } : {}), applicationUrl, onsiteCadence, annualSalary: salary ? Number(salary) : null, dailyRate: rate ? Number(rate) : null }); onSaved(updated); } catch (problem) { setError(problem instanceof Error ? problem.message : "Enregistrement non confirmé."); } finally { setBusy(false); } }
   return <div className="space-y-4">
     <p className="text-xs leading-5 text-[#535768]">Enregistrez les faits de l’annonce, pas vos conditions négociées. Vos statuts, notes et entretiens sont conservés.</p>
-    <Field label="Description de l’offre"><textarea rows={10} maxLength={12000} value={description} onChange={event => setDescription(event.target.value)} /></Field>
+    <Field label="Description de l’offre"><Textarea rows={10} maxLength={12000} value={description} onChange={event => setDescription(event.target.value)} /></Field>
     <div className="grid gap-4 sm:grid-cols-2">
       <ChoiceSelect label="Niveau de détail fourni" value={coverage} onChange={setCoverage} options={[{value:"full",label:"Description complète fournie"},{value:"summary",label:"Synthèse"},{value:"partial",label:"Notification partielle"},{value:"unknown",label:"À confirmer"}]} />
-      <Field label="Date réelle de publication (si confirmée)"><input type="date" value={publishedAt} onInput={event => setPublishedAt(event.currentTarget.value)} onChange={event => setPublishedAt(event.target.value)} /></Field>
+      <DatePicker label="Date de publication confirmée" value={publishedAt} onChange={setPublishedAt} />
       <Field label="Lien de l’offre"><input type="url" value={sourceUrl} onChange={event => setSourceUrl(event.target.value)} /></Field>
       <Field label="Lien pour postuler (si différent)"><input type="url" value={applicationUrl} onChange={event => setApplicationUrl(event.target.value)} /></Field>
       <Field label="Salaire annuel brut annoncé (€)"><input inputMode="numeric" value={salary} onChange={event => setSalary(event.target.value)} /></Field>
@@ -175,12 +179,12 @@ function InterviewEditor({ jobId, interview, onSaved, onCancel }: { jobId: strin
     <p className="text-sm font-semibold">{interview ? "Modifier le rendez-vous" : "Planifier ou dater un entretien"}</p>
     <Field label="Étape / interlocuteur"><input value={label} maxLength={180} onChange={event => setLabel(event.target.value)} placeholder="Ex. Atlas · exemple fictif · entretien métier" /></Field>
     <div className="grid gap-4 sm:grid-cols-2">
-      <Field label="Date et heure de l’entretien"><input type="datetime-local" value={start} onInput={event => setStart(event.currentTarget.value)} onChange={event => setStart(event.target.value)} /></Field>
+      <DateTimePicker label="Date de l’entretien" value={start} onChange={setStart} />
       <ChoiceSelect label="Fuseau horaire du rendez-vous" value={zone} onChange={setZone} options={[{value:"Europe/Paris",label:"Paris"},{value:"Indian/Mauritius",label:"Maurice"},{value:"UTC",label:"UTC"}]} />
       <Field label="Durée estimée (minutes)"><input type="number" min={1} max={480} value={duration} onChange={event => setDuration(Number(event.target.value))} /></Field>
       <ChoiceSelect label="Format" value={format} onChange={setFormat} options={[{value:"video",label:"Visio"},{value:"phone",label:"Téléphone"},{value:"onsite",label:"Sur site"},{value:"other",label:"Autre"}]} />
     </div>
-    <p className="text-xs leading-5 text-[#535768]">Le rappel intervient après l’heure de fin estimée, pas au début du rendez-vous. Aucun événement n’est créé dans un calendrier externe.</p>
+    <div className="inline-help"><span>Rappel après l’entretien</span><HelpTooltip label="Rappel d’entretien">Le rappel intervient après l’heure de fin estimée. Aucun événement n’est créé dans un calendrier externe.</HelpTooltip></div>
     {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
     <div className="flex flex-wrap gap-3"><button disabled={busy || !start || !label.trim()} onClick={() => void save()} className="radar-add-button disabled:opacity-40">{busy ? <LoaderCircle size={14} className="animate-spin" /> : <Check size={14} />} Enregistrer l’entretien</button><button disabled={busy} onClick={onCancel} className="secondary-button">Annuler</button></div>
   </div>;
@@ -191,10 +195,10 @@ function InterviewReview({ interview, onSaved, onCancel }: { interview: Intervie
   return <div className="space-y-4">
     <p className="text-sm font-semibold">Bilan privé · {interview.label}</p>
     <ChoiceSelect label="Quelle est la suite ?" value={outcome} onChange={setOutcome} options={[{value:"waiting",label:"En attente de retour"},{value:"next_step",label:"Prochaine étape"},{value:"rejected",label:"Refus"},{value:"withdrawn",label:"Je ne souhaite pas poursuivre"},{value:"offer",label:"Proposition reçue"}]} />
-    <Field label="Ce qui a été dit / à retenir"><textarea rows={5} maxLength={5000} value={summary} onChange={event => setSummary(event.target.value)} /></Field>
-    <div className="grid gap-4 sm:grid-cols-2"><Field label="Ce qui s’est bien passé"><textarea rows={3} maxLength={3000} value={strengths} onChange={event => setStrengths(event.target.value)} /></Field><Field label="Ce qui a été moins bien / à travailler"><textarea rows={3} maxLength={3000} value={weaknesses} onChange={event => setWeaknesses(event.target.value)} /></Field></div>
+    <Field label="Ce qui a été dit / à retenir"><Textarea rows={5} maxLength={5000} value={summary} onChange={event => setSummary(event.target.value)} /></Field>
+    <div className="grid gap-4 sm:grid-cols-2"><Field label="Ce qui s’est bien passé"><Textarea rows={3} maxLength={3000} value={strengths} onChange={event => setStrengths(event.target.value)} /></Field><Field label="Ce qui a été moins bien / à travailler"><Textarea rows={3} maxLength={3000} value={weaknesses} onChange={event => setWeaknesses(event.target.value)} /></Field></div>
     <Field label="Prochaine action"><input maxLength={2000} value={nextAction} onChange={event => setNextAction(event.target.value)} placeholder="Ex. attendre le retour, préparer un cas pratique…" /></Field>
-    <Field label={`Date envisagée pour relancer (${interview.timeZone})`}><input type="datetime-local" value={followUp} onInput={event => setFollowUp(event.currentTarget.value)} onChange={event => setFollowUp(event.target.value)} /></Field>
+    <DateTimePicker label={`Relance (${interview.timeZone})`} value={followUp} onChange={setFollowUp} />
     <p className="text-xs leading-5 text-[#535768]">Votre choix met à jour le statut de candidature. Le bilan reste privé ; aucune relance au recruteur n’est envoyée automatiquement.</p>
     {error ? <p role="alert" className="text-red-700">{error}</p> : null}
     <div className="flex flex-wrap gap-3"><button disabled={busy} onClick={() => void save()} className="radar-add-button">{busy ? <LoaderCircle size={14} className="animate-spin" /> : <Check size={14} />} Enregistrer le bilan et le statut</button><button disabled={busy} onClick={onCancel} className="secondary-button">Annuler</button></div>

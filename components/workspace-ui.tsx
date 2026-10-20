@@ -1,4 +1,5 @@
 "use client";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { AlertCircle, Inbox, LockKeyhole, Radar } from "lucide-react";
 import { defaultRoute, readRadarRoute, radarSearch, type RadarRoute } from "@/lib/radar-navigation";
@@ -27,7 +28,7 @@ export function WorkspaceState({ title, children, action, error = false }: { tit
   return <div className={"workspace-state" + (error ? " is-error" : "")} role={error ? "alert" : "status"}><Icon size={24} aria-hidden /><div><p className="workspace-state-title">{title}</p>{children ? <p>{children}</p> : null}{action ? <div className="workspace-state-action">{action}</div> : null}</div></div>;
 }
 export function WorkspaceLoading() {
-  return <div className="workspace-skeleton" role="status" aria-label="Chargement de votre espace"><span className="sr-only">Chargement de votre espace…</span>{[0, 1, 2].map(i => <div key={i}><span /><span /><span /></div>)}</div>;
+  return <LoadingSkeleton label="Chargement de votre espace…" />;
 }
 export class WorkspaceBoundary extends Component<{children: ReactNode}, {failed: boolean}> {
   state = {failed: false};
