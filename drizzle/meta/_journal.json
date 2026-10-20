@@ -64,6 +64,13 @@
       "when": 1792397339762,
       "tag": "0008_friendly_guardsmen",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1792469960462,
+      "tag": "0009_friendly_spencer_smythe",
+      "breakpoints": true
     }
   ]
 }

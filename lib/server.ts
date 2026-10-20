@@ -1,3 +1,4 @@
+import { isCountryCode } from "./countries";
 import type { CandidateProfile, JobInput, JobRecord, JobStatus } from "./types";
 import { statusLabels } from "./application-workflow";
 
@@ -34,6 +35,9 @@ export function normalizeJobInput(value: unknown): JobInput {
       ? (raw.remoteMode as JobInput["remoteMode"])
       : "unknown",
     onsiteCadence: asText(raw.onsiteCadence, 180),
+    onsiteDaysPerWeek: dayCount(raw.onsiteDaysPerWeek,5),
+    onsiteDaysPerMonth: dayCount(raw.onsiteDaysPerMonth,31),
+    remoteCountry: country(raw.remoteCountry),
     language: languages.has(raw.language as string)
       ? (raw.language as JobInput["language"])
       : "unknown",
@@ -63,6 +67,9 @@ export function rowToJob(row: Record<string, unknown>): JobRecord {
     dailyRate: numberOrNull(row.dailyRate),
     remoteMode: (row.remoteMode as JobInput["remoteMode"]) ?? "unknown",
     onsiteCadence: stringOrUndefined(row.onsiteCadence),
+    onsiteDaysPerWeek: numberOrNull(row.onsiteDaysPerWeek),
+    onsiteDaysPerMonth: numberOrNull(row.onsiteDaysPerMonth),
+    remoteCountry: isCountryCode(row.remoteCountry)?row.remoteCountry:undefined,
     language: (row.language as JobInput["language"]) ?? "unknown",
     source: String(row.source ?? "Ajout manuel"),
     sourceUrl: stringOrUndefined(row.sourceUrl),
@@ -131,3 +138,10 @@ function numberOrNull(value: unknown) {
 function stringOrUndefined(value: unknown) {
   return typeof value === "string" && value ? value : undefined;
 }
+
+function dayCount(value: unknown,max:number):number|null {
+  if(value==null||value==="")return null;
+  if(typeof value!=="number"||!Number.isInteger(value)||value<0||value>max)throw new Error(`Présence invalide : 0 à ${max} jours.`);
+  return value;
+}
+function country(value:unknown):string { if(value==null||value==="")return "";if(!isCountryCode(value))throw new Error("Pays invalide");return value; }

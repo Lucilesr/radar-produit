@@ -131,3 +131,10 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 .help-tooltip-trigger:hover { background: var(--muted); }.help-tooltip-content { z-index: 100; max-width: min(300px,calc(100vw - 32px)); padding: 10px 12px; line-height: 1.6; background: var(--foreground); color: var(--card); }
 [data-slot=textarea] { resize: vertical; font-weight: 400; }
 @media(max-width:640px) { .date-time-field { grid-template-columns: minmax(0,1fr); } .date-picker-trigger { font-size: 16px; } }
+
+.offer-form { display: grid; gap: 24px; }.form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.offer-form input,.offer-form textarea { font-weight: 400; }.offer-form .choice-select>p { font-size: 14px; font-weight: 550; }
+.work-arrangement-fields { display: grid; gap: 20px; padding: 20px; border: 1px solid var(--border); border-radius: 10px; min-width: 0; }.work-arrangement-fields legend { padding-inline: 6px; font-size: 15px; font-weight: 600; }.onsite-frequency { display: grid; gap: 12px; }
+.prefill-proposals { margin-top: 16px; padding: 20px; border: 1px solid var(--border); border-radius: 10px; background: var(--background); }.prefill-list { display: grid; gap: 16px; margin-block: 20px; }
+.prefill-proposal { display: flex; align-items: flex-start; gap: 12px; min-width: 0; font-size: 14px; }.prefill-proposal>input { flex: none; width: 18px; height: 18px; margin-top: 3px; }.prefill-proposal>span { display: grid; gap: 6px; min-width: 0; }.prefill-proposal strong { font-weight: 550; }.prefill-proposal q { display: block; color: var(--muted-foreground); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }.prefill-current { color: var(--muted-foreground); font-size: 12px; }
+@media(max-width:640px) { .form-grid { grid-template-columns: minmax(0,1fr); gap: 16px; }.work-arrangement-fields,.prefill-proposals { padding: 16px; } }

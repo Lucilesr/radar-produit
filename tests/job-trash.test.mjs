@@ -115,6 +115,17 @@ test("corbeille SQLite : isolation A/B, relance, réimport, rappels et restaurat
   await store.setOfferDeleted("alice", linked.id, false);
   assert.equal((await store.markOfferClosedFromSource("alice", closure)).changed, false, "restauration humaine non annulée par la même alerte");
   assert.equal((await store.getOffer("alice", linked.id)).deletedAt, undefined);
+  const beforeFacts=await store.getOffer("alice",a.id);
+  const facts={remoteMode:"hybrid",language:"professional_en",remoteCountry:"MU",onsiteDaysPerWeek:1,onsiteDaysPerMonth:3,description:"Description fictive enrichie."};
+  const enriched=await store.updateOffer("alice",a.id,facts);
+  assert.equal(enriched.remoteCountry,"MU");assert.equal(enriched.onsiteDaysPerWeek,1);assert.equal(enriched.onsiteDaysPerMonth,3);
+  assert.equal(enriched.status,beforeFacts.status);assert.equal(enriched.candidateNote,beforeFacts.candidateNote);assert.deepEqual(enriched.interviews,beforeFacts.interviews);
+  assert.equal((await store.getOffer("bob",b.id)).remoteMode,"full_remote");
+  await assert.rejects(store.updateOffer("bob",a.id,facts),/introuvable/);
+  await assert.rejects(store.updateOffer("alice",a.id,{remoteCountry:"ZZ"}));
+  await assert.rejects(store.updateOffer("alice",a.id,{onsiteDaysPerWeek:6}));
+  await store.updateOffer("alice",a.id,{onsiteDaysPerWeek:null,onsiteDaysPerMonth:null,remoteCountry:""});
+  const cleared=await store.getOffer("alice",a.id);assert.equal(cleared.onsiteDaysPerWeek,null);assert.equal(cleared.remoteCountry,undefined);
   sqlite.close();
 });
 

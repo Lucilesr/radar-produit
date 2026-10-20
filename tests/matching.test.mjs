@@ -132,3 +132,13 @@ test("une offre sélectionnée n’est pas présentée comme une candidature dé
   assert.equal(actions[1].title, "Faire avancer la candidature");
   assert.match(actions[1].detail, /Atlas.*envoyée/);
 });
+
+test("fréquences explicites : semaine et mois restent indépendants dans la qualification",()=>{
+ const assess=(onsiteDaysPerWeek,onsiteDaysPerMonth)=>assessJob({...baseline,remoteMode:"hybrid",onsiteDaysPerWeek,onsiteDaysPerMonth});
+ assert.equal(assess(1,null).tier,"exception");assert.equal(assess(2,null).tier,"excluded");assert.equal(assess(null,2).tier,"exception");assert.equal(assess(null,8).tier,"excluded");assert.equal(assess(1,8).tier,"excluded");
+});
+
+test("brief : présence et pays de télétravail sont conservés parmi les faits d’annonce",()=>{
+ const offer=briefOffer({...baseline,id:"demo",onsiteDaysPerWeek:1,onsiteDaysPerMonth:3,remoteCountry:"MU",candidateNote:"Note privée exclue"});
+ assert.equal(offer.remoteCountry,"MU");assert.equal(offer.onsiteDaysPerMonth,3);assert.equal(offer.candidateNote,undefined);
+});

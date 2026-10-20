@@ -1,9 +1,12 @@
 "use client";
 
-import { DatePicker, DateTimePicker } from "@/components/date-picker";
+import { sourceNames } from "@/lib/source-catalog";
+import { OfferForm } from "@/components/offer-form";
+import { countryLabel } from "@/lib/countries";
+import { DateTimePicker } from "@/components/date-picker";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Banknote, BriefcaseBusiness, CalendarDays, CalendarPlus, Check, CheckCircle2, CircleHelp, Clock3, Copy, ExternalLink, Globe2, Languages, LoaderCircle, MapPin, Pencil, type LucideIcon } from "lucide-react";
 import { ChoiceSelect, type ChoiceOption } from "@/components/choice-select";
 import { SourceLogo } from "@/components/source-logo";
@@ -43,6 +46,8 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   job: JobRecord; profile: CandidateProfile; initialView: WorkspaceView; context: "opportunity" | "application"; onChange: (job: JobRecord) => void;
   onStatus: (id: string, status: JobStatus) => Promise<boolean>; onNote: (id: string, note: string) => Promise<boolean>; onOpenApplication: () => void;
 }) {
+  const editTrigger=useRef<HTMLButtonElement>(null);
+  const finishEditing=()=>{setEditing(false);requestAnimationFrame(()=>{editTrigger.current?.focus({preventScroll:true});editTrigger.current?.scrollIntoView({block:"nearest"});});};
   const [view, updateView] = useState<WorkspaceView>(initialView);
   const setView = (next: WorkspaceView) => { updateView(next); onViewChange?.(next); };
   useEffect(()=>updateView(initialView),[initialView]); const [editing, setEditing] = useState(false);
@@ -67,7 +72,8 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
           <KeyFact icon={Globe2} tone="teal" label="Travail annoncé" value={{ full_remote: "Full remote", exceptional: "Présence exceptionnelle", hybrid: "Hybride", onsite: "Sur site", unknown: "À confirmer" }[job.remoteMode]} unknown={job.remoteMode === "unknown"} />
         </div>
         <div className="offer-facts-secondary">
-          <MetaFact icon={MapPin} label="Présence / pays" value={job.onsiteCadence || "Fréquence et pays autorisés à confirmer"} />
+          <MetaFact icon={MapPin} label="Présence sur site" value={[job.onsiteDaysPerWeek!=null?`${job.onsiteDaysPerWeek} j/semaine sur site`:"",job.onsiteDaysPerMonth!=null?`${job.onsiteDaysPerMonth} j/mois sur site`:"",job.onsiteCadence].filter(Boolean).join(" · ") || "À confirmer"} />
+          <MetaFact icon={Globe2} label="Pays autorisé pour le télétravail" value={countryLabel(job.remoteCountry)} />
           <MetaFact icon={Languages} label="Langue" value={{ fr: "Français", en: "Anglais", professional_en: "Anglais professionnel", advanced_en: "Anglais avancé", unknown: "À confirmer" }[job.language]} />
           <MetaFact icon={CalendarDays} label="Publication" value={formatDate(job.publishedAt)} />
           <MetaFact icon={Clock3} label="Ajout au Radar" value={formatDate(job.createdAt)} />
@@ -76,9 +82,9 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
       </section>
       {!job.publishedAt ? <div className="inline-help"><span>Date de publication non précisée</span><HelpTooltip label="Date de publication">La date d’import ou de notification ne remplace pas la date réelle de publication.</HelpTooltip></div> : null}
       <div className="grid gap-3 sm:grid-cols-2"><Signals title="Pourquoi c’est pertinent" items={job.reasons} tone="positive" /><Signals title="Points à vérifier" items={job.flags} tone="caution" /></div>
-      <section><div className="mb-3 flex items-center justify-between gap-3"><p className="offer-section-title">Description, missions et exigences</p>{!job.deletedAt ? <button onClick={() => setEditing(true)} className="secondary-button"><Pencil size={13} /> Compléter / corriger</button> : null}</div><p className="whitespace-pre-wrap break-words rounded-2xl bg-[#fffaf8] p-4 text-sm leading-7 text-[#535768]">{job.description || "Aucune description fournie. Ajoutez le contenu de l’annonce ou d’une alerte autorisée."}</p>{coverage !== "Description complète fournie" ? <p className="mt-2 text-xs leading-5 text-[#535768]">{coverage} : les informations absentes restent à confirmer.{!job.deletedAt ? " Vous pouvez coller une description complète ici, sans recréer une fiche." : " Restaurez l’offre pour compléter sa description."}</p> : null}</section>
+      <section><div className="mb-3 flex items-center justify-between gap-3"><p className="offer-section-title">Description, missions et exigences</p>{!job.deletedAt ? <button ref={editTrigger} onClick={() => setEditing(true)} className="secondary-button"><Pencil size={13} /> Compléter / corriger</button> : null}</div><p className="whitespace-pre-wrap break-words rounded-2xl bg-[#fffaf8] p-4 text-sm leading-7 text-[#535768]">{job.description || "Aucune description fournie. Ajoutez le contenu de l’annonce ou d’une alerte autorisée."}</p>{coverage !== "Description complète fournie" ? <p className="mt-2 text-xs leading-5 text-[#535768]">{coverage} : les informations absentes restent à confirmer.{!job.deletedAt ? " Vous pouvez coller une description complète ici, sans recréer une fiche." : " Restaurez l’offre pour compléter sa description."}</p> : null}</section>
     </> : null}
-    {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); setEditing(false); }} onCancel={() => setEditing(false)} /> : null}
+    {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); }} onCancel={finishEditing} /> : null}
     {context === "application" && activeView === "application" ? <><StatusSelect value={job.status} onChange={status => onStatus(job.id, status)} /><div className="rounded-2xl bg-[#fff2eb] p-4"><Field label="Notes privées de candidature"><Textarea rows={5} maxLength={2000} value={note} onChange={event => setNote(event.target.value)} placeholder="Vos échanges, vos conditions proposées, les points encore à confirmer…" /></Field><p className="mt-2 text-xs leading-5 text-[#535768]">Ces notes restent distinctes de l’annonce. Une proposition n’est pas un accord du recruteur.</p><button disabled={busy || note === (job.candidateNote ?? "")} onClick={async () => { setBusy(true); try { await onNote(job.id, note); } finally { setBusy(false); } }} className="radar-add-button mt-3 disabled:opacity-40">{busy ? <LoaderCircle size={14} className="animate-spin" /> : <Check size={14} />} Enregistrer la note</button></div><button onClick={() => setView("interviews")} className="secondary-button"><CalendarPlus size={14} /> Planifier un entretien ou faire le bilan</button></> : null}
     {context === "application" && activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
     {activeView === "brief" ? <PrivateBrief key={job.id} jobId={job.id} /> : null}
@@ -139,27 +145,7 @@ function Signals({ title, items, tone }: { title: string; items: string[]; tone:
 }
 
 function OfferEditor({ job, onSaved, onCancel }: { job: JobRecord; onSaved: (job: JobRecord) => void; onCancel: () => void }) {
-  const [description, setDescription] = useState(job.description ?? ""); const [publishedAt, setPublishedAt] = useState(job.publishedAt?.slice(0, 10) ?? "");
-  const [coverage, setCoverage] = useState(job.contentCoverage ?? "unknown"); const [applicationUrl, setApplicationUrl] = useState(job.applicationUrl ?? "");
-  const [sourceUrl, setSourceUrl] = useState(job.sourceUrl ?? ""); const [onsiteCadence, setOnsiteCadence] = useState(job.onsiteCadence ?? "");
-  const [salary, setSalary] = useState(job.annualSalary?.toString() ?? ""); const [rate, setRate] = useState(job.dailyRate?.toString() ?? "");
-  const [busy, setBusy] = useState(false); const [error, setError] = useState("");
-  async function save() { setBusy(true); setError(""); try { const updated = await requestJob(`/api/jobs/${job.id}`, "PUT", { description, publishedAt, contentCoverage: coverage, ...(sourceUrl ? { sourceUrl } : {}), applicationUrl, onsiteCadence, annualSalary: salary ? Number(salary) : null, dailyRate: rate ? Number(rate) : null }); onSaved(updated); } catch (problem) { setError(problem instanceof Error ? problem.message : "Enregistrement non confirmé."); } finally { setBusy(false); } }
-  return <div className="space-y-4">
-    <p className="text-xs leading-5 text-[#535768]">Enregistrez les faits de l’annonce, pas vos conditions négociées. Vos statuts, notes et entretiens sont conservés.</p>
-    <Field label="Description de l’offre"><Textarea rows={10} maxLength={12000} value={description} onChange={event => setDescription(event.target.value)} /></Field>
-    <div className="grid gap-4 sm:grid-cols-2">
-      <ChoiceSelect label="Niveau de détail fourni" value={coverage} onChange={setCoverage} options={[{value:"full",label:"Description complète fournie"},{value:"summary",label:"Synthèse"},{value:"partial",label:"Notification partielle"},{value:"unknown",label:"À confirmer"}]} />
-      <DatePicker label="Date de publication confirmée" value={publishedAt} onChange={setPublishedAt} />
-      <Field label="Lien de l’offre"><input type="url" value={sourceUrl} onChange={event => setSourceUrl(event.target.value)} /></Field>
-      <Field label="Lien pour postuler (si différent)"><input type="url" value={applicationUrl} onChange={event => setApplicationUrl(event.target.value)} /></Field>
-      <Field label="Salaire annuel brut annoncé (€)"><input inputMode="numeric" value={salary} onChange={event => setSalary(event.target.value)} /></Field>
-      <Field label="TJM HT annoncé (€)"><input inputMode="numeric" value={rate} onChange={event => setRate(event.target.value)} /></Field>
-    </div>
-    <Field label="Présence annoncée et pays autorisés"><input value={onsiteCadence} onChange={event => setOnsiteCadence(event.target.value)} /></Field>
-    {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
-    <div className="flex flex-wrap gap-3"><button disabled={busy} onClick={() => void save()} className="radar-add-button">{busy ? <LoaderCircle size={14} className="animate-spin" /> : <Check size={14} />} Enregistrer l’offre</button><button disabled={busy} onClick={onCancel} className="secondary-button">Annuler</button></div>
-  </div>;
+  return <OfferForm job={job} onCancel={onCancel} onSave={async input=>{const {source,...facts}=input;onSaved(await requestJob(`/api/jobs/${job.id}`,"PUT",sourceNames.includes(source)?input:facts));}}/>;
 }
 
 function InterviewManager({ job, onChange }: { job: JobRecord; onChange: (job: JobRecord) => void }) {
