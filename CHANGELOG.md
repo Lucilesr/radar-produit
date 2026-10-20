@@ -1,5 +1,11 @@
 # Évolutions de Radar Produit
 
+## 20 octobre 2026 — Blocs repliables
+
+- Le carnet d’expériences et les sources utilisent un bouton discret à double chevron, avec un statut visible et des détails encadrés.
+- Espacements corrigés : retraits réguliers autour des cartes et statuts, contenus imbriqués alignés et historique des documents avec marges internes.
+- Le repli conserve les saisies en cours ; les liens vers l’historique et le prochain bloc à relire ouvrent les sections concernées.
+
 ## 20 octobre 2026
 
 - Navigation du profil : une nouvelle visite depuis un autre onglet ouvre le carnet d’expériences, sans perdre les brouillons. Les liens directs et l’historique du navigateur conservent l’accès aux documents.
