@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, CalendarDays, Check, ClipboardCheck, ScanLine } from "lucide-react";
 import { selectTriageActions } from "@/lib/triage";
 import { hasApplication, inOpportunityView } from "@/lib/opportunity-views";
-import { activeStatuses, formatDate, reviewDue, terminalStatuses } from "@/lib/application-workflow";
+import { activeStatuses, applicationAge, formatDate, reviewDue, terminalStatuses } from "@/lib/application-workflow";
 import { upcomingInterviews } from "@/lib/workspace-agenda";
 import { StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
 import { WorkspaceState } from "@/components/workspace-ui";
@@ -50,9 +50,10 @@ export function ApplicationsWorkspace({jobs,onStatus,onOpen}:{jobs:JobRecord[];o
     {!items.length?<WorkspaceState title="Aucune candidature dans cette vue">Le bouton « J’ai postulé » d’une offre permet de commencer son suivi.</WorkspaceState>:<div className="applications-list">{items.map(job=>{
       const due=job.interviews?.find(event=>reviewDue(event,now));
       const next=upcomingInterviews([job],now)[0]?.event;
+      const age=applicationAge(job.appliedAt,now);
       return <article key={job.id} className="application-row" aria-busy={busy===job.id}>
         <span className="workspace-monogram" aria-hidden>{(job.company||job.title).slice(0,1)}</span>
-        <div className="application-identity"><h2><button type="button" onClick={()=>onOpen(job,"application")}>{job.title}</button></h2><p>{job.company||"Entreprise à confirmer"}{job.deletedAt?" · Offre en corbeille, suivi conservé":""}</p></div>
+        <div className="application-identity"><h2><button type="button" onClick={()=>onOpen(job,"application")}>{job.title}</button></h2><p>{job.company||"Entreprise à confirmer"}{job.deletedAt?" · Offre en corbeille, suivi conservé":""}</p><div className="application-sent"><span>{job.appliedAt?`Postulé le ${formatDate(job.appliedAt,"Indian/Mauritius")}`:"Date de candidature inconnue"}</span>{age?<span className={`application-age is-${age.tone}`}>{age.days===0?"Aujourd’hui":age.days===1?"Depuis 1 jour":`Depuis ${age.days} jours`}</span>:null}</div></div>
         <div className="application-next"><span className={"workspace-badge "+(due?"is-warning":next?"is-success":"")}>{terminalStatuses.includes(job.status)?"Candidature close":due?"Bilan à faire":next?"Entretien planifié":job.status==="interview"?"Date à renseigner":"En attente de suite"}</span>{next?<p>{formatDate(next.startAt,next.timeZone,true)}<br/><small>{next.timeZone}</small></p>:null}</div>
         <div id={`application-status-${job.id}`} className="application-status"><StatusSelect value={job.status} disabled={!!busy} label={"Statut · "+(job.company||job.title)} onChange={async status=>{setBusy(job.id);setError("");try{if(!await onStatus(job.id,status))setError("Réessayez de modifier le statut. Le dernier statut confirmé reste affiché.");}finally{setBusy(null);requestAnimationFrame(()=>{if(document.activeElement!==document.body)return;const trigger=Array.from(document.getElementById(`application-status-${job.id}`)?.querySelectorAll<HTMLButtonElement>("button")??[]).find(element=>element.getClientRects().length);(trigger??document.getElementById("workspace-title"))?.focus();});}}}/></div>
         <button type="button" className="secondary-button" onClick={()=>onOpen(job,due||next||job.status==="interview"?"interviews":"application")}>{due?"Faire le bilan":next?"Voir l’entretien":"Ouvrir le suivi"}<ArrowUpRight size={15} aria-hidden /></button>

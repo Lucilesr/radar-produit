@@ -8,7 +8,7 @@ async function load(name, imports = {}) {
   for (const [from, to] of Object.entries(imports)) js = js.replaceAll(`"${from}"`, JSON.stringify(to));
   return import("data:text/javascript;base64," + Buffer.from(js).toString("base64"));
 }
-const { fromZonedInput, zonedInput, reviewDue, formatDate, activeStatuses, terminalStatuses, statusLabels } = await load("application-workflow");
+const { fromZonedInput, zonedInput, reviewDue, formatDate, applicationAge, activeStatuses, terminalStatuses, statusLabels } = await load("application-workflow");
 const marketScopeSource = readFileSync(new URL("../lib/market-scope.ts", import.meta.url), "utf8");
 const marketScopeJs = ts.transpileModule(marketScopeSource, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
 const marketScopeUrl = "data:text/javascript;base64," + Buffer.from(marketScopeJs).toString("base64");
@@ -42,6 +42,14 @@ test("heure inexistante et date invalide refusées", () => {
 test("dates inconnues explicites, sans inventer une publication", () => {
   assert.equal(formatDate(undefined),"Non communiquée");
   assert.match(formatDate("2026-10-13"),/13/);
+});
+test("ancienneté de candidature : date absente, paliers et date future", () => {
+  const start = Date.parse("2026-10-01T09:00:00Z");
+  assert.equal(applicationAge(undefined, start), null);
+  assert.deepEqual(applicationAge(new Date(start).toISOString(), start), { days: 0, tone: "recent" });
+  assert.deepEqual(applicationAge(new Date(start).toISOString(), start + 14 * 86400000), { days: 14, tone: "waiting" });
+  assert.deepEqual(applicationAge(new Date(start).toISOString(), start + 30 * 86400000), { days: 30, tone: "old" });
+  assert.equal(applicationAge(new Date(start + 1000).toISOString(), start), null);
 });
 const item=(title,link,description="Full-time. Remote Europe",date="")=>`<item><title><![CDATA[${title}]]></title><link>${link}</link><description><![CDATA[<p>${description}</p>]]></description>${date?`<pubDate>${date}</pubDate>`:""}</item>`;
 test("RSS produit attribué, dates réelles et inconnues", () => {

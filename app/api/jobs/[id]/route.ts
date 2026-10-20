@@ -54,7 +54,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const [profileRow] = await db.select().from(profiles).where(eq(profiles.userId, user.userId)).limit(1);
     const profile: CandidateProfile = profileRow ? JSON.parse(profileRow.data) : profileTemplate;
     const candidateNote = typeof body.candidateNote === "string" ? body.candidateNote.trim() : profile.applicationNotes?.[id];
-    const update = db.update(jobs).set({ status, reviewState: typeof body.reviewState === "string" ? body.reviewState : undefined, matchScore: assessment.score, matchTier: assessment.tier,
+    const update = db.update(jobs).set({ status, appliedAt: status === "applied" && !hasApplication(current) && !row.appliedAt ? now : undefined,
+      reviewState: typeof body.reviewState === "string" ? body.reviewState : undefined, matchScore: assessment.score, matchTier: assessment.tier,
       reasons: JSON.stringify(assessment.reasons), flags: JSON.stringify(assessment.flags), updatedAt: now })
       .where(and(eq(jobs.id, id), eq(jobs.userId, user.userId)));
     if (typeof body.candidateNote === "string") {

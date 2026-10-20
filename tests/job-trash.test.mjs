@@ -46,6 +46,15 @@ test("corbeille SQLite : isolation A/B, relance, réimport, rappels et restaurat
   const input = { title: "Product Manager fictif", company: "Atlas fictif", contractType: "cdi", annualSalary: 65000, remoteMode: "full_remote", language: "fr", source: "Ajout manuel", description: "Mission fictive de gestion de produit." };
   const a = (await store.saveOffer("alice", input)).job;
   const b = (await store.saveOffer("bob", input)).job;
+  globalThis.__trashUser = "alice";
+  const apply = status => route.PATCH(new Request("https://radar.test/api/jobs/" + a.id, { method: "PATCH", body: JSON.stringify({ status }) }), { params: Promise.resolve({ id: a.id }) });
+  assert.equal((await apply("applied")).status, 200);
+  const appliedAt = sqlite.prepare("SELECT applied_at AS appliedAt FROM jobs WHERE id=?").get(a.id).appliedAt;
+  assert.match(appliedAt, /^\d{4}-\d\d-\d\dT/);
+  assert.equal((await store.getOffer("alice", a.id)).appliedAt, appliedAt);
+  assert.equal((await apply("interview")).status, 200);
+  assert.equal((await apply("applied")).status, 200);
+  assert.equal(sqlite.prepare("SELECT applied_at AS appliedAt FROM jobs WHERE id=?").get(a.id).appliedAt, appliedAt);
   sqlite.prepare("UPDATE jobs SET status='interview' WHERE id=?").run(a.id);
   sqlite.prepare("INSERT INTO profiles(user_id,data) VALUES(?,?)").run("alice", JSON.stringify({ applicationNotes: { [a.id]: "Note fictive conservée" } }));
   sqlite.prepare("INSERT INTO interviews(id,user_id,job_id,label,start_at,end_at,time_zone) VALUES(?,?,?,?,?,?,?)").run("entretien-fictif", "alice", a.id, "Échange fictif", "2026-01-01T09:00:00Z", "2026-01-01T10:00:00Z", "Europe/Paris");
