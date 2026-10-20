@@ -18,6 +18,19 @@ export async function userSourceSetting(userId: string, value: unknown) {
   const input = z.object({ source: z.string().refine(name => sourceCatalog.some(source => source.name === name)), state: z.enum(["not_configured", "action_needed", "configured", "paused"]), notes: z.string().max(1500).default("") }).strict().parse(value);
   return saveSourceSetting(userId, input.source, { state: input.state, notes: input.notes, verification: "Déclarée dans le Radar" });
 }
+export async function recordCollectiveAlert(userId: string, value: unknown) {
+  const alert = z.object({
+    url: z.string().url().refine(url => {
+      const parsed = new URL(url);
+      return parsed.protocol === "https:" && parsed.hostname === "app.collective.work" && parsed.pathname === "/my-personal-space/jobs";
+    }),
+    notificationAt: z.string().datetime({ offset: true }),
+    label: z.string().trim().min(1).max(120),
+  }).strict().parse(value);
+  const previous = (await listSourceSettings(userId)).find(source => source.source === "Collective") as { latestAlert?: typeof alert } | undefined;
+  if (previous?.latestAlert && Date.parse(previous.latestAlert.notificationAt) > Date.parse(alert.notificationAt)) return previous;
+  return saveSourceSetting(userId, "Collective", { latestAlert: alert, verification: "Alerte email reçue ; annonces individuelles à vérifier sur Collective" });
+}
 export async function syncAuthorizedFeed(userId: string) {
   const previous = (await listSourceSettings(userId)).find(source => source.source === "We Work Remotely");
   if (previous?.state === "paused") return { paused: true, imported: 0, deduplicated: 0 };
