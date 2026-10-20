@@ -13,6 +13,9 @@ export type JobInput = {
   dailyRate?: number | null;
   remoteMode: RemoteMode;
   onsiteCadence?: string;
+  onsiteDaysPerWeek?: number | null;
+  onsiteDaysPerMonth?: number | null;
+  remoteCountry?: string;
   language: OfferLanguage;
   source: string;
   sourceUrl?: string;

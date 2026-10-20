@@ -1,3 +1,4 @@
+import { isCountryCode } from "./countries";
 import { z } from "zod";
 import { broadMailQuery, sourceNames } from "./source-catalog";
 
@@ -9,6 +10,9 @@ export const offerSchema = z.object({
   dailyRate: z.number().int().nonnegative().nullable().optional(),
   remoteMode: z.enum(["full_remote", "exceptional", "hybrid", "onsite", "unknown"]),
   onsiteCadence: z.string().max(180).optional(),
+  onsiteDaysPerWeek: z.number().int().min(0).max(5).nullable().optional(),
+  onsiteDaysPerMonth: z.number().int().min(0).max(31).nullable().optional(),
+  remoteCountry: z.string().refine(value=>value===""||isCountryCode(value),"Pays invalide").optional(),
   language: z.enum(["fr", "en", "professional_en", "advanced_en", "unknown"]),
   source: z.enum(sourceNames),
   sourceUrl: z.string().url().refine(v => /^https?:\/\//.test(v)).optional(),
@@ -25,7 +29,7 @@ export const batchSchema = z.object({ offers: z.array(offerSchema).min(1).max(20
 export const listSchema = z.object({ limit: z.number().int().min(1).max(100).default(50) }).strict();
 
 export const importRules = {
-  version: 4,
+  version: 5,
   query: 'newer_than:7d -in:spam -in:trash {from:collective.work from:malt.com}',
   selection: "Lire uniquement les alertes d'offres et propositions de mission. Ignorer statistiques, newsletters, discussions support et suivis de candidature dans cet import.",
   extraction: "Enregistrer seulement les faits présents dans la fiche. Ne jamais inventer salaire, TJM, contrat ou remote à partir des filtres de recherche. Null pour les montants absents ; unknown pour remote/langue non précisés.",
@@ -47,6 +51,9 @@ const offerProperties = {
   dailyRate: { type: ["integer", "null"], minimum: 0 },
   remoteMode: { type: "string", enum: ["full_remote", "exceptional", "hybrid", "onsite", "unknown"] },
   onsiteCadence: { type: "string", maxLength: 180 },
+  onsiteDaysPerWeek: { type: ["integer","null"], minimum: 0, maximum: 5 },
+  onsiteDaysPerMonth: { type: ["integer","null"], minimum: 0, maximum: 31 },
+  remoteCountry: { type: "string", description: "Pays de télétravail explicitement autorisé, code ISO alpha-2 ou vide. Ne pas déduire du siège ou du pays du poste." },
   language: { type: "string", enum: ["fr", "en", "professional_en", "advanced_en", "unknown"] },
   source: { type: "string", enum: offerSchema.shape.source.options },
   sourceUrl: { type: "string", format: "uri" },

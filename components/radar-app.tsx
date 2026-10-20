@@ -1,10 +1,10 @@
 "use client";
 
-import { DatePicker } from "@/components/date-picker";
+import { OfferForm } from "@/components/offer-form";
 import { Textarea } from "@/components/ui/textarea";
 
 import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { RefreshCw, ShieldCheck, Check, ClipboardCheck, LayoutDashboard, LoaderCircle, Mail, Plus, Search, Sparkles, Trash2, Undo2, UserRound, X } from "lucide-react";
+import { RefreshCw, ShieldCheck, Check, ClipboardCheck, LayoutDashboard, LoaderCircle, Mail, Plus, Search, Trash2, Undo2, UserRound, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
 import { hasApplication, inOpportunityView, reviewState, type OpportunityView } from "@/lib/opportunity-views";
@@ -13,10 +13,9 @@ import { TodayWorkspace, ApplicationsWorkspace } from "@/components/today-worksp
 import { OpportunitiesWorkspace } from "@/components/opportunities-workspace";
 import { ChoiceSelect } from "@/components/choice-select";
 import { OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/components/offer-workspace";
-import { sourceNames } from "@/lib/source-catalog";
 import { activeStatuses, terminalStatuses } from "@/lib/application-workflow";
 import { profileTemplate } from "@/lib/profile-template";
-import type { CandidateProfile, DismissalReason, JobInput, JobRecord, JobStatus, MatchTier } from "@/lib/types";
+import type { CandidateProfile, DismissalReason, JobRecord, JobStatus, MatchTier } from "@/lib/types";
 import type { RadarInitialState } from "@/lib/radar-bootstrap";
 import type { RadarRoute, ProfileSection } from "@/lib/radar-navigation";
 
@@ -25,10 +24,7 @@ const SourcePanel = lazy(() => import("@/components/source-panel").then(module =
 
 type Tab = "dashboard" | "offers" | "pipeline" | "profile" | "sources";
 type OfferFilter = OpportunityView;
-type JobDraft = {
-  title: string; company: string; contractType: JobInput["contractType"]; annualSalary: string; dailyRate: string;
-  remoteMode: JobInput["remoteMode"]; onsiteCadence: string; language: JobInput["language"]; source: string; sourceUrl: string; applicationUrl: string; publishedAt: string; contentCoverage: NonNullable<JobInput["contentCoverage"]>; description: string;
-};
+
 
 const tabs: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof LayoutDashboard }> = [
   { id: "dashboard", label: "Aujourd’hui", mobileLabel: "Accueil", icon: LayoutDashboard },
@@ -38,7 +34,7 @@ const tabs: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof La
   { id: "sources", label: "Sources", mobileLabel: "Sources", icon: Mail },
 ];
 const dismissalLabels: Record<DismissalReason, string> = { filled: "Poste pourvu", applications_closed: "Candidatures fermées", not_interested: "Je ne souhaite pas postuler", other: "Autre raison" };
-const emptyDraft = (): JobDraft => ({ title: "", company: "", contractType: "other", annualSalary: "", dailyRate: "", remoteMode: "unknown", onsiteCadence: "", language: "unknown", source: "Ajout manuel", sourceUrl: "", applicationUrl: "", publishedAt: "", contentCoverage: "unknown", description: "" });
+
 
 export function RadarApp({ userName, initialState, initialRoute, initialProfileSection }: { userName: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection }) {
   const { route, navigate } = useRadarNavigation(initialRoute);
@@ -211,56 +207,12 @@ export function RadarApp({ userName, initialState, initialRoute, initialProfileS
 }
 
 function JobDialog({ onClose, onCreated }: { onClose: () => void; onCreated: (job: JobRecord, deduplicated?: boolean) => void }) {
-  const pasteId = useId();
-  const [draft, setDraft] = useState<JobDraft>(emptyDraft); const [paste, setPaste] = useState(""); const [parsing, setParsing] = useState(false); const [saving, setSaving] = useState(false); const [error, setError] = useState<string | null>(null);
-  function update<K extends keyof JobDraft>(key: K, value: JobDraft[K]) { setDraft((current) => ({ ...current, [key]: value })); }
-  async function parsePaste() {
-    setParsing(true); setError(null);
-    try {
-      const response = await fetch("/api/parse-offer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: paste, source: draft.source, sourceUrl: draft.sourceUrl }) });
-      const result = await response.json() as { offer?: Partial<JobInput>; error?: string };
-      if (!response.ok || !result.offer) throw new Error(result.error ?? "Impossible d’analyser ce contenu.");
-      const offer = result.offer;
-      setDraft(current => ({ ...current, ...offer, annualSalary: offer.annualSalary ? String(offer.annualSalary) : current.annualSalary, dailyRate: offer.dailyRate ? String(offer.dailyRate) : current.dailyRate, description: offer.description ?? current.description }));
-    } catch (problem) { setError(problem instanceof Error && problem.message !== "Failed to fetch" ? problem.message : "Analyse indisponible. Réessayez sans perdre le texte collé."); }
-    finally { setParsing(false); }
-  }
-  async function save() {
-    setSaving(true); setError(null);
-    try {
-      const payload = { ...draft, annualSalary: draft.annualSalary ? Number(draft.annualSalary) : null, dailyRate: draft.dailyRate ? Number(draft.dailyRate) : null };
-      const response = await fetch("/api/jobs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      const result = await response.json() as { job?: JobRecord; deduplicated?: boolean; error?: string };
-      if (!response.ok || !result.job) throw new Error(result.error ?? "Impossible d’ajouter cette offre.");
-      onCreated(result.job, result.deduplicated);
-    } catch (problem) { setError(problem instanceof Error && problem.message !== "Failed to fetch" ? problem.message : "Enregistrement indisponible. Vos champs restent prêts pour réessayer."); }
-    finally { setSaving(false); }
-  }
-  return <Modal title="Ajouter une opportunité" description="Collez une alerte, un post LinkedIn ou complétez les champs. Les faits absents restent à confirmer." onClose={onClose}>
-    <div className="space-y-5">
-      <div className="rounded-2xl bg-[#fff2eb] p-4"><div className="flex items-center justify-between gap-3"><label htmlFor={pasteId} className="text-sm font-bold">Analyser un texte</label><button disabled={!paste.trim() || parsing} onClick={() => void parsePaste()} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#333333] px-3 py-2 text-xs font-bold text-white disabled:opacity-50">{parsing ? <LoaderCircle size={14} className="animate-spin" /> : <Sparkles size={14} />} Préremplir</button></div><Textarea id={pasteId} value={paste} onChange={event => setPaste(event.target.value)} className="mt-3 min-h-24" placeholder="Collez le contenu de l’alerte ou du post LinkedIn ici…" /></div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Intitulé (obligatoire)"><input required value={draft.title} onChange={event => update("title", event.target.value)} placeholder="Senior Product Manager" /></Field>
-        <Field label="Entreprise"><input value={draft.company} onChange={event => update("company", event.target.value)} placeholder="Nom de l’entreprise" /></Field>
-        <ChoiceSelect label="Type de contrat" value={draft.contractType} onChange={value => update("contractType", value)} options={[{value:"other",label:"À confirmer"},{value:"cdi",label:"CDI"},{value:"freelance",label:"Freelance"}]} />
-        <ChoiceSelect label="Source" value={draft.source} onChange={value => update("source", value)} options={sourceNames.map(value => ({value,label:value}))} />
-        <Field label="Salaire annuel brut (€)"><input inputMode="numeric" value={draft.annualSalary} onChange={event => update("annualSalary", event.target.value)} placeholder="55 000" /></Field>
-        <Field label="TJM HT (€)"><input inputMode="numeric" value={draft.dailyRate} onChange={event => update("dailyRate", event.target.value)} placeholder="500" /></Field>
-        <ChoiceSelect label="Remote" value={draft.remoteMode} onChange={value => update("remoteMode", value)} options={[{value:"unknown",label:"À confirmer"},{value:"full_remote",label:"Full remote"},{value:"exceptional",label:"Présence exceptionnelle"},{value:"hybrid",label:"Hybride / régulier"},{value:"onsite",label:"Sur site"}]} />
-        <ChoiceSelect label="Langue" value={draft.language} onChange={value => update("language", value)} options={[{value:"unknown",label:"À confirmer"},{value:"fr",label:"Français"},{value:"professional_en",label:"Anglais professionnel"},{value:"advanced_en",label:"Anglais C1/C2"}]} />
-      </div>
-      <Field label="Présence annoncée (à confirmer)"><input value={draft.onsiteCadence} onChange={event => update("onsiteCadence", event.target.value)} placeholder="Ex. 1 jour sur site par semaine" /></Field>
-      <Field label="Lien d’origine"><input value={draft.sourceUrl} onChange={event => update("sourceUrl", event.target.value)} placeholder="https://…" /></Field>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <DatePicker label="Date de publication confirmée" value={draft.publishedAt} onChange={value=>update("publishedAt",value)} />
-        <Field label="Lien pour postuler (si différent)"><input type="url" value={draft.applicationUrl} onChange={event => update("applicationUrl", event.target.value)} /></Field>
-        <ChoiceSelect label="Niveau de détail fourni" value={draft.contentCoverage} onChange={value => update("contentCoverage", value)} options={[{value:"unknown",label:"À confirmer"},{value:"full",label:"Description complète fournie"},{value:"summary",label:"Synthèse"},{value:"partial",label:"Notification partielle"}]} />
-      </div>
-      <Field label="Texte de l’offre"><Textarea rows={5} value={draft.description} onChange={event => update("description", event.target.value)} placeholder="Conservez les éléments qui aideront à expliquer le score et préparer la candidature." /></Field>
-      {error ? <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
-      <div className="flex flex-wrap justify-end gap-2"><button onClick={onClose} className="min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold text-[#535768]">Annuler</button><button disabled={saving || !draft.title.trim()} onClick={() => void save()} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#6161ff] px-4 py-2.5 text-sm font-bold text-[#333333] disabled:opacity-50">{saving ? <LoaderCircle size={16} className="animate-spin" /> : <Check size={16} />} Qualifier l’offre</button></div>
-    </div>
-  </Modal>;
+  return <Modal title="Ajouter une opportunité" description="Complétez les faits de l’annonce." onClose={onClose}><OfferForm onCancel={onClose} onSave={async input=>{
+    const response=await fetch("/api/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input)});
+    const result=await response.json() as {job?:JobRecord;deduplicated?:boolean;error?:string};
+    if(!response.ok||!result.job)throw new Error(result.error??"Enregistrement non confirmé. Votre saisie est conservée.");
+    onCreated(result.job,result.deduplicated);
+  }}/></Modal>;
 }
 
 function Modal({ title, description, meta, onClose, children }: { title: string; description: string; meta?: React.ReactNode; onClose: () => void; children: React.ReactNode }) {
@@ -289,7 +241,6 @@ function Modal({ title, description, meta, onClose, children }: { title: string;
   }, []);
   return <div data-testid="modal-backdrop" onClick={event => { if (event.target === event.currentTarget) onClose(); }} className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/35 p-0 backdrop-blur-md sm:items-center sm:p-6"><div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} className="workspace-dialog max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-[28px] border border-white bg-[#ffffff]/95 p-5 shadow-2xl outline-none sm:rounded-[28px] sm:p-7"><div className="mb-5 flex items-start justify-between gap-4 border-b border-[#eee7ec] pb-4"><div className="min-w-0"><h2 id={titleId} className="text-xl font-semibold leading-snug text-[#333333]">{title}</h2><p id={descriptionId} className="mt-1 max-w-xl text-sm leading-6 text-[#535768]">{description}</p>{meta ? <div className="mt-2">{meta}</div> : null}</div><button onClick={onClose} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-[#535768] hover:bg-[#f5f6f8]" aria-label="Fermer"><X size={20} /></button></div>{children}</div></div>;
 }
-function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="workspace-field"><span>{label}</span>{children}</label>; }
 function Toast({ message, error, onClose }: { message: string; error: boolean; onClose: () => void }) {
   const close=useRef(onClose);close.current=onClose;
   const [paused,setPaused]=useState(false);

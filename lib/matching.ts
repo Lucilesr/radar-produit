@@ -31,7 +31,10 @@ export function assessJob(job: JobInput & { status?: JobStatus }): Assessment {
     score -= 12;
   }
 
-  const arrangement = detectWorkArrangement(`${job.onsiteCadence ?? ""} ${job.description ?? ""}`, job.remoteMode);
+  const detected = detectWorkArrangement(`${job.onsiteCadence ?? ""} ${job.description ?? ""}`, job.remoteMode);
+  const weekly=job.onsiteDaysPerWeek,monthly=job.onsiteDaysPerMonth;
+  const explicitPresence=weekly!=null||monthly!=null;
+  const arrangement=explicitPresence&&job.remoteMode==="hybrid" ? {mode:"hybrid" as const,daysOnsite:weekly??undefined,lightHybrid:(weekly==null||weekly<=1)&&(monthly==null||monthly<=4)} : detected;
   const pursued = !!job.status && activeStatuses.includes(job.status);
   if (arrangement.mode === "full_remote") {
     score += 25;

@@ -2,6 +2,8 @@
 
 ## 20 octobre 2026
 
+- Opportunités : préremplissage local depuis le descriptif avec propositions à cocher, mode de travail et langue modifiables, présence hebdomadaire/mensuelle distincte et select du pays autorisé pour le télétravail. Migration additive pour conserver ces faits sans modifier le suivi de candidature.
+
 - Design system : calendriers français partagés, date/heure séparées, skeletons communs, textareas redimensionnables, sélecteurs cohérents et aides secondaires accessibles au clavier et au toucher.
 
 - Navigation : retour en haut après le changement effectif d’onglet, y compris lors du retour vers une section déjà visitée.
