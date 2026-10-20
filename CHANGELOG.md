@@ -5,6 +5,10 @@
 - Le carnet d’expériences et les sources utilisent un bouton discret à double chevron, avec un statut visible et des détails encadrés.
 - Espacements corrigés : retraits réguliers autour des cartes et statuts, contenus imbriqués alignés et historique des documents avec marges internes.
 - Le repli conserve les saisies en cours ; les liens vers l’historique et le prochain bloc à relire ouvrent les sections concernées.
+## 20 octobre 2026 — Recherche PO/PM sans collecte de plateformes
+
+- Ajout de liens Google/Bing pour repérer des annonces PO/PM en français, tous pays. LinkedIn et Welcome to the Jungle restent consultés manuellement ; Radar ne récupère pas leurs contenus et n’utilise aucun compte LinkedIn.
+- La version actuelle ne contient aucun collecteur direct ; les limites d’accès et de réutilisation sont documentées.
 
 ## 20 octobre 2026
 
