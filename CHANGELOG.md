@@ -1,5 +1,10 @@
 # Évolutions de Radar Produit
 
+## 20 octobre 2026 — Recherche PO/PM sans collecte de plateformes
+
+- Ajout de liens Google/Bing pour repérer des annonces PO/PM en français, tous pays. LinkedIn et Welcome to the Jungle restent consultés manuellement ; Radar ne récupère pas leurs contenus et n’utilise aucun compte LinkedIn.
+- La version actuelle ne contient aucun collecteur direct ; les limites d’accès et de réutilisation sont documentées.
+
 ## 20 octobre 2026
 
 - Navigation du profil : une nouvelle visite depuis un autre onglet ouvre le carnet d’expériences, sans perdre les brouillons. Les liens directs et l’historique du navigateur conservent l’accès aux documents.
