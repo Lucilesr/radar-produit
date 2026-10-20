@@ -66,16 +66,35 @@
   .experience-filters .choice-select>p,.experience-search>span,.experience-filters .choice-select-trigger { font-size: 16px; }
 }
 
-/* Shared collapsible layout: persistent heading/status and bordered detail panels. */
-.radar-collapsible-heading { min-height:44px; padding-block:4px; line-height:1.6; overflow-wrap:anywhere; }
-.radar-collapsible-heading>button { flex-shrink:0; }
-.radar-collapsible-content[hidden] { display:none; }
-.radar-collapsible-content>div:not(.experience-group-body) { min-width:0; }
-.radar-collapsible-status { margin-inline:16px; border-color:var(--border); }
-.radar-collapsible-status .experience-status { margin:0; max-width:75%; order:0; text-align:right; }
-.experience-group>.radar-collapsible-content>.experience-group-body { border-top:1px solid var(--border); }
-.experience-detail>.radar-collapsible-content { border:1px solid var(--border); border-radius:6px; padding:12px; }
-.experience-detail>.radar-collapsible-heading { padding-inline:0; }
-.experience-detail>.radar-collapsible-status { margin-inline:0; }
-.source-research>.radar-collapsible-content { border:1px solid var(--border); border-radius:6px; padding:12px; }
-@media(max-width:640px) { .radar-collapsible-heading>button { min-width:44px; min-height:44px; }.radar-collapsible-status { margin-inline:12px; }.experience-detail>.radar-collapsible-status { margin-inline:0; } }
+/* Collapsible spacing is owned here, including nested and closed sections. */
+.radar-collapsible { gap: 8px; }
+.radar-collapsible>.radar-collapsible-heading { min-height: 40px; padding: 0; gap: 16px; line-height: 1.5; overflow-wrap: anywhere; }
+.radar-collapsible-heading>button { flex-shrink: 0; }
+.radar-collapsible-content[hidden] { display: none; }
+.radar-collapsible>.radar-collapsible-content { min-width: 0; gap: 12px; }
+.radar-collapsible-content>div { min-width: 0; }
+.radar-collapsible>.radar-collapsible-status { margin: 0; padding: 8px 12px; border-color: var(--border); }
+.radar-collapsible-status .experience-status { margin: 0; max-width: 75%; order: 0; text-align: right; }
+.experience-group.radar-collapsible { padding: 16px; }
+.experience-group>.radar-collapsible-content { margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--border); }
+.experience-group>.radar-collapsible-content>.experience-group-body { padding: 0; }
+.experience-detail.radar-collapsible { padding: 16px; }
+.experience-detail>.radar-collapsible-content { border: 0; border-radius: 0; padding: 8px 0 0; }
+.experience-secondary.radar-collapsible { padding: 16px; margin-top: 20px; border: 1px solid var(--border); }
+.experience-metadata.radar-collapsible { padding: 12px; margin-block: 16px; }
+.experience-secondary>.radar-collapsible-content,.experience-metadata>.radar-collapsible-content,.experience-more>.radar-collapsible-content { padding-top: 8px; }
+.experience-metadata>.radar-collapsible-content>.experience-detail { margin: 0; }
+.experience-document { padding: 12px 0; }
+.experience-document:first-child { padding-top: 0; }
+.experience-document:last-child { padding-bottom: 0; border-bottom: 0; }
+.experience-rich-text>:first-child { margin-top: 0; }
+.experience-rich-text>:last-child { margin-bottom: 0; }
+.source-research>.radar-collapsible-content { border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+.source-research>.radar-collapsible-content>div:first-child { margin-top: 0; }
+@media(max-width:640px) {
+  .radar-collapsible>.radar-collapsible-heading { min-height: 44px; gap: 12px; }
+  .radar-collapsible-heading>button { min-width: 44px; min-height: 44px; }
+  .experience-group.radar-collapsible,.experience-detail.radar-collapsible,.experience-secondary.radar-collapsible { padding: 12px; }
+  .experience-metadata.radar-collapsible { padding: 10px; }
+  .experience-group>.radar-collapsible-content { padding-top: 12px; }
+}
