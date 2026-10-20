@@ -193,6 +193,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input[type='checkb
 /* Long document names remain readable in desktop menus and mobile drawers. */
 [data-slot='select-item'] { white-space: normal; overflow-wrap: anywhere; padding-right: 32px; }
 [data-slot='select-item'] > span:last-child { min-width: 0; }
+/* Keep keyboard focus visible inside menus without the oversized outer ring. */
+.choice-select-menu [data-slot='select-item']:focus-visible { outline: none; box-shadow: inset 2px 0 0 var(--primary); }
 [data-slot='drawer-content'] button > span { min-width: 0; overflow-wrap: anywhere; }
 /* The accessible table label must stay inside the horizontal table scroller. */
 .opportunities-table th { position: relative; }

@@ -80,6 +80,7 @@ export function rowToJob(row: Record<string, unknown>): JobRecord {
     contentCoverage: row.contentCoverage as JobInput["contentCoverage"] ?? "unknown",
     notificationAt: stringOrUndefined(row.notificationAt),
     status: (row.status as JobStatus) ?? "new",
+    appliedAt: stringOrUndefined(row.appliedAt),
     matchScore: Number(row.matchScore ?? 0),
     matchTier: (row.matchTier as JobRecord["matchTier"]) ?? "exception",
     reasons: parseArray(row.reasons),

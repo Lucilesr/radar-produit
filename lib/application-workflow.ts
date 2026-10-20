@@ -7,6 +7,13 @@ export const statusLabels: Record<JobStatus, string> = {
 };
 export const activeStatuses: JobStatus[] = ["shortlist", "prepare", "ready", "applied", "interview", "awaiting_response", "next_step", "offer"];
 export const terminalStatuses: JobStatus[] = ["rejected", "withdrawn", "closed"];
+export function applicationAge(appliedAt?: string, now = Date.now()) {
+  if (!appliedAt) return null;
+  const elapsed = now - Date.parse(appliedAt);
+  if (!Number.isFinite(elapsed) || elapsed < 0) return null;
+  const days = Math.floor(elapsed / 86400000);
+  return { days, tone: days >= 30 ? "old" : days >= 14 ? "waiting" : "recent" } as const;
+}
 export function reviewDue(interview: InterviewRecord, now = Date.now()) {
   return interview.state === "planned" && Date.parse(interview.endAt) <= now;
 }

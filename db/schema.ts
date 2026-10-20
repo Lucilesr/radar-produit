@@ -33,6 +33,7 @@ export const jobs = sqliteTable(
     contentCoverage: text("content_coverage").notNull().default("unknown"),
     notificationAt: text("notification_at"),
     status: text("status").notNull().default("new"),
+    appliedAt: text("applied_at"),
     reviewState: text("review_state"),
     deletedAt: text("deleted_at"),
     dismissalReason: text("dismissal_reason"),

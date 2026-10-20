@@ -35,6 +35,7 @@ export type JobRecord = JobInput & {
   dismissalNote?: string;
   dismissalEvidence?: string;
   status: JobStatus;
+  appliedAt?: string;
   matchScore: number;
   matchTier: MatchTier;
   reasons: string[];
