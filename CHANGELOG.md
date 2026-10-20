@@ -1,5 +1,21 @@
 # Évolutions de Radar Produit
 
+## 20 octobre 2026 — Blocs repliables
+
+- Le carnet d’expériences et les sources utilisent un bouton discret à double chevron, avec un statut visible et des détails encadrés.
+- Espacements corrigés : retraits réguliers autour des cartes et statuts, contenus imbriqués alignés et historique des documents avec marges internes.
+- Le repli conserve les saisies en cours ; les liens vers l’historique et le prochain bloc à relire ouvrent les sections concernées.
+## 20 octobre 2026 — Recherche PO/PM sans collecte de plateformes
+
+- Ajout de liens Google/Bing pour repérer des annonces PO/PM en français, tous pays. LinkedIn et Welcome to the Jungle restent consultés manuellement ; Radar ne récupère pas leurs contenus et n’utilise aucun compte LinkedIn.
+- La version actuelle ne contient aucun collecteur direct ; les limites d’accès et de réutilisation sont documentées.
+
+## 20 octobre 2026 — Aperçu des offres depuis les API employeur
+
+- Ajoute une lecture publique et ponctuelle des fiches individuelles Greenhouse/Ashby, sans identifiant, clé ou abonnement.
+- Présente les informations dans le formulaire d’offre ; un clic explicite copie la proposition dans le brouillon, où les champs restent modifiables et le descriptif peut être prérempli avec les propositions existantes.
+- Les URLs de télétravail, conditions et langues absentes restent inconnues ; le lieu du poste ne devient pas un pays autorisé.
+
 ## 20 octobre 2026
 
 - Alertes Collective : le lien de recherche reçu par email peut être conservé dans Sources et ouvert pour vérifier les annonces individuelles. Une alerte agrégée ne crée aucune fiche d’offre fictive.
