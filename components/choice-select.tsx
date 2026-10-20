@@ -23,13 +23,13 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
   const groups = [...new Set(options.map(option => option.group ?? ""))];
   function choose(next: T) { onChange(next); setOpen(false); }
   function desktopOptions(group: string) {
-    return options.filter(option => (option.group ?? "") === group).map(option => <SelectItem key={option.value} value={option.value} className="min-h-10 rounded-lg pl-3 pr-9 py-2 text-sm text-[#333333] focus:bg-[#e7ecff] focus:text-[#4b4bd1]">{option.label}</SelectItem>);
+    return options.filter(option => (option.group ?? "") === group).map(option => <SelectItem key={option.value} value={"option:"+option.value} className="min-h-10 rounded-lg pl-3 pr-9 py-2 text-sm text-[#333333] focus:bg-[#e7ecff] focus:text-[#4b4bd1]">{option.label}</SelectItem>);
   }
 
   return <div className="choice-select min-w-0">
     <p id={labelId} className="mb-1.5 text-xs font-semibold text-[#535768]">{label}</p>
     <div className="hidden sm:block">
-      <Select value={value} onValueChange={next => onChange(next as T)} disabled={disabled}>
+      <Select value={"option:"+value} onValueChange={next => onChange(next.slice(7) as T)} disabled={disabled}>
         <SelectTrigger aria-labelledby={`${labelId} ${desktopValueId}`} className="choice-select-trigger h-11 w-full rounded-xl border-[#d0d4e4] bg-white px-3 text-left text-sm text-[#333333] shadow-none focus-visible:ring-[#e7ecff]">
           <SelectValue id={desktopValueId} placeholder="Choisir" />
         </SelectTrigger>

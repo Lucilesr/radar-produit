@@ -112,3 +112,22 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 .workspace-toast button:hover { background:#ffffff20; }
 .radar-app button { min-height:32px; }
 @media(max-width:640px) { .workspace-toast { bottom:calc(84px + env(safe-area-inset-bottom)); }.radar-app button { min-height:44px; } }
+
+/* Shared date, loading, help and text-entry controls. */
+.radar-app label,.radar-app .choice-select>p { font-size: 14px; }
+.radar-app input::placeholder,.radar-app textarea::placeholder { font-weight: 400; }
+@media(max-width:640px) { .radar-app label,.radar-app .form-control-label,.radar-app .choice-select>p { font-size: 16px; } }
+.form-control-label { display: block; margin-bottom: 6px; color: var(--muted-foreground); font-size: 14px; font-weight: 550; line-height: 1.5; }
+.date-picker-trigger { min-height: 44px; height: auto; padding: 10px 12px; white-space: normal; border-color: var(--input); background: var(--card); color: var(--foreground); gap: 16px; }
+.date-picker-trigger[data-empty=true] { color: var(--muted-foreground); }
+.date-picker-popover { z-index: 90; max-width: calc(100vw - 20px); border-color: var(--border); background: var(--card); color: var(--foreground); border-radius: 12px; box-shadow: 0 12px 40px #25252f26; }
+.date-picker-actions { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--border); }
+.date-time-field { display: grid; grid-template-columns: minmax(0,1fr) 110px; gap: 12px; align-items: end; }
+.time-field { min-width: 0; }.time-field input { min-height: 44px; }
+.loading-skeleton { display: grid; gap: 24px; padding-block: 16px; }.loading-skeleton-row { display: flex; align-items: center; gap: 16px; }
+.loading-skeleton [data-slot=skeleton] { background: var(--muted); }
+.inline-help { display: flex; align-items: center; gap: 6px; color: var(--muted-foreground); font-size: 13px; }
+.help-tooltip-trigger { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 6px; color: var(--muted-foreground); background: transparent; }
+.help-tooltip-trigger:hover { background: var(--muted); }.help-tooltip-content { z-index: 100; max-width: min(300px,calc(100vw - 32px)); padding: 10px 12px; line-height: 1.6; background: var(--foreground); color: var(--card); }
+[data-slot=textarea] { resize: vertical; font-weight: 400; }
+@media(max-width:640px) { .date-time-field { grid-template-columns: minmax(0,1fr); } .date-picker-trigger { font-size: 16px; } }

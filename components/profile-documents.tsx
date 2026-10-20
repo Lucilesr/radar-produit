@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingSkeleton } from "@/components/loading-skeleton";
+
 import { useEffect, useId, useRef, useState } from "react";
 import { Check, Download, FileText, LoaderCircle, RefreshCw, Upload } from "lucide-react";
 import { ChoiceSelect } from "@/components/choice-select";
@@ -58,7 +60,7 @@ export function ProfileDocuments({ links, onLinked, onBusyChange }: { links: Doc
     {error ? <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-xs leading-5 text-red-700">{error}</p> : null}
     {success ? <p role="status" className="mt-3 rounded-xl bg-[#e7ecff] p-3 text-xs leading-5 text-[#4b4bd1]">{success}</p> : null}
     <div className="mt-4 space-y-3">{slots.map(slot => <DocumentCard key={slot.id} slot={slot} document={files.find(file => file.id === links[slot.id])} linkedId={links[slot.id]} files={files} busy={busy} onUpload={upload} onLink={link} onError={message => { setError(message); setSuccess(null); }} />)}</div>
-    {loading ? <p className="mt-3 text-xs text-[#535768]">Lecture de vos fichiers…</p> : null}
+    {loading ? <LoadingSkeleton label="Lecture de vos fichiers…" rows={2} /> : null}
   </section>;
 }
 
