@@ -5,6 +5,12 @@
 - Ajout de liens Google/Bing pour repérer des annonces PO/PM en français, tous pays. LinkedIn et Welcome to the Jungle restent consultés manuellement ; Radar ne récupère pas leurs contenus et n’utilise aucun compte LinkedIn.
 - La version actuelle ne contient aucun collecteur direct ; les limites d’accès et de réutilisation sont documentées.
 
+## 20 octobre 2026 — Aperçu des offres depuis les API employeur
+
+- Ajoute une lecture publique et ponctuelle des fiches individuelles Greenhouse/Ashby, sans identifiant, clé ou abonnement.
+- Présente les informations dans le formulaire d’offre ; un clic explicite copie la proposition dans le brouillon, où les champs restent modifiables et le descriptif peut être prérempli avec les propositions existantes.
+- Les URLs de télétravail, conditions et langues absentes restent inconnues ; le lieu du poste ne devient pas un pays autorisé.
+
 ## 20 octobre 2026
 
 - Navigation du profil : une nouvelle visite depuis un autre onglet ouvre le carnet d’expériences, sans perdre les brouillons. Les liens directs et l’historique du navigateur conservent l’accès aux documents.
