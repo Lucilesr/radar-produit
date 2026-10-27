@@ -2,6 +2,8 @@
 
 ## 27 octobre 2026
 
+- Sources Signal : cartes et formulaires de configuration alignés sur les composants communs. Notes conservées pendant les changements de vue et les actualisations ; confirmation par la notification partagée, sans changer les règles de configuration ou le stockage.
+
 - Documents et présentation Signal : une ligne par fichier, import/remplacement et téléchargement explicites, choix d’une ancienne version replié ; présentation alignée sur les composants communs. Le brouillon reste disponible entre les sous-onglets et les notifications utilisent le même style. Les anciennes versions des fichiers, champs et autorisations restent conservés.
 
 - Carnet Signal : crayon dans les en-têtes, statut auprès du titre, création et modification avec une seule action Enregistrer. Droits d’usage regroupés avec sélection par expérience, exceptions par réalisation et explication de « Présentation pro ». Les contenus restent privés sans autorisation explicite ; historique, versions et restauration sont conservés.
