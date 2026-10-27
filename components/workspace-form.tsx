@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, type ComponentProps, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ComponentProps, type ReactNode } from "react";
 import { CircleAlert, LoaderCircle, Save } from "lucide-react";
 
 export function WorkspaceButton({ variant = "secondary", busy = false, disabled, children, className = "", ...props }: ComponentProps<"button"> & { variant?: "primary" | "secondary" | "quiet" | "danger"; busy?: boolean }) {
@@ -16,4 +16,14 @@ export function WorkspaceSaveActions({ label, onSave, onCancel, busy = false, di
 }
 export function WorkspaceFormError({ message }: { message: string }) {
   return message ? <p role="alert" className="signal-form-error"><CircleAlert size={16} aria-hidden />{message}</p> : null;
+}
+
+/** A form opened from a long interview list starts at its heading. */
+export function useWorkspaceEditorFocus() {
+  const title = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    title.current?.closest<HTMLElement>('[role="dialog"]')?.scrollTo({ top: 0 });
+    title.current?.focus({ preventScroll: true });
+  }, []);
+  return title;
 }

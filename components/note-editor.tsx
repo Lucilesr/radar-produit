@@ -66,7 +66,7 @@ export function NoteEditor({ value, onChange, label, disabled = false, maxLength
         onMouseDown={event => event.preventDefault()} onClick={() => command(control.command)}><control.Icon size={16} aria-hidden /></button>)}
     </div>
     <div ref={node => { root.current = node; if (inputRef) inputRef.current = node; }}
-      className="signal-note-input" role="textbox" aria-label={label} aria-multiline="true" aria-describedby={help} aria-invalid={tooLong} aria-disabled={disabled}
+      className="signal-note-input" role="textbox" aria-label={label} aria-placeholder={placeholder} aria-multiline="true" aria-describedby={help} aria-invalid={tooLong} aria-disabled={disabled} data-empty={!value || undefined}
       tabIndex={disabled ? -1 : 0} contentEditable={!disabled} suppressContentEditableWarning data-placeholder={placeholder}
       style={{ minHeight: rows * 25 + 24 }} dangerouslySetInnerHTML={initial}
       onInput={publish} onKeyUp={remember} onMouseUp={remember} onBlur={remember}
