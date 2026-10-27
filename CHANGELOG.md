@@ -2,6 +2,8 @@
 
 ## 27 octobre 2026
 
+- Aujourd’hui Signal : actions suivantes, compteurs et agenda harmonisés avec les panneaux communs. Statut d’entretien en tête à droite, dates et fuseaux conservés, états vides lisibles ; mêmes actions et limites de trois éléments affichés.
+
 - Aujourd’hui Signal : carte prioritaire pétrole compacte, titre direct sans « À faire maintenant » et filigrane Orbite blanc/citron recadré en bas à droite. Les priorités et destinations des actions restent inchangées.
 
 - Recherche web Signal : cartes PO/PM et liens Google/Bing harmonisés, noms accessibles distinguant rôle et plateforme. Les huit destinations restent inchangées ; aucun compte ni contenu de plateforme n’est lu.
