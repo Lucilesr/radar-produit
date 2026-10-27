@@ -1,0 +1,16 @@
+/* Sources — Signal cards, shared controls and restrained mineral surfaces. */
+.source-workspace .source-settings-grid { gap:20px; align-items:start; }
+.signal-source-card { min-width:0; padding:24px; border:1px solid var(--border); border-top:2px solid #adbfca; border-radius:5px; background:var(--card); }
+.signal-source-card[hidden] { display:none; }
+.signal-source-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+.signal-source-heading>div { min-width:0; }
+.radar-app .signal-source-heading h2 { font:600 18px/1.4 var(--font-sans); letter-spacing:-.015em; margin:0; }
+.signal-source-description { font:400 13px/1.75 var(--font-sans); color:var(--muted-foreground); margin:14px 0; overflow-wrap:anywhere; }
+.signal-source-link { width:fit-content; max-width:100%; }
+.source-workspace .source-research { margin-top:18px; border-radius:4px; background:transparent; }
+.source-workspace .signal-source-config>.radar-collapsible-content { padding:16px 0 0; border:0; }
+.source-workspace .signal-source-config .library-section-title { font:500 13px/1.5 var(--font-sans); }
+.signal-source-form { display:grid; gap:16px; }
+.signal-source-form .workspace-field { gap:7px; font-size:13px; }
+.signal-source-actions { display:flex; justify-content:flex-end; }
+@media(max-width:640px) { .signal-source-card { padding:20px 16px; }.signal-source-actions .signal-form-button { max-width:100%; }.source-workspace .signal-source-config .library-section-title { padding-top:12px; } }
