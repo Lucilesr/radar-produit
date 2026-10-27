@@ -12,7 +12,7 @@ export type WorkspaceFeedback = {
 /** One notification shape; errors persist, other tones pause while being read. */
 export function WorkspaceToast({ message, tone = "success", action, onClose }: WorkspaceFeedback & { onClose: () => void }) {
   const close = useRef(onClose);
-  close.current = onClose;
+  useEffect(() => { close.current = onClose; }, [onClose]);
   const [paused, setPaused] = useState(false);
   useEffect(() => {
     if (paused || tone === "error") return;
