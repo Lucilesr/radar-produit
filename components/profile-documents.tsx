@@ -4,6 +4,8 @@ import { LoadingSkeleton } from "@/components/loading-skeleton";
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Check, Download, FileText, LoaderCircle, RefreshCw, Upload } from "lucide-react";
+import { useWorkspaceFeedback } from "@/components/workspace-feedback";
+import { WorkspaceButton, WorkspacePanelHeader } from "@/components/workspace-form";
 import { ChoiceSelect } from "@/components/choice-select";
 import { validateDocumentMeta, type DocumentLinks, type DocumentSlot, type PrivateDocument } from "@/lib/document-input";
 
@@ -13,11 +15,12 @@ const slots: Array<{ id: DocumentSlot; label: string }> = [
 ];
 
 export function ProfileDocuments({ links, onLinked, onBusyChange }: { links: DocumentLinks; onLinked: (links: DocumentLinks) => void; onBusyChange: (busy: boolean) => void }) {
+  const feedback=useWorkspaceFeedback();
   const [files, setFiles] = useState<PrivateDocument[]>([]);
   const [busy, setBusy] = useState<DocumentSlot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const writeLock=useRef(false);
   useEffect(() => { onBusyChange(!!busy); }, [busy, onBusyChange]);
   async function refresh() {
     setLoading(true);
@@ -30,8 +33,8 @@ export function ProfileDocuments({ links, onLinked, onBusyChange }: { links: Doc
   }
   useEffect(() => { void refresh(); }, []);
   async function upload(file: File, slot: DocumentSlot) {
-    if (busy) return;
-    setError(null); setSuccess(null);
+    if (writeLock.current) return;
+    setError(null); writeLock.current=true;
     try {
       validateDocumentMeta(file.name, file.size); setBusy(slot);
       const form = new FormData(); form.set("file", file); form.set("slot", slot);
@@ -39,28 +42,28 @@ export function ProfileDocuments({ links, onLinked, onBusyChange }: { links: Doc
       const data = await response.json() as { document?: PrivateDocument; links?: DocumentLinks; error?: string };
       if (!response.ok || !data.document || !data.links) throw new Error(data.error ?? "Enregistrement non confirmé. Actualisez la liste avant de réessayer.");
       setFiles(current => [data.document!, ...current.filter(item => item.id !== data.document!.id)]);
-      onLinked(data.links); setSuccess(`${file.name} enregistré et rattaché à votre profil.`);
+      onLinked(data.links); feedback({message:`${file.name} enregistré et rattaché à votre profil.`});
     } catch (problem) { setError(problem instanceof Error && problem.message !== "Failed to fetch" ? problem.message : "Import non confirmé. Vérifiez votre connexion et actualisez la liste avant de réessayer."); }
-    finally { setBusy(null); }
+    finally { writeLock.current=false;setBusy(null); }
   }
   async function link(id: string, slot: DocumentSlot) {
-    if (!id || busy) return;
-    setBusy(slot); setError(null); setSuccess(null);
+    if (!id || writeLock.current) return;
+    writeLock.current=true;setBusy(slot); setError(null);
     try {
       const response = await fetch(`/api/documents/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slot }) });
       const data = await response.json() as { links?: DocumentLinks; error?: string };
       if (!response.ok || !data.links) throw new Error(data.error ?? "Enregistrement non confirmé.");
-      onLinked(data.links); setSuccess("Fichier existant rattaché au profil. Aucun nouvel exemplaire créé.");
+      onLinked(data.links); feedback({message:"Fichier rattaché au profil."});
     } catch (problem) { setError(problem instanceof Error ? problem.message : "Enregistrement non confirmé."); }
-    finally { setBusy(null); }
+    finally { writeLock.current=false;setBusy(null); }
   }
-  return <section className="glass-panel p-5">
-    <div className="flex items-start justify-between gap-3"><div><h2 className="text-sm font-bold">Documents privés</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">Déposez un fichier ou choisissez-le sur votre ordinateur. Le rattachement au profil est enregistré automatiquement.</p></div><button type="button" disabled={loading || !!busy} onClick={() => { setError(null); void refresh(); }} aria-label="Actualiser les fichiers" className="rounded-lg p-2 text-muted-foreground disabled:opacity-40"><RefreshCw size={15} className={loading ? "animate-spin" : ""} /></button></div>
-    <p className="mt-3 text-[11px] leading-5 text-muted-foreground">PDF, DOC, DOCX, MD ou TXT · 8 Mo maximum · Un fichier par zone. Les versions précédentes restent conservées.</p>
-    {error ? <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-xs leading-5 text-red-700">{error}</p> : null}
-    {success ? <p role="status" className="mt-3 rounded-xl bg-accent p-3 text-xs leading-5 text-primary">{success}</p> : null}
-    <div className="mt-4 space-y-3">{slots.map(slot => <DocumentCard key={slot.id} slot={slot} document={files.find(file => file.id === links[slot.id])} linkedId={links[slot.id]} files={files} busy={busy} onUpload={upload} onLink={link} onError={message => { setError(message); setSuccess(null); }} />)}</div>
-    {loading ? <LoadingSkeleton label="Lecture de vos fichiers…" rows={2} /> : null}
+  return <section className="profile-documents" aria-labelledby="profile-documents-title">
+    <WorkspacePanelHeader id="profile-documents-title" title="Documents privés" className="profile-documents-heading" actions={<WorkspaceButton disabled={loading||!!busy} onClick={()=>{setError(null);void refresh();}} aria-label="Actualiser les fichiers"><RefreshCw size={15} className={loading?"animate-spin":""} aria-hidden/>Actualiser</WorkspaceButton>}/>
+    <p className="profile-document-intro">Glissez un fichier sur sa ligne ou importez-le.</p>
+    <p className="profile-document-formats">PDF, DOC, DOCX, MD ou TXT · 8 Mo max. · Versions précédentes conservées.</p>
+    {error?<p role="alert" className="experience-error">{error}</p>:null}
+    <div className="profile-document-list">{slots.map(slot=><DocumentCard key={slot.id} slot={slot} document={files.find(file=>file.id===links[slot.id])} linkedId={links[slot.id]} files={files} busy={busy} onUpload={upload} onLink={link} onError={message=>setError(message)}/>)}</div>
+    {loading?<LoadingSkeleton label="Lecture de vos fichiers…" rows={2}/>:null}
   </section>;
 }
 
@@ -69,14 +72,15 @@ function DocumentCard({ slot, document, linkedId, files, busy, onUpload, onLink,
   onUpload: (file: File, slot: DocumentSlot) => Promise<void>; onLink: (id: string, slot: DocumentSlot) => Promise<void>; onError: (message: string) => void;
 }) {
   const input = useRef<HTMLInputElement>(null); const inputId = useId(); const [dragging, setDragging] = useState(false);
-  return <div id={"document-"+slot.id} tabIndex={-1} className={`rounded-2xl border p-3 transition-colors ${dragging ? "border-primary bg-accent" : "border-border bg-white/60"}`}
+  return <div id={"document-"+slot.id} tabIndex={-1} className={`profile-document-row${dragging?" is-dragging":""}`}
     onDragOver={event => { event.preventDefault(); if (!busy) setDragging(true); }}
     onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false); }}
     onDrop={event => { event.preventDefault(); setDragging(false); if (busy) return; const list = event.dataTransfer.files; if (list.length !== 1) { onError("Déposez un seul fichier à la fois dans la zone choisie."); return; } void onUpload(list[0], slot.id); }}>
-    <div className="flex items-center gap-2"><FileText size={15} className="shrink-0 text-primary" /><p className="document-slot-title">{slot.label}</p>{document ? <Check size={14} className="ml-auto text-primary" aria-label="Enregistré" /> : null}</div>
-    <p className="mt-2 break-words text-[11px] leading-5 text-muted-foreground">{document ? `${document.originalName} · ${(document.size / 1024 / 1024).toFixed(2)} Mo` : linkedId ? "Le fichier lié n’est pas visible dans la liste. Actualisez pour vérifier." : "Glissez votre fichier ici, ou utilisez le bouton ci-dessous."}</p>
-    <input id={inputId} ref={input} type="file" className="hidden" aria-label={`Fichier pour ${slot.label}`} accept=".pdf,.doc,.docx,.md,.txt" disabled={!!busy} onChange={event => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (file) void onUpload(file, slot.id); }} />
-    <div className="mt-3 flex flex-wrap items-center gap-3"><button type="button" disabled={!!busy} onClick={() => input.current?.click()} className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-[11px] font-semibold text-primary disabled:opacity-50">{busy === slot.id ? <LoaderCircle size={13} className="animate-spin" /> : <Upload size={13} />}{busy === slot.id ? "Enregistrement…" : document ? `Remplacer ${slot.label}` : `Importer ${slot.label}`}</button>{document ? <a href={`/api/documents/${document.id}`} className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary"><Download size={13} /> Télécharger</a> : null}</div>
-    {files.length ? <div className="mt-3"><ChoiceSelect label={`Utiliser un fichier déjà importé pour ${slot.label}`} value={linkedId && files.some(file => file.id === linkedId) ? linkedId : "__none__"} disabled={!!busy} onChange={id => { if (id !== "__none__") void onLink(id, slot.id); }} options={[{ value: "__none__", label: "Choisir un fichier existant…" }, ...files.map(file => ({ value: file.id, label: `${file.originalName}${file.createdAt ? ` · ${file.createdAt.slice(0, 10)}` : ""}` }))]} /></div> : null}
+    <FileText className="profile-document-icon" size={20} aria-hidden/>
+    <div className="profile-document-information"><div className="profile-document-title"><h3>{slot.label}</h3>{document?<span className="profile-document-status"><Check size={12} aria-hidden/>Enregistré</span>:null}</div><p className="profile-document-filename">{document?document.originalName:linkedId?"Fichier lié indisponible. Actualisez la liste.":"Aucun fichier. Glissez-le ici ou importez-le."}</p>{document?<p className="profile-document-size">{(document.size/1024/1024).toFixed(2)} Mo</p>:null}
+    {files.length?<details className="profile-document-existing"><summary>Choisir un fichier existant</summary><div className="profile-document-picker"><ChoiceSelect label={`Fichier pour ${slot.label}`} value={linkedId&&files.some(file=>file.id===linkedId)?linkedId:"__none__"} disabled={!!busy} onChange={id=>{if(id!=="__none__")void onLink(id,slot.id);}} options={[{value:"__none__",label:"Choisir…"},...files.map(file=>({value:file.id,label:`${file.originalName}${file.createdAt?` · ${file.createdAt.slice(0,10)}`:""}`}))]}/></div></details>:null}
+    </div>
+    <input id={inputId} ref={input} type="file" className="hidden" aria-label={`Fichier pour ${slot.label}`} accept=".pdf,.doc,.docx,.md,.txt" disabled={!!busy} onChange={event=>{const file=event.currentTarget.files?.[0];event.currentTarget.value="";if(file)void onUpload(file,slot.id);}}/>
+    <div className="profile-document-actions"><WorkspaceButton disabled={!!busy} onClick={()=>input.current?.click()} aria-label={document?`Remplacer ${slot.label}`:`Importer ${slot.label}`}>{busy===slot.id?<LoaderCircle size={14} className="animate-spin" aria-hidden/>:<Upload size={14} aria-hidden/>}{busy===slot.id?"Enregistrement…":document?"Remplacer":"Importer"}</WorkspaceButton>{document?<a href={`/api/documents/${document.id}`} className="profile-document-download"><Download size={14} aria-hidden/>Télécharger</a>:null}</div>
   </div>;
 }
