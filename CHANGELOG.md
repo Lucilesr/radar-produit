@@ -2,6 +2,8 @@
 
 ## 27 octobre 2026
 
+- Notes Signal : composants partages de mise en forme (gras, italique, listes), sauvegarde et erreurs ; contenu conserve comme texte balise dans les limites des champs existants, sans HTML stocke ni nouvelle dependance.
+
 - Opportunités Signal : lecture en deux colonnes ouvertes, défilements indépendants sur ordinateur et fiche dédiée sur mobile ; sélection citron, accès à l’annonce auprès de la sélection, suivi « J’ai postulé » en haut du détail et notifications avec raccourci. Critères compacts, pertinence et réserves près du début de la description ; source discrète et dates secondaires en bas. Le filtre automatique reste disponible dans « Correspondances Radar ». La corbeille conserve sa confirmation et son motif, avec une action rouge.
 
 - Navigation Signal : logo Orbite, barre supérieure redondante retirée, actualisation dans l’en-tête de page et indication privée près du compte. Titres, onglets et marges partagent les mêmes repères dans toute la plateforme.
