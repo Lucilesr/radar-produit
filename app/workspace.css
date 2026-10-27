@@ -1,12 +1,12 @@
 /* Radar workspace: semantic tokens and shared controls. */
 :root {
-  --background: #f8f8f6; --foreground: #25252f;
-  --card: #fff; --card-foreground: #25252f;
-  --primary: #5751cf; --primary-foreground: #fff;
-  --secondary: #eeecfc; --secondary-foreground: #4943b3;
-  --muted: #f2f2f0; --muted-foreground: #60616e;
-  --accent: #eeecfc; --accent-foreground: #4943b3;
-  --border: #dedee6; --input: #858593; --ring: #5751cf;
+  --background: var(--signal-canvas); --foreground: var(--signal-ink);
+  --card: #fff; --card-foreground: var(--signal-ink);
+  --primary: var(--signal-petrol); --primary-foreground: #fff;
+  --secondary: var(--signal-soft); --secondary-foreground: var(--signal-petrol-dark);
+  --muted: var(--signal-soft); --muted-foreground: var(--signal-muted);
+  --accent: var(--signal-soft); --accent-foreground: var(--signal-petrol-dark);
+  --border: var(--signal-line); --input: var(--signal-input); --ring: var(--signal-petrol);
   --success: #286044; --success-surface: #edf5ef;
   --warning: #805416; --warning-surface: #fff5e4;
   --danger: #a52d39; --danger-surface: #fff1f2;
@@ -55,7 +55,7 @@ button:disabled { cursor: not-allowed; opacity: .55; }
   transition: background 140ms ease, border-color 140ms ease; box-shadow: none; text-decoration: none;
 }
 .radar-add-button,.offer-open-button { color: #fff; background: var(--primary); border: 1px solid var(--primary); }
-.radar-add-button:hover,.offer-open-button:hover { background: #4943b3; border-color: #4943b3; transform: none; box-shadow: none; }
+.radar-add-button:hover,.offer-open-button:hover { background: var(--signal-petrol-dark); border-color: var(--signal-petrol-dark); transform: none; box-shadow: none; }
 .secondary-button,.refresh-button,.offer-source-button { background: var(--card); border: 1px solid var(--border); color: var(--muted-foreground); }
 .secondary-button:hover,.refresh-button:hover,.offer-source-button:hover { background: var(--muted); border-color: #b5b5c2; color: var(--foreground); }
 .glass-panel { border: 1px solid var(--border); border-radius: 12px; background: var(--card); box-shadow: none; }
