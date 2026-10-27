@@ -1,5 +1,9 @@
 # Évolutions de Radar Produit
 
+## 27 octobre 2026
+
+- Fondations Signal : palette pétrole, gris minéraux et accent citron ; contrôles et tags unifiés, sélecteurs compatibles avec les libellés longs, notifications compactes en haut à droite et arrière-plan flouté des dialogues. Les données et commandes applicatives restent inchangées.
+
 ## 20 octobre 2026 — Blocs repliables
 
 - Le carnet d’expériences et les sources utilisent un bouton discret à double chevron, avec un statut visible et des détails encadrés.
