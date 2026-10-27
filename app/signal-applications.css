@@ -1,0 +1,44 @@
+/* Application list and dossier use the same hierarchy as opportunities. */
+.applications-workspace .applications-list { display: grid; gap: 0; border: 1px solid var(--border); border-top: 3px solid var(--primary); border-radius: 5px; background: var(--card); }
+.applications-workspace .applications-heading, .applications-workspace .application-row { gap: 18px; padding-inline: 20px; }
+.applications-workspace .applications-heading { min-height: 44px; padding-block: 10px; border: 0; border-bottom: 1px solid var(--border); background: var(--card); font: 500 12px/1.5 var(--font-sans); }
+.applications-workspace .applications-heading > span { text-align: left; }
+.applications-workspace .application-row { margin: 0; padding-block: 18px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: var(--card); }
+.applications-workspace .application-row:last-child { border-bottom: 0; }
+.applications-workspace .application-row:hover { background: #f7fafb; }
+.applications-workspace .application-identity { gap: 0; }
+.applications-workspace .application-identity h2 { font: 600 15px/1.45 var(--font-sans); }
+.applications-workspace .application-identity p { margin-top: 6px; }
+.applications-workspace .application-sent, .applications-workspace .application-next { justify-items: start; text-align: left; }
+.applications-workspace .application-status { justify-self: stretch; }
+.applications-workspace .application-next { gap: 8px; }
+.applications-workspace .application-next p { margin: 0; line-height: 1.6; }
+.applications-workspace .application-age { font: 500 12px/16px var(--font-sans); display: inline-flex; align-items: center; justify-content: center; text-align: center; min-height: 26px; padding: 4px 8px; border: 1px solid transparent; }
+.applications-workspace .application-age.is-recent { background: transparent; color: var(--muted-foreground); }
+.applications-workspace .application-age.is-waiting, .applications-workspace .application-age.is-old { background: var(--warning-surface); color: var(--warning); border-color: #d6a548; }
+.applications-workspace .application-open { justify-self: end; }
+.signal-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.signal-dialog-heading { min-width: 0; }
+.signal-dialog-heading h2 { overflow-wrap: anywhere; }
+.signal-dialog-identity { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; }
+.signal-dialog-identity p { margin: 0; color: var(--muted-foreground); font-size: 13px; }
+.signal-dialog-tools { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; flex: none; }
+.signal-dialog-close { display: inline-flex; align-items: center; justify-content: center; width: 44px; min-height: 44px; border: 0; border-radius: 5px; color: var(--muted-foreground); }
+.signal-dialog-close:hover { background: var(--muted); }
+.signal-dialog-tools > .signal-quiet-button { min-height: 36px; font-size: 12px; }
+.signal-status-field { max-width: 390px; }
+.workspace-dialog:has(.signal-offer-workspace) { width: 100%; max-width: 870px; }
+.workspace-dialog .signal-offer-workspace { min-width: 0; }
+@media(max-width:1250px) {
+  .applications-workspace .applications-heading { display: none; }
+  .applications-workspace .application-status { justify-self: stretch; max-width: none; }
+  .applications-workspace .application-status .application-cell-label { text-align: left; }
+}
+@media(max-width:640px) {
+  .applications-workspace .application-row { padding: 18px 16px; gap: 14px 12px; }
+  .signal-dialog-header { gap: 10px; }
+  .signal-dialog-tools { max-width: 120px; }
+  .signal-dialog-tools > .signal-quiet-button { min-height: 44px; font-size: 11px; padding-inline: 5px; }
+  .workspace-dialog { max-height: 94dvh; border-radius: 10px 10px 0 0; }
+  .workspace-dialog h2 { font-size: 22px; }
+}
