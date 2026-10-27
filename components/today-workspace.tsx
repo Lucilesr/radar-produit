@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowRight, ArrowUpRight, CalendarDays, Check, ClipboardCheck, ScanLine } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CalendarDays, Check, ClipboardCheck } from "lucide-react";
+import { RadarMark } from "@/components/radar-mark";
+import { WorkspaceButton } from "@/components/workspace-form";
 import { selectTriageActions } from "@/lib/triage";
 import { hasApplication, inOpportunityView } from "@/lib/opportunity-views";
 import { activeStatuses, applicationAge, formatDate, reviewDue, terminalStatuses } from "@/lib/application-workflow";
@@ -22,12 +24,11 @@ export function TodayWorkspace({ jobs, onTriage, onSelected, onAdd, onOpen }: {j
   const openAction=(action:typeof actions[number])=>onOpen(action.job,action.kind.startsWith("interview")?"interviews":hasApplication(action.job)?"application":"brief");
   return <div className="today-layout">
     <div className="today-main">
-      <section className="today-focus" aria-labelledby="today-action-title">
-        <div className="workspace-section-heading"><h2 id="today-action-title">À faire maintenant</h2><ScanLine size={19} aria-hidden /></div>
-        <p className="today-focus-title">{urgent?urgent.title:count?`${count} opportunité${count>1?"s":""} à examiner`:selected?`${selected} offre${selected>1?"s":""} à préparer`:"Votre file d’offres est à jour"}</p>
-        <p className="workspace-caption">{urgent?urgent.detail:count?"Comparez les missions et les conditions, puis gardez les offres qui vous intéressent.":selected?"Retrouvez les offres gardées et préparez votre candidature.":"Ajoutez une annonce pour la retrouver dans votre radar."}</p>
-        <button type="button" className="radar-add-button" onClick={()=>urgent?openAction(urgent):count?onTriage():selected?onSelected():onAdd()}>{urgent?"Ouvrir le suivi":count?"Examiner les offres":selected?"Préparer ma sélection":"Ajouter une offre"}<ArrowRight size={17} aria-hidden /></button>
-        <span className="today-orbit" aria-hidden />
+      <section className="today-focus" aria-label="Action prioritaire">
+        <h2 className="today-focus-title">{urgent?urgent.title:count?`${count} opportunité${count>1?"s":""} à examiner`:selected?`${selected} offre${selected>1?"s":""} à préparer`:"Votre file d’offres est à jour"}</h2>
+        <p className="workspace-caption">{urgent?urgent.detail:count?"Comparez les missions et les conditions, puis sélectionnez les offres qui vous intéressent.":selected?"Retrouvez les offres sélectionnées et préparez votre candidature.":"Ajoutez une annonce pour la retrouver dans votre radar."}</p>
+        <WorkspaceButton variant="primary" onClick={()=>urgent?openAction(urgent):count?onTriage():selected?onSelected():onAdd()}>{urgent?"Ouvrir le suivi":count?"Examiner les offres":selected?"Préparer ma sélection":"Ajouter une offre"}<ArrowRight size={17} aria-hidden /></WorkspaceButton>
+        <RadarMark className="today-logo-watermark" watermark/>
       </section>
       <section className="today-next" aria-labelledby="today-next-title"><div className="workspace-section-heading"><h2 id="today-next-title">À faire ensuite</h2></div>
         {actions.filter(action=>action!==urgent).slice(0,3).map(action=><button key={action.job.id} type="button" className="workspace-task" onClick={()=>openAction(action)}><span className="workspace-task-icon"><ClipboardCheck size={18} aria-hidden /></span><span><strong>{action.title}</strong><small>{action.detail}</small></span><ArrowUpRight size={17} aria-hidden /></button>)}
