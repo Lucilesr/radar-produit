@@ -9,6 +9,7 @@ import "./signal-tokens.css";
 import "./signal-controls.css";
 import "./signal-shell.css";
 import "./signal-opportunities.css";
+import "./signal-forms.css";
 
 export const metadata: Metadata = {
   title: "Radar Produit",
