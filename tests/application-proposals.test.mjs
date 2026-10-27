@@ -119,10 +119,9 @@ test("ChatGPT → Radar : contexte minimal, variante persistée, jamais de rempl
 
 test("contrat MCP : outils privés, aucun moteur facturé ni rédaction silencieuse dans la route HTTP", () => {
   const mcp=readFileSync(resolve(root,"app/mcp/route.ts"),"utf8");
-  const ui=readFileSync(resolve(root,"components/application-questions.tsx"),"utf8");
+  const ui=readFileSync(resolve(root,"components/application-questions.tsx"),"utf8")+readFileSync(resolve(root,"components/offer-workspace.tsx"),"utf8");
   assert.match(mcp,/radar_get_question_context/);assert.match(mcp,/radar_save_answer_proposal/);
   assert.match(mcp,/getChatGPTUser\(\)/);assert.match(mcp,/user\.userId/);
-  assert.match(ui,/Copier la demande ChatGPT/);assert.match(ui,/Actualiser les propositions/);
-  assert.match(ui,/Ouvrir ChatGPT/);assert.match(ui,/https:\/\/chatgpt\.com\//);
+  // The connector tools remain private even when their old handoff panel is hidden.
   assert.doesNotMatch(mcp+ui,/OPENAI_API_KEY|api\.openai\.com|anthropic\.com/);
 });

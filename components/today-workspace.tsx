@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowRight, ArrowUpRight, CalendarDays, Check, ClipboardCheck } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CalendarDays, Check, ClipboardCheck, Columns3, List } from "lucide-react";
+import { ApplicationKanban } from "@/components/application-kanban";
 import { RadarMark } from "@/components/radar-mark";
 import { WorkspaceButton, WorkspacePanelHeader } from "@/components/workspace-form";
 import { selectTriageActions } from "@/lib/triage";
@@ -44,11 +45,13 @@ export function TodayWorkspace({ jobs, onTriage, onSelected, onAdd, onOpen }: {j
 
 export function ApplicationsWorkspace({jobs,onStatus,onOpen}:{jobs:JobRecord[];onStatus:(id:string,status:JobStatus)=>Promise<boolean>;onOpen:(job:JobRecord,view?:WorkspaceView)=>void}) {
   const [scope,setScope]=useState("active"),[busy,setBusy]=useState<string|null>(null),[error,setError]=useState("");
+  const [display,setDisplay]=useState<"list"|"board">("list");
   const now=useNow(jobs);
   const items=jobs.filter(job=>scope==="active"?activeStatuses.includes(job.status):scope==="closed"?terminalStatuses.includes(job.status):true);
-  return <div className="applications-workspace"><nav className="workspace-tabs" aria-label="Vues des candidatures">{[["active","En cours"],["closed","Closes / refus"],["all","Toutes"]].map(([id,label])=><button key={id} type="button" aria-pressed={scope===id} onClick={()=>setScope(id)}>{label}</button>)}</nav>
+  async function changeStatus(job:JobRecord,status:JobStatus){setBusy(job.id);setError("");try{if(!await onStatus(job.id,status))setError("Réessayez de modifier le statut. Le dernier statut confirmé reste affiché.");}finally{setBusy(null);requestAnimationFrame(()=>{if(document.activeElement!==document.body)return;const trigger=Array.from(document.getElementById(`application-status-${job.id}`)?.querySelectorAll<HTMLButtonElement>("button")??[]).find(element=>element.getClientRects().length);(trigger??document.getElementById("workspace-title"))?.focus();});}}
+  return <div className="applications-workspace"><div className="applications-toolbar"><nav className="workspace-tabs" aria-label="Vues des candidatures">{[["active","En cours"],["closed","Closes / refus"],["all","Toutes"]].map(([id,label])=><button key={id} type="button" aria-pressed={scope===id} onClick={()=>setScope(id)}>{label}</button>)}</nav><div className="application-display-toggle" role="group" aria-label="Affichage des candidatures"><button type="button" aria-label="Afficher en tableau" aria-pressed={display==="list"} onClick={()=>setDisplay("list")}><List size={16} aria-hidden/>Tableau</button><button type="button" aria-label="Afficher en Kanban" aria-pressed={display==="board"} onClick={()=>{if(display!=="board")setScope("all");setDisplay("board");}}><Columns3 size={16} aria-hidden/>Kanban</button></div></div>
     {error?<WorkspaceState error title="Statut non enregistré">{error}</WorkspaceState>:null}
-    {!items.length?<WorkspaceState title="Aucune candidature dans cette vue">Le bouton « J’ai postulé » d’une offre permet de commencer son suivi.</WorkspaceState>:<div className="applications-list"><div className="applications-heading" aria-hidden="true"><span>Offre</span><span>Date de candidature</span><span>Prochaine étape</span><span>Statut</span><span></span></div>{items.map(job=>{
+    {!items.length?<WorkspaceState title="Aucune candidature dans cette vue">Le bouton « J’ai postulé » d’une offre permet de commencer son suivi.</WorkspaceState>:display==="board"?<ApplicationKanban jobs={items} now={now} busy={busy} onStatus={changeStatus} onOpen={onOpen}/>:<div className="applications-list"><div className="applications-heading" aria-hidden="true"><span>Offre</span><span>Date de candidature</span><span>Prochaine étape</span><span>Statut</span><span></span></div>{items.map(job=>{
       const due=job.interviews?.find(event=>reviewDue(event,now));
       const next=upcomingInterviews([job],now)[0]?.event;
       const age=applicationAge(job.appliedAt,now);
@@ -56,7 +59,7 @@ export function ApplicationsWorkspace({jobs,onStatus,onOpen}:{jobs:JobRecord[];o
         <div className="application-identity"><div><h2><button type="button" onClick={()=>onOpen(job,"application")}>{job.title}</button></h2><p>{job.company||"Entreprise à confirmer"}{job.deletedAt?" · Offre en corbeille, suivi conservé":""}</p></div></div>
         <div className="application-sent"><span className="application-cell-label">Date de candidature</span><span className={`application-age${age?` is-${age.tone}`:""}`}>{job.appliedAt?formatDate(job.appliedAt,"Indian/Mauritius"):"Date inconnue"}</span></div>
         <div className="application-next"><span className="application-cell-label">Prochaine étape</span><span className={"workspace-badge "+(due?"is-warning":next?"is-success":"")}>{terminalStatuses.includes(job.status)?"Candidature close":due?"Bilan à faire":next?"Entretien planifié":job.status==="interview"?"Entretien à suivre":"En attente de retour"}</span>{next?<p>{formatDate(next.startAt,next.timeZone,true)}<br/><small>{next.timeZone}</small></p>:null}</div>
-        <div id={`application-status-${job.id}`} className="application-status"><span className="application-cell-label" aria-hidden="true">Statut</span><StatusSelect value={job.status} disabled={!!busy} label={"Statut · "+(job.company||job.title)} onChange={async status=>{setBusy(job.id);setError("");try{if(!await onStatus(job.id,status))setError("Réessayez de modifier le statut. Le dernier statut confirmé reste affiché.");}finally{setBusy(null);requestAnimationFrame(()=>{if(document.activeElement!==document.body)return;const trigger=Array.from(document.getElementById(`application-status-${job.id}`)?.querySelectorAll<HTMLButtonElement>("button")??[]).find(element=>element.getClientRects().length);(trigger??document.getElementById("workspace-title"))?.focus();});}}}/></div>
+        <div id={`application-status-${job.id}`} className="application-status"><span className="application-cell-label" aria-hidden="true">Statut</span><StatusSelect value={job.status} disabled={!!busy} label={"Statut · "+(job.company||job.title)} onChange={status=>void changeStatus(job,status)}/></div>
         <button type="button" className="secondary-button application-open" onClick={()=>onOpen(job,job.status==="offer"?"application":due||next||job.status==="interview"?"interviews":"application")}>{job.status==="offer"?"Ouvrir":due?"Faire le bilan":next?"Voir l’entretien":"Ouvrir"}<ArrowUpRight size={15} aria-hidden /></button>
       </article>;
     })}</div>}
