@@ -1,5 +1,13 @@
 # Évolutions de Radar Produit
 
+## 27 octobre 2026
+
+- Opportunités Signal : lecture en deux colonnes ouvertes, défilements indépendants sur ordinateur et fiche dédiée sur mobile ; sélection citron, accès à l’annonce auprès de la sélection, suivi « J’ai postulé » en haut du détail et notifications avec raccourci. Critères compacts, pertinence et réserves près du début de la description ; source discrète et dates secondaires en bas. Le filtre automatique reste disponible dans « Correspondances Radar ». La corbeille conserve sa confirmation et son motif, avec une action rouge.
+
+- Navigation Signal : logo Orbite, barre supérieure redondante retirée, actualisation dans l’en-tête de page et indication privée près du compte. Titres, onglets et marges partagent les mêmes repères dans toute la plateforme.
+
+- Fondations Signal : palette pétrole, gris minéraux et accent citron ; contrôles et tags unifiés, sélecteurs compatibles avec les libellés longs, notifications compactes en haut à droite et arrière-plan flouté des dialogues. Les données et commandes applicatives restent inchangées.
+
 ## 20 octobre 2026 — Blocs repliables
 
 - Le carnet d’expériences et les sources utilisent un bouton discret à double chevron, avec un statut visible et des détails encadrés.

@@ -1,13 +1,14 @@
 "use client";
 
+import { WorkspaceToast, type WorkspaceFeedback } from "@/components/workspace-feedback";
 import { OfferForm } from "@/components/offer-form";
 import { Textarea } from "@/components/ui/textarea";
 
 import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { RefreshCw, ShieldCheck, Check, ClipboardCheck, LayoutDashboard, LoaderCircle, Mail, Plus, Search, Trash2, Undo2, UserRound, X } from "lucide-react";
+import { RefreshCw, ShieldCheck, ClipboardCheck, LayoutDashboard, LoaderCircle, Mail, Plus, Search, Trash2, Undo2, UserRound, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
-import { hasApplication, inOpportunityView, reviewState, type OpportunityView } from "@/lib/opportunity-views";
+import { hasApplication, inOpportunityView, type OpportunityView } from "@/lib/opportunity-views";
 import { PageHeader, PrivateLabel, WorkspaceBrand, WorkspaceBoundary, WorkspaceLoading, WorkspaceState, useRadarNavigation } from "@/components/workspace-ui";
 import { TodayWorkspace, ApplicationsWorkspace } from "@/components/today-workspace";
 import { OpportunitiesWorkspace } from "@/components/opportunities-workspace";
@@ -15,7 +16,7 @@ import { ChoiceSelect } from "@/components/choice-select";
 import { OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/components/offer-workspace";
 import { activeStatuses, terminalStatuses } from "@/lib/application-workflow";
 import { profileTemplate } from "@/lib/profile-template";
-import type { CandidateProfile, DismissalReason, JobRecord, JobStatus, MatchTier } from "@/lib/types";
+import type { CandidateProfile, DismissalReason, JobRecord, JobStatus } from "@/lib/types";
 import type { RadarInitialState } from "@/lib/radar-bootstrap";
 import type { RadarRoute, ProfileSection } from "@/lib/radar-navigation";
 
@@ -74,8 +75,8 @@ export function RadarApp({ userName, initialState, initialRoute, initialProfileS
   useEffect(()=>{if(tab==="profile"||tab==="sources")setVisited(current=>({...current,[tab]:true}));},[tab]);
   const openJob = (job: JobRecord, view: WorkspaceView = "offer") => navigate({ offer: job.id, view, ...(view === "interviews" || view === "application" ? {tab: "pipeline" as Tab} : {}) });
   const closeJob = () => navigate({ offer: undefined, view: "offer" });
-  const [toast, setToastState] = useState<{message: string; error: boolean} | null>(null);
-  const setToast = (message: string | null, error = false) => setToastState(message ? {message, error} : null);
+  const [toast, setToastState] = useState<(WorkspaceFeedback & {error: boolean; id: number}) | null>(null);
+  const setToast = (message: string | null, error = false, action?: WorkspaceFeedback["action"]) => setToastState(current => message ? {message, error, action, id: (current?.id ?? 0) + 1} : null);
   const initials = userName.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase() || "RP";
 
   useEffect(() => {
@@ -109,7 +110,10 @@ export function RadarApp({ userName, initialState, initialRoute, initialProfileS
       const { job } = (await response.json()) as { job: JobRecord };
       setJobs(current => current.map(item => item.id === id ? job : item));
       if (changes.candidateNote !== undefined) setProfile(current => ({ ...current, applicationNotes: { ...current.applicationNotes, [id]: job.candidateNote ?? "" } }));
-      setToast(changes.candidateNote !== undefined ? "Note enregistrée dans votre espace privé." : changes.reviewState ? "Votre sélection est mise à jour." : "Statut enregistré.");
+      if (changes.candidateNote !== undefined) setToast("Note enregistrée dans votre espace privé.");
+      else if (changes.reviewState) setToast(changes.reviewState === "selected" ? "Offre ajoutée à ma sélection." : "Offre remise à examiner.", false, {label: changes.reviewState === "selected" ? "Voir ma sélection" : "Voir les offres à examiner", onClick: () => navigate({tab:"offers",filter:changes.reviewState === "selected" ? "selected" : "to_review",offer:undefined})});
+      else if (changes.status === "applied") setToast("Cette opportunité fait maintenant partie de vos candidatures.", false, {label:"Voir ma candidature",onClick:()=>navigate({tab:"pipeline",offer:id,view:"application"})});
+      else setToast("Statut enregistré.");
       return true;
     } catch { setToast("La mise à jour n’a pas été enregistrée. Vos données restent inchangées.", true); return false; }
   }
@@ -167,7 +171,7 @@ export function RadarApp({ userName, initialState, initialRoute, initialProfileS
     finally { setRefreshing(false); }
   }
 
-  return <main className="radar-app text-[#333333]"><a inert={jobDialogOpen || deleteTarget.length>0 || (!!selectedJob && tab!=="offers")} href="#workspace-title" className="workspace-skip">Aller au contenu</a>
+  return <main className="radar-app text-foreground"><a inert={jobDialogOpen || deleteTarget.length>0 || (!!selectedJob && tab!=="offers")} href="#workspace-title" className="workspace-skip">Aller au contenu</a>
     <div className="radar-shell" inert={jobDialogOpen || deleteTarget.length>0 || (!!selectedJob && tab!=="offers")}>
       <aside className="radar-sidebar">
         <div className="flex items-center justify-between gap-4 lg:block">
@@ -179,30 +183,30 @@ export function RadarApp({ userName, initialState, initialRoute, initialProfileS
         <nav aria-label="Navigation principale" className="radar-nav">{tabs.map(({ id, label, mobileLabel, icon: Icon }) => <button key={id} onClick={() => selectTab(id)} aria-current={tab === id ? "page" : undefined} className={tab === id ? "is-active" : ""}><Icon size={18} strokeWidth={1.7} /><span className="radar-nav-label">{label}</span><span className="radar-mobile-label">{mobileLabel}</span>{id === "offers" && stats.new > 0 ? <><span className="nav-count" aria-hidden="true">{stats.new}</span><span className="sr-only">{stats.new} à examiner</span></> : null}</button>)}</nav>
         <div className="radar-sidebar-bottom">
 
-          <div className="sidebar-account"><span className="avatar">{initials}</span><span className="min-w-0 text-left"><span className="block truncate text-xs font-semibold">{userName}</span><span className="mt-1 block text-[10px] text-[#9a8596]">Espace personnel</span></span></div>
+          <div className="sidebar-account"><span className="avatar">{initials}</span><span className="min-w-0 text-left"><span className="block truncate text-xs font-semibold">{userName}</span><span className="sidebar-account-caption"><span>Espace personnel</span><PrivateLabel /></span></span></div>
         </div>
       </aside>
       <section className="radar-content">
-        <div className="radar-topbar"><PrivateLabel /><div className="flex items-center gap-3"><button onClick={() => void refreshOffers()} disabled={refreshing} className="refresh-button" aria-label="Actualiser les offres"><RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /><span className="hidden sm:inline">Actualiser</span></button><span className="avatar avatar-small" aria-hidden="true">{initials}</span></div></div>
+
         <div className="radar-page">
-        <PageHeader title={tabs.find(item => item.id === tab)?.label || "Radar Produit"} />
+        <PageHeader title={tabs.find(item => item.id === tab)?.label || "Radar Produit"}><div className="page-tools"><span className="page-header-privacy"><PrivateLabel /></span><button type="button" onClick={() => void refreshOffers()} disabled={refreshing} className="secondary-button page-refresh-action" aria-label="Actualiser les offres"><RefreshCw size={15} className={refreshing ? "animate-spin" : ""} aria-hidden /><span className="page-refresh-label">Actualiser</span></button></div></PageHeader>
         {loading ? <WorkspaceLoading /> : null}
         {!loading && (loadErrors.jobs || loadErrors.profile) ? <WorkspaceState error title={loadErrors.jobs ? "Les offres n’ont pas pu être chargées" : "Votre profil n’a pas pu être chargé"} action={<button type="button" className="secondary-button" onClick={() => {setLoadAttempt(n => n+1);requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Réessayer</button>}>Vérifiez votre connexion puis réessayez. Vos données sont conservées.</WorkspaceState> : null}
         {!loading && !loadErrors.jobs && tab === "dashboard" ? <TodayWorkspace jobs={allJobs} onTriage={() => navigate({tab:"offers",filter:"to_review",query:"",offer:undefined})} onSelected={() => navigate({tab:"offers",filter:"selected",query:"",offer:undefined})} onAdd={()=>setJobDialogOpen(true)} onOpen={openJob} /> : null}
         {trashBusy ? <div role="status" className="sticky top-3 z-20 mb-4 flex items-center gap-2 rounded-2xl border bg-white p-4 text-sm shadow-sm"><LoaderCircle size={16} className="animate-spin" /> Liste mise à jour · enregistrement en cours…</div> : null}
         {trashError ? <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">{trashError}<button className="ml-3 underline" onClick={() => { setTrashError(null); void refreshOffers(); }}>Actualiser pour vérifier</button></div> : null}
-        {!loading && !loadErrors.jobs && tab === "offers" ? <OpportunitiesWorkspace jobs={shownJobs} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>void changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>setJobs(current=>current.map(job=>job.id===updated.id?updated:job))} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing} /> : null}
+        {!loading && !loadErrors.jobs && tab === "offers" ? <OpportunitiesWorkspace currentJob={selectedJob} jobs={shownJobs} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>void changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>{setJobs(current=>current.map(job=>job.id===updated.id?updated:job));setToast("Offre mise à jour.");}} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing} /> : null}
         {!loading && !loadErrors.jobs && tab === "pipeline" ? <ApplicationsWorkspace jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
         {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace active={tab === "profile"} initialSection={initialProfileSection} profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
         {(tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel jobs={jobs} onSynced={refreshOffers} /></Suspense></WorkspaceBoundary></div> : null}
-        {tab !== "profile" ? <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span><span>Aucune candidature envoyée automatiquement.</span></footer> : null}
+        {tab !== "profile" && tab !== "offers" ? <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span><span>Aucune candidature envoyée automatiquement.</span></footer> : null}
         </div>
       </section>
     </div>
     {jobDialogOpen ? <JobDialog onClose={() => setJobDialogOpen(false)} onCreated={onJobCreated} /> : null}
     {selectedJob && tab !== "offers" ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} meta={<OfferSourceBadge job={selectedJob} />} onClose={closeJob}><OfferWorkspace key={selectedJob.id+":"+tab} onViewChange={view=>navigate({view})} job={selectedJob} profile={profile} initialView={workspaceView} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => navigate({tab:"pipeline",offer:selectedJob.id,view:"application"})} onChange={updated => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setToast("Dossier enregistré."); }} /><div className="mt-6 border-t pt-4">{selectedJob.deletedAt ? <button className="secondary-button" onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={16} /> Restaurer</button> : <button className="secondary-button text-red-800" onClick={() => requestDelete(selectedJob)}><Trash2 size={16} /> Corbeille</button>}</div></Modal> : null}
-    {deleteTarget.length ? <Modal title={`Mettre ${deleteTarget.length === 1 ? "cette offre" : `ces ${deleteTarget.length} offres`} à la corbeille ?`} description="Choisissez une raison commune à toute la sélection." onClose={() => setDeleteTarget([])}><div className="trash-dialog-content"><ul className="max-h-48 space-y-2 overflow-y-auto rounded-xl bg-[#f5f6f8] p-4 text-sm">{deleteTarget.map(job => <li key={job.id}><strong>{job.title}</strong> · {job.company}</li>)}</ul><div className="trash-dialog-fields"><ChoiceSelect label="Pourquoi ?" value={deleteReason} onChange={value => setDeleteReason(value as DismissalReason | "")} options={[{ value: "", label: "Choisir un motif" }, ...Object.entries(dismissalLabels).map(([value, label]) => ({ value, label }))]} /><label className="trash-dialog-note"><span>Précision <em>facultative</em></span><Textarea rows={2} maxLength={500} value={deleteNote} onChange={event => setDeleteNote(event.target.value)} placeholder="Une courte précision, si utile" /></label></div><p className="trash-dialog-help">L’offre reste restaurable. Si une candidature est déjà engagée, elle et ses rappels restent visibles dans Candidatures.</p><div className="trash-dialog-actions"><button className="secondary-button" onClick={() => setDeleteTarget([])}>Annuler</button><button disabled={!deleteReason || !!trashBusy || refreshing} className="secondary-button text-red-800 disabled:opacity-50" onClick={() => void changeTrash(deleteTarget, true, deleteReason as DismissalReason, deleteNote)}><Trash2 size={16} /> Corbeille{deleteTarget.length > 1 ? ` (${deleteTarget.length})` : ""}</button></div></div></Modal> : null}
-    {toast ? <Toast message={toast.message} error={toast.error} onClose={() => setToast(null)} /> : null}
+    {deleteTarget.length ? <Modal title={`Mettre ${deleteTarget.length === 1 ? "cette offre" : `ces ${deleteTarget.length} offres`} à la corbeille ?`} description={deleteTarget.length > 1 ? "Choisissez une raison commune à toute la sélection." : "Choisissez pourquoi vous écartez cette offre."} onClose={() => setDeleteTarget([])}><div className="trash-dialog-content"><ul className="max-h-48 space-y-2 overflow-y-auto rounded-xl bg-background p-4 text-sm">{deleteTarget.map(job => <li key={job.id}><strong>{job.title}</strong> · {job.company}</li>)}</ul><div className="trash-dialog-fields"><ChoiceSelect label="Pourquoi ?" value={deleteReason} onChange={value => setDeleteReason(value as DismissalReason | "")} options={[{ value: "", label: "Choisir un motif" }, ...Object.entries(dismissalLabels).map(([value, label]) => ({ value, label }))]} /><label className="trash-dialog-note"><span>Précision <em>facultative</em></span><Textarea rows={2} maxLength={500} value={deleteNote} onChange={event => setDeleteNote(event.target.value)} placeholder="Une courte précision, si utile" /></label></div><p className="trash-dialog-help">L’offre reste restaurable. Si une candidature est déjà engagée, elle et ses rappels restent visibles dans Candidatures.</p><div className="trash-dialog-actions"><button className="secondary-button" onClick={() => setDeleteTarget([])}>Annuler</button><button disabled={!deleteReason || !!trashBusy || refreshing} className="signal-danger-button disabled:opacity-50" onClick={() => void changeTrash(deleteTarget, true, deleteReason as DismissalReason, deleteNote)}><Trash2 size={16} /> Mettre à la corbeille{deleteTarget.length > 1 ? ` (${deleteTarget.length})` : ""}</button></div></div></Modal> : null}
+    {toast ? <WorkspaceToast key={toast.id} action={toast.action} message={toast.message} tone={toast.error ? "error" : "success"} onClose={() => setToast(null)} /> : null}
   </main>;
 }
 
@@ -239,11 +243,5 @@ function Modal({ title, description, meta, onClose, children }: { title: string;
     document.addEventListener("keydown", onKeyDown);
     return () => { document.removeEventListener("keydown", onKeyDown); document.body.style.overflow = previousOverflow; requestAnimationFrame(()=>(previousFocus?.isConnected && previousFocus.getClientRects().length ? previousFocus : document.getElementById("workspace-title"))?.focus({preventScroll:true})); };
   }, []);
-  return <div data-testid="modal-backdrop" onClick={event => { if (event.target === event.currentTarget) onClose(); }} className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/35 p-0 backdrop-blur-md sm:items-center sm:p-6"><div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} className="workspace-dialog max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-[28px] border border-white bg-[#ffffff]/95 p-5 shadow-2xl outline-none sm:rounded-[28px] sm:p-7"><div className="mb-5 flex items-start justify-between gap-4 border-b border-[#eee7ec] pb-4"><div className="min-w-0"><h2 id={titleId} className="text-xl font-semibold leading-snug text-[#333333]">{title}</h2><p id={descriptionId} className="mt-1 max-w-xl text-sm leading-6 text-[#535768]">{description}</p>{meta ? <div className="mt-2">{meta}</div> : null}</div><button onClick={onClose} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-[#535768] hover:bg-[#f5f6f8]" aria-label="Fermer"><X size={20} /></button></div>{children}</div></div>;
-}
-function Toast({ message, error, onClose }: { message: string; error: boolean; onClose: () => void }) {
-  const close=useRef(onClose);close.current=onClose;
-  const [paused,setPaused]=useState(false);
-  useEffect(()=>{if(paused||error)return;const timeout=window.setTimeout(()=>close.current(),7000);return()=>window.clearTimeout(timeout);},[message,paused,error]);
-  return <div className="workspace-toast" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onFocusCapture={()=>setPaused(true)} onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget))setPaused(false);}}><span role={error ? "alert" : "status"}>{message}</span><button type="button" onClick={onClose} aria-label="Fermer la notification"><X size={17} aria-hidden /></button></div>;
+  return <div data-testid="modal-backdrop" onClick={event => { if (event.target === event.currentTarget) onClose(); }} className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/35 p-0 backdrop-blur-md sm:items-center sm:p-6"><div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} className="workspace-dialog max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-[28px] border border-white bg-card/95 p-5 shadow-2xl outline-none sm:rounded-[28px] sm:p-7"><div className="mb-5 flex items-start justify-between gap-4 border-b border-border pb-4"><div className="min-w-0"><h2 id={titleId} className="text-xl font-semibold leading-snug text-foreground">{title}</h2><p id={descriptionId} className="mt-1 max-w-xl text-sm leading-6 text-muted-foreground">{description}</p>{meta ? <div className="mt-2">{meta}</div> : null}</div><button onClick={onClose} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-background" aria-label="Fermer"><X size={20} /></button></div>{children}</div></div>;
 }

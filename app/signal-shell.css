@@ -1,0 +1,58 @@
+/* One navigation frame and one page-heading baseline for every workspace. */
+.radar-shell { max-width: 1800px; grid-template-columns: 232px minmax(0,1fr); background: var(--background); }
+.radar-sidebar { background: var(--sidebar); border-color: #c5d3da; padding: 28px 20px; }
+.workspace-brand { gap: 10px; }
+.workspace-brand > span { width: 36px; height: 36px; border-radius: 5px; color: var(--primary); background: transparent; }
+.workspace-brand p { font-size: 22px; font-weight: 600; letter-spacing: -1px; color: var(--foreground); }
+.workspace-brand p > span { font-size: 12px; font-weight: 400; letter-spacing: -.2px; color: var(--muted-foreground); }
+.radar-sidebar .radar-add-button { margin-top: 27px; }
+.radar-search { min-height: 43px; margin-top: 23px; border-color: var(--input); border-radius: 5px; background: #f7fafb; }
+.radar-search input:not([type=checkbox]):not([type=radio]):not([type=file]) {
+  background: transparent; border: 0; padding: 10px 0; border-radius: 0; box-shadow: none; font-size: 12px;
+}
+.radar-search:focus-within { outline: 2px solid var(--ring); outline-offset: 3px; }
+.radar-search input:focus-visible { outline: none; }
+.radar-nav { margin-top: 24px; gap: 6px; }
+.radar-nav button { min-height: 45px; border-radius: 5px; padding: 12px 11px; color: var(--muted-foreground); font-size: 13px; }
+.radar-nav button:hover { background: #dce6eb; color: var(--foreground); }
+.radar-nav button.is-active { background: var(--signal-petrol-dark); color: #fff; }
+.radar-nav button.is-active svg { color: var(--signal-citron); }
+.nav-count { padding: 2px 5px; border-radius: 3px; background: var(--signal-citron); color: var(--signal-petrol-dark); font-size: 11px; }
+.sidebar-account { border-color: #c5d3da; }
+.avatar { color: var(--primary); background: #d8e4ea; border: 1px solid #b7cbd5; }
+.sidebar-account-caption { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 8px; margin-top: 4px; color: var(--muted-foreground); font-size: 10px; }
+.sidebar-account-caption .workspace-private { gap: 3px; font-size: 10px; }
+.sidebar-account-caption svg { width: 11px; height: 11px; }
+.radar-page { padding: 44px var(--signal-space-page) 28px; }
+.workspace-page-header { align-items: center; margin-bottom: 26px; gap: 16px; }
+.workspace-page-header h1 { font: 600 var(--signal-type-page)/1.2 var(--font-sans); letter-spacing: -.035em; }
+.page-tools { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.page-refresh-action { min-height: 36px; padding: 7px 12px; font-size: 12px; white-space: nowrap; }
+.page-header-privacy { display: none; }
+.workspace-tabs { margin-bottom: 24px; border-top: 1px solid #bbccd5; border-bottom-color: #bbccd5; gap: 4px 22px; }
+.workspace-tabs button { min-height: 46px; padding: 12px 2px; font: 500 14px/1.5 var(--font-sans); }
+.workspace-tabs button[aria-pressed=true] { color: var(--primary); font-weight: 600; }
+.workspace-tabs button span { font: 400 11px/1.5 var(--font-sans); }
+.radar-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 20px; margin-top: 28px; padding-top: 16px; color: var(--muted-foreground); font-size: 11px; }
+.radar-footer > span:last-child { margin-left: auto; text-align: right; }
+@media(max-width:1023px) {
+  .radar-shell { display: block; }
+  .radar-sidebar { height: auto; min-height: 0; padding: 20px 24px; }
+  .radar-sidebar .radar-add-button { margin-top: 0; }
+  .radar-page { padding-top: 32px; }
+  .page-header-privacy { display: inline-flex; }
+  .page-header-privacy .workspace-private { font-size: 11px; }
+}
+@media(max-width:640px) {
+  .radar-sidebar { padding: 18px 16px 14px; }
+  .radar-page { padding: 32px 16px 24px; }
+  .workspace-page-header { align-items: flex-start; margin-bottom: 24px; }
+  .workspace-page-header h1 { font-size: 26px; }
+  .radar-nav { margin-top: 0; border-radius: 10px; background: var(--card); }
+  .radar-nav button { min-height: 54px; padding: 6px 2px; font-size: 10px; }
+  .workspace-tabs { gap: 4px 16px; }
+  .workspace-tabs button { font-size: 13px; }
+  .page-tools { gap: 8px; }
+  .page-refresh-action { min-width: 40px; min-height: 44px; padding: 9px; }
+  .page-refresh-label { display: none; }
+}
