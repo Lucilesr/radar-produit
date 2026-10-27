@@ -159,8 +159,8 @@ function RadarWorkspace({ userName, initialState, initialRoute, initialProfileSe
   const shownJobs = filter === "to_review" ? sortOffersForTriage(searchedJobs) : searchedJobs.filter(job => inOpportunityView(job, filter));
   function selectTab(next: Tab) { navigate({ tab: next, offer: undefined }); }
 
-  async function refreshOffers() {
-    if (trashLock.current) return;
+  async function refreshOffers({silent=false}:{silent?:boolean}={}) {
+    if (trashLock.current) return false;
     setRefreshing(true);
     try {
       const response = await fetch("/api/jobs?includeDeleted=true", { cache: "no-store" });
@@ -168,8 +168,8 @@ function RadarWorkspace({ userName, initialState, initialRoute, initialProfileSe
       const result = await response.json() as { jobs: JobRecord[] };
       setJobs(result.jobs);
       setLoadErrors(current => ({...current,jobs:false}));
-      setToast("Votre radar est à jour.");
-    } catch { setToast("Actualisation impossible. Vos dernières données restent affichées.", true); }
+      if(!silent)setToast("Votre radar est à jour.");return true;
+    } catch { if(!silent)setToast("Actualisation impossible. Vos dernières données restent affichées.", true);return false; }
     finally { setRefreshing(false); }
   }
 
@@ -200,7 +200,7 @@ function RadarWorkspace({ userName, initialState, initialRoute, initialProfileSe
         {!loading && !loadErrors.jobs && tab === "offers" ? <OpportunitiesWorkspace currentJob={selectedJob} jobs={shownJobs} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>void changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>{setJobs(current=>current.map(job=>job.id===updated.id?updated:job));setToast("Offre mise à jour.");}} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing} /> : null}
         {!loading && !loadErrors.jobs && tab === "pipeline" ? <ApplicationsWorkspace jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
         {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace active={tab === "profile"} initialSection={initialProfileSection} profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
-        {(tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel jobs={jobs} onSynced={refreshOffers} /></Suspense></WorkspaceBoundary></div> : null}
+        {(tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel jobs={jobs} onSynced={()=>refreshOffers({silent:true})} /></Suspense></WorkspaceBoundary></div> : null}
         {tab !== "profile" && tab !== "offers" ? <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span></footer> : null}
         </div>
       </section>
