@@ -1,11 +1,11 @@
 "use client";
 
-import { WorkspaceToast, type WorkspaceFeedback } from "@/components/workspace-feedback";
+import { WorkspaceFeedbackProvider, useWorkspaceFeedback, type WorkspaceFeedback } from "@/components/workspace-feedback";
 import { OfferForm } from "@/components/offer-form";
 import { Textarea } from "@/components/ui/textarea";
 
 import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { RefreshCw, ShieldCheck, ClipboardCheck, LayoutDashboard, LoaderCircle, Mail, Plus, Search, Trash2, Undo2, UserRound, X } from "lucide-react";
+import { RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, LoaderCircle, Mail, Plus, Search, Trash2, Undo2, UserRound, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
 import { hasApplication, inOpportunityView, type OpportunityView } from "@/lib/opportunity-views";
@@ -37,7 +37,9 @@ const tabs: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof La
 const dismissalLabels: Record<DismissalReason, string> = { filled: "Poste pourvu", applications_closed: "Candidatures fermées", not_interested: "Je ne souhaite pas postuler", other: "Autre raison" };
 
 
-export function RadarApp({ userName, initialState, initialRoute, initialProfileSection }: { userName: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection }) {
+type RadarAppProps = { userName: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection };
+export function RadarApp(props: RadarAppProps) { return <WorkspaceFeedbackProvider><RadarWorkspace {...props} /></WorkspaceFeedbackProvider>; }
+function RadarWorkspace({ userName, initialState, initialRoute, initialProfileSection }: RadarAppProps) {
   const { route, navigate } = useRadarNavigation(initialRoute);
   const { tab, filter, query, view: workspaceView } = route;
   const previousTab = useRef(tab);
@@ -75,8 +77,8 @@ export function RadarApp({ userName, initialState, initialRoute, initialProfileS
   useEffect(()=>{if(tab==="profile"||tab==="sources")setVisited(current=>({...current,[tab]:true}));},[tab]);
   const openJob = (job: JobRecord, view: WorkspaceView = "offer") => navigate({ offer: job.id, view, ...(view === "interviews" || view === "application" ? {tab: "pipeline" as Tab} : {}) });
   const closeJob = () => navigate({ offer: undefined, view: "offer" });
-  const [toast, setToastState] = useState<(WorkspaceFeedback & {error: boolean; id: number}) | null>(null);
-  const setToast = (message: string | null, error = false, action?: WorkspaceFeedback["action"]) => setToastState(current => message ? {message, error, action, id: (current?.id ?? 0) + 1} : null);
+  const notify = useWorkspaceFeedback();
+  const setToast = (message: string | null, error = false, action?: WorkspaceFeedback["action"]) => { if (message) notify({message, tone: error ? "error" : "success", action}); };
   const initials = userName.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase() || "RP";
 
   useEffect(() => {
@@ -199,14 +201,13 @@ export function RadarApp({ userName, initialState, initialRoute, initialProfileS
         {!loading && !loadErrors.jobs && tab === "pipeline" ? <ApplicationsWorkspace jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
         {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace active={tab === "profile"} initialSection={initialProfileSection} profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
         {(tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel jobs={jobs} onSynced={refreshOffers} /></Suspense></WorkspaceBoundary></div> : null}
-        {tab !== "profile" && tab !== "offers" ? <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span><span>Aucune candidature envoyée automatiquement.</span></footer> : null}
+        {tab !== "profile" && tab !== "offers" ? <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span></footer> : null}
         </div>
       </section>
     </div>
     {jobDialogOpen ? <JobDialog onClose={() => setJobDialogOpen(false)} onCreated={onJobCreated} /> : null}
-    {selectedJob && tab !== "offers" ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} meta={<OfferSourceBadge job={selectedJob} />} onClose={closeJob}><OfferWorkspace key={selectedJob.id+":"+tab} onViewChange={view=>navigate({view})} job={selectedJob} profile={profile} initialView={workspaceView} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => navigate({tab:"pipeline",offer:selectedJob.id,view:"application"})} onChange={updated => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setToast("Dossier enregistré."); }} /><div className="mt-6 border-t pt-4">{selectedJob.deletedAt ? <button className="secondary-button" onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={16} /> Restaurer</button> : <button className="secondary-button text-red-800" onClick={() => requestDelete(selectedJob)}><Trash2 size={16} /> Corbeille</button>}</div></Modal> : null}
+    {selectedJob && tab !== "offers" ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} headerActions={<>{(selectedJob.sourceUrl || selectedJob.applicationUrl) ? <a href={selectedJob.sourceUrl || selectedJob.applicationUrl} target="_blank" rel="noopener noreferrer" className="signal-quiet-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : null}{selectedJob.deletedAt ? <button type="button" className="signal-quiet-button" disabled={!!trashBusy || refreshing} onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={15} aria-hidden />Restaurer</button> : null}</>} meta={<OfferSourceBadge job={selectedJob} />} onClose={closeJob}><OfferWorkspace key={selectedJob.id + ":" + tab} onViewChange={view => navigate({ view })} job={selectedJob} profile={profile} initialView={workspaceView} showAnnouncement={false} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => navigate({ tab: "pipeline", offer: selectedJob.id, view: "application" })} onChange={(updated, message) => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setToast(message ?? "Dossier enregistré."); }} /></Modal> : null}
     {deleteTarget.length ? <Modal title={`Mettre ${deleteTarget.length === 1 ? "cette offre" : `ces ${deleteTarget.length} offres`} à la corbeille ?`} description={deleteTarget.length > 1 ? "Choisissez une raison commune à toute la sélection." : "Choisissez pourquoi vous écartez cette offre."} onClose={() => setDeleteTarget([])}><div className="trash-dialog-content"><ul className="max-h-48 space-y-2 overflow-y-auto rounded-xl bg-background p-4 text-sm">{deleteTarget.map(job => <li key={job.id}><strong>{job.title}</strong> · {job.company}</li>)}</ul><div className="trash-dialog-fields"><ChoiceSelect label="Pourquoi ?" value={deleteReason} onChange={value => setDeleteReason(value as DismissalReason | "")} options={[{ value: "", label: "Choisir un motif" }, ...Object.entries(dismissalLabels).map(([value, label]) => ({ value, label }))]} /><label className="trash-dialog-note"><span>Précision <em>facultative</em></span><Textarea rows={2} maxLength={500} value={deleteNote} onChange={event => setDeleteNote(event.target.value)} placeholder="Une courte précision, si utile" /></label></div><p className="trash-dialog-help">L’offre reste restaurable. Si une candidature est déjà engagée, elle et ses rappels restent visibles dans Candidatures.</p><div className="trash-dialog-actions"><button className="secondary-button" onClick={() => setDeleteTarget([])}>Annuler</button><button disabled={!deleteReason || !!trashBusy || refreshing} className="signal-danger-button disabled:opacity-50" onClick={() => void changeTrash(deleteTarget, true, deleteReason as DismissalReason, deleteNote)}><Trash2 size={16} /> Mettre à la corbeille{deleteTarget.length > 1 ? ` (${deleteTarget.length})` : ""}</button></div></div></Modal> : null}
-    {toast ? <WorkspaceToast key={toast.id} action={toast.action} message={toast.message} tone={toast.error ? "error" : "success"} onClose={() => setToast(null)} /> : null}
   </main>;
 }
 
@@ -219,7 +220,7 @@ function JobDialog({ onClose, onCreated }: { onClose: () => void; onCreated: (jo
   }}/></Modal>;
 }
 
-function Modal({ title, description, meta, onClose, children }: { title: string; description: string; meta?: React.ReactNode; onClose: () => void; children: React.ReactNode }) {
+function Modal({ title, description, meta, headerActions, onClose, children }: { title: string; description: string; meta?: React.ReactNode; headerActions?: React.ReactNode; onClose: () => void; children: React.ReactNode }) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
@@ -233,15 +234,15 @@ function Modal({ title, description, meta, onClose, children }: { title: string;
       if (event.defaultPrevented || document.querySelector('[data-slot="drawer-content"][data-state="open"], [data-slot="select-content"][data-state="open"], [data-slot="popover-content"][data-state="open"]')) return;
       if (event.key === "Escape") { event.preventDefault(); onCloseRef.current(); }
       if (event.key !== "Tab") return;
-      const elements = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex], [contenteditable="true"]') ?? [])
+      const elements = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex], [contenteditable="true"]') ?? []).concat(Array.from(document.querySelectorAll<HTMLElement>('.signal-toast button:not(:disabled)')))
         .filter(element => element.tabIndex >= 0 && element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden" && !element.closest('[inert], [hidden]'));
       const first = elements[0]; const last = elements.at(-1);
       if (!first) { event.preventDefault(); return; }
-      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) { event.preventDefault(); last?.focus(); }
-      else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialogRef.current)) { event.preventDefault(); first.focus(); }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current || document.activeElement === document.body)) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialogRef.current || document.activeElement === document.body)) { event.preventDefault(); first.focus(); }
     }
     document.addEventListener("keydown", onKeyDown);
     return () => { document.removeEventListener("keydown", onKeyDown); document.body.style.overflow = previousOverflow; requestAnimationFrame(()=>(previousFocus?.isConnected && previousFocus.getClientRects().length ? previousFocus : document.getElementById("workspace-title"))?.focus({preventScroll:true})); };
   }, []);
-  return <div data-testid="modal-backdrop" onClick={event => { if (event.target === event.currentTarget) onClose(); }} className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/35 p-0 backdrop-blur-md sm:items-center sm:p-6"><div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} className="workspace-dialog max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-[28px] border border-white bg-card/95 p-5 shadow-2xl outline-none sm:rounded-[28px] sm:p-7"><div className="mb-5 flex items-start justify-between gap-4 border-b border-border pb-4"><div className="min-w-0"><h2 id={titleId} className="text-xl font-semibold leading-snug text-foreground">{title}</h2><p id={descriptionId} className="mt-1 max-w-xl text-sm leading-6 text-muted-foreground">{description}</p>{meta ? <div className="mt-2">{meta}</div> : null}</div><button onClick={onClose} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-background" aria-label="Fermer"><X size={20} /></button></div>{children}</div></div>;
+  return <div data-testid="modal-backdrop" onClick={event => { if (event.target === event.currentTarget) onClose(); }} className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/35 p-0 backdrop-blur-md sm:items-center sm:p-6"><div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={description ? descriptionId : undefined} className="workspace-dialog max-h-[92dvh] w-full max-w-3xl overflow-y-auto border bg-card p-5 shadow-2xl outline-none sm:p-7"><div className="signal-dialog-header"><div className="signal-dialog-heading"><h2 id={titleId}>{title}</h2><div className="signal-dialog-identity">{description ? <p id={descriptionId}>{description}</p> : null}{meta}</div></div><div className="signal-dialog-tools">{headerActions}<button type="button" onClick={onClose} className="signal-dialog-close" aria-label="Fermer"><X size={20} aria-hidden /></button></div></div>{children}</div></div>;
 }

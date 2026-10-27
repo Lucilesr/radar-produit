@@ -15,3 +15,9 @@ Notifications : WorkspaceToast, blanc et texte pétrole, pictogramme citron pour
 Modales : surface blanche, bordure discrète, fond neutre avec flou. Focus, inertie, Escape et restauration de focus conservés.
 
 Validation initiale : TypeScript, compilation Vinext et 95 tests applicatifs réussis. Les tests métier ne constituent pas une certification d’accessibilité. Aucun endpoint, migration ni schéma modifié dans ce lot.
+
+## Private note editing
+
+The shared NoteEditor provides bold, italic, bullet and numbered lists plus native undo/redo. API values remain strings using explicit emphasis/list markers. Existing plain text remains supported. The formatter escapes HTML before generating its own allowlisted tags; pasted and dropped content is inserted as plain text. Markup counts against the existing field limits. Overlong input stays visible and must be shortened before saving; it is never silently truncated.
+
+Native browser editing commands preserve selection and undo history. This uses the existing browser editing API, without a new dependency. Chromium is checked locally; Safari/Firefox still require a dedicated compatibility pass. No HTML storage, schema change or change in use permissions.

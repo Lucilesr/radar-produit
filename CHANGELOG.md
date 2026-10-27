@@ -2,6 +2,12 @@
 
 ## 27 octobre 2026
 
+- Entretiens Signal : planification, bilan et lecture partagent les sections, éditeurs et actions de Ma candidature. Statuts en tête des cartes, sauvegarde accessible sur mobile, brouillon conservé en cas de refus serveur et notification unique. Les libellés des sélecteurs sont visibles dès le rendu serveur ; les champs et transitions existants sont conservés.
+
+- Ma candidature Signal : liste continue sans avatars, en-têtes alignés, dates anciennes en warning ; dossier de 870 px, annonce dans l’en-tête et notes privées mises en forme. Une proposition reçue ouvre les notes, même avec un entretien à venir ; sauvegarde et notifications partagées, sans modification des permissions ou API.
+
+- Notes Signal : composants partagés de mise en forme (gras, italique, listes), sauvegarde et erreurs ; contenu conservé comme texte balisé dans les limites des champs existants, sans HTML stocké ni nouvelle dépendance.
+
 - Opportunités Signal : lecture en deux colonnes ouvertes, défilements indépendants sur ordinateur et fiche dédiée sur mobile ; sélection citron, accès à l’annonce auprès de la sélection, suivi « J’ai postulé » en haut du détail et notifications avec raccourci. Critères compacts, pertinence et réserves près du début de la description ; source discrète et dates secondaires en bas. Le filtre automatique reste disponible dans « Correspondances Radar ». La corbeille conserve sa confirmation et son motif, avec une action rouge.
 
 - Navigation Signal : logo Orbite, barre supérieure redondante retirée, actualisation dans l’en-tête de page et indication privée près du compte. Titres, onglets et marges partagent les mêmes repères dans toute la plateforme.
