@@ -10,7 +10,7 @@ Tags et dates : police de l’interface, 12/16 px, padding 4×8 px, minimum 26 p
 
 Menus : Radix et Vaul conservés. Valeurs longues multilignes, groupes en gras, contours contrastés. Comportements clavier existants conservés.
 
-Notifications : WorkspaceToast, blanc et texte pétrole, pictogramme citron pour succès et rouge pour erreur. En haut à droite, largeur maximale 340 px, action facultative et fermeture. Succès/info 7 secondes, pause au survol ou au focus ; erreur persistante. Les autres parcours rejoindront ce composant lors de leur intégration.
+Notifications : WorkspaceToast, blanc et texte pétrole, pictogramme citron pour succès et rouge pour erreur. En haut à droite, largeur maximale 340 px, action facultative et fermeture. Succès/info 7 secondes, pause au survol ou au focus ; erreur persistante. Tous les onglets intégrés et le brief utilisent ce composant commun.
 
 Modales : surface blanche, bordure discrète, fond neutre avec flou. Focus, inertie, Escape et restauration de focus conservés.
 
@@ -21,3 +21,9 @@ Validation initiale : TypeScript, compilation Vinext et 95 tests applicatifs ré
 The shared NoteEditor provides bold, italic, bullet and numbered lists plus native undo/redo. API values remain strings using explicit emphasis/list markers. Existing plain text remains supported. The formatter escapes HTML before generating its own allowlisted tags; pasted and dropped content is inserted as plain text. Markup counts against the existing field limits. Overlong input stays visible and must be shortened before saving; it is never silently truncated.
 
 Native browser editing commands preserve selection and undo history. This uses the existing browser editing API, without a new dependency. Chromium is checked locally; Safari/Firefox still require a dedicated compatibility pass. No HTML storage, schema change or change in use permissions.
+
+## Concordance finale (27–28 octobre 2026)
+
+Les cinq onglets, les sous-onglets du profil et les quatre sections du dossier reprennent les fondations Signal. La revue globale corrige le brief resté dans l’ancienne composition : aperçu du prompt replié, questions à plat, limite éditable dans le compteur, mêmes contrôles et notifications. Les variantes stockées restent conservées, leur panneau est retiré de cet écran selon l’arbitrage validé.
+
+La vue Kanban complémentaire de Candidatures utilise les mêmes cartes, tags, dates, sélecteurs, dossiers et erreurs. Les colonnes projettent les statuts existants ; rang et rendez-vous sont calculés sans migration. Les limites d’accessibilité, de compatibilité navigateur et de lint sont documentées dans `signal-revue-globale-2026-10-27.md` ; aucune certification ni CI distante n’est annoncée.
