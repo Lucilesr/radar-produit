@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, Check, CircleAlert, Info, X } from "lucide-react";
 
 export type WorkspaceFeedback = {
@@ -8,6 +8,23 @@ export type WorkspaceFeedback = {
   tone?: "success" | "info" | "error";
   action?: { label: string; onClick: () => void };
 };
+
+const FeedbackContext = createContext<((feedback: WorkspaceFeedback) => void) | null>(null);
+
+export function WorkspaceFeedbackProvider({ children }: { children: ReactNode }) {
+  const [feedback, setFeedback] = useState<(WorkspaceFeedback & { id: number }) | null>(null);
+  const serial = useRef(0);
+  const notify = useCallback((next: WorkspaceFeedback) => {
+    setFeedback({ ...next, id: ++serial.current });
+  }, []);
+  return <FeedbackContext.Provider value={notify}>{children}{feedback ? <WorkspaceToast key={feedback.id} {...feedback} onClose={() => setFeedback(null)} /> : null}</FeedbackContext.Provider>;
+}
+
+export function useWorkspaceFeedback() {
+  const notify = useContext(FeedbackContext);
+  if (!notify) throw new Error("WorkspaceFeedbackProvider is required.");
+  return notify;
+}
 
 /** One notification shape; errors persist, other tones pause while being read. */
 export function WorkspaceToast({ message, tone = "success", action, onClose }: WorkspaceFeedback & { onClose: () => void }) {

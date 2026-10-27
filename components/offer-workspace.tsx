@@ -5,9 +5,11 @@ import { OfferForm } from "@/components/offer-form";
 import { countryLabel } from "@/lib/countries";
 import { DateTimePicker } from "@/components/date-picker";
 import { HelpTooltip } from "@/components/help-tooltip";
+import { NoteEditor } from "@/components/note-editor";
+import { WorkspaceButton, WorkspaceFormError, WorkspaceFormSection, WorkspaceSaveActions } from "@/components/workspace-form";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useRef, useState } from "react";
-import { CalendarPlus, Check, CheckCircle2, CircleHelp, Copy, ExternalLink, LoaderCircle, Pencil } from "lucide-react";
+import { CalendarDays, CalendarPlus, Check, CheckCircle2, CircleHelp, Copy, ExternalLink, LoaderCircle, Pencil } from "lucide-react";
 import { ChoiceSelect, type ChoiceOption } from "@/components/choice-select";
 import { SourceLogo } from "@/components/source-logo";
 import { ApplicationQuestions } from "@/components/application-questions";
@@ -25,7 +27,7 @@ const statusGroup: Record<JobStatus, string> = {
 const legacyStatuses: JobStatus[] = ["new", "watchlist", "shortlist", "prepare", "closed"];
 const statusOptions: ChoiceOption<JobStatus>[] = (Object.entries(statusLabels) as [JobStatus, string][])
   .filter(([value]) => !legacyStatuses.includes(value))
-  .map(([value, label]) => ({ value, label, group: statusGroup[value] }));
+  .map(([value, label]) => ({ value, label: value === "interview" ? "Entretiens en cours" : label, group: statusGroup[value] }));
 export function StatusSelect({ value, onChange, label = "Statut de candidature", disabled = false }: { value: JobStatus; onChange: (status: JobStatus) => void; label?: string; disabled?: boolean }) {
   return <ChoiceSelect disabled={disabled} label={label} value={value} onChange={onChange} options={legacyStatuses.includes(value) ? [{ value, label: statusLabels[value], group: "Statut actuel" }, ...statusOptions] : statusOptions} />;
 }
@@ -55,7 +57,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   showApplicationAction?: boolean;
   showAnnouncement?: boolean;
   onViewChange?: (view: WorkspaceView) => void;
-  job: JobRecord; profile: CandidateProfile; initialView: WorkspaceView; context: "opportunity" | "application"; onChange: (job: JobRecord) => void;
+  job: JobRecord; profile: CandidateProfile; initialView: WorkspaceView; context: "opportunity" | "application"; onChange: (job: JobRecord, message?: string) => void;
   onStatus: (id: string, status: JobStatus) => Promise<boolean>; onNote: (id: string, note: string) => Promise<boolean>; onOpenApplication: () => void;
 }) {
   const editTrigger=useRef<HTMLButtonElement>(null);
@@ -65,12 +67,15 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   useEffect(()=>updateView(initialView),[initialView]); const [editing, setEditing] = useState(false);
   const [note, setNote] = useState(job.candidateNote ?? ""); const [busy, setBusy] = useState(false);
   useEffect(() => setNote(job.candidateNote ?? ""), [job.id, job.candidateNote]);
+  const [statusBusy,setStatusBusy] = useState(false), [noteError,setNoteError] = useState("");
+  const noteEditorRef = useRef<HTMLDivElement>(null), noteLock = useRef(false);
   const coverage = coverageLabel(job);
   const sourceUrl = job.sourceUrl;
   const applyUrl = job.applicationUrl && job.applicationUrl !== sourceUrl ? job.applicationUrl : !sourceUrl ? job.applicationUrl : undefined;
   const labels: Record<WorkspaceView, string> = { offer: "L’offre", application: "Ma candidature", interviews: `Entretiens (${job.interviews?.length ?? 0})`, brief: "Préparer / brief" };
   const tabs = workspaceSections(context);
   const activeView = context === "opportunity" && (view === "application" || view === "interviews") ? "offer" : view;
+  useEffect(() => { if (activeView !== "application" || job.status !== "offer") return; const frame = requestAnimationFrame(() => { noteEditorRef.current?.focus({preventScroll:true}); noteEditorRef.current?.scrollIntoView({block:"center"}); }); return () => cancelAnimationFrame(frame); }, [activeView,job.id,job.status]);
   return <div className="signal-offer-workspace space-y-5">
     {showAnnouncement ? <div className="signal-external-link">{sourceUrl || applyUrl ? <a href={sourceUrl || applyUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : <span className="offer-link-missing">Lien de l’annonce à renseigner</span>}</div> : null}
     <div className={context === "opportunity" ? "signal-offer-nav" : "signal-application-nav"}>
@@ -99,7 +104,16 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
       </section>
     </> : null}
     {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); }} onCancel={finishEditing} /> : null}
-    {context === "application" && activeView === "application" ? <><StatusSelect value={job.status} onChange={status => onStatus(job.id, status)} /><div className="rounded-2xl bg-[#fff2eb] p-4"><Field label="Notes privées de candidature"><Textarea rows={5} maxLength={2000} value={note} onChange={event => setNote(event.target.value)} placeholder="Vos échanges, vos conditions proposées, les points encore à confirmer…" /></Field><p className="mt-2 text-xs leading-5 text-muted-foreground">Ces notes restent distinctes de l’annonce. Une proposition n’est pas un accord du recruteur.</p><button disabled={busy || note === (job.candidateNote ?? "")} onClick={async () => { setBusy(true); try { await onNote(job.id, note); } finally { setBusy(false); } }} className="radar-add-button mt-3 disabled:opacity-40">{busy ? <LoaderCircle size={14} className="animate-spin" /> : <Check size={14} />} Enregistrer la note</button></div><button onClick={() => setView("interviews")} className="secondary-button"><CalendarPlus size={14} /> Planifier un entretien ou faire le bilan</button></> : null}
+    {context === "application" && activeView === "application" ? <div className="signal-application-form">
+      <WorkspaceFormSection title="Suivi de candidature" actions={<WorkspaceButton disabled={busy || statusBusy} onClick={() => setView("interviews")}><CalendarDays size={15} aria-hidden />Voir les entretiens</WorkspaceButton>}>
+        <div className="signal-status-field" aria-busy={statusBusy}><StatusSelect value={job.status} disabled={statusBusy || busy} onChange={async status => { setStatusBusy(true); try { await onStatus(job.id, status); } finally { setStatusBusy(false); } }} /></div>
+      </WorkspaceFormSection>
+      <WorkspaceFormSection title="Notes privées de candidature">
+        <NoteEditor inputRef={noteEditorRef} label="Notes privées de candidature" rows={4} disabled={busy || statusBusy} maxLength={2000} value={note} onChange={value => { setNote(value); setNoteError(""); }} placeholder="Vos échanges, vos conditions proposées, les points encore à confirmer…" />
+        <WorkspaceFormError message={noteError} />
+        <WorkspaceSaveActions label="Enregistrer la note" sticky busy={busy} disabled={statusBusy || note === (job.candidateNote ?? "") || note.length > 2000} hint={note === (job.candidateNote ?? "") ? undefined : "Modifications non enregistrées."} onSave={async () => { if (noteLock.current) return; noteLock.current = true; setBusy(true); setNoteError(""); try { if (!await onNote(job.id, note)) setNoteError("La note n’a pas été enregistrée. Votre saisie est conservée."); } finally { noteLock.current = false; setBusy(false); } }} />
+      </WorkspaceFormSection>
+    </div> : null}
     {context === "application" && activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
     {activeView === "brief" ? <PrivateBrief key={job.id} jobId={job.id} /> : null}
   </div>;

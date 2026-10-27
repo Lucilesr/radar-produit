@@ -2,7 +2,9 @@
 
 ## 27 octobre 2026
 
-- Notes Signal : composants partages de mise en forme (gras, italique, listes), sauvegarde et erreurs ; contenu conserve comme texte balise dans les limites des champs existants, sans HTML stocke ni nouvelle dependance.
+- Ma candidature Signal : liste continue sans avatars, en-têtes alignés, dates anciennes en warning ; dossier de 870 px, annonce dans l’en-tête et notes privées mises en forme. Une proposition reçue ouvre les notes, même avec un entretien à venir ; sauvegarde et notifications partagées, sans modification des permissions ou API.
+
+- Notes Signal : composants partagés de mise en forme (gras, italique, listes), sauvegarde et erreurs ; contenu conservé comme texte balisé dans les limites des champs existants, sans HTML stocké ni nouvelle dépendance.
 
 - Opportunités Signal : lecture en deux colonnes ouvertes, défilements indépendants sur ordinateur et fiche dédiée sur mobile ; sélection citron, accès à l’annonce auprès de la sélection, suivi « J’ai postulé » en haut du détail et notifications avec raccourci. Critères compacts, pertinence et réserves près du début de la description ; source discrète et dates secondaires en bas. Le filtre automatique reste disponible dans « Correspondances Radar ». La corbeille conserve sa confirmation et son motif, avec une action rouge.
 
