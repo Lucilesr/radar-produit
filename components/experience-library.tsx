@@ -63,6 +63,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
   const editingChanged=useCallback((id:string,open:boolean)=>setEditing(ids=>open?(ids.includes(id)?ids:[...ids,id]):ids.includes(id)?ids.filter(i=>i!==id):ids),[]);
   const [issues, setIssues] = useState<ReviewIssue[]>([]), [focusTarget, setFocusTarget] = useState<FocusTarget>();
   function correct(issue: ReviewIssue) { setFilter("active"); setSearch(""); setFocusTarget({ ...issue, nonce: Date.now() }); }
+  const navigationNonce=useRef(0);
   const [navigation,setNavigation]=useState<{id:string|null;nonce:number}>();
   useEffect(()=>{
     if(!navigation||consentPrompt.length)return;
@@ -132,11 +133,11 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
       }else if(body.action==="applicationConsent")setConsentPrompt([]);
       setIssues([]);
       if(approveCreation&&body.action==="create"||body.action==="edit"&&body.validate){
-        setFilter("active");setSearch("");setNavigation({id:String(body.id),nonce:Date.now()});
+        setFilter("active");setSearch("");setNavigation({id:String(body.id),nonce:++navigationNonce.current});
       }else if(body.action==="review"&&body.validation==="approved"){
         const order=[...groups.flatMap(g=>[g,...childrenOf(g)]),...ungrouped].map(i=>i.id);
         const done=(body.selection as {id:string}[]).map(i=>i.id);
-        setFilter("active");setSearch("");setNavigation({id:nextReviewTarget(next.items,order,done),nonce:Date.now()});
+        setFilter("active");setSearch("");setNavigation({id:nextReviewTarget(next.items,order,done),nonce:++navigationNonce.current});
       }
       if(body.action === "restore") setFilter("proposed");
       setNotice("");
@@ -240,7 +241,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
     if (!visible(g)) return null;
     const children = childrenOf(g).filter(i => filter === "rejected" ? g.validation === "rejected" || i.validation === "rejected" : i.validation !== "rejected"), context = children.filter(isContextOnly), details = children.filter(i => !isContextOnly(i));
     const heading = experienceHeading(g), hidden = g.validation === "rejected";
-    return <ExpandableSection key={g.id} id={"experience-"+g.id} tabIndex={-1} headerActions={<button type="button" className="library-experience-pencil" aria-label={`Modifier l’expérience chez ${heading.organization}`} title="Modifier l’expérience" disabled={hidden||editorLocked(g.id)||editing.length>0} onClick={()=>setExperienceEditRequest({id:g.id,nonce:Date.now()})}><Pencil size={15} aria-hidden/></button>} className={"experience-group "+(family(g).some(i=>i.validation==="proposed")?"needs-review":"")} title={<><span className="experience-group-heading"><strong>{heading.organization}</strong><span>{heading.role}</span><small>{heading.period}</small></span></>} status={<span className={"experience-status " + (hidden ? "is-hidden" : family(g).every(i=>i.validation!=="proposed") ? "is-approved" : "")}>{!hidden&&family(g).some(i=>i.validation==="proposed")?"À relire":itemStatus(g)}</span>}>
+    return <ExpandableSection key={g.id} id={"experience-"+g.id} tabIndex={-1} headerActions={<button type="button" className="library-experience-pencil" aria-label={`Modifier l’expérience chez ${heading.organization}`} title="Modifier l’expérience" disabled={hidden||editorLocked(g.id)||editing.length>0} onClick={()=>setExperienceEditRequest({id:g.id,nonce:++navigationNonce.current})}><Pencil size={15} aria-hidden/></button>} className={"experience-group "+(family(g).some(i=>i.validation==="proposed")?"needs-review":"")} title={<><span className="experience-group-heading"><strong>{heading.organization}</strong><span>{heading.role}</span><small>{heading.period}</small></span></>} status={<span className={"experience-status " + (hidden ? "is-hidden" : family(g).every(i=>i.validation!=="proposed") ? "is-approved" : "")}>{!hidden&&family(g).some(i=>i.validation==="proposed")?"À relire":itemStatus(g)}</span>}>
 
       <div className="experience-group-body">
         {!editing.includes(g.id) && g.data.context && g.data.context !== g.data.title ? <RichText text={g.data.context} /> : null}
@@ -318,7 +319,7 @@ function DetailCard({ item, metadata, editRequest, actions, onHide, onEditing, f
   const root = useRef<HTMLDivElement>(null);
   useEffect(()=>{onEditing?.(item.id,edit);return()=>onEditing?.(item.id,false);},[edit,item.id,onEditing]);
   const [historyVisible,setHistoryVisible]=useState(false),[historyLoading,setHistoryLoading]=useState(false);
-  useEffect(()=>{if(editRequest?.id===item.id){revealCollapsibleAncestors(root.current);setEdit(true);}},[editRequest,item.id]);
+  useEffect(()=>{if(editRequest?.id!==item.id)return;const frame=requestAnimationFrame(()=>{revealCollapsibleAncestors(root.current);setEdit(true);});return()=>cancelAnimationFrame(frame);},[editRequest,item.id]);
   const target = focusTarget?.itemId === item.id ? focusTarget : undefined;
   useEffect(() => {
     if (!target) return;
