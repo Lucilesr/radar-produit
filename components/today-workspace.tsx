@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, CalendarDays, Check, ClipboardCheck } from "lucide-react";
 import { RadarMark } from "@/components/radar-mark";
-import { WorkspaceButton } from "@/components/workspace-form";
+import { WorkspaceButton, WorkspacePanelHeader } from "@/components/workspace-form";
 import { selectTriageActions } from "@/lib/triage";
 import { hasApplication, inOpportunityView } from "@/lib/opportunity-views";
 import { activeStatuses, applicationAge, formatDate, reviewDue, terminalStatuses } from "@/lib/application-workflow";
@@ -12,7 +12,7 @@ import { WorkspaceState } from "@/components/workspace-ui";
 import type { JobRecord, JobStatus } from "@/lib/types";
 
 // Recalculate deadlines on entry and explicit data changes; keep the page stable while reading.
-function useNow(jobs: JobRecord[]) { const [now,setNow]=useState(Date.now()); useEffect(()=>setNow(Date.now()),[jobs]);return now; }
+function useNow(jobs: JobRecord[]) { const [now,setNow]=useState(()=>Date.now()); useEffect(()=>setNow(Date.now()),[jobs]);return now; }
 export function TodayWorkspace({ jobs, onTriage, onSelected, onAdd, onOpen }: {jobs:JobRecord[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void}) {
   const now=useNow(jobs);
   const count=jobs.filter(job=>inOpportunityView(job,"to_review")).length;
@@ -30,13 +30,13 @@ export function TodayWorkspace({ jobs, onTriage, onSelected, onAdd, onOpen }: {j
         <WorkspaceButton variant="primary" onClick={()=>urgent?openAction(urgent):count?onTriage():selected?onSelected():onAdd()}>{urgent?"Ouvrir le suivi":count?"Examiner les offres":selected?"Préparer ma sélection":"Ajouter une offre"}<ArrowRight size={17} aria-hidden /></WorkspaceButton>
         <RadarMark className="today-logo-watermark" watermark/>
       </section>
-      <section className="today-next" aria-labelledby="today-next-title"><div className="workspace-section-heading"><h2 id="today-next-title">À faire ensuite</h2></div>
+      <section className="today-next" aria-labelledby="today-next-title"><WorkspacePanelHeader id="today-next-title" title="À faire ensuite"/>
         {actions.filter(action=>action!==urgent).slice(0,3).map(action=><button key={action.job.id} type="button" className="workspace-task" onClick={()=>openAction(action)}><span className="workspace-task-icon"><ClipboardCheck size={18} aria-hidden /></span><span><strong>{action.title}</strong><small>{action.detail}</small></span><ArrowUpRight size={17} aria-hidden /></button>)}
         {!actions.filter(action=>action!==urgent).length?<p className="workspace-caption">Aucune action supplémentaire en attente.</p>:null}
       </section>
       <div className="today-summary" role="group" aria-label="Résumé de votre recherche"><button type="button" onClick={onTriage}><strong>{count}</strong> à examiner</button><button type="button" onClick={onSelected}><strong>{selected}</strong> dans ma sélection</button><span><strong>{active}</strong> candidature{active>1?"s":""} active{active>1?"s":""}</span></div>
     </div>
-    <aside className="today-agenda"><div className="workspace-section-heading"><h2>Prochains entretiens</h2><CalendarDays size={18} aria-hidden /></div>
+    <aside className="today-agenda" aria-labelledby="today-agenda-title"><WorkspacePanelHeader id="today-agenda-title" title="Prochains entretiens" actions={<CalendarDays size={18} aria-hidden/>}/>
       {upcoming.length?upcoming.map(({job,event})=><button key={event.id} type="button" className="agenda-event" onClick={()=>onOpen(job,"interviews")}><span className="agenda-event-heading"><span className="workspace-caption">{formatDate(event.startAt,event.timeZone,true)} · {event.timeZone}</span><span className="workspace-badge is-success"><Check size={13} aria-hidden />Planifié</span></span><strong>{job.company || job.title}</strong><span>{event.label}</span></button>):<p className="workspace-caption">Aucun entretien planifié. Les rendez-vous ajoutés à une candidature apparaîtront ici.</p>}
     </aside>
   </div>;
