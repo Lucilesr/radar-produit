@@ -18,4 +18,10 @@ Les contrôles API comparent avant/après les offres, le profil, les expérience
 
 ## Périmètre et limites
 
+La revue couvre les six filtres (toutes, web, email, flux, qualification, ajouts volontaires), la configuration ouverte et les recherches couvertes à 1440, 900, 390 et 320 px : 32 états, aucun débordement horizontal relevé. Les nombres de cartes correspondent au catalogue pour chaque filtre, et les huit liens Google/Bing sont conservés dans Toutes / Recherche web. Leurs noms accessibles distinguent le rôle et la plateforme.
+
+Les nouvelles cartes et les composants Sources / recherche web passent leur lint ciblé ; aucune erreur ajoutée. Les 104 tests, TypeScript et la compilation de la copie publique finale passent. Aucun test ajouté qui dupliquerait le CSS. L’actualisation manuelle garde une notification unique, distincte du retour du flux. Les contrôles visuels Chromium ne constituent pas une certification d’accessibilité.
+
 Aucun changement d’API, schéma, migration, permission serveur, catalogue ou requête de recherche. Les captures et empreintes de contrôle de la copie privée restent hors du dépôt public. La conservation des données ne repose pas sur une migration : aucune n’est introduite. Aucun déploiement privé.
+
+Le flux actif distant et les résultats des moteurs ne sont pas exercés en conditions réelles dans cette recette : le flux est en pause et les destinations des recherches sont vérifiées sans ouvrir de compte ni collecter de résultat. Les tests existants couvrent les règles de parsing du flux. Aucune CI distante n’est configurée ; les vérifications rapportées sont locales.
