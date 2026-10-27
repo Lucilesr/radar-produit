@@ -33,3 +33,10 @@ test('réalisation : saisie neuve réversible dans les champs existants',()=>{
  assert.deepEqual(exampleValues(data),{description:'Un produit fictif.',objective:'Rendre la saisie simple.',result:'Pilote livré sans mesure.',actions:'Cadrage et recette.'});
  assert.equal(exampleValues(updateExampleField(data,'objective','')).objective,'');
 });
+test('réalisation : un objectif importé ne remplace pas les actions copiées du rôle',()=>{
+ const data={...emptyData(),context:'### Projet\nUn contexte.\n\n**Son rôle.** Animation des ateliers.',contribution:'Animation des ateliers.'};
+ const next=updateExampleField(data,'objective','Réduire les erreurs de saisie.');
+ assert.equal(exampleValues(next).objective,'Réduire les erreurs de saisie.');
+ assert.equal(next.contribution,'Animation des ateliers.');
+ assert.equal(exampleValues(next).actions,'Animation des ateliers.');
+});
