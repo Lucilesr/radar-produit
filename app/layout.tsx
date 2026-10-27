@@ -7,6 +7,7 @@ import "./opportunities-workspace.css";
 import "./profile-workspace.css";
 import "./signal-tokens.css";
 import "./signal-controls.css";
+import "./signal-shell.css";
 
 export const metadata: Metadata = {
   title: "Radar Produit",
