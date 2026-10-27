@@ -2,6 +2,8 @@
 
 ## 27 octobre 2026
 
+- Profil Signal : composants partagés pour les en-têtes, le dépliage et les réalisations. Description, objectif, résultat et actions restent une projection des champs texte existants, testée pour conserver les autres faits et leur provenance.
+
 - Entretiens Signal : planification, bilan et lecture partagent les sections, éditeurs et actions de Ma candidature. Statuts en tête des cartes, sauvegarde accessible sur mobile, brouillon conservé en cas de refus serveur et notification unique. Les libellés des sélecteurs sont visibles dès le rendu serveur ; les champs et transitions existants sont conservés.
 
 - Ma candidature Signal : liste continue sans avatars, en-têtes alignés, dates anciennes en warning ; dossier de 870 px, annonce dans l’en-tête et notes privées mises en forme. Une proposition reçue ouvre les notes, même avec un entretien à venir ; sauvegarde et notifications partagées, sans modification des permissions ou API.
