@@ -119,6 +119,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   </div>;
 }
 function PrivateBrief({ jobId }: { jobId: string }) {
+  const notify=useWorkspaceFeedback();
   const [brief, setBrief] = useState("");
   const [language, setLanguage] = useState<"fr" | "en">("fr");
   const [error, setError] = useState("");
@@ -131,35 +132,24 @@ function PrivateBrief({ jobId }: { jobId: string }) {
     fetch("/api/brief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId, language }) })
       .then(async response => {
         const data = await response.json() as { error?: string; brief: string };
-        if (!response.ok) throw new Error(data.error ?? "Brief indisponible.");
+        if (!response.ok) throw new Error(data.error ?? "Prompt indisponible.");
         if (active) setBrief(data.brief);
       })
-      .catch(problem => { if (active) setError(problem instanceof Error ? problem.message : "Brief indisponible."); })
+      .catch(problem => { if (active) setError(problem instanceof Error ? problem.message : "Prompt indisponible."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [jobId, language, refresh]);
-  return <div className="space-y-4">
-    <ChoiceSelect label="Langue des réponses" value={language} onChange={value=>setLanguage(value as "fr"|"en")} options={[{value:"fr",label:"Français"},{value:"en",label:"Anglais professionnel simple"}]} />
-    <ApplicationQuestions jobId={jobId} language={language} onSaved={() => setRefresh(value => value + 1)} />
-    <div className="space-y-3">
-      <p className="offer-section-title">Prompt ChatGPT</p>
-      <p className="text-xs leading-5 text-muted-foreground">L’annonce, vos questions et les expériences autorisées, réunies dans un prompt. Copiez-le dans ChatGPT pour préparer votre réponse.</p>
-      {loading ? <div role="status" aria-label="Chargement du brief" className="min-h-44 space-y-3 rounded-2xl border border-border bg-card p-5">
-        <span className="sr-only">Chargement du brief en cours</span>
-        <div aria-hidden="true" className="h-4 w-2/3 animate-pulse rounded-full bg-muted" />
-        <div aria-hidden="true" className="h-3 w-full animate-pulse rounded-full bg-muted" />
-        <div aria-hidden="true" className="h-3 w-5/6 animate-pulse rounded-full bg-muted" />
-        <div aria-hidden="true" className="h-3 w-3/4 animate-pulse rounded-full bg-muted" />
-      </div> : null}
-      {error ? <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-800">{error}</p> : null}
-      {!loading && brief ? <>
-        <pre className="max-h-[50vh] overflow-auto whitespace-pre-wrap rounded-2xl bg-[#333333] p-4 text-xs leading-6 text-white">{brief}</pre>
-        <button onClick={async () => { try { await navigator.clipboard.writeText(brief); setCopied(true); } catch { setError("Copie impossible : sélectionnez le texte."); } }} className="radar-add-button"><Copy size={14} />{copied ? "Prompt copié" : "Copier le prompt"}</button>
-      </> : null}
-      {!loading && !brief && !error ? <p className="text-sm text-muted-foreground">Aucun brief disponible pour cette offre.</p> : null}
-    </div>
+  async function copyPrompt(){try{await navigator.clipboard.writeText(brief);setCopied(true);notify({message:"Prompt copié. Collez-le dans ChatGPT."});}catch{setError("Copie impossible : sélectionnez le texte.");notify({message:"Copie impossible : sélectionnez le texte.",tone:"error"});}}
+  return <div className="signal-brief">
+    <section className="signal-prompt-section" aria-label="Prompt ChatGPT"><div className="signal-prompt-heading"><div><div className="inline-help"><h3>Prompt ChatGPT</h3><HelpTooltip label="Contenu du prompt">Vos notes privées, entretiens, sources brutes et ancien profil ne sont pas inclus.</HelpTooltip></div><p className="signal-help">Annonce, parcours validé et questions. Copiez dans ChatGPT, puis collez la réponse ci-dessous.</p></div><div className="signal-prompt-actions"><div className="signal-brief-language"><ChoiceSelect label="Langue des réponses" value={language} onChange={value=>setLanguage(value as "fr"|"en")} options={[{value:"fr",label:"Français"},{value:"en",label:"Anglais professionnel simple"}]}/></div><WorkspaceButton variant="primary" disabled={loading||!brief} onClick={()=>void copyPrompt()}><Copy size={14} aria-hidden/>{copied?"Prompt copié":"Copier le prompt"}</WorkspaceButton></div></div>
+      {loading?<p className="signal-help" role="status">Chargement du prompt…</p>:null}<WorkspaceFormError message={error}/>
+      {!loading&&brief?<details className="signal-prompt-preview"><summary>Voir le contenu du prompt</summary><pre>{brief}</pre></details>:null}
+      {!loading&&!brief&&!error?<p className="signal-help">Aucun prompt disponible pour cette offre.</p>:null}
+    </section>
+    <ApplicationQuestions jobId={jobId} onSaved={()=>setRefresh(value=>value+1)}/>
   </div>;
 }
+
 function Signals({ title, items, tone }: { title: string; items: string[]; tone: "positive" | "caution" }) {
   const Icon = tone === "positive" ? CheckCircle2 : CircleHelp;
   return <section className={`offer-signal offer-signal--${tone}`}><h3 className="offer-section-title"><Icon size={17} aria-hidden="true" />{title}</h3><ul>{items.length ? items.map(item => <li key={item}>{item}</li>) : <li>Aucun signal confirmé à ce stade.</li>}</ul></section>;

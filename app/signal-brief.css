@@ -1,0 +1,46 @@
+/* Approved brief: one prompt, flat questions, editable character count. */
+.signal-brief{width:100%;max-width:960px;margin-inline:auto;display:grid;gap:20px;min-width:0}
+.signal-prompt-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}
+.signal-prompt-heading>div:first-child{flex:1 1 280px;min-width:0}
+.signal-prompt-heading .signal-help{max-width:52ch}
+.signal-prompt-actions{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.signal-brief-language{width:200px;min-width:0}
+.signal-prompt-preview{margin-top:12px}
+.signal-prompt-preview>summary{width:fit-content;cursor:pointer;color:var(--signal-petrol);font:500 12px/1.6 var(--font-sans);padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+.signal-prompt-preview pre{max-height:320px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:400 12px/1.75 var(--font-sans);background:var(--signal-soft);border-radius:5px;padding:16px;margin-top:10px;color:var(--signal-ink)}
+.brief-questions{border:0;border-top:1px solid var(--signal-line);border-radius:0;background:transparent;padding:16px 0 0;min-width:0}
+.brief-question{min-width:0;padding-top:8px}
+.brief-question+.brief-question{border-top:1px solid var(--signal-line);margin-top:24px;padding-top:22px}
+.brief-question-heading,.brief-question-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brief-question-heading{margin-bottom:8px}
+.brief-question-tools{justify-content:flex-end;gap:8px 12px}
+.radar-app .brief-question h4{font:600 13px/1.5 var(--font-sans);color:var(--signal-ink);margin:0}
+.signal-text-action{font:500 11px/1.5 var(--font-sans);color:var(--signal-petrol);text-decoration:underline;text-underline-offset:3px;padding:4px 0;background:none;border:0}
+.signal-text-action.is-danger{color:var(--signal-danger)}
+.signal-brief-field{display:grid;gap:7px;min-width:0;font:500 12px/1.5 var(--font-sans);color:var(--signal-muted)}
+.signal-brief-field+.signal-brief-field{margin-top:16px}
+.signal-brief-field>textarea{width:100%;font-weight:400;resize:vertical}
+.signal-counter-wrap{display:flex;justify-content:flex-end;align-items:center;gap:4px 12px;flex-wrap:wrap;margin-top:5px}
+.signal-counter{display:flex;align-items:center;gap:6px;font:400 11px/1.5 var(--font-sans);font-variant-numeric:tabular-nums;color:var(--signal-muted)}
+.signal-limit-control{display:flex;align-items:center;gap:3px;color:var(--signal-petrol)}
+body .signal-limit-control>input{width:96px;min-height:28px!important;padding:2px 4px!important;border:0!important;border-bottom:1px dashed var(--signal-input)!important;border-radius:2px;background:transparent!important;color:var(--signal-petrol);font:600 12px/1.5 var(--font-sans);text-align:center;appearance:textfield;box-shadow:none}
+.signal-limit-control>input::-webkit-inner-spin-button,.signal-limit-control>input::-webkit-outer-spin-button{appearance:none;margin:0}
+.signal-limit-control>input:focus-visible{outline:2px solid var(--signal-petrol);outline-offset:2px}
+.signal-counter.is-warning,.signal-counter-message{color:var(--signal-danger)}
+.signal-counter-message{font:400 11px/1.5 var(--font-sans)}
+.brief-question-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:12px}
+.brief-question-actions>.signal-save-hint{margin-right:auto}
+.brief-question-history{display:grid;gap:14px;margin-top:18px;font-size:13px}
+.brief-question-history>div+div{padding-top:10px;border-top:1px solid var(--signal-line)}
+.signal-inline-confirm{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:16px;padding:10px 12px;border-left:3px solid var(--signal-danger);font-size:12px}
+.signal-archived-question{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border-bottom:1px solid var(--signal-line);font-size:12px}
+
+@media(max-width:760px){
+ .signal-prompt-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px;align-items:end}
+ .signal-brief-language{width:auto}
+ .signal-prompt-actions .signal-form-button{min-height:44px;padding-inline:8px}
+ .signal-prompt-heading{gap:14px}
+ .brief-question-actions>.signal-save-hint{flex-basis:100%}
+ body .signal-limit-control>input{font-size:16px;min-height:44px!important}
+ .brief-question-tools{justify-content:flex-start}
+}
