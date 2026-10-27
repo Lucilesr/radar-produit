@@ -2,6 +2,8 @@
 
 ## 27 octobre 2026
 
+- Candidatures : vue Kanban alternative au tableau, colonnes Envoyées / Entretiens / Propositions / Closes. Rang d’entretien et prochain rendez-vous sur la carte ; annulations exclues du rang, données et statuts existants conservés.
+
 - Préparer / brief Signal : prompt copiable en tête, aperçu replié, questions sans panneaux imbriqués et limite directement éditable dans le compteur. Notifications communes ; section de variantes retirée de la vue selon le prototype, sans suppression des données ni des outils du connecteur.
 
 - Aujourd’hui Signal : actions suivantes, compteurs et agenda harmonisés avec les panneaux communs. Statut d’entretien en tête à droite, dates et fuseaux conservés, états vides lisibles ; mêmes actions et limites de trois éléments affichés.
