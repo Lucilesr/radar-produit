@@ -16,6 +16,7 @@ import "./signal-experience-components.css";
 import "./signal-profile.css";
 import "./signal-documents.css";
 import "./signal-sources.css";
+import "./signal-today.css";
 
 export const metadata: Metadata = {
   title: "Radar Produit",
