@@ -14,5 +14,5 @@ export function ExampleEditor({data,onChange,disabled=false,requiredDescription=
 }
 export function ExampleSummary({data,renderText}:{data:ItemData;renderText:(text:string)=>ReactNode}){
  const values=exampleValues(data);
- return <div className="library-example-summary">{order.filter(field=>field==="description"||values[field]).map(field=><section key={field}><h4>{exampleLabels[field]}</h4>{values[field]?renderText(values[field]):<p className="library-example-empty">{field==='description'?'Description à compléter.':field==='objective'?'Objectif à préciser.':field==='result'?'Résultat à documenter.':'Actions personnelles à préciser.'}</p>}</section>)}</div>;
+ return <div className="library-example-summary">{order.filter(field=>field==="description"||values[field]).map(field=><section key={field}><h5>{exampleLabels[field]}</h5>{values[field]?renderText(values[field]):<p className="library-example-empty">{field==='description'?'Description à compléter.':field==='objective'?'Objectif à préciser.':field==='result'?'Résultat à documenter.':'Actions personnelles à préciser.'}</p>}</section>)}</div>;
 }

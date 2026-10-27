@@ -49,6 +49,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
   const feedback=useWorkspaceFeedback();
   const [rightsDraft,setRightsDraft]=useState<Record<string,{applicationAllowed:boolean;publicProfileAllowed:boolean}>>({});
   const [rightsSaving,setRightsSaving]=useState(false);
+  const rightsLock=useRef(false);
   const rightsDialog=useRef<HTMLDialogElement>(null), hideDialog=useRef<HTMLDialogElement>(null);
   const cancelHide=()=>{if(busy)return;setConfirm(null);setSelected([]);setError("");};
   const [consentPrompt,setConsentPrompt]=useState<{id:string;version:number;title:string}[]>([]);
@@ -98,6 +99,10 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
 
   async function act(body: Command, approveCreation=false, quiet=false) {
     if (locked.current) return false;
+    // A creation may have succeeded while its follow-up approval failed.
+    // Reuse the saved item/version when the draft is corrected and retried.
+    const created=approveCreation&&body.action==="create"?state.items.find(item=>item.id===body.id):undefined;
+    if(created){body={action:"edit",validate:true,id:created.id,version:created.version,data:body.data,permissions:{applicationAllowed:created.applicationAllowed,publicProfileAllowed:created.publicProfileAllowed}};approveCreation=false;}
     if (body.action === "review" && body.validation === "approved") {
       const ids = (body.selection as {id:string}[]).map(i => i.id);
       const found = state.items.filter(i => ids.includes(i.id)).flatMap(i=>reviewIssues({...i,data:structuredReview(i.data)}));
@@ -118,6 +123,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
         next = await read("/api/experiences", payload);
       }
       if(approveCreation&&body.action==="create"){
+        setState(next);
         const created=next.items.find(item=>item.id===body.id);
         if(!created)throw new Error("Le contenu créé est introuvable. Actualisez le carnet.");
         const approval={action:"review",selection:[{id:created.id,version:created.version}],validation:"approved",confirmed:true,requestId:pending.current!.approvalId??(pending.current!.approvalId=crypto.randomUUID())};
@@ -225,12 +231,14 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
     })}</div>;
   }
   async function saveRights(){
+    if(rightsLock.current)return;
+    rightsLock.current=true;
     setRightsSaving(true);
     try{
       const changes=active.filter(i=>rightsDraft[i.id]&&(rightsDraft[i.id].applicationAllowed!==i.applicationAllowed||rightsDraft[i.id].publicProfileAllowed!==i.publicProfileAllowed));
       for(const item of changes)if(!await act({action:"usage",selection:selectedVersions([item]),permissions:rightsDraft[item.id]},false,true))return;
       setRightsDraft({});setShowConsentManager(false);setNotice("");feedback({message:"Droits d’usage enregistrés."});
-    }finally{setRightsSaving(false);}
+    }finally{rightsLock.current=false;setRightsSaving(false);}
   }
   const editorLocked=(id:string)=>busy||loading||adding||addingTo!==null||editing.some(other=>other!==id);
   function card(item: ExperienceItem) {
@@ -241,7 +249,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
     if (!visible(g)) return null;
     const children = childrenOf(g).filter(i => filter === "rejected" ? g.validation === "rejected" || i.validation === "rejected" : i.validation !== "rejected"), context = children.filter(isContextOnly), details = children.filter(i => !isContextOnly(i));
     const heading = experienceHeading(g), hidden = g.validation === "rejected";
-    return <ExpandableSection key={g.id} id={"experience-"+g.id} tabIndex={-1} headerActions={<button type="button" className="library-experience-pencil" aria-label={`Modifier l’expérience chez ${heading.organization}`} title="Modifier l’expérience" disabled={hidden||editorLocked(g.id)||editing.length>0} onClick={()=>setExperienceEditRequest({id:g.id,nonce:++navigationNonce.current})}><Pencil size={15} aria-hidden/></button>} className={"experience-group "+(family(g).some(i=>i.validation==="proposed")?"needs-review":"")} title={<><span className="experience-group-heading"><strong>{heading.organization}</strong><span>{heading.role}</span><small>{heading.period}</small></span></>} status={<span className={"experience-status " + (hidden ? "is-hidden" : family(g).every(i=>i.validation!=="proposed") ? "is-approved" : "")}>{!hidden&&family(g).some(i=>i.validation==="proposed")?"À relire":itemStatus(g)}</span>}>
+    return <ExpandableSection key={g.id} id={"experience-"+g.id} tabIndex={-1} headerActions={<button type="button" className="library-experience-pencil" aria-label={`Modifier l’expérience chez ${heading.organization}`} title="Modifier l’expérience" disabled={hidden||editorLocked(g.id)||editing.length>0} onClick={()=>setExperienceEditRequest({id:g.id,nonce:++navigationNonce.current})}><Pencil size={15} aria-hidden/></button>} className={"experience-group "+(family(g).some(i=>i.validation==="proposed")?"needs-review":"")} title={<><h3 className="experience-group-heading"><strong>{heading.organization}</strong><span>{heading.role}</span><small>{heading.period}</small></h3></>} status={<span className={"experience-status " + (hidden ? "is-hidden" : family(g).every(i=>i.validation!=="proposed") ? "is-approved" : "")}>{!hidden&&family(g).some(i=>i.validation==="proposed")?"À relire":itemStatus(g)}</span>}>
 
       <div className="experience-group-body">
         {!editing.includes(g.id) && g.data.context && g.data.context !== g.data.title ? <RichText text={g.data.context} /> : null}
@@ -329,7 +337,7 @@ function DetailCard({ item, metadata, editRequest, actions, onHide, onEditing, f
   const title = detailHeading(item), heading = /^###\s+[^\n]+\n?/.exec(item.data.context)?.[0];
   const parent = experiences.find(i=>i.id===item.parentId);
   const body = heading ? item.data.context.slice(heading.length).trim() : item.data.context;
-  return <ExpandableSection ref={root} plain={!!metadata&&item.kind==="experience"} headerActions={!(metadata&&item.kind==="experience")?<button type="button" className="library-experience-pencil" aria-label={metadata?"Modifier le contexte":`Modifier la réalisation « ${title} »`} title={metadata?"Modifier le contexte":"Modifier la réalisation"} disabled={busy||edit||item.validation==="rejected"||parent?.validation==="rejected"} onClick={()=>{revealCollapsibleAncestors(root.current);setEdit(true);}}><Pencil size={15} aria-hidden/></button>:undefined} id={"review-"+item.id} tabIndex={-1} className={"experience-detail "+(item.validation==="proposed"?"needs-review":"")+(metadata&&item.kind==="experience"&&!edit&&!historyVisible&&!actions?" library-parent-idle":"")} title={<><span className="experience-example-title">{metadata ? item.kind==="experience"?"Détails de l’expérience":"Contexte de l’entreprise" : title}</span></>} status={<span className={"experience-status "+(item.validation==="approved"?"is-approved":item.validation==="rejected"?"is-hidden":"")}>{itemStatus(item,parent)}</span>}>
+  return <ExpandableSection ref={root} plain={!!metadata&&item.kind==="experience"} headerActions={!(metadata&&item.kind==="experience")?<button type="button" className="library-experience-pencil" aria-label={metadata?"Modifier le contexte":`Modifier la réalisation « ${title} »`} title={metadata?"Modifier le contexte":"Modifier la réalisation"} disabled={busy||edit||item.validation==="rejected"||parent?.validation==="rejected"} onClick={()=>{revealCollapsibleAncestors(root.current);setEdit(true);}}><Pencil size={15} aria-hidden/></button>:undefined} id={"review-"+item.id} tabIndex={-1} className={"experience-detail "+(item.validation==="proposed"?"needs-review":"")+(metadata&&item.kind==="experience"&&!edit&&!historyVisible&&!actions?" library-parent-idle":"")} title={<><h4 className="experience-example-title">{metadata ? item.kind==="experience"?"Détails de l’expérience":"Contexte de l’entreprise" : title}</h4></>} status={<span className={"experience-status "+(item.validation==="approved"?"is-approved":item.validation==="rejected"?"is-hidden":"")}>{itemStatus(item,parent)}</span>}>
 
     <div className="experience-example-body">
 
@@ -388,7 +396,7 @@ function ItemForm({ initial, item, example=false, focusTarget, busy, onSubmit, o
       </div>)}
     </fieldset>:null}
     {(Object.keys(fieldNames) as (keyof Fields)[]).filter(k => item?.kind === "experience" ? !["contribution", "result", "claimKey"].includes(k) : item?.kind!=="fact" || advanced || ["title","context","contribution","result"].includes(k)).filter(k=>(!isExperience||!["title","contribution","result","claimKey"].includes(k))&&(!isExample||!["context","contribution","result"].includes(k))).filter(k=>!isExample||k==="title"||!!item&&advanced).map(k =>
-      k === "context" ? <label key={k} className="library-example-field sm:col-span-2"><span>Présentation de l’entreprise et des produits</span><Textarea disabled={busy} aria-label="Présentation de l’entreprise et des produits" data-field="context" data-start={contextHeading.length} data-end={data.context.length} rows={5} maxLength={6000-contextHeading.length} value={data.context.slice(contextHeading.length).trimStart()} onChange={event=>setData({...data,context:contextHeading+event.target.value})} placeholder="Présentez brièvement l’activité de l’entreprise, ses produits ou services et les publics auxquels ils s’adressent."/>{issueText("context")}</label> :
+      k === "context" ? <label key={k} className="library-example-field sm:col-span-2"><span>Présentation de l’entreprise et des produits</span><Textarea required={!item} disabled={busy} aria-label="Présentation de l’entreprise et des produits" data-field="context" data-start={contextHeading.length} data-end={data.context.length} rows={5} maxLength={6000-contextHeading.length} value={data.context.slice(contextHeading.length).trimStart()} onChange={event=>setData({...data,context:contextHeading+event.target.value})} placeholder="Présentez brièvement l’activité de l’entreprise, ses produits ou services et les publics auxquels ils s’adressent."/>{issueText("context")}</label> :
       <label key={k} className={"text-xs font-semibold "+(["contribution","result"].includes(k)?"sm:col-span-2":"")}>{isExample&&k==="title"?"Titre de la réalisation":fieldNames[k]}{help[k] ? <span className="my-2 block font-normal leading-5">{help[k]}</span> : null}
         {["contribution","result"].includes(k) ? <Textarea disabled={busy} data-field={k} className={inputClass} rows={3} maxLength={4000} value={data[k]} onChange={e=>setData(fieldsOnly(replaceDocumentedField({...initial,...data},k as "contribution" | "result",e.target.value)))} /> : <input disabled={busy} required={isExperience?k==="organization":k==="title"} className={inputClass} maxLength={k==="period"?160:k==="organization"||k==="role"?200:180} value={data[k]} placeholder={k==="title"?"Ex. Refonte de l’espace client":k==="organization"?"Nom de l’entreprise":k==="role"?"Ex. Product Manager":k==="period"?"Ex. 2022–2026":undefined} onChange={e=>setData({...data,[k]:e.target.value})} />}
         {issueText(k)}
@@ -396,7 +404,8 @@ function ItemForm({ initial, item, example=false, focusTarget, busy, onSubmit, o
     {isExample?<ExampleEditor requiredDescription={!item} data={{...initial,...data}} disabled={busy} onChange={next=>setData(fieldsOnly(next))}/>:null}
     {!isExperience&&item?<button type="button" className="library-advanced-toggle sm:col-span-2" aria-expanded={advanced} onClick={()=>setAdvanced(!advanced)}>{advanced?"Fermer les options avancées":"Options avancées"}</button>:null}
     {!isExperience&&item&&advanced?<div className="library-review-options sm:col-span-2">{typeof advancedContent==="function"?advancedContent(JSON.stringify(data)!==JSON.stringify(fieldsOnly(item?.kind==="experience"?{...initial,...experienceHeading(item)}:initial))||JSON.stringify(points)!==JSON.stringify(structuredReview(initial).reviewPoints||[])):advancedContent}<p className="review-help">Pour une information incertaine que vous souhaitez confirmer avant de l’utiliser.</p><WorkspaceButton disabled={busy} onClick={()=>setPoints([...points,{id:crypto.randomUUID(),question:"",decision:"pending",answer:""}])}>Ajouter un point à confirmer</WorkspaceButton></div>:null}
-    <div className="library-editor-actions sm:col-span-2">{onCancel?<WorkspaceButton disabled={busy} onClick={onCancel}>Annuler</WorkspaceButton>:null}<WorkspaceButton type="submit" variant="primary" busy={busy} disabled={problems.length>0||(!item&&(isExperience?!data.organization.trim():!data.title.trim()||!exampleValues({...initial,...data}).description.trim()))}>{busy?"Enregistrement…":"Enregistrer"}</WorkspaceButton></div>
+    {isExperience&&item&&advancedContent?<details className="library-review-options sm:col-span-2"><summary>Gestion de l’expérience</summary>{typeof advancedContent==="function"?advancedContent(JSON.stringify(data)!==JSON.stringify(fieldsOnly({...initial,...experienceHeading(item)}))||JSON.stringify(points)!==JSON.stringify(structuredReview(initial).reviewPoints||[])):advancedContent}</details>:null}
+    <div className="library-editor-actions sm:col-span-2">{onCancel?<WorkspaceButton disabled={busy} onClick={onCancel}>Annuler</WorkspaceButton>:null}<WorkspaceButton type="submit" variant="primary" busy={busy} disabled={problems.length>0||(!item&&(isExperience?!data.organization.trim()||!data.context.trim():!data.title.trim()||!exampleValues({...initial,...data}).description.trim()))}>{busy?"Enregistrement…":"Enregistrer"}</WorkspaceButton></div>
   </form>;
 }
 function ManualForm({busy,onSave,onCancel}:{busy:boolean;onSave:(body:Command)=>void;onCancel:()=>void}){

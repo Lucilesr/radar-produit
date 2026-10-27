@@ -20,7 +20,7 @@
 .library-example-field { display:grid; gap:7px; min-width:0; font:600 13px/1.5 var(--font-sans); color:var(--foreground); }
 .radar-app .library-example-field textarea { width:100%; margin:0; font-weight:400; line-height:1.65; resize:vertical; }
 .library-example-summary { display:grid; gap:18px; }
-.radar-app .library-example-summary h4 { font:600 13px/1.5 var(--font-sans); margin:0 0 5px; }
+.radar-app .library-example-summary h5 { font:600 13px/1.5 var(--font-sans); margin:0 0 5px; }
 .library-example-summary .experience-rich-text p { margin:0 0 8px; }
 .library-example-empty { font:400 12px/1.65 var(--font-sans); color:var(--muted-foreground); }
 @media(max-width:640px) {

@@ -28,6 +28,10 @@ export function updateExampleField(data:ItemData,field:ExampleField,value:string
   const prefix=field==='objective'?'**Objectif.** ':'';
   next={...data,context:data.context+(data.context?'\n\n':'')+prefix+value};
  }
+ // The legacy passage helper synchronizes an exact copy of « Son rôle ».
+ // In this view Objective and Actions are separate controls: editing one must
+ // never replace the other without an explicit action from the user.
+ next={...next,contribution:data.contribution};
  return field==='result'?replaceDocumentedField(next,'result',value):next;
 }
 export const exampleLabels={description:'Description',objective:'Objectif',result:'Résultat',actions:'Mon rôle et mes actions'};
