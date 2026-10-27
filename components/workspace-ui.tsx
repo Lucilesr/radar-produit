@@ -1,7 +1,8 @@
 "use client";
+import { RadarMark } from "@/components/radar-mark";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { Component, useEffect, useRef, useState, type ReactNode } from "react";
-import { AlertCircle, Inbox, LockKeyhole, Radar } from "lucide-react";
+import { AlertCircle, Inbox, LockKeyhole } from "lucide-react";
 import { defaultRoute, readRadarRoute, radarSearch, type RadarRoute } from "@/lib/radar-navigation";
 
 export function useRadarNavigation(initialRoute: RadarRoute = defaultRoute) {
@@ -38,5 +39,5 @@ export class WorkspaceBoundary extends Component<{children: ReactNode}, {failed:
     return this.props.children;
   }
 }
-export function WorkspaceBrand() { return <div className="workspace-brand"><span><Radar size={24} aria-hidden /></span><p>Radar <span>produit</span></p></div>; }
+export function WorkspaceBrand() { return <div className="workspace-brand"><span><RadarMark /></span><p>Radar <span>produit</span></p></div>; }
 export function PrivateLabel() { return <span className="workspace-private"><LockKeyhole size={13} aria-hidden /> Privé</span>; }
