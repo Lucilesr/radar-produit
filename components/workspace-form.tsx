@@ -18,6 +18,10 @@ export function WorkspaceFormError({ message }: { message: string }) {
   return message ? <p role="alert" className="signal-form-error"><CircleAlert size={16} aria-hidden />{message}</p> : null;
 }
 
+export function WorkspacePanelHeader({ id, title, hint, actions, className = "" }: { id: string; title: string; hint?: ReactNode; actions?: ReactNode; className?: string }) {
+  return <header className={`signal-panel-header ${className}`}><div className="signal-panel-title"><h2 id={id} tabIndex={-1}>{title}</h2>{hint}</div>{actions ? <div className="signal-panel-actions">{actions}</div> : null}</header>;
+}
+
 /** A form opened from a long interview list starts at its heading. */
 export function useWorkspaceEditorFocus() {
   const title = useRef<HTMLHeadingElement>(null);
