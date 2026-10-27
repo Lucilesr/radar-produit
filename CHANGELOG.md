@@ -2,6 +2,8 @@
 
 ## 27 octobre 2026
 
+- Recherche web Signal : cartes PO/PM et liens Google/Bing harmonisés, noms accessibles distinguant rôle et plateforme. Les huit destinations restent inchangées ; aucun compte ni contenu de plateforme n’est lu.
+
 - Sources Signal : alerte Collective, recherches couvertes et actualisation du flux reprennent les en-têtes et retours communs. Une seule notification confirme l’actualisation ; un lien refusé reste saisi pour correction, sans création d’offre ni modification des autres paramètres.
 
 - Sources Signal : cartes et formulaires de configuration alignés sur les composants communs. Notes conservées pendant les changements de vue et les actualisations ; confirmation par la notification partagée, sans changer les règles de configuration ou le stockage.
