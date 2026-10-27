@@ -37,7 +37,7 @@
 @media(max-width:640px) {
   .applications-workspace .application-row { padding: 18px 16px; gap: 14px 12px; }
   .signal-dialog-header { gap: 10px; }
-  .signal-dialog-tools { max-width: 120px; }
+  .signal-dialog-tools { max-width: 120px; flex-direction: column-reverse; flex-wrap: nowrap; align-items: flex-end; }
   .signal-dialog-tools > .signal-quiet-button { min-height: 44px; font-size: 11px; padding-inline: 5px; }
   .workspace-dialog { max-height: 94dvh; border-radius: 10px 10px 0 0; }
   .workspace-dialog h2 { font-size: 22px; }

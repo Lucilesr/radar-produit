@@ -18,6 +18,16 @@ Le gras et une liste ont été saisis par les commandes de l’éditeur puis enr
 
 Une candidature fictive avec un entretien futur a été passée à Proposition reçue. Son bouton Ouvrir mène à Ma candidature, avec le focus sur Notes privées de candidature. Aucun CTA Corbeille ni deuxième fermeture ne subsiste en bas du dossier.
 
+## Entretiens et recette finale
+
+Planification et bilan utilisent les mêmes sections et actions que les notes privées. Les statuts remontent dans l’en-tête des cartes et de l’agenda. Une seule sauvegarde, avec Annuler, reste accessible en bas du formulaire ; l’entrée dans l’édition remet la vue sur son titre. Les sélecteurs affichent immédiatement leur valeur au rendu serveur. Les placeholders, espacements et outils de fermeture sur mobile ont été revus avec les mêmes composants.
+
+La recette locale utilise les API réelles avec des données fictives : création par double clic sans doublon, durée invalide bloquée, modification de l’horaire, annulation conservée dans le suivi, bilan mis en forme puis réédité sans perdre les autres champs. Un refus réel du serveur (entretien passé déplacé dans le futur pendant la saisie) conserve le brouillon, affiche une erreur et permet la reprise sans ressaisie après correction. La transition de statut et la date historique de candidature restent conservées.
+
+Six vues (liste, notes, entretiens, bilan, planification et brief) ont été contrôlées à 1440, 900, 390 et 320 px : 24 vues principales et 44 relevés au total, sans débordement horizontal relevé. Les actions de sauvegarde restent dans la modale. La boucle clavier passe des actions de la notification au lien d’annonce et revient en sens inverse. Les captures et les relevés restent hors du dépôt public.
+
+Les 99 tests, la vérification TypeScript et la compilation de la copie publique passent. La comparaison lint des composants touchés relève 6 erreurs héritées, contre 7 sur la base `4aff8df` ; aucune erreur ajoutée dans ce périmètre. Les nouveaux composants et le sélecteur passent le lint ciblé. Aucun contrôle distant n’est configuré : la recette locale ne doit pas être présentée comme un résultat de CI.
+
 ## Limites
 
 API, champs texte, longueurs maximales, autorisations et transitions serveur conservés. Le format des notes est limité aux emphases et listes, sans HTML stocké ni nouvelle dépendance. Les commandes natives d’édition sont vérifiées dans Chromium ; Safari et Firefox nécessitent une recette dédiée. Les erreurs de lint héritées sont relevées séparément ; les nouveaux composants de notes, sauvegarde et notifications passent leur lint ciblé. Les essais locaux ne constituent pas une certification d’accessibilité.

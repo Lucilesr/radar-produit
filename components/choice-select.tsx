@@ -35,7 +35,7 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
     <div className="hidden sm:block">
       <Select value={"option:"+value} onValueChange={next => onChange(next.slice(7) as T)} disabled={disabled}>
         <SelectTrigger aria-labelledby={`${labelId} ${desktopValueId}`} className="choice-select-trigger h-11 w-full rounded-xl border-border bg-white px-3 text-left text-sm text-foreground shadow-none focus-visible:ring-ring">
-          <SelectValue id={desktopValueId} placeholder="Choisir" />
+          <SelectValue id={desktopValueId} placeholder="Choisir">{selected}</SelectValue>
         </SelectTrigger>
         <SelectContent aria-label={label} position="popper" side="bottom" sideOffset={6} align="start" className="choice-select-menu z-[80] max-h-[min(70dvh,460px,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] rounded-2xl border-border bg-card p-1 shadow-xl">
           {groups.map(group => group ? <SelectGroup key={group}>
