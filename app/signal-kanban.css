@@ -19,7 +19,7 @@
 .application-card { min-width:0; padding:16px 14px; border:1px solid var(--border); border-radius:5px; background:var(--card); }
 .application-card:focus-within { border-color:var(--primary); }
 .application-card h3 { margin:0; font:600 14px/1.5 var(--font-sans); }
-.application-card h3 button { display:flex; align-items:flex-start; justify-content:space-between; width:100%; gap:8px; text-align:left; border-radius:2px; }
+.application-card h3 button { display:flex; align-items:flex-start; justify-content:space-between; width:100%; gap:8px; text-align:left; overflow-wrap:anywhere; border-radius:2px; }
 .application-card h3 button:hover { color:var(--primary); text-decoration:underline; text-underline-offset:3px; }
 .application-card h3 svg { flex:none; margin-top:3px; color:var(--primary); }
 .application-card-company { margin-top:5px; color:var(--muted-foreground); font:400 12px/1.6 var(--font-sans); overflow-wrap:anywhere; }
