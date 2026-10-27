@@ -2,6 +2,8 @@
 
 ## 27 octobre 2026
 
+- Préparer / brief Signal : prompt copiable en tête, aperçu replié, questions sans panneaux imbriqués et limite directement éditable dans le compteur. Notifications communes ; section de variantes retirée de la vue selon le prototype, sans suppression des données ni des outils du connecteur.
+
 - Aujourd’hui Signal : actions suivantes, compteurs et agenda harmonisés avec les panneaux communs. Statut d’entretien en tête à droite, dates et fuseaux conservés, états vides lisibles ; mêmes actions et limites de trois éléments affichés.
 
 - Aujourd’hui Signal : carte prioritaire pétrole compacte, titre direct sans « À faire maintenant » et filigrane Orbite blanc/citron recadré en bas à droite. Les priorités et destinations des actions restent inchangées.
