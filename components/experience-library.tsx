@@ -133,6 +133,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
         }
       }
       setState(next); setSelected([]); setConfirm(null); pending.current = null;
+      window.dispatchEvent(new Event("radar:experiences-changed"));
       if(body.action==="review"&&body.validation==="approved"){
         const ids=(body.selection as {id:string}[]).map(i=>i.id);
         setConsentPrompt(next.items.filter(i=>ids.includes(i.id)&&i.validation==="approved"&&sectionType(i)==="experience"&&!isSensitiveDetail(i)&&!i.applicationAllowed&&i.applicationConsent==="pending").map(i=>({id:i.id,version:i.version,title:detailHeading(i)})));
