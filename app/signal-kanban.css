@@ -132,3 +132,6 @@
 @media(pointer:coarse){.applications-workspace .application-status .choice-select-trigger,.applications-workspace .application-open,.application-card .choice-select-trigger{min-height:44px}}
 
 @media(max-width:640px){.signal-application-nav .signal-workspace-tabs{flex-wrap:nowrap;overflow-x:auto;max-width:100%;gap:18px}.signal-application-nav .signal-workspace-tabs button{flex:none;white-space:nowrap}}
+
+/* Le choix de vue appartient à l’en-tête ; les filtres restent propres au tableau. */
+.workspace-page-header:has(.application-display-toggle){flex-wrap:wrap;align-items:center}.workspace-page-header:has(.application-display-toggle)>div{margin-left:auto}.workspace-page-header .application-display-toggle{margin-left:0}
