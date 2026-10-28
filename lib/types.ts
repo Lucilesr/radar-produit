@@ -42,6 +42,7 @@ export type JobRecord = JobInput & {
   flags: string[];
   createdAt?: string;
   candidateNote?: string;
+  boardColumnId?: string;
   interviews?: InterviewRecord[];
   updatedAt?: string;
 };

@@ -57,6 +57,7 @@ export function rowToJob(row: Record<string, unknown>): JobRecord {
     id: String(row.id),
     deletedAt: stringOrUndefined(row.deletedAt),
     reviewState: row.reviewState === "to_review" || row.reviewState === "selected" ? row.reviewState : undefined,
+    boardColumnId: stringOrUndefined(row.boardColumnId),
     dismissalReason: ["filled", "applications_closed", "not_interested", "other"].includes(String(row.dismissalReason)) ? row.dismissalReason as JobRecord["dismissalReason"] : undefined,
     dismissalNote: stringOrUndefined(row.dismissalNote),
     dismissalEvidence: stringOrUndefined(row.dismissalEvidence),

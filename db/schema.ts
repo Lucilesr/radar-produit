@@ -35,6 +35,7 @@ export const jobs = sqliteTable(
     status: text("status").notNull().default("new"),
     appliedAt: text("applied_at"),
     reviewState: text("review_state"),
+    boardColumnId: text("board_column_id"),
     deletedAt: text("deleted_at"),
     dismissalReason: text("dismissal_reason"),
     dismissalNote: text("dismissal_note"),
@@ -50,6 +51,13 @@ export const jobs = sqliteTable(
     uniqueIndex("jobs_user_fingerprint_unique").on(table.userId, table.fingerprint),
   ],
 );
+
+// Personal board layout; existing dossiers and their histories are untouched.
+export const applicationBoards = sqliteTable("application_boards", {
+  userId: text("user_id").primaryKey(),
+  data: text("data").notNull(),
+  version: integer("version").notNull().default(1),
+});
 
 export const documents = sqliteTable("documents", {
   id: text("id").primaryKey(),
