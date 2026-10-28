@@ -11,8 +11,8 @@ export function WorkspaceFormSection({ title, description, actions, children, cl
   const id = useId();
   return <section aria-labelledby={id} className={`signal-form-section ${className}`}><div className="signal-section-heading"><div><h3 id={id}>{title}</h3>{description ? <p className="signal-help">{description}</p> : null}</div>{actions}</div>{children}</section>;
 }
-export function WorkspaceSaveActions({ label, onSave, onCancel, busy = false, disabled = false, hint, sticky = false }: { label: string; onSave: () => void; onCancel?: () => void; busy?: boolean; disabled?: boolean; hint?: string; sticky?: boolean }) {
-  return <div className={`signal-save-actions${sticky ? " is-sticky" : ""}`}>{hint ? <span className="signal-save-hint">{busy ? "Enregistrement en cours…" : hint}</span> : null}<div className="signal-save-buttons">{onCancel ? <WorkspaceButton disabled={busy} onClick={onCancel}>Annuler</WorkspaceButton> : null}<WorkspaceButton variant="primary" busy={busy} disabled={disabled} onClick={onSave}>{!busy ? <Save size={15} aria-hidden /> : null}{busy ? "Enregistrement…" : label}</WorkspaceButton></div></div>;
+export function WorkspaceSaveActions({ label, onSave, onCancel, busy = false, disabled = false, hint, sticky = false, cancelLabel = "Annuler" }: { label: string; onSave: () => void; onCancel?: () => void; busy?: boolean; disabled?: boolean; hint?: string; sticky?: boolean; cancelLabel?:string }) {
+  return <div className={`signal-save-actions${sticky ? " is-sticky" : ""}`}>{hint ? <span className="signal-save-hint">{busy ? "Enregistrement en cours…" : hint}</span> : null}<div className="signal-save-buttons">{onCancel ? <WorkspaceButton disabled={busy} onClick={onCancel}>{cancelLabel}</WorkspaceButton> : null}<WorkspaceButton variant="primary" busy={busy} disabled={disabled} onClick={onSave}>{!busy ? <Save size={15} aria-hidden /> : null}{busy ? "Enregistrement…" : label}</WorkspaceButton></div></div>;
 }
 export function WorkspaceFormError({ message }: { message: string }) {
   return message ? <p role="alert" className="signal-form-error"><CircleAlert size={16} aria-hidden />{message}</p> : null;

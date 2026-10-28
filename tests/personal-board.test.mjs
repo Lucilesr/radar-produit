@@ -57,6 +57,7 @@ test("tableau personnel SQLite : isolation, version, déplacements et conservati
   assert.equal((await move({status:"offer",expectedStatus:"applied",boardColumnId:column.id})).status,400);
   assert.equal((await move({status:"interview",expectedStatus:"applied",boardColumnId:column.id})).status,200);
   let after=await store.getOffer("alice",job.id);assert.equal(after.boardColumnId,column.id);
+  assert.equal((await move({status:"interview",expectedStatus:"interview",expectedBoardColumnId:null,boardColumnId:"interviews"})).status,409,"déplacement concurrent dans la même étape refusé");
   assert.equal(after.candidateNote,before.candidateNote);assert.deepEqual(after.interviews,before.interviews);assert.equal(after.appliedAt,before.appliedAt);
   assert.equal((await move({status:"offer"})).status,200);after=await store.getOffer("alice",job.id);assert.equal(after.boardColumnId,undefined);
   assert.equal(after.candidateNote,before.candidateNote);assert.deepEqual(after.interviews,before.interviews);

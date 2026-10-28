@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { getDb } from "@/db";
 import { jobs } from "@/db/schema";
@@ -30,9 +30,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const { id } = await context.params;
     const raw = await request.text();
     if (raw.length > 10000) return Response.json({ error: "Requête trop volumineuse" }, { status: 413 });
-    const body = JSON.parse(raw) as { status?: unknown; candidateNote?: unknown; reviewState?: unknown; boardColumnId?: unknown; expectedStatus?: unknown; candidateNoteVersion?:unknown };
+    const body = JSON.parse(raw) as { status?: unknown; candidateNote?: unknown; reviewState?: unknown; boardColumnId?: unknown; expectedStatus?: unknown; candidateNoteVersion?:unknown; expectedBoardColumnId?:unknown };
     if (!body || typeof body !== "object" || Array.isArray(body) ||
-      Object.keys(body).some(key => !["status", "candidateNote", "reviewState", "boardColumnId", "expectedStatus", "candidateNoteVersion"].includes(key)) ||
+      Object.keys(body).some(key => !["status", "candidateNote", "reviewState", "boardColumnId", "expectedStatus", "candidateNoteVersion", "expectedBoardColumnId"].includes(key)) ||
       (!Object.hasOwn(body, "status") && !Object.hasOwn(body, "candidateNote") && !Object.hasOwn(body, "reviewState")) ||
       (Object.hasOwn(body, "status") && !isStatus(body.status)) ||
       (Object.hasOwn(body, "candidateNote") && (typeof body.candidateNote !== "string" || body.candidateNote.length > 2000)) ||
@@ -53,6 +53,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     let boardColumnId: string | null | undefined;
     if (Object.hasOwn(body, "boardColumnId")) {
       if (typeof body.boardColumnId !== "string" || !isStatus(body.status) || body.expectedStatus !== current.status) return Response.json({ error: "La candidature a changé. Actualisez avant de déplacer la carte." }, { status: 409 });
+      if (Object.hasOwn(body,"expectedBoardColumnId") && body.expectedBoardColumnId !== (current.boardColumnId??null)) return Response.json({error:"La carte a changé de colonne dans un autre onglet. Actualisez."},{status:409});
       const board = await readBoard(user.userId);
       const column = board.columns.find(c => c.id === body.boardColumnId);
       if (!column || column.stage === "other" || applicationColumn({ ...current, status }) !== column.stage) return Response.json({ error: "Colonne et statut incompatibles." }, { status: 400 });
@@ -70,7 +71,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const update = db.update(jobs).set({ boardColumnId, status: Object.hasOwn(body, "status") || body.reviewState ? status : undefined, appliedAt: status === "applied" && !hasApplication(current) && !row.appliedAt ? now : undefined,
       reviewState: typeof body.reviewState === "string" ? body.reviewState : undefined, matchScore: assessment.score, matchTier: assessment.tier,
       reasons: JSON.stringify(assessment.reasons), flags: JSON.stringify(assessment.flags), updatedAt: now })
-      .where(and(eq(jobs.id, id), eq(jobs.userId, user.userId), body.boardColumnId ? eq(jobs.status, current.status) : undefined)).returning();
+      .where(and(eq(jobs.id, id), eq(jobs.userId, user.userId), body.boardColumnId ? eq(jobs.status, current.status) : undefined, body.boardColumnId && Object.hasOwn(body,"expectedBoardColumnId") ? current.boardColumnId ? eq(jobs.boardColumnId,current.boardColumnId) : isNull(jobs.boardColumnId) : undefined)).returning();
     const changed = await update;
     if (!changed.length) return Response.json({ error: "La candidature a changé. Actualisez." }, { status: 409 });
     return Response.json({ job: await getOffer(user.userId, id, true) });

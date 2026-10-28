@@ -70,5 +70,5 @@ export class AutosaveDocument {
     // A successful explicit form submission becomes the next draft baseline too.
     this.change(value);void this.flush();
   }
-  get pending() {return this.state.phase!=="saved"&&this.state.phase!=="loading";}
+  get pending() {return this.state.loaded ? this.state.phase!=="saved"&&this.state.phase!=="loading" : !!this.recover;}
 }
