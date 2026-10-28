@@ -64,3 +64,26 @@ test("kanban : corbeille et clôtures restent classées sans perdre le suivi ni 
   assert.equal(board.applicationColumn({ ...record, status: "withdrawn" }), "closed");
   assert.equal(record.candidateNote, "Note fictive");
 });
+
+test("kanban : revenir à Envoyées conserve l’historique et respecte le statut explicite", () => {
+  const record = { ...job("interview", [event("past", "2026-10-25T12:00:00Z", "reviewed"), event("future", "2026-10-29T12:00:00Z")]), candidateNote: "Note fictive", appliedAt: "2026-10-01" };
+  const before = structuredClone(record);
+  const move = board.applicationMove(record, "sent");
+  assert.deepEqual(move, { kind: "status", status: "applied" });
+  assert.equal(board.applicationColumn({ ...record, status: move.status }), "sent");
+  assert.deepEqual(record, before);
+  assert.deepEqual(board.applicationMove({ ...record, status: "applied" }, "sent"), { kind: "none" });
+});
+
+test("kanban : les colonnes produisent uniquement un statut et Closes demande une décision explicite", () => {
+  const record = job("applied");
+  assert.deepEqual(board.applicationMove(record, "interviews"), { kind: "status", status: "interview" });
+  assert.deepEqual(board.applicationMove(record, "offer"), { kind: "status", status: "offer" });
+  assert.deepEqual(board.applicationMove(record, "closed"), { kind: "confirm-close" });
+  assert.deepEqual(board.applicationMove(record, "closed", "rejected"), { kind: "status", status: "rejected" });
+  assert.deepEqual(board.applicationMove(record, "closed", "withdrawn"), { kind: "status", status: "withdrawn" });
+  assert.deepEqual(board.applicationMove(record, "closed", "offer"), { kind: "confirm-close" });
+  assert.deepEqual(board.applicationMove(job("withdrawn"), "closed"), { kind: "none" });
+  assert.deepEqual(board.applicationMove(record, "other"), { kind: "unavailable" });
+  assert.deepEqual(board.applicationMove(record, "unknown"), { kind: "unavailable" });
+});
