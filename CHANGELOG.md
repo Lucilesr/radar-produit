@@ -2,6 +2,8 @@
 
 ## 28 octobre 2026
 
+- Accueil des nouveaux comptes : une opportunité et une candidature fictives permettent d'essayer les parcours dès la première visite. Un guide animé et facultatif propose ensuite d'ouvrir le profil, les documents, les sources et ChatGPT.
+
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.
 - Comptes pilotes : un nouveau compte démarre avec un profil professionnel vide ; un profil déjà enregistré reste conservé. Le rechargement remet aussi l’interface à vide lorsqu’aucun profil n’existe.
 
