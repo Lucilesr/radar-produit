@@ -2,6 +2,8 @@
 
 ## 28 octobre 2026
 
+- Kanban des candidatures : suppression des colonnes personnelles avec retour des cartes dans leur étape, déplacement direct des cartes avec statut mis à jour automatiquement, retrait du sélecteur de statut redondant sur les cartes.
+
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.
 
 - Opportunités : le relais de défilement page → liste et détail s'applique désormais aux tablettes dès 761 px, avec des colonnes et critères adaptés à leur largeur.
