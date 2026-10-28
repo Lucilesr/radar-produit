@@ -68,16 +68,14 @@
 .workspace-dialog:has(.signal-offer-workspace) { max-width: 870px; }
 .radar-app .application-age { min-height: 26px; padding: 4px 8px; border-radius: 4px; font: 500 12px/16px var(--font-sans); text-align: center; }
 @media(min-width:1024px) {
-  .radar-app:has(.opportunities-workspace) { height: 100dvh; overflow: hidden; }
-  .radar-shell:has(.opportunities-workspace) { height: 100%; min-height: 0; }
-  .radar-content:has(.opportunities-workspace) { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
-  .radar-page:has(> .opportunities-workspace) { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; padding-bottom: 0; }
-  .radar-page:has(> .opportunities-workspace) > .workspace-page-header { flex: none; }
-  .opportunities-workspace { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-  .opportunities-workspace > :not(.opportunities-split) { flex: none; }
-  .opportunities-workspace > .opportunity-reading-notes { margin-top: auto; margin-bottom: 20px; }
-  .opportunities-split { flex: 1; min-height: 0; grid-template-columns: clamp(280px,28vw,360px) minmax(0,1fr); align-items: stretch; }
-  .opportunity-list, .opportunity-detail { height: 100%; min-height: 0; max-height: none; overflow-y: auto; overscroll-behavior: contain; }
+  /* The page scrolls first; the two reading panes take over at the viewport top. */
+  .radar-app:has(.opportunities-split) { padding-bottom: 0; }
+  .radar-shell:has(.opportunities-split) { border-bottom: 0; }
+  .radar-page:has(> .opportunities-workspace) { padding-bottom: 0; }
+  .opportunities-workspace > .opportunity-reading-notes { margin-bottom: 20px; }
+  .opportunities-split { height: 100dvh; min-height: 0; grid-template-columns: clamp(280px,28vw,360px) minmax(0,1fr); align-items: stretch; }
+  .opportunity-list, .opportunity-detail { height: 100%; min-height: 0; max-height: none; overflow: hidden; }
+  .opportunities-split[data-reading-pinned=true] > :is(.opportunity-list,.opportunity-detail) { overflow-y: auto; overscroll-behavior-y: auto; }
   .opportunity-detail .review-criteria-grid { grid-template-columns: repeat(2,minmax(0,1fr)); column-gap: 20px; }
   .opportunity-detail .review-condition-row { display: grid; grid-template-columns: minmax(90px,.9fr) minmax(0,1.1fr); align-items: baseline; gap: 10px; padding-block: 7px; }
   .opportunity-detail .review-condition-row dd { margin: 0; }
