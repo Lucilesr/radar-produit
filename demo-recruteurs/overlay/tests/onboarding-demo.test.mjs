@@ -54,6 +54,11 @@ test("démo recruteurs : deux visiteurs isolés, relance sans doublon ni résurr
   assert.equal(bob.length, 8);
   assert(bob.every(row => row.user_id === "bob" && !alice.some(other => other.id === row.id)));
 
+  await ensureOnboardingDemo("carole", true);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS total FROM jobs WHERE user_id=?").get("carole").total, 8);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS total FROM profiles WHERE user_id=?").get("carole").total, 0);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS total FROM experience_items WHERE user_id=?").get("carole").total, 0);
+
   const trashedId = alice[0].id;
   sqlite.prepare("UPDATE jobs SET deleted_at=? WHERE user_id=? AND id=?").run("2026-10-28T00:00:00Z", "alice", trashedId);
   await ensureOnboardingDemo("alice");

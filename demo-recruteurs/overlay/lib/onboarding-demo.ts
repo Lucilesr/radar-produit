@@ -34,7 +34,7 @@ const experience = [
   { title: "Product Manager · SaaS", organization: "Ligne Claire (fictif)", role: "Product Manager", period: "2020–2023", context: "Développement fictif d’une plateforme SaaS utilisée par plusieurs équipes métiers.", contribution: "Discovery, cadrage de la roadmap et coordination avec design, data et ingénierie.", result: "Livraisons mieux séquencées et retours utilisateurs intégrés aux décisions.", claimKey: "saas-discovery" },
 ];
 
-export async function ensureOnboardingDemo(userId: string): Promise<void> {
+export async function ensureOnboardingDemo(userId: string, emptyProfile = false): Promise<void> {
   const db = getDb();
   const existing = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.userId, userId)).limit(1);
   if (existing.length) return;
@@ -53,14 +53,14 @@ export async function ensureOnboardingDemo(userId: string): Promise<void> {
       createdAt: daysAgo(9 - index), updatedAt: nowIso,
     };
   });
-  await db.insert(profiles).values({ userId, data: JSON.stringify(profile), updatedAt: nowIso }).onConflictDoNothing();
+  if (!emptyProfile) await db.insert(profiles).values({ userId, data: JSON.stringify(profile), updatedAt: nowIso }).onConflictDoNothing();
   for (const row of rows) await db.insert(jobs).values(row).onConflictDoNothing({ target: [jobs.userId, jobs.fingerprint] });
   const [interviewJob] = await db.select({ id: jobs.id }).from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.fingerprint, rows[5].fingerprint))).limit(1);
   const interviewStart = new Date(now.getTime() + 4 * 86400000);
   interviewStart.setUTCHours(9, 0, 0, 0);
   const interviewEnd = new Date(interviewStart.getTime() + 3600000);
   if (interviewJob) await db.insert(interviews).values({ id: interviewJob.id, userId, jobId: interviewJob.id, label: "Entretien métier · exemple", startAt: interviewStart.toISOString(), endAt: interviewEnd.toISOString(), timeZone: "Europe/Paris", format: "video", state: "planned", data: "{}", updatedAt: nowIso }).onConflictDoNothing();
-  await db.insert(experienceItems).values(experience.map((item, index) => ({
+  if (!emptyProfile) await db.insert(experienceItems).values(experience.map((item, index) => ({
     id: crypto.randomUUID(), userId, kind: "experience", parentId: null,
     data: JSON.stringify({ ...item, reviewModel: 1, reviewPoints: [], provenance: [{ type: "manual", name: "Exemple fictif", quote: item.context }] }),
     validation: "approved", applicationAllowed: true, applicationConsent: "granted",
@@ -68,7 +68,7 @@ export async function ensureOnboardingDemo(userId: string): Promise<void> {
     createdAt: nowIso, updatedAt: nowIso,
   }))).onConflictDoNothing({ target: [experienceItems.userId, experienceItems.importKey] });
   const bucket = env.BUCKET;
-  if (bucket) {
+  if (bucket && !emptyProfile) {
     const files = [
       { slot: "cvFrDocumentId", name: "CV-Camille-exemple.md", text: "# Camille · profil fictif\n\nProduct Manager / Product Owner. Exemple de document, sans coordonnées personnelles.\n\nCompétences : discovery, priorisation, delivery, analyse de données.\n" },
       { slot: "detailedExperienceDocumentId", name: "Experiences-Camille-exemple.md", text: "# Expériences fictives\n\n## Atelier Horizon\nRefonte d’un portail B2B fictif.\n\n## Ligne Claire\nDiscovery et roadmap d’une plateforme SaaS fictive.\n" },

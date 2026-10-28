@@ -2,6 +2,8 @@
 
 ## 28 octobre 2026
 
+- Démo recruteurs : test du parcours d’onboarding sur un profil fictif vide, avec onglets éclairés, progression après enregistrement réel et mini-visite contextuelle des cinq écrans.
+
 - Démo recruteurs : reprise de la version 56 de l’application et de son design system Signal, avec huit annonces fictives, profil, expériences, entretien et documents. Chaque visiteur dispose d’un espace de démonstration isolé et réinitialisable ; les intégrations externes sont désactivées.
 
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.

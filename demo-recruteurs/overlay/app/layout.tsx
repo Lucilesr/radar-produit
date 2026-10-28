@@ -38,7 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body><div className="demo-notice"><span>Démo publique · données 100 % fictives · aucune candidature envoyée</span><a href="/demo-session">Réinitialiser la démo</a></div>{children}</body>
+      <body><div className="demo-notice"><span>Démo publique · données 100 % fictives · aucune candidature envoyée</span><a href="/demo-session?onboarding=1">Tester l’onboarding</a><a href="/demo-session">Réinitialiser la démo</a></div>{children}</body>
     </html>
   );
 }

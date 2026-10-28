@@ -6,5 +6,8 @@ export function GET(request: Request) {
   response.cookies.set("radar_demo_visitor", crypto.randomUUID(), {
     httpOnly: true, secure: url.protocol === "https:", sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 30,
   });
+  response.cookies.set("radar_demo_mode", url.searchParams.get("onboarding") === "1" ? "onboarding" : "full", {
+    httpOnly: true, secure: url.protocol === "https:", sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 30,
+  });
   return response;
 }
