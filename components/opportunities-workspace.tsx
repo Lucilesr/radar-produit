@@ -37,6 +37,22 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
   function changeView(next:OpportunityView){setRetained(null);onFilter(next);setSelection([]);setSelecting(false);setError("");}
   function openListed(job:JobRecord){if(kept&&job.id!==kept.job.id)setRetained(null);onOpen(job);}
 
+  const readingPane=useRef<HTMLDivElement>(null);
+  const hasReadingPane=displayJobs.length>0;
+  useEffect(()=>{
+    const pane=readingPane.current;
+    if(!pane)return;
+    const desktop=window.matchMedia("(min-width:1024px)");
+    // Let wheel and keyboard scrolling reach the reading area before enabling its panes.
+    const update=()=>{pane.dataset.readingPinned=String(desktop.matches&&pane.getBoundingClientRect().top<=1);};
+    const resize=new ResizeObserver(update);
+    resize.observe(pane.parentElement!);
+    window.addEventListener("scroll",update,{passive:true});
+    window.addEventListener("resize",update);
+    update();
+    return ()=>{resize.disconnect();window.removeEventListener("scroll",update);window.removeEventListener("resize",update);};
+  },[hasReadingPane]);
+
   const announcementUrl=active?.sourceUrl||active?.applicationUrl;
   const title=useRef<HTMLHeadingElement>(null);
   const opener=useRef<HTMLButtonElement|null>(null);
@@ -60,7 +76,7 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
     <div className="opportunities-toolbar"><div className="review-view-summary"><span className="workspace-caption">{jobs.length} offre{jobs.length>1?"s":""}{query?` · « ${query} »`:""}{heldOutside?" · dernière décision affichée":""}</span><HelpTooltip label="Vue des opportunités">{viewHelp}</HelpTooltip></div><div className="review-toolbar-actions"><button type="button" className="review-radar-filter" aria-pressed={filter==="good_matches"} onClick={()=>changeView(filter==="good_matches"?"to_review":"good_matches")}>Correspondances Radar <span>{counts.good_matches}</span></button>{jobs.length>0&&filter!=="trash"?<button type="button" className="secondary-button" aria-pressed={selecting} onClick={()=>{setRetained(null);setSelecting(!selecting);setSelection([]);}}>{selecting?"Terminer les actions groupées":"Actions groupées"}</button>:null}</div></div>
     {selecting?<div className="opportunities-batch" role="group" aria-label="Actions sur les offres cochées"><span role="status">{selected.length} offre{selected.length>1?"s":""} cochée{selected.length>1?"s":""}</span><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>setSelection(jobs.slice(0,50).map(job=>job.id))}>Cocher {jobs.length>50?"les 50 premières":"tout"}</button>{selected.length?<><button type="button" className="secondary-button" onClick={()=>setSelection([])}>Tout décocher</button><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>onDeleteMany(selected)}><Trash2 size={15} aria-hidden />Mettre à la corbeille</button></>:null}</div>:null}
     {error?<WorkspaceState error title="Choix non enregistré">{error}</WorkspaceState>:null}
-    {!displayJobs.length?<WorkspaceState title={query?"Aucune offre ne correspond à cette recherche":filter==="trash"?"La corbeille est vide":filter==="to_review"?"Tout est examiné pour l’instant":filter==="selected"?"Votre sélection est encore vide":"Aucune offre dans cette vue"} action={emptyAction}>{query?"Effacez la recherche pour retrouver les offres de cette vue.":filter==="to_review"?"Retrouvez les offres sélectionnées dans Ma sélection.":filter==="trash"?"Les offres écartées pourront être restaurées ici.":"Ajoutez une annonce ou consultez une autre vue."}</WorkspaceState>:<div className="opportunities-split">
+    {!displayJobs.length?<WorkspaceState title={query?"Aucune offre ne correspond à cette recherche":filter==="trash"?"La corbeille est vide":filter==="to_review"?"Tout est examiné pour l’instant":filter==="selected"?"Votre sélection est encore vide":"Aucune offre dans cette vue"} action={emptyAction}>{query?"Effacez la recherche pour retrouver les offres de cette vue.":filter==="to_review"?"Retrouvez les offres sélectionnées dans Ma sélection.":filter==="trash"?"Les offres écartées pourront être restaurées ici.":"Ajoutez une annonce ou consultez une autre vue."}</WorkspaceState>:<div className="opportunities-split" ref={readingPane}>
       <div className="opportunity-list" tabIndex={0} role="region" aria-label="Liste des opportunités">{displayJobs.map(job=><article key={job.id} className={"opportunity-list-row "+(active?.id===job.id?"is-current":"")}>
         {selecting?<label className="opportunity-check"><input type="checkbox" aria-label={"Cocher "+job.title+" · "+job.company} checked={selected.some(item=>item.id===job.id)} disabled={trashBusy||(selected.length>=50&&!selection.includes(job.id))} onChange={()=>setSelection(ids=>ids.includes(job.id)?ids.filter(id=>id!==job.id):[...selected.map(item=>item.id),job.id])}/><span className="sr-only">Cocher cette offre</span></label>:null}
         <button type="button" className="opportunity-open" aria-pressed={active?.id===job.id} onClick={event=>{opener.current=event.currentTarget;openListed(job);}}><strong>{job.title}</strong><span>{job.company||"Entreprise à confirmer"} · {job.contractType==="cdi"?"CDI":job.contractType==="freelance"?"Freelance":"Contrat à confirmer"}</span><span className="opportunity-conditions"><b>{job.dailyRate?`${formatEuro(job.dailyRate)} / jour`:job.annualSalary?`${formatEuro(job.annualSalary)} / an`:"Rémunération non communiquée"}</b><span>{remote[job.remoteMode]}</span></span><span className="opportunity-evidence"><span className={"workspace-badge "+(job.flags.length?"is-warning":"")}>{job.deletedAt?"En corbeille":job.flags.length?`${job.flags.length} point${job.flags.length>1?"s":""} à vérifier`:"Critères renseignés"}</span><small className="review-list-origin"><span>{job.source}</span>{!job.deletedAt&&reviewState(job)==="selected"?<span className="review-kept-label"><Check size={12}/>Sélectionnée</span>:null}</small></span></button>
