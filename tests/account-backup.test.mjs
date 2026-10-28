@@ -6,14 +6,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import ts from "typescript";
-import { BACKUP_TABLES, BACKUP_FORMAT, LEGACY_BACKUP_TABLES, LEGACY_BACKUP_FORMAT, canonical, sha256 } from "../lib/account-backup-format.mjs";
+import { BACKUP_TABLES, BACKUP_FORMAT, V2_BACKUP_FORMAT, V2_BACKUP_TABLES, LEGACY_BACKUP_TABLES, LEGACY_BACKUP_FORMAT, canonical, sha256 } from "../lib/account-backup-format.mjs";
 import { verifyBackup, restoreBackup, compareBackups } from "../scripts/verify-private-backup.mjs";
 const source = readFileSync(new URL("../lib/account-backup.ts", import.meta.url), "utf8");
 const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText.replace('"./account-backup-format.mjs"', JSON.stringify(new URL("../lib/account-backup-format.mjs", import.meta.url).href));
 const { createAccountBackup } = await import("data:text/javascript;base64," + Buffer.from(js).toString("base64"));
 function fixture() {
   const sqlite = new DatabaseSync(":memory:");
-  for (const name of ["0000_unusual_alex_power.sql", "0001_elite_robin_chapel.sql", "0002_sloppy_glorian.sql", "0003_first_marvel_apes.sql", "0004_nostalgic_terror.sql", "0005_clear_black_bird.sql", "0006_confused_ego.sql", "0007_easy_banshee.sql", "0008_friendly_guardsmen.sql"]) sqlite.exec(readFileSync(new URL("../drizzle/" + name, import.meta.url), "utf8"));
+  for (const name of ["0000_unusual_alex_power.sql", "0001_elite_robin_chapel.sql", "0002_sloppy_glorian.sql", "0003_first_marvel_apes.sql", "0004_nostalgic_terror.sql", "0005_clear_black_bird.sql", "0006_confused_ego.sql", "0007_easy_banshee.sql", "0008_friendly_guardsmen.sql", "0009_friendly_spencer_smythe.sql", "0010_messy_mac_gargan.sql", "0011_low_vanisher.sql", "0012_futuristic_slipstream.sql"]) sqlite.exec(readFileSync(new URL("../drizzle/" + name, import.meta.url), "utf8"));
   const long = "Texte privé complet avec accents et ".repeat(2000);
   const objects = new Map();
   for (const user of ["alice", "bob"]) {
@@ -22,6 +22,8 @@ function fixture() {
     sqlite.prepare("INSERT INTO profiles(user_id,data) VALUES(?,?)").run(user, JSON.stringify({ notes: long + user }));
     sqlite.prepare("INSERT INTO documents(id,user_id,original_name,object_key,content_type,size) VALUES(?,?,?,?,?,?)").run("doc-" + user, user, "same-name.md", key, "text/markdown", content.length);
     sqlite.prepare("INSERT INTO jobs(id,user_id,fingerprint,title,description) VALUES(?,?,?,?,?)").run("job-" + user, user, "identical", "Même offre", long + user);
+    sqlite.prepare("INSERT INTO application_boards(user_id,data) VALUES(?,?)").run(user, JSON.stringify({ columns: ["Entretien RH"] }));
+    sqlite.prepare("INSERT INTO workspace_writes(user_id,key,version,value,created_at) VALUES(?,?,?,?,?)").run(user,"draft:job-"+user,1,"Note sauvegardée", "now");
     sqlite.prepare("INSERT INTO application_questions(id,user_id,job_id,question,answer,created_at,updated_at) VALUES(?,?,?,?,?,?,?)")
       .run("question-"+user,user,"job-"+user,"Question fictive", "Brouillon privé "+user,"now","now");
     sqlite.prepare("INSERT INTO application_answer_revisions(id,user_id,question_id,version,question,answer,created_at) VALUES(?,?,?,?,?,?,?)")
@@ -49,6 +51,8 @@ test("sauvegarde intégrale A/B : noms/contenus/offres identiques, aucune donné
     assert.equal(a.manifest.format,BACKUP_FORMAT);
     assert.equal(a.database.tables.application_questions[0].answer,"Brouillon privé alice");
     assert.equal(a.database.tables.application_answer_proposals[0].answer,"Variante fictive alice");
+    assert.equal(a.database.tables.workspace_writes[0].value,"Note sauvegardée");
+    assert.equal(a.database.tables.application_boards[0].user_id,"alice");
     assert(a.files.every(o => o.key.startsWith("users/alice/")));
     assert.doesNotMatch(JSON.stringify(a), /job-bob|doc-bob|users\/bob/);
     assert.equal(b.database.tables.profiles[0].user_id, "bob");
@@ -69,6 +73,8 @@ test("restauration locale complète, relecture, refus d’écrasement et altéra
     assert(proof.fullRowComparison && proof.fullFileReadback);
     assert.equal(proof.counts.jobs, 1);
     assert.equal(proof.counts.application_answer_proposals,1);
+    assert.equal(proof.counts.workspace_writes,1);
+    assert.equal(proof.counts.application_boards,1);
     assert.equal(proof.referenceDiagnostics.proposalsWithoutQuestion,0);
     assert.equal(JSON.parse(await readFile(join(root, "restore", "preuve-restauration.json"), "utf8")).integrityCheck, "ok");
     await assert.rejects(restoreBackup(file, join(root, "restore")), /EEXIST/);
@@ -95,6 +101,25 @@ test("une sauvegarde v1 reste restaurable après l’ajout des questions et vari
     const file=join(root,"backup-v1.json");await writeFile(file,JSON.stringify(legacy),{mode:0o600});
     const proof=await restoreBackup(file,join(root,"restore-v1"));
     assert.equal(proof.format,LEGACY_BACKUP_FORMAT);assert.equal(proof.counts.jobs,1);
+    assert.equal(proof.fullRowComparison,true);
+  } finally {f.sqlite.close();}
+});
+test("une sauvegarde v2 reste restaurable après l’ajout des colonnes Kanban et du journal", async () => {
+  const f=fixture();
+  try {
+    const previous=structuredClone(await createAccountBackup(f.db,f.bucket,"alice"));
+    previous.manifest.format=V2_BACKUP_FORMAT;
+    for(const table of BACKUP_TABLES.filter(name=>!V2_BACKUP_TABLES.includes(name))){
+      delete previous.database.tables[table];delete previous.manifest.tables[table];
+    }
+    previous.database.schema=previous.database.schema.filter(row=>V2_BACKUP_TABLES.includes(row.tbl_name));
+    previous.manifest.databaseSha256=await sha256(canonical(previous.database));
+    await verifyBackup(previous);
+    const root=await mkdtemp(join(tmpdir(),"radar-backup-v2-test-"));
+    const {writeFile}=await import("node:fs/promises");
+    const file=join(root,"backup-v2.json");await writeFile(file,JSON.stringify(previous),{mode:0o600});
+    const proof=await restoreBackup(file,join(root,"restore-v2"));
+    assert.equal(proof.format,V2_BACKUP_FORMAT);assert.equal(proof.counts.jobs,1);
     assert.equal(proof.fullRowComparison,true);
   } finally {f.sqlite.close();}
 });

@@ -4,9 +4,9 @@ import { readFile, writeFile, mkdir, chmod } from "node:fs/promises";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
-import { BACKUP_FORMAT, BACKUP_TABLES, LEGACY_BACKUP_FORMAT, LEGACY_BACKUP_TABLES, canonical, sha256 } from "../lib/account-backup-format.mjs";
+import { BACKUP_FORMAT, BACKUP_TABLES, V2_BACKUP_FORMAT, V2_BACKUP_TABLES, LEGACY_BACKUP_FORMAT, LEGACY_BACKUP_TABLES, canonical, sha256 } from "../lib/account-backup-format.mjs";
 
-const tablesFor = format => format === BACKUP_FORMAT ? BACKUP_TABLES : format === LEGACY_BACKUP_FORMAT ? LEGACY_BACKUP_TABLES : null;
+const tablesFor = format => format === BACKUP_FORMAT ? BACKUP_TABLES : format === V2_BACKUP_FORMAT ? V2_BACKUP_TABLES : format === LEGACY_BACKUP_FORMAT ? LEGACY_BACKUP_TABLES : null;
 
 export async function verifyBackup(backup) {
   const tables = tablesFor(backup.manifest.format);
@@ -67,12 +67,19 @@ export async function restoreBackup(backupPath, outputDirectory) {
     // Execute only the immutable, locally reviewed migrations, NEVER SQL from the backup.
     const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
     const migrations = ["0000_unusual_alex_power.sql", "0001_elite_robin_chapel.sql", "0002_sloppy_glorian.sql", "0003_first_marvel_apes.sql", "0004_nostalgic_terror.sql"];
-    if (backup.manifest.format === BACKUP_FORMAT) migrations.push("0005_clear_black_bird.sql", "0006_confused_ego.sql", "0007_easy_banshee.sql", "0008_friendly_guardsmen.sql");
+    if (backup.manifest.format !== LEGACY_BACKUP_FORMAT) migrations.push("0005_clear_black_bird.sql", "0006_confused_ego.sql", "0007_easy_banshee.sql", "0008_friendly_guardsmen.sql");
+    // Older v2 exports can already contain later job columns; select only reviewed migrations
+    // that match the schema carried by the verified export.
+    const jobSchema = backup.database.schema.find(row => row.name === "jobs")?.sql ?? "";
+    if (jobSchema.includes("onsite_days_per_week")) migrations.push("0009_friendly_spencer_smythe.sql");
+    if (jobSchema.includes("applied_at")) migrations.push("0010_messy_mac_gargan.sql");
+    if (jobSchema.includes("board_column_id") || backup.manifest.format === BACKUP_FORMAT) migrations.push("0011_low_vanisher.sql");
+    if (backup.manifest.format === BACKUP_FORMAT) migrations.push("0012_futuristic_slipstream.sql");
     for (const migration of migrations) db.exec(await readFile(join(root, "drizzle", migration), "utf8"));
     db.exec("BEGIN");
     try {
       for (const table of tables) {
-        const columns = db.prepare(`PRAGMA table_info("${table}")`).all().map(c => c.name);
+      const columns = db.prepare(`PRAGMA table_info("${table}")`).all().map(c => c.name);
         const insert = db.prepare(`INSERT INTO "${table}" (${columns.map(c => '"' + c + '"').join(",")}) VALUES (${columns.map(() => "?").join(",")})`);
         for (const row of backup.database.tables[table]) {
           assert.deepEqual(Object.keys(row).sort(), [...columns].sort(), "Colonnes incompatibles avec la version du code");
@@ -83,7 +90,8 @@ export async function restoreBackup(backupPath, outputDirectory) {
     } catch (error) { db.exec("ROLLBACK"); throw error; }
     const restoredHashes = {};
     for (const table of tables) {
-      const rows = db.prepare(`SELECT * FROM "${table}" ORDER BY ${table === "profiles" ? "user_id" : "id"}`).all();
+      const order = table === "profiles" || table === "application_boards" ? "user_id" : table === "workspace_writes" ? 'user_id, "key", version' : "id";
+      const rows = db.prepare(`SELECT * FROM "${table}" ORDER BY ${order}`).all();
       assert.equal(canonical(rows), canonical(backup.database.tables[table]), `Restauration différente : ${table}`);
       restoredHashes[table] = await sha256(canonical(rows));
     }
