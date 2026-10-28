@@ -1,0 +1,17 @@
+.onboarding-tour{position:fixed;right:24px;bottom:24px;z-index:45;display:grid;grid-template-columns:48px minmax(0,1fr) 24px;gap:8px 14px;width:min(330px,calc(100vw - 28px));padding:18px;border:1px solid var(--signal-line);border-radius:18px;background:#fff;box-shadow:0 18px 50px #203b4930;animation:onboarding-arrive .32s ease-out}
+.onboarding-tour-icon{position:relative;display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:var(--signal-soft);color:var(--signal-petrol-dark)}
+.onboarding-tour-icon::before{content:"";position:absolute;inset:-5px;border:2px solid var(--signal-petrol-dark);border-radius:19px;opacity:.45;animation:onboarding-pulse 2.2s ease-out infinite}
+.onboarding-tour-icon svg{animation:onboarding-float 2.4s ease-in-out infinite}
+.onboarding-tour-copy{display:flex;min-width:0;flex-direction:column;gap:2px;font-size:12px;color:var(--muted-foreground)}
+.onboarding-tour-copy strong{font-size:15px;color:var(--foreground)}
+.onboarding-tour-count{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--signal-petrol-dark)}
+.onboarding-tour-skip{display:grid;place-items:center;align-self:start;width:28px;height:28px;border-radius:8px;color:var(--muted-foreground)}
+.onboarding-tour-skip:hover,.onboarding-tour-skip:focus-visible{background:var(--signal-soft);color:var(--foreground)}
+.onboarding-tour-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-top:5px}
+.onboarding-tour-dots{display:flex;gap:5px}.onboarding-tour-dots i{width:6px;height:6px;border-radius:50%;background:#cbd5d8}.onboarding-tour-dots i.is-active{width:16px;border-radius:5px;background:var(--signal-petrol-dark)}
+.onboarding-tour-open{display:inline-flex;align-items:center;gap:5px;min-height:38px;padding:8px 14px;border-radius:10px;background:var(--signal-petrol-dark);color:#fff;font-size:12px;font-weight:700}.onboarding-tour-open:hover,.onboarding-tour-open:focus-visible{filter:brightness(1.14)}
+@keyframes onboarding-arrive{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes onboarding-pulse{0%{transform:scale(.92);opacity:.45}70%,100%{transform:scale(1.22);opacity:0}}
+@keyframes onboarding-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@media(max-width:640px){.onboarding-tour{right:14px;bottom:calc(86px + env(safe-area-inset-bottom))}}
+@media(prefers-reduced-motion:reduce){.onboarding-tour,.onboarding-tour-icon::before,.onboarding-tour-icon svg{animation:none}}
