@@ -58,6 +58,17 @@ test("corbeille SQLite : isolation A/B, relance, réimport, rappels et restaurat
   sqlite.prepare("UPDATE jobs SET status='interview' WHERE id=?").run(a.id);
   sqlite.prepare("INSERT INTO profiles(user_id,data) VALUES(?,?)").run("alice", JSON.stringify({ applicationNotes: { [a.id]: "Note fictive conservée" } }));
   sqlite.prepare("INSERT INTO interviews(id,user_id,job_id,label,start_at,end_at,time_zone) VALUES(?,?,?,?,?,?,?)").run("entretien-fictif", "alice", a.id, "Échange fictif", "2026-01-01T09:00:00Z", "2026-01-01T10:00:00Z", "Europe/Paris");
+  const beforeMoves = await store.getOffer("alice", a.id);
+  const profileBeforeMoves = sqlite.prepare("SELECT data FROM profiles WHERE user_id='alice'").get().data;
+  for (const status of ["applied", "offer", "rejected", "withdrawn", "interview"]) {
+    const response = await apply(status); assert.equal(response.status, 200);
+    const moved = (await response.json()).job;
+    assert.equal(moved.status, status);
+    assert.equal(moved.candidateNote, beforeMoves.candidateNote, "une étape ne modifie pas la note");
+    assert.deepEqual(moved.interviews, JSON.parse(JSON.stringify(beforeMoves.interviews)), "une étape ne réécrit pas les rendez-vous ou bilans");
+    assert.equal(moved.appliedAt, beforeMoves.appliedAt, "la date d’origine reste conservée");
+    assert.equal(sqlite.prepare("SELECT data FROM profiles WHERE user_id='alice'").get().data, profileBeforeMoves);
+  }
   const before = await store.getOffer("alice", a.id);
   const ctx = id => ({ params: Promise.resolve({ id }) });
   const req = origin => new Request("https://radar.test/api/jobs/" + a.id, { method: "DELETE", headers: origin ? { Origin: origin } : {} });
