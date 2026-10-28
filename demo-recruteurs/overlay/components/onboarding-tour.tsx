@@ -5,8 +5,8 @@ import { FileText, MessageCircle, Plug, UserRound, X } from "lucide-react";
 
 const steps = [
   { icon: UserRound, title: "Votre profil", hint: "Quelques mots sur vous", href: "/?tab=profile&profile=presentation" },
-  { icon: FileText, title: "Vos documents", hint: "Ajoutez un CV, si vous voulez", href: "/?tab=profile&profile=documents" },
-  { icon: Plug, title: "Vos sources", hint: "Choisissez où chercher", href: "/?tab=sources" },
+  { icon: FileText, title: "Vos documents", hint: "Découvrez deux exemples fictifs", href: "/?tab=profile&profile=documents" },
+  { icon: Plug, title: "Vos sources", hint: "Explorez les sources disponibles", href: "/?tab=sources" },
   { icon: MessageCircle, title: "Explorer le radar", hint: "Parcourez les offres fictives", href: "/?tab=offers" },
 ] as const;
 
