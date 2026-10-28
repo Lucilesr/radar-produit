@@ -11,9 +11,9 @@ import {
 
 export type ChoiceOption<T extends string> = { value: T; label: string; group?: string };
 
-export function ChoiceSelect<T extends string>({ label, value, options, onChange, disabled = false, searchable = false }: {
+export function ChoiceSelect<T extends string>({ label, value, options, onChange, disabled = false, searchable = false, displayValue }: {
   label: string; value: T; options: readonly ChoiceOption<T>[];
-  onChange: (value: T) => void; disabled?: boolean; searchable?: boolean;
+  onChange: (value: T) => void; disabled?: boolean; searchable?: boolean; displayValue?: string;
 }) {
   const labelId = useId();
   const desktopValueId = useId();
@@ -35,7 +35,7 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
     <div className="hidden sm:block">
       <Select value={"option:"+value} onValueChange={next => onChange(next.slice(7) as T)} disabled={disabled}>
         <SelectTrigger aria-labelledby={`${labelId} ${desktopValueId}`} className="choice-select-trigger h-11 w-full rounded-xl border-border bg-white px-3 text-left text-sm text-foreground shadow-none focus-visible:ring-ring">
-          <SelectValue id={desktopValueId} placeholder="Choisir">{selected}</SelectValue>
+          <SelectValue id={desktopValueId} placeholder="Choisir">{displayValue??selected}</SelectValue>
         </SelectTrigger>
         <SelectContent aria-label={label} position="popper" side="bottom" sideOffset={6} align="start" className="choice-select-menu z-[80] max-h-[min(70dvh,460px,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] rounded-2xl border-border bg-card p-1 shadow-xl">
           {groups.map(group => group ? <SelectGroup key={group}>
@@ -48,7 +48,7 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
     <div className="sm:hidden">
       <Drawer open={open} onOpenChange={changeOpen} autoFocus>
         <DrawerTrigger asChild><button type="button" disabled={disabled} aria-labelledby={`${labelId} ${mobileValueId}`} className="choice-select-trigger flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-border bg-white px-3 text-left text-sm font-normal text-foreground shadow-sm disabled:opacity-50">
-          <span id={mobileValueId} className="min-w-0 truncate">{selected}</span><ChevronDown size={17} className="shrink-0 text-muted-foreground" />
+          <span id={mobileValueId} className="min-w-0 truncate">{displayValue??selected}</span><ChevronDown size={17} className="shrink-0 text-muted-foreground" />
         </button></DrawerTrigger>
         <DrawerContent className="z-[80] rounded-t-[26px] border-border bg-card shadow-2xl">
           <DrawerHeader className="border-b border-border px-5 pb-3 text-left">

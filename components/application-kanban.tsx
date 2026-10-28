@@ -29,7 +29,7 @@ export function ApplicationKanban({ jobs, now, busy, onStatus, onOpen, board = d
               {due ? <span className="workspace-badge is-warning">Bilan à faire</span> : null}
               {step.next ? <p><CalendarDays size={14} aria-hidden/><span>{formatDate(step.next.startAt, step.next.timeZone, true)}<small>{step.next.timeZone}</small></span></p> : <p className="signal-help">{step.current?.state === "reviewed" ? "Entretien effectué · suite à suivre" : step.current ? "Rendez-vous terminé" : "Ajoutez le prochain rendez-vous dans le dossier."}</p>}
             </div> : column.stage === "closed" || column.stage === "other" ? <p className="application-card-outcome">{statusLabels[job.status]}</p> : null}
-            <div id={`application-status-${job.id}`} className="application-card-status"><StatusSelect value={job.status} disabled={!!busy} label={`Statut · ${job.company || job.title}`} onChange={status => void onStatus(job, status)}/></div>
+            <div id={`application-status-${job.id}`} className="application-card-status"><StatusSelect compact value={job.status} disabled={!!busy} label={`Statut · ${job.company || job.title}`} onChange={status => void onStatus(job, status)}/></div>
           </DraggableApplicationCard>;
         }) : <p className="application-column-empty">Aucune candidature</p>}</div>
       </ApplicationDropColumn>;

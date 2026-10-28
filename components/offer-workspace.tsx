@@ -29,8 +29,8 @@ const legacyStatuses: JobStatus[] = ["new", "watchlist", "shortlist", "prepare",
 const statusOptions: ChoiceOption<JobStatus>[] = (Object.entries(statusLabels) as [JobStatus, string][])
   .filter(([value]) => !legacyStatuses.includes(value))
   .map(([value, label]) => ({ value, label: value === "interview" ? "Entretiens en cours" : label, group: statusGroup[value] }));
-export function StatusSelect({ value, onChange, label = "Statut de candidature", disabled = false }: { value: JobStatus; onChange: (status: JobStatus) => void; label?: string; disabled?: boolean }) {
-  return <ChoiceSelect disabled={disabled} label={label} value={value} onChange={onChange} options={legacyStatuses.includes(value) ? [{ value, label: statusLabels[value], group: "Statut actuel" }, ...statusOptions] : statusOptions} />;
+export function StatusSelect({ value, onChange, label = "Statut de candidature", disabled = false, compact = false }: { value: JobStatus; onChange: (status: JobStatus) => void; label?: string; disabled?: boolean; compact?: boolean }) {
+  return <ChoiceSelect displayValue={compact ? ({applied:"Envoyée",interview:"Entretiens",awaiting_response:"Attente de retour",next_step:"Prochaine étape",offer:"Offre reçue",rejected:"Refus",withdrawn:"Arrêt du processus"} as Partial<Record<JobStatus,string>>)[value] : undefined} disabled={disabled} label={label} value={value} onChange={onChange} options={legacyStatuses.includes(value) ? [{ value, label: statusLabels[value], group: "Statut actuel" }, ...statusOptions] : statusOptions} />;
 }
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="block text-xs font-semibold text-muted-foreground"><span className="mb-1.5 block">{label}</span>{children}</label>; }
 async function requestJob(path: string, method: string, value: unknown) {
