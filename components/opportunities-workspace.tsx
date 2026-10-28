@@ -42,9 +42,9 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
   useEffect(()=>{
     const pane=readingPane.current;
     if(!pane)return;
-    const desktop=window.matchMedia("(min-width:1024px)");
+    const readingColumns=window.matchMedia("(min-width:761px)");
     // Let wheel and keyboard scrolling reach the reading area before enabling its panes.
-    const update=()=>{pane.dataset.readingPinned=String(desktop.matches&&pane.getBoundingClientRect().top<=1);};
+    const update=()=>{pane.dataset.readingPinned=String(readingColumns.matches&&pane.getBoundingClientRect().top<=1);};
     const resize=new ResizeObserver(update);
     resize.observe(pane.parentElement!);
     window.addEventListener("scroll",update,{passive:true});

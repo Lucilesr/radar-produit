@@ -67,7 +67,7 @@
 .opportunity-reading-notes > span:last-child { margin-left: auto; text-align: right; }
 .workspace-dialog:has(.signal-offer-workspace) { max-width: 870px; }
 .radar-app .application-age { min-height: 26px; padding: 4px 8px; border-radius: 4px; font: 500 12px/16px var(--font-sans); text-align: center; }
-@media(min-width:1024px) {
+@media(min-width:761px) {
   /* The page scrolls first; the two reading panes take over at the viewport top. */
   .radar-app:has(.opportunities-split) { padding-bottom: 0; }
   .radar-shell:has(.opportunities-split) { border-bottom: 0; }
@@ -80,6 +80,13 @@
   .opportunity-detail .review-condition-row { display: grid; grid-template-columns: minmax(90px,.9fr) minmax(0,1.1fr); align-items: baseline; gap: 10px; padding-block: 7px; }
   .opportunity-detail .review-condition-row dd { margin: 0; }
   .opportunity-detail .review-dates .review-condition-row { display: block; }
+}
+@media(min-width:761px) and (max-width:1023px) {
+  .opportunities-split { grid-template-columns: clamp(250px,35%,310px) minmax(0,1fr); }
+  .opportunity-detail { padding-inline: 16px; }
+  .opportunity-detail .review-criteria-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .opportunity-detail .review-condition-row { display: block; }
+  .opportunity-detail .review-condition-row dd { margin-top: 3px; }
 }
 @media(min-width:1024px) and (max-width:1279px) {
   .opportunity-detail { padding-inline: 20px; }
