@@ -16,5 +16,5 @@ export default async function Home({searchParams}: {searchParams: Promise<Record
   const initialState = await loadRadarState(user.userId, {
     jobs: owner => listOffers(owner, undefined, true), profile: readCandidateProfile,
   });
-  return <RadarApp userName={user.fullName ?? user.displayName} initialState={initialState} initialRoute={readRadarRoute(search.toString())} initialProfileSection={readProfileSection(search.get("profile"))} />;
+  return <RadarApp ownerId={user.userId} userName={user.fullName ?? user.displayName} initialState={initialState} initialRoute={readRadarRoute(search.toString())} initialProfileSection={readProfileSection(search.get("profile"))} />;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { AutosaveOwner } from "@/components/autosave";
 import { WorkspaceFeedbackProvider, useWorkspaceFeedback, type WorkspaceFeedback } from "@/components/workspace-feedback";
 import { OfferForm } from "@/components/offer-form";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,9 +38,9 @@ const tabs: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof La
 const dismissalLabels: Record<DismissalReason, string> = { filled: "Poste pourvu", applications_closed: "Candidatures fermées", not_interested: "Je ne souhaite pas postuler", other: "Autre raison" };
 
 
-type RadarAppProps = { userName: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection };
-export function RadarApp(props: RadarAppProps) { return <WorkspaceFeedbackProvider><RadarWorkspace {...props} /></WorkspaceFeedbackProvider>; }
-function RadarWorkspace({ userName, initialState, initialRoute, initialProfileSection }: RadarAppProps) {
+type RadarAppProps = { ownerId?: string; userName: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection };
+export function RadarApp(props: RadarAppProps) { return <AutosaveOwner owner={props.ownerId??""}><WorkspaceFeedbackProvider><RadarWorkspace {...props} /></WorkspaceFeedbackProvider></AutosaveOwner>; }
+function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initialProfileSection }: RadarAppProps) {
   const { route, navigate } = useRadarNavigation(initialRoute);
   const { tab, filter, query, view: workspaceView } = route;
   const previousTab = useRef(tab);
@@ -58,6 +59,7 @@ function RadarWorkspace({ userName, initialState, initialRoute, initialProfileSe
   const setQuery = (query: string) => navigate({ query, tab: "offers", offer: undefined }, route.tab === "offers" && !!route.query);
   const searchRef = useRef<HTMLInputElement>(null);
   const [allJobs, setJobs] = useState<JobRecord[]>(initialState?.jobs ?? []);
+  useEffect(()=>{const saved=(event:Event)=>{const detail=(event as CustomEvent).detail;if(detail?.owner===ownerId&&typeof detail.id==="string"&&typeof detail.value==="string")setJobs(current=>current.map(job=>job.id===detail.id?{...job,candidateNote:detail.value}:job));};window.addEventListener("radar-note-saved",saved);return()=>window.removeEventListener("radar-note-saved",saved);},[ownerId]);
   const jobs = useMemo(() => allJobs.filter(job => !job.deletedAt), [allJobs]);
   const [deleteTarget, setDeleteTarget] = useState<JobRecord[]>([]);
   const [deleteReason, setDeleteReason] = useState<DismissalReason | "">("");
@@ -110,7 +112,7 @@ function RadarWorkspace({ userName, initialState, initialRoute, initialProfileSe
       const response = await fetch(`/api/jobs/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) });
       if (!response.ok) throw new Error("Mise à jour impossible");
       const { job } = (await response.json()) as { job: JobRecord };
-      setJobs(current => current.map(item => item.id === id ? job : item));
+      setJobs(current => current.map(item => item.id === id ? { ...job, candidateNote: changes.candidateNote === undefined ? item.candidateNote : job.candidateNote } : item));
       if (changes.candidateNote !== undefined) setProfile(current => ({ ...current, applicationNotes: { ...current.applicationNotes, [id]: job.candidateNote ?? "" } }));
       if (changes.candidateNote !== undefined) setToast("Note enregistrée dans votre espace privé.");
       else if (changes.reviewState) setToast(changes.reviewState === "selected" ? "Offre ajoutée à ma sélection." : "Offre remise à examiner.", false, {label: changes.reviewState === "selected" ? "Voir ma sélection" : "Voir les offres à examiner", onClick: () => navigate({tab:"offers",filter:changes.reviewState === "selected" ? "selected" : "to_review",offer:undefined})});

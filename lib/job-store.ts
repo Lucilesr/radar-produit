@@ -5,6 +5,7 @@ import { assessJob, createFingerprint } from "./matching";
 import { normalizeJobInput, rowToJob } from "./server";
 import { offerPatchSchema } from "./import-contract";
 import { rowToInterview } from "./interview-store";
+import { workspaceNoteValues } from "./workspace-write-store";
 import { z } from "zod";
 
 // Browser and agent imports share the same per-user, retry-safe write path.
@@ -51,12 +52,13 @@ export async function saveOffer(userId: string, value: unknown) {
 export async function listOffers(userId: string, limit?: number, includeDeleted = false) {
   const db = getDb();
   const query = db.select().from(jobs).where(and(eq(jobs.userId, userId), includeDeleted ? undefined : isNull(jobs.deletedAt))).orderBy(desc(jobs.createdAt));
-  const [rows, profileRows, interviewRows] = await Promise.all([
+  const [rows, profileRows, interviewRows, savedNotes] = await Promise.all([
     limit === undefined ? query : query.limit(limit),
     db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1),
     db.select().from(interviews).where(eq(interviews.userId, userId)).orderBy(desc(interviews.startAt)),
+    workspaceNoteValues(userId),
   ]);
-  const notes = profileRows[0] ? JSON.parse(profileRows[0].data).applicationNotes ?? {} : {};
+  const notes = { ...(profileRows[0] ? JSON.parse(profileRows[0].data).applicationNotes ?? {} : {}), ...savedNotes };
   return rows.map(row => {
     const job = rowToJob(row);
     const assessment = assessJob(job);

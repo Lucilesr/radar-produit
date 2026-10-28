@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const profiles = sqliteTable("profiles", {
   userId: text("user_id").primaryKey(),
@@ -58,6 +58,15 @@ export const applicationBoards = sqliteTable("application_boards", {
   data: text("data").notNull(),
   version: integer("version").notNull().default(1),
 });
+
+// Append-only text revisions: autosave never deletes the previous text.
+export const workspaceWrites = sqliteTable("workspace_writes", {
+  userId: text("user_id").notNull(),
+  key: text("key").notNull(),
+  version: integer("version").notNull(),
+  value: text("value").notNull(),
+  createdAt: text("created_at").notNull(),
+}, table => [primaryKey({ columns: [table.userId, table.key, table.version] })]);
 
 export const documents = sqliteTable("documents", {
   id: text("id").primaryKey(),

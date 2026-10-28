@@ -1,11 +1,10 @@
 import { and, eq } from "drizzle-orm";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { getDb } from "@/db";
-import { jobs, profiles } from "@/db/schema";
+import { jobs } from "@/db/schema";
 import { ensureSameOrigin, isStatus, rowToJob } from "@/lib/server";
 import { assessJob } from "@/lib/matching";
-import { profileTemplate } from "@/lib/profile-template";
-import type { CandidateProfile } from "@/lib/types";
+import { readWorkspaceWrite, saveWorkspaceWrite } from "@/lib/workspace-write-store";
 import { getOffer, updateOffer, setOfferDeleted } from "@/lib/job-store";
 import { readBoard } from "@/lib/personal-board-store";
 import { applicationColumn } from "@/lib/application-board";
@@ -31,9 +30,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const { id } = await context.params;
     const raw = await request.text();
     if (raw.length > 10000) return Response.json({ error: "Requête trop volumineuse" }, { status: 413 });
-    const body = JSON.parse(raw) as { status?: unknown; candidateNote?: unknown; reviewState?: unknown; boardColumnId?: unknown; expectedStatus?: unknown };
+    const body = JSON.parse(raw) as { status?: unknown; candidateNote?: unknown; reviewState?: unknown; boardColumnId?: unknown; expectedStatus?: unknown; candidateNoteVersion?:unknown };
     if (!body || typeof body !== "object" || Array.isArray(body) ||
-      Object.keys(body).some(key => !["status", "candidateNote", "reviewState", "boardColumnId", "expectedStatus"].includes(key)) ||
+      Object.keys(body).some(key => !["status", "candidateNote", "reviewState", "boardColumnId", "expectedStatus", "candidateNoteVersion"].includes(key)) ||
       (!Object.hasOwn(body, "status") && !Object.hasOwn(body, "candidateNote") && !Object.hasOwn(body, "reviewState")) ||
       (Object.hasOwn(body, "status") && !isStatus(body.status)) ||
       (Object.hasOwn(body, "candidateNote") && (typeof body.candidateNote !== "string" || body.candidateNote.length > 2000)) ||
@@ -61,19 +60,19 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     } else if (Object.hasOwn(body, "status")) boardColumnId = null;
     const assessment = assessJob({ ...current, status });
     const now = new Date().toISOString();
-    const [profileRow] = await db.select().from(profiles).where(eq(profiles.userId, user.userId)).limit(1);
-    const profile: CandidateProfile = profileRow ? JSON.parse(profileRow.data) : profileTemplate;
-    const candidateNote = typeof body.candidateNote === "string" ? body.candidateNote.trim() : profile.applicationNotes?.[id];
+    if (typeof body.candidateNote === "string") {
+      if (Object.hasOwn(body,"status") || Object.hasOwn(body,"reviewState") || Object.hasOwn(body,"boardColumnId")) return Response.json({error:"Enregistrez la note séparément de l’étape."},{status:400});
+      const key=`note:${id}`, before=await readWorkspaceWrite(user.userId,key);
+      if (before.version > 0 && body.candidateNoteVersion !== before.version) return Response.json({error:"La note a changé. Rechargez-la avant de la modifier."},{status:409});
+      const saved=await saveWorkspaceWrite(user.userId,key,body.candidateNote,before.version,before.value);
+      return saved ? Response.json({job:await getOffer(user.userId,id,true)}) : Response.json({error:"La note a changé dans un autre onglet."},{status:409});
+    }
     const update = db.update(jobs).set({ boardColumnId, status: Object.hasOwn(body, "status") || body.reviewState ? status : undefined, appliedAt: status === "applied" && !hasApplication(current) && !row.appliedAt ? now : undefined,
       reviewState: typeof body.reviewState === "string" ? body.reviewState : undefined, matchScore: assessment.score, matchTier: assessment.tier,
       reasons: JSON.stringify(assessment.reasons), flags: JSON.stringify(assessment.flags), updatedAt: now })
       .where(and(eq(jobs.id, id), eq(jobs.userId, user.userId), body.boardColumnId ? eq(jobs.status, current.status) : undefined)).returning();
-    if (typeof body.candidateNote === "string") {
-      const notes = { ...profile.applicationNotes, [id]: candidateNote ?? "" };
-      const data = JSON.stringify({ ...profile, applicationNotes: notes });
-      await db.batch([update, db.insert(profiles).values({ userId: user.userId, data, updatedAt: now })
-        .onConflictDoUpdate({ target: profiles.userId, set: { data, updatedAt: now } })]);
-    } else { const changed = await update; if (!changed.length) return Response.json({ error: "La candidature a changé. Actualisez." }, { status: 409 }); }
+    const changed = await update;
+    if (!changed.length) return Response.json({ error: "La candidature a changé. Actualisez." }, { status: 409 });
     return Response.json({ job: await getOffer(user.userId, id, true) });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Erreur inattendue" }, { status: 400 });
