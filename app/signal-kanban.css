@@ -71,3 +71,6 @@
  .application-drag-handle { min-width:44px; min-height:44px; }
  .application-move-dialog { padding:20px 16px; }
 }
+
+/* La carte entière est saisissable ; les champs gardent leurs gestes natifs. */
+.application-card{cursor:grab;touch-action:pan-y;user-select:none}.application-card:active{cursor:grabbing}.application-card button,.application-card input,.application-card [role=combobox]{cursor:pointer}.application-card [contenteditable=true]{user-select:text;cursor:text}.application-card.is-dragging{cursor:grabbing}
