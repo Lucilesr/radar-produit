@@ -1,0 +1,3 @@
+.demo-notice{position:relative;z-index:60;display:flex;align-items:center;justify-content:flex-start;gap:24px;min-height:34px;padding:6px 24px;background:#193f50;color:#fff;font:700 11px/1.4 "Avenir Next","Segoe UI",Arial,sans-serif;letter-spacing:.03em}
+.demo-notice a{color:#e6ee53;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+@media(max-width:640px){.demo-notice{flex-wrap:wrap;gap:4px 12px;padding:7px 14px;font-size:10px}.demo-notice span{flex-basis:100%}}
