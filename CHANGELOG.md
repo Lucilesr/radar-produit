@@ -1,5 +1,9 @@
 # Évolutions de Radar Produit
 
+## 28 octobre 2026
+
+- Kanban : déplacer une carte par sa poignée vers une autre étape, à la souris ou au clavier, avec confirmation d’enregistrement et conservation des notes, bilans, rendez-vous et date de candidature. Closes demande de distinguer refus et arrêt volontaire ; un retour dans Envoyées conserve l’historique d’entretiens. Le sélecteur de statut reste disponible.
+
 ## 27 octobre 2026
 
 - Candidatures : vue Kanban alternative au tableau, colonnes Envoyées / Entretiens / Propositions / Closes. Rang d’entretien et prochain rendez-vous sur la carte ; annulations exclues du rang, données et statuts existants conservés.

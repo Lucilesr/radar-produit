@@ -1,6 +1,6 @@
 import { reviewDue, terminalStatuses } from "./application-workflow";
 import { upcomingInterviews } from "./workspace-agenda";
-import type { JobRecord } from "./types";
+import type { JobRecord, JobStatus } from "./types";
 
 export const applicationColumns = [
   { id: "sent", label: "Envoyées" },
@@ -15,9 +15,23 @@ export type ApplicationColumn = typeof applicationColumns[number]["id"];
 export function applicationColumn(job: JobRecord): ApplicationColumn {
   if (terminalStatuses.includes(job.status)) return "closed";
   if (job.status === "offer") return "offer";
+  // Explicitly returning to Sent keeps the interview history without forcing its column.
+  if (job.status === "applied") return "sent";
   if (["interview", "next_step"].includes(job.status) || job.interviews?.some(event => event.state !== "cancelled")) return "interviews";
-  if (["applied", "awaiting_response"].includes(job.status)) return "sent";
+  if (job.status === "awaiting_response") return "sent";
   return "other";
+}
+
+export type ApplicationMove = { kind: "none" | "unavailable" | "confirm-close" } | { kind: "status"; status: JobStatus };
+
+/** A column change requests a status only; it never rewrites notes or events. */
+export function applicationMove(job: JobRecord, target: string, closure?: JobStatus): ApplicationMove {
+  if (applicationColumn(job) === target) return { kind: "none" };
+  if (target === "sent") return { kind: "status", status: "applied" };
+  if (target === "interviews") return { kind: "status", status: "interview" };
+  if (target === "offer") return { kind: "status", status: "offer" };
+  if (target === "closed") return closure === "rejected" || closure === "withdrawn" ? { kind: "status", status: closure } : { kind: "confirm-close" };
+  return { kind: "unavailable" };
 }
 
 export function applicationInterviewStep(job: JobRecord, now: number) {

@@ -27,3 +27,7 @@ Native browser editing commands preserve selection and undo history. This uses t
 Les cinq onglets, les sous-onglets du profil et les quatre sections du dossier reprennent les fondations Signal. La revue globale corrige le brief resté dans l’ancienne composition : aperçu du prompt replié, questions à plat, limite éditable dans le compteur, mêmes contrôles et notifications. Les variantes stockées restent conservées, leur panneau est retiré de cet écran selon l’arbitrage validé.
 
 La vue Kanban complémentaire de Candidatures utilise les mêmes cartes, tags, dates, sélecteurs, dossiers et erreurs. Les colonnes projettent les statuts existants ; rang et rendez-vous sont calculés sans migration. Les limites d’accessibilité, de compatibilité navigateur et de lint sont documentées dans `signal-revue-globale-2026-10-27.md` ; aucune certification ni CI distante n’est annoncée.
+
+## Déplacement des candidatures (28 octobre 2026)
+
+La poignée du Kanban mesure 32 px sur bureau et 44 px sur mobile. Le titre reste un accès au dossier ; la poignée est la seule zone de prise tactile. Aperçu flottant et surlignage utilisent les surfaces, bordures et couleurs Signal. Le déplacement au clavier utilise Entrée/Espace, gauche/droite, Échap et Tab, avec annonces françaises et restauration de focus. Le statut n’est confirmé visuellement qu’après sauvegarde. Le choix de clôture réutilise boutons, erreur et fond flouté, dans un dialogue compact. Le sélecteur reste disponible. Conservation et limites : `signal-kanban-drag-2026-10-28.md`.
