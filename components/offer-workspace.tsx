@@ -1,5 +1,6 @@
 "use client";
 
+import { AutosaveStatus, NoteHistory, useAutosave, useSavedForm } from "@/components/autosave";
 import { sourceNames } from "@/lib/source-catalog";
 import { OfferForm } from "@/components/offer-form";
 import { countryLabel } from "@/lib/countries";
@@ -28,8 +29,8 @@ const legacyStatuses: JobStatus[] = ["new", "watchlist", "shortlist", "prepare",
 const statusOptions: ChoiceOption<JobStatus>[] = (Object.entries(statusLabels) as [JobStatus, string][])
   .filter(([value]) => !legacyStatuses.includes(value))
   .map(([value, label]) => ({ value, label: value === "interview" ? "Entretiens en cours" : label, group: statusGroup[value] }));
-export function StatusSelect({ value, onChange, label = "Statut de candidature", disabled = false }: { value: JobStatus; onChange: (status: JobStatus) => void; label?: string; disabled?: boolean }) {
-  return <ChoiceSelect disabled={disabled} label={label} value={value} onChange={onChange} options={legacyStatuses.includes(value) ? [{ value, label: statusLabels[value], group: "Statut actuel" }, ...statusOptions] : statusOptions} />;
+export function StatusSelect({ value, onChange, label = "Statut de candidature", disabled = false, compact = false }: { value: JobStatus; onChange: (status: JobStatus) => void; label?: string; disabled?: boolean; compact?: boolean }) {
+  return <ChoiceSelect displayValue={compact ? ({applied:"Envoyée",interview:"Entretiens",awaiting_response:"Attente de retour",next_step:"Prochaine étape",offer:"Offre reçue",rejected:"Refus",withdrawn:"Arrêt du processus"} as Partial<Record<JobStatus,string>>)[value] : undefined} disabled={disabled} label={label} value={value} onChange={onChange} options={legacyStatuses.includes(value) ? [{ value, label: statusLabels[value], group: "Statut actuel" }, ...statusOptions] : statusOptions} />;
 }
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="block text-xs font-semibold text-muted-foreground"><span className="mb-1.5 block">{label}</span>{children}</label>; }
 async function requestJob(path: string, method: string, value: unknown) {
@@ -65,10 +66,10 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   const [view, updateView] = useState<WorkspaceView>(initialView);
   const setView = (next: WorkspaceView) => { updateView(next); onViewChange?.(next); };
   useEffect(()=>updateView(initialView),[initialView]); const [editing, setEditing] = useState(false);
-  const [note, setNote] = useState(job.candidateNote ?? ""); const [busy, setBusy] = useState(false);
-  useEffect(() => setNote(job.candidateNote ?? ""), [job.id, job.candidateNote]);
-  const [statusBusy,setStatusBusy] = useState(false), [noteError,setNoteError] = useState("");
-  const noteEditorRef = useRef<HTMLDivElement>(null), noteLock = useRef(false);
+  const noteSave=useAutosave(`note:${job.id}`,job.candidateNote??"",2000);
+  const note=noteSave.value,setNote=noteSave.setValue;
+  const [statusBusy,setStatusBusy] = useState(false);
+  const noteEditorRef = useRef<HTMLDivElement>(null);
   const coverage = coverageLabel(job);
   const sourceUrl = job.sourceUrl;
   const applyUrl = job.applicationUrl && job.applicationUrl !== sourceUrl ? job.applicationUrl : !sourceUrl ? job.applicationUrl : undefined;
@@ -105,13 +106,12 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
     </> : null}
     {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); }} onCancel={finishEditing} /> : null}
     {context === "application" && activeView === "application" ? <div className="signal-application-form">
-      <WorkspaceFormSection title="Suivi de candidature" actions={<WorkspaceButton disabled={busy || statusBusy} onClick={() => setView("interviews")}><CalendarDays size={15} aria-hidden />Voir les entretiens</WorkspaceButton>}>
-        <div className="signal-status-field" aria-busy={statusBusy}><StatusSelect value={job.status} disabled={statusBusy || busy} onChange={async status => { setStatusBusy(true); try { await onStatus(job.id, status); } finally { setStatusBusy(false); } }} /></div>
+      <WorkspaceFormSection title="Suivi de candidature" actions={<WorkspaceButton disabled={statusBusy} onClick={() => setView("interviews")}><CalendarDays size={15} aria-hidden />Voir les entretiens</WorkspaceButton>}>
+        <div className="signal-status-field" aria-busy={statusBusy}><StatusSelect value={job.status} disabled={statusBusy} onChange={async status => { setStatusBusy(true); try { await onStatus(job.id, status); } finally { setStatusBusy(false); } }} /></div>
       </WorkspaceFormSection>
       <WorkspaceFormSection title="Notes privées de candidature">
-        <NoteEditor inputRef={noteEditorRef} label="Notes privées de candidature" rows={4} disabled={busy || statusBusy} maxLength={2000} value={note} onChange={value => { setNote(value); setNoteError(""); }} placeholder="Vos échanges, vos conditions proposées, les points encore à confirmer…" />
-        <WorkspaceFormError message={noteError} />
-        <WorkspaceSaveActions label="Enregistrer la note" sticky busy={busy} disabled={statusBusy || note === (job.candidateNote ?? "") || note.length > 2000} hint={note === (job.candidateNote ?? "") ? undefined : "Modifications non enregistrées."} onSave={async () => { if (noteLock.current) return; noteLock.current = true; setBusy(true); setNoteError(""); try { if (!await onNote(job.id, note)) setNoteError("La note n’a pas été enregistrée. Votre saisie est conservée."); } finally { noteLock.current = false; setBusy(false); } }} />
+        <NoteEditor inputRef={noteEditorRef} label="Notes privées de candidature" rows={4} disabled={!noteSave.ready} maxLength={2000} value={note} onChange={setNote} placeholder="Vos échanges, vos conditions proposées, les points encore à confirmer…" />
+        <AutosaveStatus save={noteSave}/><NoteHistory jobId={job.id}/>
       </WorkspaceFormSection>
     </div> : null}
     {context === "application" && activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
@@ -156,7 +156,7 @@ function Signals({ title, items, tone }: { title: string; items: string[]; tone:
 }
 
 function OfferEditor({ job, onSaved, onCancel }: { job: JobRecord; onSaved: (job: JobRecord) => void; onCancel: () => void }) {
-  return <OfferForm job={job} onCancel={onCancel} onSave={async input=>{const {source,...facts}=input;onSaved(await requestJob(`/api/jobs/${job.id}`,"PUT",sourceNames.includes(source)?input:facts));}}/>;
+  return <OfferForm draftKey={`offer:${job.id}`} job={job} onCancel={onCancel} onSave={async input=>{const {source,...facts}=input;onSaved(await requestJob(`/api/jobs/${job.id}`,"PUT",sourceNames.includes(source)?input:facts));}}/>;
 }
 
 function InterviewManager({ job, onChange }: { job: JobRecord; onChange: (job: JobRecord, message?:string) => void }) {
@@ -182,36 +182,46 @@ function InterviewEditor({ jobId, interview, onSaved, onCancel }: { jobId: strin
   const editorTitle=useWorkspaceEditorFocus();
   const notify=useWorkspaceFeedback();
   const writeLock=useRef(false);
-  const [requestId] = useState(() => crypto.randomUUID()); const [label, setLabel] = useState(interview?.label ?? "Entretien");
-  const [zone, setZone] = useState(interview?.timeZone ?? "Europe/Paris"); const [start, setStart] = useState(interview ? zonedInput(interview.startAt, interview.timeZone) : "");
-  const [duration, setDuration] = useState(interview ? Math.round((Date.parse(interview.endAt) - Date.parse(interview.startAt)) / 60000) : 60); const [format, setFormat] = useState(interview?.format ?? "video"); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
-  async function save() { if(writeLock.current)return;writeLock.current=true;setBusy(true); setError(""); try { const startAt = fromZonedInput(start, zone); const fields = { label, startAt, endAt: new Date(Date.parse(startAt) + duration * 60000).toISOString(), timeZone: zone, format }; onSaved(await requestJob(interview ? `/api/interviews/${interview.id}` : "/api/interviews", interview ? "PATCH" : "POST", interview ? { action: "schedule", ...fields } : { id: requestId, jobId, ...fields })); } catch (problem) { const message=problem instanceof Error ? problem.message : "Enregistrement non confirmé.";setError(message);notify({message,tone:"error"}); } finally { writeLock.current=false;setBusy(false); } }
+  const [requestId] = useState(() => crypto.randomUUID());
+  const draft=useSavedForm(`schedule:${interview?.id??jobId}`,{requestId,label:interview?.label??"Entretien",zone:interview?.timeZone??"Europe/Paris",start:interview?zonedInput(interview.startAt,interview.timeZone):"",duration:interview?Math.round((Date.parse(interview.endAt)-Date.parse(interview.startAt))/60000):60,format:interview?.format??"video",interviewId:interview?.id??""});
+  const recovered=draft.value.interviewId===(interview?.id??"");
+  const {label,zone,start,duration,format}=recovered?draft.value:{label:interview?.label??"Entretien",zone:interview?.timeZone??"Europe/Paris",start:interview?zonedInput(interview.startAt,interview.timeZone):"",duration:60,format:interview?.format??"video"};
+  const change=<K extends keyof typeof draft.value>(key:K,value:typeof draft.value[K])=>draft.setValue(current=>({...current,...(!recovered?{requestId,label,zone,start,duration,format,interviewId:interview?.id??""}:{}),[key]:value}));
+  const setLabel=(value:string)=>change("label",value),setZone=(value:string)=>change("zone",value),setStart=(value:string)=>change("start",value),setDuration=(value:number)=>change("duration",value),setFormat=(value:typeof format)=>change("format",value);
+  const [busy,setBusy]=useState(false),[error,setError]=useState("");
+  async function save() { if(writeLock.current)return;writeLock.current=true;setBusy(true); setError(""); try { const startAt = fromZonedInput(start, zone); const fields = { label, startAt, endAt: new Date(Date.parse(startAt) + duration * 60000).toISOString(), timeZone: zone, format }; const updated=await requestJob(interview ? `/api/interviews/${interview.id}` : "/api/interviews", interview ? "PATCH" : "POST", interview ? { action: "schedule", ...fields } : { id: draft.value.requestId, jobId, ...fields }); draft.save.document.confirmedElsewhere("");onSaved(updated); } catch (problem) { const message=problem instanceof Error ? problem.message : "Enregistrement non confirmé.";setError(message);notify({message,tone:"error"}); } finally { writeLock.current=false;setBusy(false); } }
   return <div className="signal-form-editor">
+    <AutosaveStatus save={draft.save} draft/>
     <div className="signal-section-heading"><div><h3 ref={editorTitle} tabIndex={-1}>{interview ? "Modifier le rendez-vous" : "Planifier ou dater un entretien"}</h3><p className="signal-help">La date et l’heure sont celles du fuseau choisi.</p></div></div>
-    <Field label="Étape / interlocuteur"><input disabled={busy} value={label} maxLength={180} onChange={event => setLabel(event.target.value)} placeholder="Ex. Atlas · exemple fictif · entretien métier" /></Field>
+    <Field label="Étape / interlocuteur"><input disabled={busy||!draft.ready} value={label} maxLength={180} onChange={event => setLabel(event.target.value)} placeholder="Ex. Atlas · exemple fictif · entretien métier" /></Field>
     <div className="grid gap-4 sm:grid-cols-2">
-      <DateTimePicker disabled={busy} label="Date de l’entretien" value={start} onChange={setStart} />
-      <ChoiceSelect disabled={busy} label="Fuseau horaire du rendez-vous" value={zone} onChange={setZone} options={[{value:"Europe/Paris",label:"Paris"},{value:"Indian/Mauritius",label:"Maurice"},{value:"UTC",label:"UTC"}]} />
-      <Field label="Durée estimée (minutes)"><input disabled={busy} type="number" min={1} max={480} value={duration} onChange={event => setDuration(Number(event.target.value))} /></Field>
-      <ChoiceSelect disabled={busy} label="Format" value={format} onChange={setFormat} options={[{value:"video",label:"Visio"},{value:"phone",label:"Téléphone"},{value:"onsite",label:"Sur site"},{value:"other",label:"Autre"}]} />
+      <DateTimePicker disabled={busy||!draft.ready} label="Date de l’entretien" value={start} onChange={setStart} />
+      <ChoiceSelect disabled={busy||!draft.ready} label="Fuseau horaire du rendez-vous" value={zone} onChange={setZone} options={[{value:"Europe/Paris",label:"Paris"},{value:"Indian/Mauritius",label:"Maurice"},{value:"UTC",label:"UTC"}]} />
+      <Field label="Durée estimée (minutes)"><input disabled={busy||!draft.ready} type="number" min={1} max={480} value={duration} onChange={event => setDuration(Number(event.target.value))} /></Field>
+      <ChoiceSelect disabled={busy||!draft.ready} label="Format" value={format} onChange={setFormat} options={[{value:"video",label:"Visio"},{value:"phone",label:"Téléphone"},{value:"onsite",label:"Sur site"},{value:"other",label:"Autre"}]} />
     </div>
     <div className="inline-help"><span>Rappel après l’entretien</span><HelpTooltip label="Rappel d’entretien">Le rappel intervient après l’heure de fin estimée. Aucun événement n’est créé dans un calendrier externe.</HelpTooltip></div>
     <WorkspaceFormError message={error}/>
-    <WorkspaceSaveActions label="Enregistrer l’entretien" busy={busy} disabled={!start||!label.trim()||!Number.isFinite(duration)||duration<1||duration>480} hint="Aucun événement créé dans un calendrier externe." onSave={()=>void save()} onCancel={onCancel} sticky/>
+    <WorkspaceSaveActions cancelLabel="Retour" label="Enregistrer l’entretien" busy={busy} disabled={!draft.ready||!start||!label.trim()||!Number.isFinite(duration)||duration<1||duration>480} hint="Aucun événement créé dans un calendrier externe." onSave={()=>void save()} onCancel={onCancel} sticky/>
   </div>;
 }
 function InterviewReview({ interview, onSaved, onCancel }: { interview: InterviewRecord; onSaved: (job: JobRecord) => void; onCancel: () => void }) {
   const editorTitle=useWorkspaceEditorFocus();
   const notify=useWorkspaceFeedback();
   const writeLock=useRef(false);
-  const [outcome, setOutcome] = useState(interview.outcome ?? "waiting"); const [summary, setSummary] = useState(interview.summary ?? ""); const [strengths, setStrengths] = useState(interview.strengths ?? ""); const [weaknesses, setWeaknesses] = useState(interview.weaknesses ?? ""); const [nextAction, setNextAction] = useState(interview.nextAction ?? ""); const [followUp, setFollowUp] = useState(interview.followUpAt ? zonedInput(interview.followUpAt, interview.timeZone) : ""); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
-  async function save() { if(writeLock.current)return;writeLock.current=true;setBusy(true); setError(""); try { onSaved(await requestJob(`/api/interviews/${interview.id}`, "PATCH", { action: "review", outcome, summary, strengths, weaknesses, nextAction, followUpAt: followUp ? fromZonedInput(followUp, interview.timeZone) : "" })); } catch (problem) { const message=problem instanceof Error ? problem.message : "Enregistrement non confirmé.";setError(message);notify({message,tone:"error"}); } finally { writeLock.current=false;setBusy(false); } }
+  const draft=useSavedForm(`review:${interview.id}`,{outcome:interview.outcome??"waiting",summary:interview.summary??"",strengths:interview.strengths??"",weaknesses:interview.weaknesses??"",nextAction:interview.nextAction??"",followUp:interview.followUpAt?zonedInput(interview.followUpAt,interview.timeZone):""});
+  const {outcome,summary,strengths,weaknesses,nextAction,followUp}=draft.value;
+  const change=<K extends keyof typeof draft.value>(key:K,value:typeof draft.value[K])=>draft.setValue(current=>({...current,[key]:value}));
+  const setOutcome=(value:typeof outcome)=>change("outcome",value),setSummary=(value:string)=>change("summary",value),setStrengths=(value:string)=>change("strengths",value),setWeaknesses=(value:string)=>change("weaknesses",value),setNextAction=(value:string)=>change("nextAction",value),setFollowUp=(value:string)=>change("followUp",value);
+  const [busy,setBusy]=useState(false),[error,setError]=useState("");
+  async function save() { if(writeLock.current)return;writeLock.current=true;setBusy(true); setError(""); try { const updated=await requestJob(`/api/interviews/${interview.id}`, "PATCH", { action: "review", outcome, summary, strengths, weaknesses, nextAction, followUpAt: followUp ? fromZonedInput(followUp, interview.timeZone) : "" });draft.save.document.confirmedElsewhere("");onSaved(updated); } catch (problem) { const message=problem instanceof Error ? problem.message : "Enregistrement non confirmé.";setError(message);notify({message,tone:"error"}); } finally { writeLock.current=false;setBusy(false); } }
   return <div className="signal-form-editor signal-interview-review">
+    <AutosaveStatus save={draft.save} draft/>
     <div className="signal-section-heading"><div><h3 ref={editorTitle} tabIndex={-1}>Bilan d’entretien</h3><p className="signal-help">{interview.label} · {formatDate(interview.startAt,interview.timeZone,true)} · Bilan privé</p></div></div>
-    <div className="signal-note-field"><h4 className="signal-field-title">Ce qui a été dit / à retenir</h4><NoteEditor disabled={busy} label="Ce qui a été dit / à retenir" rows={4} maxLength={5000} value={summary} onChange={setSummary} placeholder="Les sujets abordés, les attentes et les informations à retenir…"/></div>
-    <div className="signal-two-columns"><div className="signal-note-field"><h4 className="signal-field-title">Ce qui s’est bien passé</h4><NoteEditor disabled={busy} label="Ce qui s’est bien passé" rows={3} maxLength={3000} value={strengths} onChange={setStrengths} placeholder="Les échanges réussis et vos points forts…"/></div><div className="signal-note-field"><h4 className="signal-field-title">Ce qui a été moins bien / à travailler</h4><NoteEditor disabled={busy} label="Ce qui a été moins bien / à travailler" rows={3} maxLength={3000} value={weaknesses} onChange={setWeaknesses} placeholder="Les points à clarifier ou à préparer pour la suite…"/></div></div>
-    <section className="signal-follow-up" aria-label="Suite de candidature"><h4>Suite de candidature</h4><div className="signal-two-columns"><ChoiceSelect disabled={busy} label="Quelle est la suite ?" value={outcome} onChange={setOutcome} options={[{value:"waiting",label:"En attente de retour"},{value:"next_step",label:"Prochaine étape"},{value:"rejected",label:"Refus"},{value:"withdrawn",label:"Je ne souhaite pas poursuivre"},{value:"offer",label:"Proposition reçue"}]}/><DateTimePicker disabled={busy} label={`Relance (${interview.timeZone})`} value={followUp} onChange={setFollowUp}/></div><Field label="Prochaine action"><input disabled={busy} maxLength={2000} value={nextAction} onChange={event=>setNextAction(event.target.value)} placeholder="Ex. attendre le retour, préparer un cas pratique…"/></Field><p className="signal-help">Enregistrer le bilan met aussi à jour le statut de candidature. Aucune relance au recruteur n’est envoyée automatiquement.</p></section>
+    <div className="signal-note-field"><h4 className="signal-field-title">Ce qui a été dit / à retenir</h4><NoteEditor disabled={busy||!draft.ready} label="Ce qui a été dit / à retenir" rows={4} maxLength={5000} value={summary} onChange={setSummary} placeholder="Les sujets abordés, les attentes et les informations à retenir…"/></div>
+    <div className="signal-two-columns"><div className="signal-note-field"><h4 className="signal-field-title">Ce qui s’est bien passé</h4><NoteEditor disabled={busy||!draft.ready} label="Ce qui s’est bien passé" rows={3} maxLength={3000} value={strengths} onChange={setStrengths} placeholder="Les échanges réussis et vos points forts…"/></div><div className="signal-note-field"><h4 className="signal-field-title">Ce qui a été moins bien / à travailler</h4><NoteEditor disabled={busy||!draft.ready} label="Ce qui a été moins bien / à travailler" rows={3} maxLength={3000} value={weaknesses} onChange={setWeaknesses} placeholder="Les points à clarifier ou à préparer pour la suite…"/></div></div>
+    <section className="signal-follow-up" aria-label="Suite de candidature"><h4>Suite de candidature</h4><div className="signal-two-columns"><ChoiceSelect disabled={busy||!draft.ready} label="Quelle est la suite ?" value={outcome} onChange={setOutcome} options={[{value:"waiting",label:"En attente de retour"},{value:"next_step",label:"Prochaine étape"},{value:"rejected",label:"Refus"},{value:"withdrawn",label:"Je ne souhaite pas poursuivre"},{value:"offer",label:"Proposition reçue"}]}/><DateTimePicker disabled={busy||!draft.ready} label={`Relance (${interview.timeZone})`} value={followUp} onChange={setFollowUp}/></div><Field label="Prochaine action"><input disabled={busy||!draft.ready} maxLength={2000} value={nextAction} onChange={event=>setNextAction(event.target.value)} placeholder="Ex. attendre le retour, préparer un cas pratique…"/></Field><p className="signal-help">Le texte se sauvegarde automatiquement. Terminer le bilan confirme aussi la suite de candidature. Aucune relance au recruteur n’est envoyée automatiquement.</p></section>
     <WorkspaceFormError message={error}/>
-    <WorkspaceSaveActions label="Enregistrer le bilan" disabled={summary.length>5000||strengths.length>3000||weaknesses.length>3000||nextAction.length>2000} busy={busy} hint="Bilan privé · statut mis à jour à l’enregistrement." onSave={()=>void save()} onCancel={onCancel} sticky/>
+    <WorkspaceSaveActions cancelLabel="Retour" label="Terminer le bilan" disabled={!draft.ready||summary.length>5000||strengths.length>3000||weaknesses.length>3000||nextAction.length>2000} busy={busy} hint="Texte enregistré automatiquement · confirmez la suite pour terminer le bilan." onSave={()=>void save()} onCancel={onCancel} sticky/>
   </div>;
 }

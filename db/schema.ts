@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const profiles = sqliteTable("profiles", {
   userId: text("user_id").primaryKey(),
@@ -35,6 +35,7 @@ export const jobs = sqliteTable(
     status: text("status").notNull().default("new"),
     appliedAt: text("applied_at"),
     reviewState: text("review_state"),
+    boardColumnId: text("board_column_id"),
     deletedAt: text("deleted_at"),
     dismissalReason: text("dismissal_reason"),
     dismissalNote: text("dismissal_note"),
@@ -50,6 +51,22 @@ export const jobs = sqliteTable(
     uniqueIndex("jobs_user_fingerprint_unique").on(table.userId, table.fingerprint),
   ],
 );
+
+// Personal board layout; existing dossiers and their histories are untouched.
+export const applicationBoards = sqliteTable("application_boards", {
+  userId: text("user_id").primaryKey(),
+  data: text("data").notNull(),
+  version: integer("version").notNull().default(1),
+});
+
+// Append-only text revisions: autosave never deletes the previous text.
+export const workspaceWrites = sqliteTable("workspace_writes", {
+  userId: text("user_id").notNull(),
+  key: text("key").notNull(),
+  version: integer("version").notNull(),
+  value: text("value").notNull(),
+  createdAt: text("created_at").notNull(),
+}, table => [primaryKey({ columns: [table.userId, table.key, table.version] })]);
 
 export const documents = sqliteTable("documents", {
   id: text("id").primaryKey(),

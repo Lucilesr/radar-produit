@@ -78,6 +78,20 @@
       "when": 1792482274095,
       "tag": "0010_messy_mac_gargan",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1793168825610,
+      "tag": "0011_low_vanisher",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1793169199347,
+      "tag": "0012_futuristic_slipstream",
+      "breakpoints": true
     }
   ]
 }

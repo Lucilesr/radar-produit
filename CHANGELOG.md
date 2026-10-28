@@ -2,6 +2,11 @@
 
 ## 28 octobre 2026
 
+- Kanban : prise de la carte entière, ajout et renommage de colonnes rattachées aux étapes existantes, avec protection des déplacements concurrents.
+- Notes de candidature enregistrées automatiquement et historisées ; brouillons du bilan, de l’annonce, de la planification et des réponses conservés entre deux ouvertures, sans confirmer les décisions métier à la place de l’utilisateur.
+- Liste et Kanban plus compacts sur tablette et téléphone ; statuts courts, actions rapprochées et maintien des cibles tactiles.
+
+
 - Kanban : déplacer une carte par sa poignée vers une autre étape, à la souris ou au clavier, avec confirmation d’enregistrement et conservation des notes, bilans, rendez-vous et date de candidature. Closes demande de distinguer refus et arrêt volontaire ; un retour dans Envoyées conserve l’historique d’entretiens. Le sélecteur de statut reste disponible.
 
 ## 27 octobre 2026
