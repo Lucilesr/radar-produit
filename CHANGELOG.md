@@ -2,6 +2,9 @@
 
 ## 28 octobre 2026
 
+- Candidatures : choix Tableau / Kanban déplacé à côté du titre, retrait du rappel Privé et du bouton Actualiser de cet en-tête ; filtres En cours / Closes / Toutes réservés au tableau.
+
+
 - Kanban : prise de la carte entière, ajout et renommage de colonnes rattachées aux étapes existantes, avec protection des déplacements concurrents.
 - Notes de candidature enregistrées automatiquement et historisées ; brouillons du bilan, de l’annonce, de la planification et des réponses conservés entre deux ouvertures, sans confirmer les décisions métier à la place de l’utilisateur.
 - Liste et Kanban plus compacts sur tablette et téléphone ; statuts courts, actions rapprochées et maintien des cibles tactiles.
