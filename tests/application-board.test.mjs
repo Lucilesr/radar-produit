@@ -87,3 +87,23 @@ test("kanban : les colonnes produisent uniquement un statut et Closes demande un
   assert.deepEqual(board.applicationMove(record, "other"), { kind: "unavailable" });
   assert.deepEqual(board.applicationMove(record, "unknown"), { kind: "unavailable" });
 });
+
+const personal = await import(moduleUrl("lib/personal-board.ts"));
+test("colonnes personnelles : ajout, renommage et projection préservent les dossiers", () => {
+  const defaults = personal.defaultBoard();
+  const next = personal.editBoard(defaults, {action:"add",label:"Échange RH",stage:"interviews"});
+  const added = next.columns.find(c=>c.id.startsWith("custom-"));
+  assert.equal(next.columns.length,6); assert.equal(added.stage,"interviews");
+  assert.deepEqual(defaults,personal.defaultBoard());
+  const record={...job("interview",[event("past","2026-10-25T12:00:00Z","reviewed")]),boardColumnId:added.id,candidateNote:"Note fictive"};
+  const before=structuredClone(record);
+  assert.equal(personal.personalColumn(record,next.columns),added.id);
+  const renamed=personal.editBoard(next,{action:"rename",id:added.id,label:"Échange équipe"});
+  assert.equal(personal.personalColumn(record,renamed.columns),added.id);
+  assert.equal(personal.personalColumn({...record,status:"offer"},renamed.columns),"offer");
+  assert.equal(personal.personalColumn({...record,boardColumnId:"missing"},renamed.columns),"interviews");
+  assert.deepEqual(record,before);
+  assert.throws(()=>personal.editBoard(next,{action:"add",label:" ",stage:"interviews"}));
+  assert.throws(()=>personal.editBoard(next,{action:"add",label:"Test",stage:"unknown"}));
+  assert.throws(()=>personal.editBoard(next,{action:"delete",id:added.id,label:"Test"}));
+});
