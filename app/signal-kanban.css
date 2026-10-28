@@ -73,7 +73,7 @@
 }
 
 /* La carte entière est saisissable ; les champs gardent leurs gestes natifs. */
-.application-card{cursor:grab;touch-action:pan-y;user-select:none}.application-card:active{cursor:grabbing}.application-card button,.application-card input,.application-card [role=combobox]{cursor:pointer}.application-card [contenteditable=true]{user-select:text;cursor:text}.application-card.is-dragging{cursor:grabbing}
+.application-card{cursor:grab;touch-action:manipulation;user-select:none}.application-card:active{cursor:grabbing}.application-card button,.application-card input,.application-card [role=combobox]{cursor:pointer}.application-card [contenteditable=true]{user-select:text;cursor:text}.application-card.is-dragging{cursor:grabbing}
 
 .application-column-heading h2{flex:1;min-width:0;overflow-wrap:anywhere}.board-column-edit{display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:4px;color:var(--muted-foreground)}.board-column-edit:hover{background:var(--card);color:var(--primary)}.board-add-column{display:flex;align-items:center;justify-content:center;gap:8px;min-height:70px;padding:16px;border:1px dashed var(--input);border-radius:5px;font:500 13px/1.5 var(--font-sans);color:var(--primary)}.board-add-column:hover{background:var(--signal-soft)}.board-column-form{display:grid;gap:20px;margin-top:20px}.board-column-form>label{display:grid;gap:8px;font:500 13px/1.5 var(--font-sans)}.board-column-form input{min-width:0;width:100%;padding:10px;border:1px solid var(--input);border-radius:5px;font:400 14px/1.5 var(--font-sans)}
 
@@ -130,3 +130,5 @@
 @media(min-width:800px) and (max-width:1250px){.applications-workspace .application-identity{grid-row:1/3;align-self:center}}
 @media(max-width:799px){.applications-workspace .application-next{grid-row:2}.applications-workspace .application-status,.applications-workspace .application-open{grid-row:3}.board-column-edit{width:44px;height:44px}}
 @media(pointer:coarse){.applications-workspace .application-status .choice-select-trigger,.applications-workspace .application-open,.application-card .choice-select-trigger{min-height:44px}}
+
+@media(max-width:640px){.signal-application-nav .signal-workspace-tabs{flex-wrap:nowrap;overflow-x:auto;max-width:100%;gap:18px}.signal-application-nav .signal-workspace-tabs button{flex:none;white-space:nowrap}}

@@ -107,7 +107,7 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
     active: allJobs.filter((job) => hasApplication(job) && activeStatuses.includes(job.status)).length,
   }), [jobs, allJobs]);
 
-  async function updateJob(id: string, changes: { status?: JobStatus; candidateNote?: string; reviewState?: "to_review" | "selected"; boardColumnId?: string; expectedStatus?: JobStatus }) {
+  async function updateJob(id: string, changes: { status?: JobStatus; candidateNote?: string; reviewState?: "to_review" | "selected"; boardColumnId?: string; expectedStatus?: JobStatus; expectedBoardColumnId?: string|null }) {
     try {
       const response = await fetch(`/api/jobs/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) });
       if (!response.ok) throw new Error("Mise à jour impossible");
@@ -121,7 +121,7 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
       return true;
     } catch { setToast("La mise à jour n’a pas été enregistrée. Vos données restent inchangées.", true); return false; }
   }
-  async function changeStatus(id: string, status: JobStatus, columnId?: string) { return updateJob(id, { status, ...(columnId ? {boardColumnId: columnId, expectedStatus: allJobs.find(job=>job.id===id)?.status} : {}) }); }
+  async function changeStatus(id: string, status: JobStatus, columnId?: string) { return updateJob(id, { status, ...(columnId ? {boardColumnId: columnId, expectedStatus: allJobs.find(job=>job.id===id)?.status,expectedBoardColumnId:allJobs.find(job=>job.id===id)?.boardColumnId??null} : {}) }); }
   function requestDelete(job: JobRecord) { requestDeleteMany([job]); }
   function requestDeleteMany(selection: JobRecord[]) { if (trashLock.current || refreshing) return; setTrashError(null); setDeleteReason(""); setDeleteNote(""); closeJob(); setDeleteTarget(selection); }
   async function changeTrash(selection: JobRecord[], deleted: boolean, reason?: DismissalReason, note?: string) {

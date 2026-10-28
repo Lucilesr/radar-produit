@@ -22,7 +22,7 @@ function documentFor(owner:string,key:string,initial:string,limit:number) {
   const path=`/api/workspace-drafts/${encodeURIComponent(key)}`;
   const transport={
     async read(){const response=await fetch(path,{cache:"no-store",signal:AbortSignal.timeout(15000)});if(!response.ok)throw new Error();return await response.json() as SavedText;},
-    async write(value:string,base:SavedText){const response=await fetch(path,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value,base:base.value,version:base.version}),keepalive:true,signal:AbortSignal.timeout(15000)});const result=await response.json() as SavedText&{current?:SavedText};if(response.status===409&&result.current)throw new SaveConflict(result.current);if(!response.ok)throw new Error();return result;},
+    async write(value:string,base:SavedText){const body=JSON.stringify({value,base:base.value,version:base.version});const response=await fetch(path,{method:"PUT",headers:{"Content-Type":"application/json"},body,keepalive:new TextEncoder().encode(body).byteLength<60000,signal:AbortSignal.timeout(15000)});const result=await response.json() as SavedText&{current?:SavedText};if(response.status===409&&result.current)throw new SaveConflict(result.current);if(!response.ok)throw new Error();return result;},
   };
   const cache={
     read(){const candidates=[];for(let i=0;i<localStorage.length;i++){const name=localStorage.key(i);if(name?.startsWith(prefix)){try{const value=JSON.parse(localStorage.getItem(name)??"null");if(value&&typeof value.value==="string"&&typeof value.base==="string"&&Number.isInteger(value.version))candidates.push(value);}catch{}}}return candidates.sort((a,b)=>b.time-a.time)[0]??null;},
@@ -57,8 +57,8 @@ export function NoteHistory({jobId}:{jobId:string}) {
 export function useSavedForm<T extends object>(key:string,initial:T) {
   const save=useAutosave(key,JSON.stringify(initial));
   const [fallback,setFallback]=useState(initial);
-  let value=initial;
-  try {value=save.ready?JSON.parse(save.value) as T:fallback;}catch {value=fallback;}
+  let value=initial,invalid=false;
+  if(save.ready&&save.value){try{const parsed=JSON.parse(save.value);if(!parsed||Array.isArray(parsed)||typeof parsed!=="object"||!Object.entries(initial).every(([key,value])=>typeof parsed[key]===typeof value))throw new Error();value=parsed as T;}catch{value=fallback;invalid=true;}}else value=fallback;
   const setValue=(next:SetStateAction<T>)=>{const updated=typeof next==="function"?next(value):next;if(!key){setFallback(updated);return;}save.setValue(JSON.stringify(updated));};
-  return {value,setValue,save,ready:!key||save.ready};
+  return {value,setValue,save:invalid?{...save,state:{...save.state,phase:"error" as const,error:"Brouillon illisible : le contenu précédent reste conservé. Corrigez la saisie pour enregistrer une nouvelle version."}}:save,ready:!key||save.ready};
 }
