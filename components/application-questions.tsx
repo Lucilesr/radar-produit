@@ -1,5 +1,6 @@
 "use client";
 
+import {AutosaveStatus,useSavedForm} from "@/components/autosave";
 import {useWorkspaceFeedback} from "@/components/workspace-feedback";
 import {CharacterCounter} from "@/components/character-counter";
 import {WorkspaceButton, WorkspaceFormError} from "@/components/workspace-form";
@@ -73,8 +74,11 @@ export function ApplicationQuestions({ jobId, onSaved }: { jobId: string; onSave
 
 function QuestionEditor({ initial, number, onChange, onArchive }: { initial: Question; number:number; onChange: (question: Question) => void; onArchive: () => void }) {
   const notify=useWorkspaceFeedback();
-  const [question, setQuestion] = useState(initial.question); const [limit, setLimit] = useState(initial.characterLimit?.toString() ?? "");
-  const [answer, setAnswer] = useState(initial.answer); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
+  const draft=useSavedForm(`answer:${initial.id}`,{question:initial.question,limit:initial.characterLimit?.toString()??"",answer:initial.answer});
+  const {question,limit,answer}=draft.value;
+  const change=(key:"question"|"limit"|"answer",value:string)=>draft.setValue(current=>({...current,[key]:value}));
+  const setQuestion=(value:string)=>change("question",value),setLimit=(value:string)=>change("limit",value),setAnswer=(value:string)=>change("answer",value);
+  const [busy, setBusy] = useState(false); const [error, setError] = useState("");
   const [copied, setCopied] = useState(false); const [confirmArchive, setConfirmArchive] = useState(false);
   const [history, setHistory] = useState<Revision[] | null>(null);
   const questionDirty = question !== initial.question || limit !== (initial.characterLimit?.toString() ?? "");
@@ -86,7 +90,7 @@ function QuestionEditor({ initial, number, onChange, onArchive }: { initial: Que
       const result = await api<{ question: Question }>(`/api/application-questions/${encodeURIComponent(initial.id)}`, "PATCH", {
         version: initial.version, question, characterLimit: limitValue(limit), answer,
       });
-      onChange(result.question); setHistory(null); notify({message:"Brouillon enregistré. La version précédente reste dans l’historique."});
+      draft.save.document.confirmedElsewhere("");onChange(result.question); setHistory(null); notify({message:"Brouillon enregistré. La version précédente reste dans l’historique."});
     } catch (problem) { setError(problem instanceof Error ? problem.message : "Brouillon non enregistré."); }
     finally { setBusy(false); }
   }
@@ -102,13 +106,14 @@ function QuestionEditor({ initial, number, onChange, onArchive }: { initial: Que
     catch (problem) { setError(problem instanceof Error ? problem.message : "Historique indisponible."); }
   }
   return <article className="brief-question" aria-label={`Question ${number}`}>
-    <div className="brief-question-heading"><h4>Question {number}</h4><div className="brief-question-tools"><button type="button" className="signal-text-action" aria-expanded={!!history} onClick={()=>void showHistory()}>{history?"Masquer les versions":"Voir les versions"}</button><button type="button" className="signal-text-action is-danger" disabled={busy} onClick={()=>setConfirmArchive(true)}>Retirer la question</button></div></div>
-    <label className="signal-brief-field"><span className="sr-only">Question</span><Textarea maxLength={2000} rows={2} value={question} disabled={busy} onChange={event=>{setQuestion(event.target.value);}}/></label>
-    <label className="signal-brief-field signal-answer-field">Ma réponse<Textarea maxLength={10000} rows={5} value={answer} disabled={busy} aria-invalid={overLimit} onChange={event=>{setAnswer(event.target.value);setCopied(false);}} placeholder="Rédigez votre réponse ou collez celle préparée dans ChatGPT."/></label>
-    <CharacterCounter count={count} value={limit} onChange={value=>{setLimit(value);setError("");}} label="Limite de caractères · Ma réponse" disabled={busy}/>
+    <div className="brief-question-heading"><h4>Question {number}</h4><div className="brief-question-tools"><button type="button" className="signal-text-action" aria-expanded={!!history} onClick={()=>void showHistory()}>{history?"Masquer les versions":"Voir les versions"}</button><button type="button" className="signal-text-action is-danger" disabled={busy||!draft.ready} onClick={()=>setConfirmArchive(true)}>Retirer la question</button></div></div>
+    <label className="signal-brief-field"><span className="sr-only">Question</span><Textarea maxLength={2000} rows={2} value={question} disabled={busy||!draft.ready} onChange={event=>{setQuestion(event.target.value);}}/></label>
+    <label className="signal-brief-field signal-answer-field">Ma réponse<Textarea maxLength={10000} rows={5} value={answer} disabled={busy||!draft.ready} aria-invalid={overLimit} onChange={event=>{setAnswer(event.target.value);setCopied(false);}} placeholder="Rédigez votre réponse ou collez celle préparée dans ChatGPT."/></label>
+    <CharacterCounter count={count} value={limit} onChange={value=>{setLimit(value);setError("");}} label="Limite de caractères · Ma réponse" disabled={busy||!draft.ready}/>
+    <AutosaveStatus save={draft.save} draft/>
     <WorkspaceFormError message={error}/>
-    <div className="brief-question-actions"><span className="signal-save-hint">{dirty?"Modifications non enregistrées.":""}</span><WorkspaceButton disabled={!answer||dirty||busy} title={dirty?"Enregistrez vos modifications avant de copier":undefined} onClick={async()=>{try{await navigator.clipboard.writeText(answer);setCopied(true);notify({message:"Réponse copiée."});}catch{setError("Copie impossible : sélectionnez le texte.");}}}><Copy size={14} aria-hidden/>{copied?"Réponse copiée":"Copier la réponse"}</WorkspaceButton><WorkspaceButton variant="primary" busy={busy} disabled={!dirty||!question.trim()} onClick={()=>void save()}>{!busy?<Save size={14} aria-hidden/>:null}Enregistrer le brouillon</WorkspaceButton></div>
-    {confirmArchive?<div className="signal-inline-confirm"><p>Retirer cette question ? Ses versions restent conservées.</p><div className="brief-question-tools"><WorkspaceButton onClick={()=>setConfirmArchive(false)} disabled={busy}>Garder la question</WorkspaceButton><WorkspaceButton variant="danger" busy={busy} onClick={()=>void archive()}>Confirmer le retrait</WorkspaceButton></div></div>:null}
+    <div className="brief-question-actions"><span className="signal-save-hint">{dirty?"Modifications du prompt à confirmer.":""}</span><WorkspaceButton disabled={!answer||dirty||busy} title={dirty?"Enregistrez vos modifications avant de copier":undefined} onClick={async()=>{try{await navigator.clipboard.writeText(answer);setCopied(true);notify({message:"Réponse copiée."});}catch{setError("Copie impossible : sélectionnez le texte.");}}}><Copy size={14} aria-hidden/>{copied?"Réponse copiée":"Copier la réponse"}</WorkspaceButton><WorkspaceButton variant="primary" busy={busy} disabled={!draft.ready||!dirty||!question.trim()} onClick={()=>void save()}>{!busy?<Save size={14} aria-hidden/>:null}Mettre à jour la réponse</WorkspaceButton></div>
+    {confirmArchive?<div className="signal-inline-confirm"><p>Retirer cette question ? Ses versions restent conservées.</p><div className="brief-question-tools"><WorkspaceButton onClick={()=>setConfirmArchive(false)} disabled={busy||!draft.ready}>Garder la question</WorkspaceButton><WorkspaceButton variant="danger" busy={busy} onClick={()=>void archive()}>Confirmer le retrait</WorkspaceButton></div></div>:null}
     {history?<div className="brief-question-history"><h4>Versions enregistrées</h4>{history.map(revision=><div key={revision.id}><span className="signal-help">Version {revision.version} · {new Date(revision.createdAt).toLocaleString("fr-FR")}</span><p>{revision.answer||"Réponse vide"}</p>{revision.answer&&revision.answer!==answer?<button type="button" className="signal-text-action" onClick={()=>{setAnswer(revision.answer);}}>Reprendre dans l’éditeur</button>:null}</div>)}</div>:null}
   </article>;
 }

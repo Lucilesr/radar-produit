@@ -12,14 +12,20 @@ export function usePersonalBoard() {
   const [label, setLabel] = useState(""), [stage, setStage] = useState("interviews"), [saving, setSaving] = useState(false);
   const lock = useRef(false);
   async function load() {
-    setError("");
     try {
       const response = await fetch("/api/application-board", { cache: "no-store" });
       if (!response.ok) throw new Error();
-      setBoard(((await response.json()) as {board:PersonalBoard}).board); setReady(true);
+      setBoard(((await response.json()) as {board:PersonalBoard}).board); setReady(true); setError("");
     } catch { setError("Impossible de charger les colonnes. Réessayez avant de modifier le tableau."); }
   }
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    const controller=new AbortController();
+    fetch("/api/application-board",{cache:"no-store",signal:controller.signal})
+      .then(async response=>{if(!response.ok)throw new Error();return await response.json() as {board:PersonalBoard};})
+      .then(result=>{if(!controller.signal.aborted){setBoard(result.board);setReady(true);setError("");}})
+      .catch(()=>{if(!controller.signal.aborted)setError("Impossible de charger les colonnes. Réessayez avant de modifier le tableau.");});
+    return ()=>controller.abort();
+  }, []);
   function open(column?: PersonalColumn) { setEditor(column ?? "new"); setLabel(column?.label ?? ""); setStage(column?.stage ?? "interviews"); setError(""); }
   async function save() {
     if (lock.current || !editor) return;
