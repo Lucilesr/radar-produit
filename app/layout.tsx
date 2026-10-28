@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import "./globals.css";
 import "./radar-theme.css";
 import "./workspace.css";
@@ -20,6 +21,7 @@ import "./signal-today.css";
 import "./signal-brief.css";
 import "./signal-kanban.css";
 import "./onboarding-tour.css";
+import "./demo-notice.css";
 
 export const metadata: Metadata = {
   title: "Radar Produit",
@@ -30,14 +32,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const demo = !!(await cookies()).get("radar_demo_visitor")?.value;
   return (
     <html lang="fr">
-      <body>{children}</body>
+      <body>{demo ? <div className="demo-notice"><span>Démo · données fictives isolées dans ce navigateur · aucune candidature réelle</span><a href="/demo?onboarding=1">Tester l’onboarding</a><a href="/demo">Recommencer</a><a href="/demo-exit">Quitter la démo</a></div> : null}{children}</body>
     </html>
   );
 }

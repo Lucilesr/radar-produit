@@ -1,5 +1,9 @@
 # Évolutions de Radar Produit
 
+## 29 octobre 2026
+
+- Démo recruteur intégrée à Radar : un lien permanent crée un espace fictif isolé par visiteur, avec parcours d’onboarding accessible et connecteurs externes désactivés.
+
 ## 28 octobre 2026
 
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.

@@ -18,6 +18,7 @@ import { OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/componen
 import { activeStatuses, terminalStatuses } from "@/lib/application-workflow";
 import { profileTemplate } from "@/lib/profile-template";
 import { OnboardingTour } from "@/components/onboarding-tour";
+import { DemoModeProvider } from "@/components/demo-mode";
 import type { CandidateProfile, DismissalReason, JobRecord, JobStatus } from "@/lib/types";
 import type { RadarInitialState } from "@/lib/radar-bootstrap";
 import type { RadarRoute, ProfileSection } from "@/lib/radar-navigation";
@@ -40,7 +41,7 @@ const dismissalLabels: Record<DismissalReason, string> = { filled: "Poste pourvu
 
 
 type RadarAppProps = { ownerId?: string; userName: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection };
-export function RadarApp(props: RadarAppProps) { return <AutosaveOwner owner={props.ownerId??""}><WorkspaceFeedbackProvider><RadarWorkspace {...props} /></WorkspaceFeedbackProvider></AutosaveOwner>; }
+export function RadarApp(props: RadarAppProps) { return <DemoModeProvider enabled={!!props.ownerId?.startsWith("demo:")}><AutosaveOwner owner={props.ownerId??""}><WorkspaceFeedbackProvider><RadarWorkspace {...props} /></WorkspaceFeedbackProvider></AutosaveOwner></DemoModeProvider>; }
 function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initialProfileSection }: RadarAppProps) {
   const { route, navigate } = useRadarNavigation(initialRoute);
   const { tab, filter, query, view: workspaceView } = route;

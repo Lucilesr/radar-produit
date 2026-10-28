@@ -24,6 +24,7 @@ export async function POST(request: Request) {
   const user = await getChatGPTUser();
   if (!user) return Response.json({ error: "Authentification requise" }, { status: 401 });
   if (!ensureSameOrigin(request)) return Response.json({ error: "Origine non autorisée" }, { status: 403 });
+  if (user.userId.startsWith("demo:")) return Response.json({ error: "L’import de documents est désactivé dans la démo." }, { status: 403 });
   try {
     const form = await request.formData();
     const file = form.get("file");
