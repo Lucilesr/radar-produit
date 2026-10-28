@@ -2,9 +2,9 @@
 
 ## 28 octobre 2026
 
-- Onboarding : mise en lumière des onglets Profil, présentation et carnet ; progression après enregistrement du profil et validation d’une expérience, puis mini-visite contextuelle des écrans. Guide quittable et relançable.
-
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.
+
+- Onboarding : mise en lumière des onglets Profil, présentation et carnet ; progression après enregistrement du profil et validation d’une expérience, puis mini-visite contextuelle des écrans. Guide quittable et relançable.
 
 - Opportunités : le relais de défilement page → liste et détail s'applique désormais aux tablettes dès 761 px, avec des colonnes et critères adaptés à leur largeur.
 
