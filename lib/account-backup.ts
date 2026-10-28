@@ -16,7 +16,8 @@ async function snapshot(db: D1Database, userId: string) {
   const statements = [db.prepare("SELECT name, type, tbl_name, sql FROM sqlite_master WHERE type IN ('table','index') AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name")];
   for (const table of BACKUP_TABLES) {
     statements.push(db.prepare(`SELECT COUNT(*) AS total FROM "${table}" WHERE user_id = ?`).bind(userId));
-    statements.push(db.prepare(`SELECT * FROM "${table}" WHERE user_id = ? ORDER BY ${table === "profiles" ? "user_id" : "id"} LIMIT ${MAX_ROWS + 1}`).bind(userId));
+    const order = table === "profiles" || table === "application_boards" ? "user_id" : table === "workspace_writes" ? 'user_id, "key", version' : "id";
+    statements.push(db.prepare(`SELECT * FROM "${table}" WHERE user_id = ? ORDER BY ${order} LIMIT ${MAX_ROWS + 1}`).bind(userId));
   }
   const result = await db.batch<Row>(statements);
   if (result.length !== statements.length || result.some(r => !r.success || !Array.isArray(r.results))) fail("lecture-base");

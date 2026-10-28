@@ -2,6 +2,8 @@
 
 ## 28 octobre 2026
 
+- Sauvegarde privee : export v3 complet incluant les colonnes Kanban, les colonnes personnalisees et le journal des notes automatiques. Restaurations v1 et v2 conservees pour les archives precedentes.
+
 - Opportunités : la page défile jusqu’à la liste, puis la liste et le détail utilisent toute la hauteur disponible avec un défilement indépendant. Remonter au début d’une colonne permet de retrouver les filtres ; la lecture mobile et les données restent inchangées.
 
 - Candidatures : choix Tableau / Kanban déplacé à côté du titre, retrait du rappel Privé et du bouton Actualiser de cet en-tête ; filtres En cours / Closes / Toutes réservés au tableau.
