@@ -3,6 +3,7 @@
 ## 28 octobre 2026
 
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.
+- Comptes pilotes : un nouveau compte démarre avec un profil professionnel vide ; un profil déjà enregistré reste conservé. Le rechargement remet aussi l’interface à vide lorsqu’aucun profil n’existe.
 
 - Opportunités : le relais de défilement page → liste et détail s'applique désormais aux tablettes dès 761 px, avec des colonnes et critères adaptés à leur largeur.
 
