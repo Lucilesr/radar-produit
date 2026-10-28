@@ -2,6 +2,8 @@
 
 ## 28 octobre 2026
 
+- Opportunités : le relais de défilement page → liste et détail s'applique désormais aux tablettes dès 761 px, avec des colonnes et critères adaptés à leur largeur.
+
 - Sauvegarde privee : export v3 complet incluant les colonnes Kanban, les colonnes personnalisees et le journal des notes automatiques. Restaurations v1 et v2 conservees pour les archives precedentes.
 
 - Opportunités : la page défile jusqu’à la liste, puis la liste et le détail utilisent toute la hauteur disponible avec un défilement indépendant. Remonter au début d’une colonne permet de retrouver les filtres ; la lecture mobile et les données restent inchangées.
