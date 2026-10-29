@@ -66,3 +66,5 @@
  .radar-page { padding-bottom:12px; }
  .radar-footer { margin-top:12px; font-size:11px; }
 }
+
+.radar-home-link { display:block; min-height:44px; text-align:left; border-radius:6px; }

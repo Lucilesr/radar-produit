@@ -2,6 +2,7 @@
 
 ## 29 octobre 2026
 
+- Navigation : le logo Radar ramène à Aujourd’hui, au clic comme au clavier.
 - Démo recruteur intégrée à Radar : un lien permanent crée un espace fictif isolé par visiteur, avec parcours d’onboarding accessible et connecteurs externes désactivés.
 - Visite : explication synchronisée avec la page affichée, commandes Précédent/Suivant et fin explicite ; halo à pulsation plus contrastée.
 
