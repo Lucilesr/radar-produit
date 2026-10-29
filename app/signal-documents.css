@@ -38,3 +38,12 @@
 .profile-document-picker{margin-top:10px;min-width:0}
 .profile-document-picker .choice-select-trigger{max-width:100%}
 @media(max-width:760px){.profile-document-row{grid-template-columns:20px minmax(0,1fr);gap:10px 12px;padding:18px 0}.profile-document-actions{grid-column:2;justify-content:flex-start}.profile-document-actions>.signal-form-button,.profile-document-download{min-height:44px}.profile-document-existing summary{min-height:36px;padding-block:10px}.profile-documents-heading{gap:12px}.profile-documents-heading>.signal-form-button{min-height:44px}.profile-document-status{font-size:10px}.profile-document-formats{max-width:40ch}}
+
+/* Keep profile editing comfortable on narrow touch screens. */
+@media(max-width:760px) {
+ .radar-app .profile-workspace .profile-presentation .profile-presentation-form :is(input,textarea) { font-size:16px; }
+ .profile-workspace .profile-save { align-items:stretch; }
+ .profile-workspace .profile-save .signal-form-button { width:100%; min-height:44px; white-space:normal; }
+ .profile-documents .profile-document-existing summary { min-height:44px; }
+ .profile-document-picker .choice-select-trigger { font-size:16px; min-height:44px; }
+}

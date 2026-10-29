@@ -39,6 +39,12 @@ export async function workspaceNoteValues(userId: string): Promise<Record<string
   const rows = await getDb().select().from(workspaceWrites).where(and(eq(workspaceWrites.userId,userId),like(workspaceWrites.key,"note:%"),sql`not exists (select 1 from workspace_writes newer where newer.user_id = ${workspaceWrites.userId} and newer.key = ${workspaceWrites.key} and newer.version > ${workspaceWrites.version})`));
   return Object.fromEntries(rows.map(row=>[row.key.slice(5),row.value]));
 }
+export async function workspaceNoteValue(userId: string, jobId: string): Promise<string | undefined> {
+  const [row] = await getDb().select({ value: workspaceWrites.value }).from(workspaceWrites)
+    .where(and(eq(workspaceWrites.userId, userId), eq(workspaceWrites.key, `note:${jobId}`)))
+    .orderBy(desc(workspaceWrites.version)).limit(1);
+  return row?.value;
+}
 export async function workspaceHistory(userId:string,key:string) {
   return getDb().select({value:workspaceWrites.value,version:workspaceWrites.version,createdAt:workspaceWrites.createdAt}).from(workspaceWrites).where(and(eq(workspaceWrites.userId,userId),eq(workspaceWrites.key,key))).orderBy(desc(workspaceWrites.version)).limit(50);
 }

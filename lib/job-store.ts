@@ -5,7 +5,7 @@ import { assessJob, createFingerprint } from "./matching";
 import { normalizeJobInput, rowToJob } from "./server";
 import { offerPatchSchema } from "./import-contract";
 import { rowToInterview } from "./interview-store";
-import { workspaceNoteValues } from "./workspace-write-store";
+import { workspaceNoteValue, workspaceNoteValues } from "./workspace-write-store";
 import { z } from "zod";
 
 // Browser and agent imports share the same per-user, retry-safe write path.
@@ -59,17 +59,39 @@ export async function listOffers(userId: string, limit?: number, includeDeleted 
     workspaceNoteValues(userId),
   ]);
   const notes = { ...(profileRows[0] ? JSON.parse(profileRows[0].data).applicationNotes ?? {} : {}), ...savedNotes };
+  const interviewsByJob = new Map<string, ReturnType<typeof rowToInterview>[]>();
+  for (const row of interviewRows) {
+    const entries = interviewsByJob.get(row.jobId) ?? [];
+    entries.push(rowToInterview(row));
+    interviewsByJob.set(row.jobId, entries);
+  }
   return rows.map(row => {
     const job = rowToJob(row);
     const assessment = assessJob(job);
     return { ...job, matchScore: assessment.score, matchTier: assessment.tier,
       reasons: assessment.reasons, flags: assessment.flags,
       candidateNote: typeof notes[job.id] === "string" ? notes[job.id] : undefined,
-      interviews: interviewRows.filter(item => item.jobId === job.id).map(rowToInterview) };
+      interviews: interviewsByJob.get(job.id) ?? [] };
   });
 }
 
-export async function getOffer(userId: string, id: string, includeDeleted = false) { return (await listOffers(userId, undefined, includeDeleted)).find(job => job.id === id); }
+export async function getOffer(userId: string, id: string, includeDeleted = false) {
+  const db = getDb();
+  const [rows, profileRows, interviewRows, savedNote] = await Promise.all([
+    db.select().from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.id, id), includeDeleted ? undefined : isNull(jobs.deletedAt))).limit(1),
+    db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1),
+    db.select().from(interviews).where(and(eq(interviews.userId, userId), eq(interviews.jobId, id))).orderBy(desc(interviews.startAt)),
+    workspaceNoteValue(userId, id),
+  ]);
+  if (!rows[0]) return undefined;
+  const job = rowToJob(rows[0]);
+  const assessment = assessJob(job);
+  const notes = profileRows[0] ? JSON.parse(profileRows[0].data).applicationNotes ?? {} : {};
+  return { ...job, matchScore: assessment.score, matchTier: assessment.tier,
+    reasons: assessment.reasons, flags: assessment.flags,
+    candidateNote: savedNote ?? (typeof notes[id] === "string" ? notes[id] : undefined),
+    interviews: interviewRows.map(rowToInterview) };
+}
 
 // Keep the row and its fingerprint: repeated imports cannot resurrect a dismissed offer.
 // No status, note, interview or document is removed. Repeated requests are idempotent.
