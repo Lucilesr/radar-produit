@@ -2,6 +2,7 @@
 
 ## 29 octobre 2026
 
+- Guide de prise en main : panneau ancré en bas à droite du viewport sur les grands écrans, avec marge de sécurité en bas.
 - Navigation mobile : retrait du liseré citron latéral de l’onglet sélectionné.
 - Kanban : action « Déplacer » avec choix de colonne, statut automatique et motif de clôture conservé, en complément du glisser-déposer.
 - Mobile : champs du profil et des sources à 16 px, cibles tactiles et bouton de présentation adaptés.
