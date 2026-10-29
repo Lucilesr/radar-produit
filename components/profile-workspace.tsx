@@ -8,6 +8,12 @@ import { ProfileDocuments } from "@/components/profile-documents";
 import type { CandidateProfile } from "@/lib/types";
 import type { DocumentLinks } from "@/lib/document-input";
 import { readProfileSection, type ProfileSection as Section } from "@/lib/radar-navigation";
+const presentationExamples = {
+  headline: "Ex. Product Manager B2B",
+  summary: "Ex. Product Manager, 5 ans en SaaS B2B. Je mène la discovery et le delivery pour améliorer l’adoption du produit.",
+  location: "Ex. Lyon · remote · dès janvier",
+  linkedinUrl: "https://www.linkedin.com/in/votre-profil",
+};
 const sections: [Section,string][]=[["experiences","Carnet d’expériences"],["documents","Mes documents"],["presentation","Ma présentation"]];
 export function ProfileWorkspace({profile,onSave,onDocumentsLinked,initialSection="experiences",active=true}:{profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onDocumentsLinked:(links:DocumentLinks)=>void;initialSection?:Section;active?:boolean}) {
   const [draft,setDraft]=useState(profile),[section,setSection]=useState<Section>(initialSection);
@@ -21,7 +27,7 @@ export function ProfileWorkspace({profile,onSave,onDocumentsLinked,initialSectio
   useEffect(()=>{if(!dirty)return;const beforeUnload=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue="";};window.addEventListener("beforeunload",beforeUnload);return()=>window.removeEventListener("beforeunload",beforeUnload);},[dirty]);
   function select(next:Section){setSection(next);const url=new URL(window.location.href);url.searchParams.set("profile",next);window.history.pushState(null,"",url.pathname+url.search+url.hash);}
   function linked(links:DocumentLinks){setDraft(current=>({...current,...links}));onDocumentsLinked(links);}
-  const field=(key:"headline"|"summary"|"location"|"linkedinUrl",label:string,multi=false)=><label className="workspace-field">{label}{multi?<Textarea disabled={saving} rows={5} value={draft[key]} onChange={event=>setDraft({...draft,[key]:event.target.value})}/>:<input disabled={saving} type={key==="linkedinUrl"?"url":"text"} autoComplete={key==="linkedinUrl"?"url":undefined} value={draft[key]} onChange={event=>setDraft({...draft,[key]:event.target.value})}/>}</label>;
+  const field=(key:"headline"|"summary"|"location"|"linkedinUrl",label:string,multi=false)=><label className="workspace-field">{label}{multi?<Textarea placeholder={presentationExamples[key]} disabled={saving} rows={5} value={draft[key]} onChange={event=>setDraft({...draft,[key]:event.target.value})}/>:<input placeholder={presentationExamples[key]} disabled={saving} type={key==="linkedinUrl"?"url":"text"} autoComplete={key==="linkedinUrl"?"url":undefined} value={draft[key]} onChange={event=>setDraft({...draft,[key]:event.target.value})}/>}</label>;
   return <div className="profile-workspace"><nav className="workspace-tabs" aria-label="Sections du profil">{sections.map(([id,label])=><button type="button" key={id} aria-pressed={section===id} aria-controls={"profile-panel-"+id} onClick={()=>select(id)}>{label}{id==="presentation"&&dirty?<span className="workspace-badge is-warning">Non enregistré</span>:null}</button>)}</nav>
     <div id="profile-panel-experiences" hidden={section!=="experiences"}><ExperienceLibrary documentId={draft.detailedExperienceDocumentId} onOpenDocuments={()=>{select("documents");requestAnimationFrame(()=>{const card=document.getElementById("document-detailedExperienceDocumentId");card?.focus({preventScroll:true});card?.scrollIntoView({block:"center"});});}}/></div>
     <div id="profile-panel-documents" hidden={section!=="documents"}><ProfileDocuments links={draft} onLinked={linked} onBusyChange={setFilesBusy}/></div>
@@ -31,7 +37,7 @@ export function ProfileWorkspace({profile,onSave,onDocumentsLinked,initialSectio
       <form className="profile-presentation-form" onSubmit={async event=>{event.preventDefault();if(writeLock.current||filesBusy||!dirty)return;writeLock.current=true;setSaving(true);setSaveError("");try{if(!await onSave(draft))setSaveError("Présentation non enregistrée. Votre saisie est conservée ; vous pouvez réessayer.");}finally{writeLock.current=false;setSaving(false);}}}>
         {field("headline","Titre ciblé")}{field("summary","Résumé professionnel",true)}
         <div className="profile-field-row">{field("location","Localisation / disponibilité")}{field("linkedinUrl","Lien LinkedIn")}</div>
-        <label className="workspace-field">Compétences<Textarea disabled={saving} rows={3} value={draft.skills.join(", ")} onChange={event=>setDraft({...draft,skills:event.target.value.split(",").map(item=>item.trim()).filter(Boolean)})}/></label>
+        <label className="workspace-field">Compétences<Textarea placeholder="Ex. Discovery, priorisation, gestion de backlog, analyse de données" disabled={saving} rows={3} value={draft.skills.join(", ")} onChange={event=>setDraft({...draft,skills:event.target.value.split(",").map(item=>item.trim()).filter(Boolean)})}/></label>
         <WorkspaceFormError message={saveError}/><div className="profile-save"><span className="signal-save-hint">{dirty?"Modifications non enregistrées.":""}</span><WorkspaceButton type="submit" variant="primary" busy={saving} disabled={filesBusy||!dirty}>{saving?"Enregistrement…":"Enregistrer la présentation"}</WorkspaceButton></div>
       </form>
     </section>
