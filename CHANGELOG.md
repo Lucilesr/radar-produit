@@ -1,10 +1,16 @@
 # Évolutions de Radar Produit
 
+## 29 octobre 2026
+
+- Performance : la lecture d’une offre après modification ou enregistrement d’un entretien cible désormais cette offre, ses entretiens et sa dernière note. Le chargement de la liste regroupe les entretiens en un seul passage.
+
 ## 28 octobre 2026
 
 - Retouches visuelles discrètes de la navigation, des opportunités et des candidatures : contours, typographie et animations courtes, avec prise en compte de la réduction des animations. Les parcours et actions existants sont conservés.
+- Opportunités : suppression du filtre « Toutes » pour éviter de mélanger les offres à examiner et les candidatures. Les correspondances Radar excluent aussi les offres déjà passées en candidature ; les anciens liens « Toutes » ouvrent « À examiner ».
 
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.
+- Comptes pilotes : un nouveau compte démarre avec un profil professionnel vide ; un profil déjà enregistré reste conservé. Le rechargement remet aussi l’interface à vide lorsqu’aucun profil n’existe.
 
 - Opportunités : le relais de défilement page → liste et détail s'applique désormais aux tablettes dès 761 px, avec des colonnes et critères adaptés à leur largeur.
 
