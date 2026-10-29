@@ -2,6 +2,7 @@
 
 ## 29 octobre 2026
 
+- Kanban : action « Déplacer » avec choix de colonne, statut automatique et motif de clôture conservé, en complément du glisser-déposer.
 - Mobile : champs du profil et des sources à 16 px, cibles tactiles et bouton de présentation adaptés.
 - Profil : exemples dans les cinq champs de Ma présentation, sur mobile et ordinateur.
 - Interface : espacement de fin de page réduit, réserve mobile ajustée à la navigation fixe.

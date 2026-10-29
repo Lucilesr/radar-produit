@@ -62,6 +62,10 @@
 .application-move-dialog input[type=radio] { accent-color:var(--primary); }
 .application-move-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; margin-top:20px; }
 .application-move-dialog .signal-form-error { margin-top:16px; color:var(--danger); }
+.application-move-button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;width:100%;margin-top:12px;border-top:1px solid var(--border);color:var(--primary);font:500 12px/1.5 var(--font-sans)}
+.application-move-button:hover,.application-move-button:focus-visible{background:var(--signal-soft)}
+.application-move-destinations{display:grid;gap:8px;margin-top:20px}
+.application-move-destinations button{min-height:44px;justify-content:flex-start;white-space:normal;overflow-wrap:anywhere;text-align:left}
 @media(max-width:640px) {
  .applications-toolbar { gap:12px; }
  .application-display-toggle { margin-left:auto; }
