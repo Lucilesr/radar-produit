@@ -19,13 +19,12 @@ export function reviewState(job: JobRecord): "to_review" | "selected" | "none" {
   return "none";
 }
 
-export type OpportunityView = "to_review" | "selected" | "good_matches" | "all" | "trash";
+export type OpportunityView = "to_review" | "selected" | "good_matches" | "trash";
 
 export function inOpportunityView(job: JobRecord, view: OpportunityView) {
   if (view === "trash") return !!job.deletedAt;
   if (job.deletedAt) return false;
-  if (view === "all") return true;
   if (view === "to_review") return reviewState(job) === "to_review" && !hasApplication(job);
   if (view === "selected") return reviewState(job) === "selected" && !hasApplication(job);
-  return job.matchScore >= 75 && job.matchTier !== "excluded";
+  return !hasApplication(job) && job.matchScore >= 75 && job.matchTier !== "excluded";
 }
