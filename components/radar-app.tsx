@@ -183,7 +183,9 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
       <aside className="radar-sidebar">
         <div className="flex items-center justify-between gap-4 lg:block">
           <WorkspaceBrand />
+          <div className="radar-header-actions"><button type="button" className="radar-mobile-guide-launcher secondary-button" aria-label="Guide de prise en main" onClick={() => window.dispatchEvent(new Event("radar:open-guide"))}><CircleHelp size={18} aria-hidden/></button>
           <button onClick={() => setJobDialogOpen(true)} className="radar-add-button lg:mt-8 lg:w-full" aria-label="Ajouter une offre"><Plus size={17} /><span className="hidden sm:inline">Ajouter une offre</span></button>
+          </div>
         </div>
         <label className="radar-search"><Search size={16} /><input ref={searchRef} aria-label="Rechercher une offre" maxLength={200} placeholder="Rechercher une offre…" value={query} onChange={event => { setQuery(event.target.value); }} /></label>
 

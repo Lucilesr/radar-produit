@@ -57,7 +57,7 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
   const title=useRef<HTMLHeadingElement>(null);
   const opener=useRef<HTMLButtonElement|null>(null);
   const locked=useRef(false);
-  useEffect(()=>{if(activeId){title.current?.focus({preventScroll:true});if(window.matchMedia("(max-width:760px)").matches)title.current?.scrollIntoView({block:"start"});}},[activeId]);
+  useEffect(()=>{if(activeId){title.current?.focus({preventScroll:true});if(window.matchMedia("(max-width:760px)").matches)title.current?.closest(".opportunity-detail")?.scrollIntoView({block:"start"});}},[activeId]);
   function close(){onClose();requestAnimationFrame(()=>{const button=opener.current;(button?.isConnected && button.getClientRects().length?button:document.getElementById("workspace-title"))?.focus({preventScroll:true});});}
   async function review(){
     if(!active||locked.current)return;
