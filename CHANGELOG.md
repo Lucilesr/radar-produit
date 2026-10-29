@@ -1,5 +1,9 @@
 # Évolutions de Radar Produit
 
+## 29 octobre 2026
+
+- Mobile : champs du profil et des sources à 16 px, cibles tactiles et bouton de présentation adaptés.
+
 ## 28 octobre 2026
 
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.
