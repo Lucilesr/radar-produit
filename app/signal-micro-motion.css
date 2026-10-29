@@ -74,3 +74,8 @@
   .application-card { animation: none !important; transition: none !important; }
   .radar-sidebar .radar-nav button:hover:not(.is-active) { transform: none; }
 }
+
+/* The bottom navigation already marks the current tab with its filled surface. */
+@media(max-width:1023px) {
+ .radar-sidebar .radar-nav button.is-active { box-shadow:none; }
+}

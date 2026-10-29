@@ -1,5 +1,9 @@
 # Évolutions de Radar Produit
 
+## 29 octobre 2026
+
+- Navigation mobile : retrait du liseré citron latéral de l’onglet sélectionné.
+
 ## 28 octobre 2026
 
 - Retouches visuelles discrètes de la navigation, des opportunités et des candidatures : contours, typographie et animations courtes, avec prise en compte de la réduction des animations. Les parcours et actions existants sont conservés.
