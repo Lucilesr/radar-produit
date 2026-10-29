@@ -24,7 +24,7 @@ export async function library(userId:string) {
     db().prepare("SELECT * FROM experience_items WHERE user_id=? ORDER BY created_at,id").bind(userId).all<Stored>(),
     db().prepare("SELECT id,left_id AS leftId,right_id AS rightId,reason,state,resolution FROM experience_conflicts WHERE user_id=? ORDER BY created_at").bind(userId).all<ExperienceConflict>(),
     db().prepare("SELECT id,document_id AS documentId,status,created_at AS createdAt,json_extract(data,'$.issue') AS issue FROM document_extractions WHERE user_id=? ORDER BY created_at DESC").bind(userId).all(),
-    db().prepare("SELECT d.id AS documentId,d.original_name AS name,d.created_at AS createdAt FROM profiles p JOIN documents d ON d.id=json_extract(p.data,'$.detailedExperienceDocumentId') AND d.user_id=p.user_id WHERE p.user_id=?").bind(userId).first<{documentId:string;name:string;createdAt:string}>(),
+    db().prepare("SELECT d.id AS documentId,d.original_name AS name,d.created_at AS createdAt FROM profiles p JOIN documents d ON d.id=COALESCE(NULLIF(json_extract(p.data,'$.detailedExperienceDocumentId'),''),NULLIF(json_extract(p.data,'$.cvFrDocumentId'),''),NULLIF(json_extract(p.data,'$.cvEnDocumentId'),'')) AND d.user_id=p.user_id WHERE p.user_id=?").bind(userId).first<{documentId:string;name:string;createdAt:string}>(),
   ]);
   return {items:items.results.map(fromRow),conflicts:conflicts.results,extractions:extractions.results,reference};
 }
