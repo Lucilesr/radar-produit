@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import type { RadarTab } from "@/lib/radar-navigation";
 import type { CandidateProfile } from "@/lib/types";
 
-type Phase = "setup" | "tour" | "paused" | "done";
+type Phase = "setup" | "intro" | "tour" | "paused" | "done";
 type State = { phase: Phase; index: number };
 type Step = { target: string; title: string; detail: string; mobileDetail?: string; action: "click" | "save" | "upload" | "verify" };
 const setup: Step[] = [
@@ -24,6 +24,7 @@ const tour = (demo: boolean): Step[] => [
   { target: "nav-profile", title: "Mon profil", detail: "Retrouvez votre présentation, vos documents et les faits d’expérience validés pour vos candidatures.", action: "click" },
   { target: "nav-sources", title: "Sources", detail: demo ? "Découvrez d’où viennent les annonces. L’actualisation externe est désactivée dans cette démo." : "Choisissez vos sources de veille et contrôlez leur actualisation.", action: "click" },
 ];
+const mobileTourLabels: Record<string,string> = {"nav-dashboard":"Accueil","nav-offers":"Offres","nav-pipeline":"Suivi","nav-profile":"Profil","nav-sources":"Sources"};
 const complete = (p: CandidateProfile) => Boolean(p.headline.trim() && p.summary.trim() && p.skills.length);
 
 export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ownerId: string; profile: CandidateProfile; activeTab: RadarTab; onNavigate: (tab: RadarTab) => void }) {
@@ -38,7 +39,8 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ow
   const ready = complete(profile);
   const steps = state?.phase === "setup" ? setup : tour(demo);
   const index = state?.phase === "tour" ? Math.max(0, steps.findIndex(step => step.target === "nav-" + activeTab)) : state?.index ?? 0;
-  const current = state && (state.phase === "setup" || state.phase === "tour") ? steps[index] : null;
+  const current = state?.phase === "intro" ? {target:"",title:"Découvrez Radar",detail:"Une visite en 5 étapes pour comprendre chaque écran. Cliquez sur les onglets entourés du halo : cette carte expliquera la page que vous venez d’ouvrir.",action:"click" as const} : state && (state.phase === "setup" || state.phase === "tour") ? steps[index] : null;
+  const highlightTarget = state?.phase === "tour" ? steps[index + 1]?.target : current?.target;
   const persist = useCallback((next: State) => {
     setState(next);
     try { localStorage.setItem(key, JSON.stringify(next)); } catch { /* Navigation possible sans stockage local. */ }
@@ -65,9 +67,9 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ow
         const raw = localStorage.getItem(key);
         const saved = JSON.parse(raw || localStorage.getItem("radar:onboarding:v2:" + ownerId) || "null") as State | null;
         if (!raw && saved && (saved.phase === "setup" || saved.phase === "paused") && saved.index >= 3) saved.index += 2;
-        if (saved && ["setup", "tour", "paused", "done"].includes(saved.phase)) {
+        if (saved && ["setup", "intro", "tour", "paused", "done"].includes(saved.phase)) {
           setState({ phase: saved.phase, index: Math.max(0, Math.min(saved.index || 0, saved.phase === "setup" ? setup.length - 1 : tour(demo).length - 1)) });
-        } else setState({ phase: !ready || !found ? "setup" : demo ? "tour" : "done", index: 0 });
+        } else setState({ phase: !ready || !found ? "setup" : demo ? "intro" : "done", index: 0 });
       } catch { setState({ phase: "setup", index: 0 }); }
     });
     return () => { live = false; };
@@ -78,7 +80,7 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ow
     if (state?.phase !== "setup") return;
     if (state.index === 2 && ready) persist({ phase: "setup", index: 3 });
     if (state.index === 4 && (profile.cvFrDocumentId || profile.cvEnDocumentId)) persist({ phase: "setup", index: 5 });
-    if (state.index === 6 && hasFact) persist({ phase: "tour", index: 0 });
+    if (state.index === 6 && hasFact) persist({ phase: "intro", index: 0 });
   }, [state, ready, hasFact, profile.cvFrDocumentId, profile.cvEnDocumentId, persist]);
   useEffect(() => {
     const changed = () => { void checkFacts(); };
@@ -86,15 +88,15 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ow
     return () => window.removeEventListener("radar:experiences-changed", changed);
   }, [checkFacts]);
   useEffect(() => {
-    const open = () => persist({ phase: !ready || !hasFact ? "setup" : "tour", index: state?.phase === "paused" ? state.index : 0 });
+    const open = () => persist({ phase: !ready || !hasFact ? "setup" : "intro", index: state?.phase === "paused" ? state.index : 0 });
     window.addEventListener("radar:open-guide", open);
     return () => window.removeEventListener("radar:open-guide", open);
   }, [persist, ready, hasFact, state]);
   useEffect(() => {
-    if (!current || !state) return;
+    if (!current || !state || !highlightTarget) { setGuideHost(null); return; }
     let target: HTMLElement | null = null;
     const attach = () => {
-      const found = document.querySelector<HTMLElement>('[data-radar-guide="' + current.target + '"]');
+      const found = document.querySelector<HTMLElement>('[data-radar-guide="' + highlightTarget + '"]');
       if (found === target) return;
       target?.removeAttribute("data-radar-guide-active");
       target = found;
@@ -112,20 +114,17 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ow
     observer.observe(document.body, { childList: true, subtree: true });
     document.addEventListener("click", clicked, true);
     return () => { observer.disconnect(); document.removeEventListener("click", clicked, true); target?.removeAttribute("data-radar-guide-active"); };
-  }, [current, state, steps.length, persist]);
+  }, [current, state, highlightTarget, steps.length, persist]);
 
   if (!ownerId || !state) return null;
-  if (!current) return <button type="button" className="onboarding-tour-reopen" onClick={() => persist({ phase: !ready || !hasFact ? "setup" : "tour", index: state.phase === "paused" ? state.index : 0 })}>{state.phase === "paused" ? "Reprendre le guide" : "Guide de prise en main"}</button>;
+  if (!current) return <button type="button" className="onboarding-tour-reopen" onClick={() => persist({ phase: !ready || !hasFact ? "setup" : "intro", index: state.phase === "paused" ? state.index : 0 })}>{state.phase === "paused" ? "Reprendre le guide" : "Guide de prise en main"}</button>;
   const card = <aside className={"onboarding-tour" + (mobile && guideHost ? " is-inline" : "")} data-guide-action={current.action} aria-label={state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} aria-live="polite">
-    <span className="onboarding-tour-kicker">{state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} · {index + 1}/{steps.length}</span>
+    <span className="onboarding-tour-kicker">{state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"}{state.phase !== "intro" ? ` · ${index + 1}/${steps.length}` : ""}</span>
     <strong className="onboarding-tour-title">{current.title}</strong>
     <p><span className={current.mobileDetail ? "onboarding-tour-detail-desktop" : undefined}>{current.detail}</span>{current.mobileDetail ? <span className="onboarding-tour-detail-mobile">{current.mobileDetail}</span> : null}</p>
     <div className="onboarding-tour-actions">
       <button type="button" className="onboarding-tour-later" onClick={() => persist({ phase: "paused", index: state.index })}>Plus tard</button>
-      {state.phase === "tour" ? <div className="onboarding-tour-navigation">
-        {index > 0 ? <button type="button" className="onboarding-tour-back" onClick={() => onNavigate(steps[index - 1].target.replace("nav-", "") as RadarTab)}>Précédent</button> : null}
-        <button type="button" className="onboarding-tour-open" onClick={() => index === steps.length - 1 ? persist({ phase: "done", index: 0 }) : onNavigate(steps[index + 1].target.replace("nav-", "") as RadarTab)}>{index === steps.length - 1 ? "Terminer la visite" : "Suivant : " + steps[index + 1].title}</button>
-      </div> : current.action === "upload" ? <button type="button" className="onboarding-tour-open" onClick={() => persist({ phase: "setup", index: 5 })}>Continuer sans CV</button> : current.action === "verify" ? <button type="button" className="onboarding-tour-open" disabled={checking} onClick={() => void checkFacts()}>{checking ? "Vérification…" : "Vérifier mon carnet"}</button> : <span className="onboarding-tour-instruction">{current.action === "save" ? "Enregistrez le formulaire pour continuer" : "Ouvrez l’onglet mis en lumière"}</span>}
+      {state.phase === "intro" ? <button type="button" className="onboarding-tour-open" onClick={() => { onNavigate("dashboard"); persist({phase:"tour",index:0}); }}>Lancer la visite</button> : state.phase === "tour" ? (index === steps.length - 1 ? <button type="button" className="onboarding-tour-open" onClick={() => persist({phase:"done",index:0})}>Terminer la visite</button> : <span className="onboarding-tour-instruction">Cliquez sur « {mobile ? mobileTourLabels[steps[index + 1].target] : steps[index + 1].title} » dans le menu pour continuer.</span>) : current.action === "upload" ? <button type="button" className="onboarding-tour-open" onClick={() => persist({ phase: "setup", index: 5 })}>Continuer sans CV</button> : current.action === "verify" ? <button type="button" className="onboarding-tour-open" disabled={checking} onClick={() => void checkFacts()}>{checking ? "Vérification…" : "Vérifier mon carnet"}</button> : <span className="onboarding-tour-instruction">{current.action === "save" ? "Enregistrez le formulaire pour continuer" : "Ouvrez l’onglet mis en lumière"}</span>}
     </div>
   </aside>;
   return mobile && guideHost ? createPortal(card, guideHost) : card;

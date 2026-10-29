@@ -2,6 +2,8 @@
 
 ## 29 octobre 2026
 
+- Visite : carte de lancement, description de la page affichée et halo sur le prochain onglet à cliquer ; fin explicite.
+
 - Visite : explication synchronisée avec la page affichée, commandes Précédent/Suivant et fin explicite ; halo à pulsation plus contrastée.
 
 - Guidage : remplacement des contours par un halo diffus pulsant, fixe lorsque les animations sont réduites.
