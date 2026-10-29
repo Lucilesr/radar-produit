@@ -93,7 +93,7 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
       const [jobResult, profileResult] = await Promise.allSettled([json<{jobs:JobRecord[]}>("/api/jobs?includeDeleted=true"), json<{profile:CandidateProfile|null}>("/api/profile")]);
       if (!active) return;
       if (jobResult.status === "fulfilled") setJobs(jobResult.value.jobs);
-      if (profileResult.status === "fulfilled") { if(profileResult.value.profile)setProfile(profileResult.value.profile);setProfileLoaded(true); }
+      if (profileResult.status === "fulfilled") { setProfile(profileResult.value.profile ?? profileTemplate);setProfileLoaded(true); }
       setLoadErrors({jobs:jobResult.status === "rejected",profile:profileResult.status === "rejected"});
       setLoading(false);
     }
@@ -158,7 +158,7 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
     setToast(job.deletedAt ? "Cette offre est déjà dans la corbeille. Restaurez-la depuis Opportunités → Corbeille si nécessaire." : deduplicated ? "Cette opportunité était déjà dans votre radar." : "Opportunité ajoutée et qualifiée.");
   }
   const searchedJobs = allJobs.filter(job => `${job.title} ${job.company} ${job.source}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
-  const viewCounts = Object.fromEntries((["to_review", "selected", "good_matches", "all", "trash"] as OfferFilter[]).map(view => [view, searchedJobs.filter(job => inOpportunityView(job, view)).length])) as Record<OfferFilter, number>;
+  const viewCounts = Object.fromEntries((["to_review", "selected", "good_matches", "trash"] as OfferFilter[]).map(view => [view, searchedJobs.filter(job => inOpportunityView(job, view)).length])) as Record<OfferFilter, number>;
   const shownJobs = filter === "to_review" ? sortOffersForTriage(searchedJobs) : searchedJobs.filter(job => inOpportunityView(job, filter));
   function selectTab(next: Tab) { navigate({ tab: next, offer: undefined }); }
 
