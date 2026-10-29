@@ -1,5 +1,9 @@
 # Évolutions de Radar Produit
 
+## 29 octobre 2026
+
+- Guide de prise en main : panneau ancré en bas à droite du viewport sur les grands écrans, avec marge de sécurité en bas.
+
 ## 28 octobre 2026
 
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.
