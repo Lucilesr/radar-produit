@@ -1,3 +1,9 @@
+## Guide de découverte : consignes plus lisibles
+
+- Instruction vers le prochain onglet séparée de « Plus tard », sur toute la largeur.
+- Vocabulaire aligné sur les actions et rubriques de l’application.
+- Intensité maximale du halo réduite de 18 %.
+
 # Évolutions de Radar Produit
 
 ## 29 octobre 2026
