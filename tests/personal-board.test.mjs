@@ -59,6 +59,14 @@ test("tableau personnel SQLite : isolation, version, déplacements et conservati
   let after=await store.getOffer("alice",job.id);assert.equal(after.boardColumnId,column.id);
   assert.equal((await move({status:"interview",expectedStatus:"interview",expectedBoardColumnId:null,boardColumnId:"interviews"})).status,409,"déplacement concurrent dans la même étape refusé");
   assert.equal(after.candidateNote,before.candidateNote);assert.deepEqual(after.interviews,before.interviews);assert.equal(after.appliedAt,before.appliedAt);
+  assert.equal((await route.PATCH(request({action:"delete",version:2,id:"interviews"}))).status,400,"colonne de base protégée");
+  const removed=await route.PATCH(request({action:"delete",version:2,id:column.id}));assert.equal(removed.status,200);
+  const withoutColumn=(await removed.json()).board;
+  assert.equal(withoutColumn.version,3);
+  const projection=await import(moduleUrl("lib/personal-board.ts"));
+  assert.equal(projection.personalColumn(after,withoutColumn.columns),"interviews","la carte revient dans la colonne de base");
+  assert.equal((await store.getOffer("alice",job.id)).candidateNote,before.candidateNote);
+  assert.deepEqual((await store.getOffer("alice",job.id)).interviews,before.interviews);
   assert.equal((await move({status:"offer"})).status,200);after=await store.getOffer("alice",job.id);assert.equal(after.boardColumnId,undefined);
   assert.equal(after.candidateNote,before.candidateNote);assert.deepEqual(after.interviews,before.interviews);
   sqlite.close();

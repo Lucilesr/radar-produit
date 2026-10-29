@@ -104,7 +104,7 @@
   .reading-application-action { margin-left: auto; min-height: 44px; }
   .opportunity-decision button { flex: initial; }
   .opportunity-action-main { flex: 1; }
-  .opportunity-action-main > :is(button,a) { min-height: 44px; }
+  .opportunity-action-main > :is(button,a),.opportunity-action-secondary > button,.opportunity-detail .signal-quiet-button { min-height: 44px; }
   .review-criteria-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 16px; }
   .signal-workspace-tabs { gap: 6px 16px; }
   .signal-workspace-tabs button { font-size: 14px; }
