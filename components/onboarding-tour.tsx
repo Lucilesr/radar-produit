@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import type { RadarTab } from "@/lib/radar-navigation";
 import type { CandidateProfile } from "@/lib/types";
 
 type Phase = "setup" | "tour" | "paused" | "done";
@@ -25,7 +26,7 @@ const tour = (demo: boolean): Step[] => [
 ];
 const complete = (p: CandidateProfile) => Boolean(p.headline.trim() && p.summary.trim() && p.skills.length);
 
-export function OnboardingTour({ ownerId, profile }: { ownerId: string; profile: CandidateProfile }) {
+export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ownerId: string; profile: CandidateProfile; activeTab: RadarTab; onNavigate: (tab: RadarTab) => void }) {
   const [state, setState] = useState<State | null>(null);
   const [guideHost, setGuideHost] = useState<HTMLElement | null>(null);
   const [mobile, setMobile] = useState(false);
@@ -36,7 +37,8 @@ export function OnboardingTour({ ownerId, profile }: { ownerId: string; profile:
   const demo = ownerId.startsWith("demo:");
   const ready = complete(profile);
   const steps = state?.phase === "setup" ? setup : tour(demo);
-  const current = state && (state.phase === "setup" || state.phase === "tour") ? steps[state.index] : null;
+  const index = state?.phase === "tour" ? Math.max(0, steps.findIndex(step => step.target === "nav-" + activeTab)) : state?.index ?? 0;
+  const current = state && (state.phase === "setup" || state.phase === "tour") ? steps[index] : null;
   const persist = useCallback((next: State) => {
     setState(next);
     try { localStorage.setItem(key, JSON.stringify(next)); } catch { /* Navigation possible sans stockage local. */ }
@@ -103,7 +105,7 @@ export function OnboardingTour({ ownerId, profile }: { ownerId: string; profile:
     const clicked = (event: MouseEvent) => {
       if (current.action !== "click" || !target?.contains(event.target as Node)) return;
       if (state.phase === "setup") persist({ phase: "setup", index: state.index + 1 });
-      else persist(state.index === steps.length - 1 ? { phase: "done", index: 0 } : { phase: "tour", index: state.index + 1 });
+
     };
     attach();
     const observer = new MutationObserver(attach);
@@ -115,12 +117,15 @@ export function OnboardingTour({ ownerId, profile }: { ownerId: string; profile:
   if (!ownerId || !state) return null;
   if (!current) return <button type="button" className="onboarding-tour-reopen" onClick={() => persist({ phase: !ready || !hasFact ? "setup" : "tour", index: state.phase === "paused" ? state.index : 0 })}>{state.phase === "paused" ? "Reprendre le guide" : "Guide de prise en main"}</button>;
   const card = <aside className={"onboarding-tour" + (mobile && guideHost ? " is-inline" : "")} data-guide-action={current.action} aria-label={state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} aria-live="polite">
-    <span className="onboarding-tour-kicker">{state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} · {state.index + 1}/{steps.length}</span>
+    <span className="onboarding-tour-kicker">{state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} · {index + 1}/{steps.length}</span>
     <strong className="onboarding-tour-title">{current.title}</strong>
     <p><span className={current.mobileDetail ? "onboarding-tour-detail-desktop" : undefined}>{current.detail}</span>{current.mobileDetail ? <span className="onboarding-tour-detail-mobile">{current.mobileDetail}</span> : null}</p>
     <div className="onboarding-tour-actions">
       <button type="button" className="onboarding-tour-later" onClick={() => persist({ phase: "paused", index: state.index })}>Plus tard</button>
-      {current.action === "upload" ? <button type="button" className="onboarding-tour-open" onClick={() => persist({ phase: "setup", index: 5 })}>Continuer sans CV</button> : current.action === "verify" ? <button type="button" className="onboarding-tour-open" disabled={checking} onClick={() => void checkFacts()}>{checking ? "Vérification…" : "Vérifier mon carnet"}</button> : <span className="onboarding-tour-instruction">{current.action === "save" ? "Enregistrez le formulaire pour continuer" : "Ouvrez l’onglet mis en lumière"}</span>}
+      {state.phase === "tour" ? <div className="onboarding-tour-navigation">
+        {index > 0 ? <button type="button" className="onboarding-tour-back" onClick={() => onNavigate(steps[index - 1].target.replace("nav-", "") as RadarTab)}>Précédent</button> : null}
+        <button type="button" className="onboarding-tour-open" onClick={() => index === steps.length - 1 ? persist({ phase: "done", index: 0 }) : onNavigate(steps[index + 1].target.replace("nav-", "") as RadarTab)}>{index === steps.length - 1 ? "Terminer la visite" : "Suivant : " + steps[index + 1].title}</button>
+      </div> : current.action === "upload" ? <button type="button" className="onboarding-tour-open" onClick={() => persist({ phase: "setup", index: 5 })}>Continuer sans CV</button> : current.action === "verify" ? <button type="button" className="onboarding-tour-open" disabled={checking} onClick={() => void checkFacts()}>{checking ? "Vérification…" : "Vérifier mon carnet"}</button> : <span className="onboarding-tour-instruction">{current.action === "save" ? "Enregistrez le formulaire pour continuer" : "Ouvrez l’onglet mis en lumière"}</span>}
     </div>
   </aside>;
   return mobile && guideHost ? createPortal(card, guideHost) : card;

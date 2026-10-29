@@ -2,6 +2,8 @@
 
 ## 29 octobre 2026
 
+- Visite : explication synchronisée avec la page affichée, commandes Précédent/Suivant et fin explicite ; halo à pulsation plus contrastée.
+
 - Guidage : remplacement des contours par un halo diffus pulsant, fixe lorsque les animations sont réduites.
 
 - Onboarding : étape CV facultative, carnet alimenté par le CV en l’absence de document détaillé, champs nécessaires identifiés et consignes intégrées aux formulaires mobiles.
