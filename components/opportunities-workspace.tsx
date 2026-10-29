@@ -10,7 +10,7 @@ import { formatDate } from "@/lib/application-workflow";
 import { formatEuro } from "@/lib/matching";
 import type { CandidateProfile, JobRecord, JobStatus } from "@/lib/types";
 
-const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"],["all","Toutes"],["trash","Corbeille"]];
+const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"],["trash","Corbeille"]];
 const remote={full_remote:"Full remote",exceptional:"Présence ponctuelle",hybrid:"Hybride",onsite:"Sur site",unknown:"Remote à confirmer"};
 export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
   currentJob?:JobRecord|null; jobs:JobRecord[];counts:Record<OpportunityView,number>;filter:OpportunityView;onFilter:(view:OpportunityView)=>void;query:string;onClearSearch:()=>void;
@@ -28,7 +28,7 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
   const selected=selectionInView(jobs,selection);
   const active=displayJobs.find(job=>job.id===activeId)||kept?.job||displayJobs[0];
   const heldOutside=!!kept&&!jobs.some(job=>job.id===kept.job.id);
-  const viewHelp=filter==="selected"?"Votre choix : les offres que vous avez sélectionnées, avant de candidater.":filter==="good_matches"?"Filtre automatique : les offres proches de vos critères selon Radar, sélectionnées ou non. Certaines ont déjà une candidature.":filter==="trash"?"Les offres écartées restent restaurables.":filter==="all"?"Toutes vos opportunités, y compris celles avec une candidature.":"Les offres qu’il vous reste à examiner.";
+  const viewHelp=filter==="selected"?"Votre choix : les offres que vous avez sélectionnées, avant de candidater.":filter==="good_matches"?"Filtre automatique : les offres proches de vos critères selon Radar, sélectionnées ou non.":filter==="trash"?"Les offres écartées restent restaurables.":"Les offres qu’il vous reste à examiner.";
   const currentScope=useRef({filter,query});
   useEffect(()=>{currentScope.current={filter,query};},[filter,query]);
   const viewIsCurrent=()=>currentScope.current.filter===filter&&currentScope.current.query===query;
@@ -70,7 +70,7 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
       onOpen(updated);
     }else setError("Votre choix n’a pas été enregistré. Réessayez ; le dernier choix confirmé est conservé.");}finally{locked.current=false;setReviewing(false);}
   }
-  const emptyAction: ReactNode=query?<button className="secondary-button" onClick={onClearSearch}>Effacer la recherche</button>:filter!=="all"?<button className="secondary-button" onClick={()=>{changeView("all");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Voir toutes les offres</button>:null;
+  const emptyAction: ReactNode=query?<button className="secondary-button" onClick={onClearSearch}>Effacer la recherche</button>:filter!=="to_review"?<button className="secondary-button" onClick={()=>{changeView("to_review");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Voir les offres à examiner</button>:null;
   return <div className={"opportunities-workspace "+(activeId?"has-open-offer":"")}>
     <nav className="workspace-tabs" aria-label="Vues des opportunités">{views.map(([id,label])=><button type="button" key={id} aria-pressed={filter===id} onClick={()=>changeView(id)}>{label}<span>{counts[id]}</span></button>)}</nav>
     <div className="opportunities-toolbar"><div className="review-view-summary"><span className="workspace-caption">{jobs.length} offre{jobs.length>1?"s":""}{query?` · « ${query} »`:""}{heldOutside?" · dernière décision affichée":""}</span><HelpTooltip label="Vue des opportunités">{viewHelp}</HelpTooltip></div><div className="review-toolbar-actions"><button type="button" className="review-radar-filter" aria-pressed={filter==="good_matches"} onClick={()=>changeView(filter==="good_matches"?"to_review":"good_matches")}>Correspondances Radar <span>{counts.good_matches}</span></button>{jobs.length>0&&filter!=="trash"?<button type="button" className="secondary-button" aria-pressed={selecting} onClick={()=>{setRetained(null);setSelecting(!selecting);setSelection([]);}}>{selecting?"Terminer les actions groupées":"Actions groupées"}</button>:null}</div></div>

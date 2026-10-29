@@ -7,10 +7,22 @@
 - Guide mobile : consignes de saisie compactes, champs dégagés pendant l’édition et espace de défilement jusqu’à l’enregistrement, au-dessus de la navigation du téléphone.
 
 - Guide de prise en main : panneau ancré en bas à droite du viewport sur les grands écrans, avec marge de sécurité en bas.
+- Navigation mobile : retrait du liseré citron latéral de l’onglet sélectionné.
+- Kanban : action « Déplacer » avec choix de colonne, statut automatique et motif de clôture conservé, en complément du glisser-déposer.
+- Mobile : champs du profil et des sources à 16 px, cibles tactiles et bouton de présentation adaptés.
+- Profil : exemples dans les cinq champs de Ma présentation, sur mobile et ordinateur.
+- Interface : espacement de fin de page réduit, réserve mobile ajustée à la navigation fixe.
+- Candidatures sur tablette : identité, date et prochaine action regroupées, commandes alignées et lignes compactes.
+- Performance : la lecture d’une offre après modification ou enregistrement d’un entretien cible désormais cette offre, ses entretiens et sa dernière note. Le chargement de la liste regroupe les entretiens en un seul passage.
 
 ## 28 octobre 2026
 
+- Kanban des candidatures : suppression des colonnes personnelles avec retour des cartes dans leur étape, déplacement direct des cartes avec statut mis à jour automatiquement, retrait du sélecteur de statut redondant sur les cartes.
+- Retouches visuelles discrètes de la navigation, des opportunités et des candidatures : contours, typographie et animations courtes, avec prise en compte de la réduction des animations. Les parcours et actions existants sont conservés.
+- Opportunités : suppression du filtre « Toutes » pour éviter de mélanger les offres à examiner et les candidatures. Les correspondances Radar excluent aussi les offres déjà passées en candidature ; les anciens liens « Toutes » ouvrent « À examiner ».
+
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.
+- Comptes pilotes : un nouveau compte démarre avec un profil professionnel vide ; un profil déjà enregistré reste conservé. Le rechargement remet aussi l’interface à vide lorsqu’aucun profil n’existe.
 
 - Onboarding : mise en lumière des onglets Profil, présentation et carnet ; progression après enregistrement du profil et validation d’une expérience, puis mini-visite contextuelle des écrans. Guide quittable et relançable.
 
