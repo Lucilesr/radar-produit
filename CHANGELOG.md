@@ -2,6 +2,8 @@
 
 ## 29 octobre 2026
 
+- Guidage : remplacement des contours par un halo diffus pulsant, fixe lorsque les animations sont réduites.
+
 - Onboarding : étape CV facultative, carnet alimenté par le CV en l’absence de document détaillé, champs nécessaires identifiés et consignes intégrées aux formulaires mobiles.
 
 ## 29 octobre 2026
