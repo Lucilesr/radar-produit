@@ -72,10 +72,10 @@ export async function mutateLibrary(userId:string,input:unknown) {
     const hash=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify(c))))].map(b=>b.toString(16).padStart(2,"0")).join("");
     receipt=`operation:${c.requestId}:${hash}`;
     const previous=await db().prepare("SELECT action FROM experience_revisions WHERE user_id=? AND action LIKE ? LIMIT 1").bind(userId,`operation:${c.requestId}:%`).first<{action:string}>();
-    if(previous){if(previous.action!==receipt)throw new Error("Cette opération correspond à une autre sélection. Actualisez Mon parcours.");return library(userId);}
+    if(previous){if(previous.action!==receipt)throw new Error("Cette opération correspond à une autre sélection. Actualisez les expériences.");return library(userId);}
   }
   const state=await library(userId);
-  const requireItem=(id:string,version?:number)=>{const item=state.items.find(i=>i.id===id);if(!item||(version!==undefined&&item.version!==version))throw new Error("Version périmée ou élément introuvable. Actualisez Mon parcours puis refaites la sélection.");return item;};
+  const requireItem=(id:string,version?:number)=>{const item=state.items.find(i=>i.id===id);if(!item||(version!==undefined&&item.version!==version))throw new Error("Version périmée ou élément introuvable. Actualisez les expériences puis refaites la sélection.");return item;};
   if(c.action==="create"){
     if(c.kind==="experience"&&c.parentId)throw new Error("Une expérience ne peut avoir de parent.");
     if(c.parentId&&requireItem(c.parentId).kind!=="experience")throw new Error("Expérience parente invalide.");
