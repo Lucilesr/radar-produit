@@ -2,6 +2,7 @@
 
 ## 29 octobre 2026
 
+- Navigation mobile : retrait du liseré citron latéral de l’onglet sélectionné.
 - Kanban : action « Déplacer » avec choix de colonne, statut automatique et motif de clôture conservé, en complément du glisser-déposer.
 - Mobile : champs du profil et des sources à 16 px, cibles tactiles et bouton de présentation adaptés.
 - Profil : exemples dans les cinq champs de Ma présentation, sur mobile et ordinateur.
