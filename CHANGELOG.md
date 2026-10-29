@@ -2,6 +2,7 @@
 
 ## 29 octobre 2026
 
+- Candidatures sur tablette : identité, date et prochaine action regroupées, commandes alignées et lignes compactes.
 - Performance : la lecture d’une offre après modification ou enregistrement d’un entretien cible désormais cette offre, ses entretiens et sa dernière note. Le chargement de la liste regroupe les entretiens en un seul passage.
 
 ## 28 octobre 2026
