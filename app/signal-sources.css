@@ -25,13 +25,17 @@
 .signal-source-message p { margin-top:8px; font:400 13px/1.8 var(--font-sans); color:var(--muted-foreground); }
 @media(max-width:1000px) { .signal-source-tracks,.signal-source-strategies { grid-template-columns:1fr; } }
 @media(max-width:640px) { .signal-source-panel { padding:20px 16px; }.signal-collective-form { flex-direction:column; align-items:stretch; }.signal-collective-form input { flex:auto; width:100%; }.signal-collective-form .signal-form-button,.signal-source-panel .signal-panel-actions .signal-form-button { max-width:100%; width:auto; }.signal-source-panel .signal-panel-actions { width:auto; min-width:0; } }
-.source-workspace .source-settings-grid { gap:20px; align-items:start; }
-.signal-source-card { min-width:0; padding:24px; border:1px solid var(--border); border-top:2px solid #adbfca; border-radius:5px; background:var(--card); }
+.source-workspace .source-settings-grid { gap:20px; align-items:stretch; grid-auto-rows:1fr; }
+.signal-source-card { display:flex; flex-direction:column; min-width:0; padding:24px; border:1px solid var(--border); border-top:2px solid #adbfca; border-radius:5px; background:var(--card); }
 .signal-source-card[hidden] { display:none; }
 .signal-source-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
 .signal-source-heading>div { min-width:0; }
+.signal-source-identity { display:flex; align-items:center; gap:12px; min-width:0; }
+.signal-source-identity>div { min-width:0; }
+.signal-source-logo { display:grid; place-items:center; flex:0 0 104px; width:104px; height:46px; padding:6px; border:1px solid var(--border); border-radius:4px; background:var(--signal-soft); }
+.signal-source-logo .source-logo { max-width:90px; max-height:32px; }
 .radar-app .signal-source-heading h2 { font:600 18px/1.4 var(--font-sans); letter-spacing:-.015em; margin:0; }
-.signal-source-description { font:400 13px/1.75 var(--font-sans); color:var(--muted-foreground); margin:14px 0; overflow-wrap:anywhere; }
+.signal-source-description { flex:1 1 auto; font:400 13px/1.75 var(--font-sans); color:var(--muted-foreground); margin:14px 0; overflow-wrap:anywhere; }
 .signal-source-link { width:fit-content; max-width:100%; }
 .source-workspace .source-research { margin-top:18px; border-radius:4px; background:transparent; }
 .source-workspace .signal-source-config>.radar-collapsible-content { padding:16px 0 0; border:0; }
