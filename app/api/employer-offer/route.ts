@@ -3,8 +3,10 @@ import { ensureSameOrigin } from "@/lib/server";
 import { previewEmployerOffer } from "@/lib/employer-offer";
 
 export async function POST(request: Request) {
-  if (!await getChatGPTUser()) return Response.json({ error: "Authentification requise" }, { status: 401 });
+  const user = await getChatGPTUser();
+  if (!user) return Response.json({ error: "Authentification requise" }, { status: 401 });
   if (!ensureSameOrigin(request)) return Response.json({ error: "Origine non autorisée" }, { status: 403 });
+  if (user.userId.startsWith("demo:")) return Response.json({ error: "La lecture d’offres externes est désactivée dans la démo." }, { status: 403 });
   try {
     const raw = await request.text();
     if (new TextEncoder().encode(raw).length > 2048) return Response.json({ error: "Requête trop volumineuse" }, { status: 413 });

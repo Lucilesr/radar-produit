@@ -1,0 +1,4 @@
+.demo-notice { position: relative; z-index: 60; display: flex; align-items: center; gap: 18px; min-height: 38px; padding: 7px 24px; background: var(--signal-petrol-dark, #193f50); color: #fff; font: 700 11px/1.4 var(--font-sans, sans-serif); letter-spacing: .02em; }
+.demo-notice span { margin-right: auto; }
+.demo-notice a { color: var(--signal-citron, #e6ee53); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+@media (max-width: 760px) { .demo-notice { flex-wrap: wrap; gap: 4px 12px; padding: 8px 16px; } .demo-notice span { flex-basis: 100%; } }

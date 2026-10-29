@@ -1,17 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import type { RadarTab } from "@/lib/radar-navigation";
 import type { CandidateProfile } from "@/lib/types";
 
 type Phase = "setup" | "tour" | "paused" | "done";
 type State = { phase: Phase; index: number };
-type Step = { target: string; title: string; detail: string; mobileDetail?: string; action: "click" | "save" | "verify" };
+type Step = { target: string; title: string; detail: string; mobileDetail?: string; action: "click" | "save" | "upload" | "verify" };
 const setup: Step[] = [
   { target: "nav-profile", title: "Ouvrez votre profil", detail: "Cliquez sur l’onglet mis en lumière pour commencer.", action: "click" },
   { target: "profile-presentation", title: "Votre présentation", detail: "Ouvrez Ma présentation pour renseigner l’essentiel.", action: "click" },
-  { target: "presentation-form", title: "Posez les bases", detail: "Renseignez un titre ciblé, un résumé et vos compétences, puis enregistrez. Le guide avancera après l’enregistrement.", mobileDetail: "Titre ciblé, résumé et compétences : complétez ces champs, puis enregistrez.", action: "save" },
-  { target: "profile-experiences", title: "Votre carnet d’expériences", detail: "Ouvrez le carnet pour ajouter une réalisation vérifiable.", action: "click" },
-  { target: "experience-library", title: "Validez un fait", detail: "Ajoutez une expérience ou une réalisation, puis validez-la. Son utilisation en candidature exige votre autorisation.", mobileDetail: "Ajoutez une expérience ou une réalisation, puis validez-la dans le carnet.", action: "verify" },
+  { target: "presentation-form", title: "Votre présentation", detail: "Renseignez un titre ciblé, un résumé et vos compétences, puis enregistrez. Le guide avancera après l’enregistrement.", mobileDetail: "Titre ciblé, résumé et compétences : complétez ces champs, puis enregistrez.", action: "save" },
+  { target: "profile-documents", title: "Ajoutez votre CV", detail: "Ouvrez Mes documents. Le CV est recommandé pour préparer votre carnet, mais vous pouvez aussi le remplir à la main.", action: "click" },
+  { target: "profile-documents-panel", title: "Déposez votre CV", detail: "Importez votre CV français ou anglais. Les expériences seront proposées dans le carnet : vous devrez les relire et les valider.", mobileDetail: "Touchez Importer sous CV français ou CV anglais, puis choisissez votre fichier. Vous relirez les expériences à l’étape suivante.", action: "upload" },
+  { target: "profile-experiences", title: "Votre carnet d’expériences", detail: "Ouvrez le carnet pour relire les éléments du CV ou ajouter une expérience manuellement.", action: "click" },
+  { target: "experience-library", title: "Relisez votre première expérience", detail: "Ouvrez une expérience ou une réalisation, puis touchez le crayon pour relire les champs. Enregistrer valide les faits relus. L’autorisation d’usage en candidature reste un choix séparé.", mobileDetail: "Ouvrez une réalisation, touchez le crayon, puis Enregistrer pour valider les faits relus. Sans CV : Ajouter une expérience.", action: "verify" },
 ];
 const tour = (demo: boolean): Step[] => [
   { target: "nav-dashboard", title: "Aujourd’hui", detail: "Votre point de départ : priorités, actions à faire et prochains entretiens.", action: "click" },
@@ -22,15 +26,19 @@ const tour = (demo: boolean): Step[] => [
 ];
 const complete = (p: CandidateProfile) => Boolean(p.headline.trim() && p.summary.trim() && p.skills.length);
 
-export function OnboardingTour({ ownerId, profile }: { ownerId: string; profile: CandidateProfile }) {
+export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ownerId: string; profile: CandidateProfile; activeTab: RadarTab; onNavigate: (tab: RadarTab) => void }) {
   const [state, setState] = useState<State | null>(null);
+  const [guideHost, setGuideHost] = useState<HTMLElement | null>(null);
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => { const query = window.matchMedia("(max-width:640px)"); const update = () => setMobile(query.matches); update(); query.addEventListener("change", update); return () => query.removeEventListener("change", update); }, []);
   const [hasFact, setHasFact] = useState(false);
   const [checking, setChecking] = useState(false);
-  const key = "radar:onboarding:v2:" + ownerId;
+  const key = "radar:onboarding:v3:" + ownerId;
   const demo = ownerId.startsWith("demo:");
   const ready = complete(profile);
   const steps = state?.phase === "setup" ? setup : tour(demo);
-  const current = state && (state.phase === "setup" || state.phase === "tour") ? steps[state.index] : null;
+  const index = state?.phase === "tour" ? Math.max(0, steps.findIndex(step => step.target === "nav-" + activeTab)) : state?.index ?? 0;
+  const current = state && (state.phase === "setup" || state.phase === "tour") ? steps[index] : null;
   const persist = useCallback((next: State) => {
     setState(next);
     try { localStorage.setItem(key, JSON.stringify(next)); } catch { /* Navigation possible sans stockage local. */ }
@@ -54,7 +62,9 @@ export function OnboardingTour({ ownerId, profile }: { ownerId: string; profile:
     void checkFacts().then(found => {
       if (!live) return;
       try {
-        const saved = JSON.parse(localStorage.getItem(key) || "null") as State | null;
+        const raw = localStorage.getItem(key);
+        const saved = JSON.parse(raw || localStorage.getItem("radar:onboarding:v2:" + ownerId) || "null") as State | null;
+        if (!raw && saved && (saved.phase === "setup" || saved.phase === "paused") && saved.index >= 3) saved.index += 2;
         if (saved && ["setup", "tour", "paused", "done"].includes(saved.phase)) {
           setState({ phase: saved.phase, index: Math.max(0, Math.min(saved.index || 0, saved.phase === "setup" ? setup.length - 1 : tour(demo).length - 1)) });
         } else setState({ phase: !ready || !found ? "setup" : demo ? "tour" : "done", index: 0 });
@@ -67,8 +77,9 @@ export function OnboardingTour({ ownerId, profile }: { ownerId: string; profile:
   useEffect(() => {
     if (state?.phase !== "setup") return;
     if (state.index === 2 && ready) persist({ phase: "setup", index: 3 });
-    if (state.index === 4 && hasFact) persist({ phase: "tour", index: 0 });
-  }, [state, ready, hasFact, persist]);
+    if (state.index === 4 && (profile.cvFrDocumentId || profile.cvEnDocumentId)) persist({ phase: "setup", index: 5 });
+    if (state.index === 6 && hasFact) persist({ phase: "tour", index: 0 });
+  }, [state, ready, hasFact, profile.cvFrDocumentId, profile.cvEnDocumentId, persist]);
   useEffect(() => {
     const changed = () => { void checkFacts(); };
     window.addEventListener("radar:experiences-changed", changed);
@@ -87,13 +98,14 @@ export function OnboardingTour({ ownerId, profile }: { ownerId: string; profile:
       if (found === target) return;
       target?.removeAttribute("data-radar-guide-active");
       target = found;
+      setGuideHost(target?.querySelector<HTMLElement>("[data-radar-guide-slot]") ?? null);
       target?.setAttribute("data-radar-guide-active", "true");
       if (target) target.scrollIntoView({ block: current.action === "click" ? "nearest" : "start", inline: "nearest" });
     };
     const clicked = (event: MouseEvent) => {
       if (current.action !== "click" || !target?.contains(event.target as Node)) return;
       if (state.phase === "setup") persist({ phase: "setup", index: state.index + 1 });
-      else persist(state.index === steps.length - 1 ? { phase: "done", index: 0 } : { phase: "tour", index: state.index + 1 });
+
     };
     attach();
     const observer = new MutationObserver(attach);
@@ -104,13 +116,17 @@ export function OnboardingTour({ ownerId, profile }: { ownerId: string; profile:
 
   if (!ownerId || !state) return null;
   if (!current) return <button type="button" className="onboarding-tour-reopen" onClick={() => persist({ phase: !ready || !hasFact ? "setup" : "tour", index: state.phase === "paused" ? state.index : 0 })}>{state.phase === "paused" ? "Reprendre le guide" : "Guide de prise en main"}</button>;
-  return <aside className="onboarding-tour" data-guide-action={current.action} aria-label={state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} aria-live="polite">
-    <span className="onboarding-tour-kicker">{state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} · {state.index + 1}/{steps.length}</span>
+  const card = <aside className={"onboarding-tour" + (mobile && guideHost ? " is-inline" : "")} data-guide-action={current.action} aria-label={state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} aria-live="polite">
+    <span className="onboarding-tour-kicker">{state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} · {index + 1}/{steps.length}</span>
     <strong className="onboarding-tour-title">{current.title}</strong>
     <p><span className={current.mobileDetail ? "onboarding-tour-detail-desktop" : undefined}>{current.detail}</span>{current.mobileDetail ? <span className="onboarding-tour-detail-mobile">{current.mobileDetail}</span> : null}</p>
     <div className="onboarding-tour-actions">
       <button type="button" className="onboarding-tour-later" onClick={() => persist({ phase: "paused", index: state.index })}>Plus tard</button>
-      {current.action === "verify" ? <button type="button" className="onboarding-tour-open" disabled={checking} onClick={() => void checkFacts()}>{checking ? "Vérification…" : "Vérifier mon carnet"}</button> : <span className="onboarding-tour-instruction">{current.action === "save" ? "Enregistrez le formulaire pour continuer" : "Cliquez sur la zone éclairée"}</span>}
+      {state.phase === "tour" ? <div className="onboarding-tour-navigation">
+        {index > 0 ? <button type="button" className="onboarding-tour-back" onClick={() => onNavigate(steps[index - 1].target.replace("nav-", "") as RadarTab)}>Précédent</button> : null}
+        <button type="button" className="onboarding-tour-open" onClick={() => index === steps.length - 1 ? persist({ phase: "done", index: 0 }) : onNavigate(steps[index + 1].target.replace("nav-", "") as RadarTab)}>{index === steps.length - 1 ? "Terminer la visite" : "Suivant : " + steps[index + 1].title}</button>
+      </div> : current.action === "upload" ? <button type="button" className="onboarding-tour-open" onClick={() => persist({ phase: "setup", index: 5 })}>Continuer sans CV</button> : current.action === "verify" ? <button type="button" className="onboarding-tour-open" disabled={checking} onClick={() => void checkFacts()}>{checking ? "Vérification…" : "Vérifier mon carnet"}</button> : <span className="onboarding-tour-instruction">{current.action === "save" ? "Enregistrez le formulaire pour continuer" : "Ouvrez l’onglet mis en lumière"}</span>}
     </div>
   </aside>;
+  return mobile && guideHost ? createPortal(card, guideHost) : card;
 }
