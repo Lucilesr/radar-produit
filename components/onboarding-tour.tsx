@@ -5,13 +5,13 @@ import type { CandidateProfile } from "@/lib/types";
 
 type Phase = "setup" | "tour" | "paused" | "done";
 type State = { phase: Phase; index: number };
-type Step = { target: string; title: string; detail: string; action: "click" | "save" | "verify" };
+type Step = { target: string; title: string; detail: string; mobileDetail?: string; action: "click" | "save" | "verify" };
 const setup: Step[] = [
   { target: "nav-profile", title: "Ouvrez votre profil", detail: "Cliquez sur l’onglet mis en lumière pour commencer.", action: "click" },
   { target: "profile-presentation", title: "Votre présentation", detail: "Ouvrez Ma présentation pour renseigner l’essentiel.", action: "click" },
-  { target: "presentation-form", title: "Posez les bases", detail: "Renseignez un titre ciblé, un résumé et vos compétences, puis enregistrez. Le guide avancera après l’enregistrement.", action: "save" },
+  { target: "presentation-form", title: "Posez les bases", detail: "Renseignez un titre ciblé, un résumé et vos compétences, puis enregistrez. Le guide avancera après l’enregistrement.", mobileDetail: "Titre ciblé, résumé et compétences : complétez ces champs, puis enregistrez.", action: "save" },
   { target: "profile-experiences", title: "Votre carnet d’expériences", detail: "Ouvrez le carnet pour ajouter une réalisation vérifiable.", action: "click" },
-  { target: "experience-library", title: "Validez un fait", detail: "Ajoutez une expérience ou une réalisation, puis validez-la. Son utilisation en candidature exige votre autorisation.", action: "verify" },
+  { target: "experience-library", title: "Validez un fait", detail: "Ajoutez une expérience ou une réalisation, puis validez-la. Son utilisation en candidature exige votre autorisation.", mobileDetail: "Ajoutez une expérience ou une réalisation, puis validez-la dans le carnet.", action: "verify" },
 ];
 const tour = (demo: boolean): Step[] => [
   { target: "nav-dashboard", title: "Aujourd’hui", detail: "Votre point de départ : priorités, actions à faire et prochains entretiens.", action: "click" },
@@ -88,7 +88,7 @@ export function OnboardingTour({ ownerId, profile }: { ownerId: string; profile:
       target?.removeAttribute("data-radar-guide-active");
       target = found;
       target?.setAttribute("data-radar-guide-active", "true");
-      if (target && current.action === "click") target.scrollIntoView({ block: "nearest", inline: "nearest" });
+      if (target) target.scrollIntoView({ block: current.action === "click" ? "nearest" : "start", inline: "nearest" });
     };
     const clicked = (event: MouseEvent) => {
       if (current.action !== "click" || !target?.contains(event.target as Node)) return;
@@ -104,10 +104,10 @@ export function OnboardingTour({ ownerId, profile }: { ownerId: string; profile:
 
   if (!ownerId || !state) return null;
   if (!current) return <button type="button" className="onboarding-tour-reopen" onClick={() => persist({ phase: !ready || !hasFact ? "setup" : "tour", index: state.phase === "paused" ? state.index : 0 })}>{state.phase === "paused" ? "Reprendre le guide" : "Guide de prise en main"}</button>;
-  return <aside className="onboarding-tour" aria-label={state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} aria-live="polite">
+  return <aside className="onboarding-tour" data-guide-action={current.action} aria-label={state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} aria-live="polite">
     <span className="onboarding-tour-kicker">{state.phase === "setup" ? "Compléter mon profil" : "Découvrir Radar"} · {state.index + 1}/{steps.length}</span>
     <strong className="onboarding-tour-title">{current.title}</strong>
-    <p>{current.detail}</p>
+    <p><span className={current.mobileDetail ? "onboarding-tour-detail-desktop" : undefined}>{current.detail}</span>{current.mobileDetail ? <span className="onboarding-tour-detail-mobile">{current.mobileDetail}</span> : null}</p>
     <div className="onboarding-tour-actions">
       <button type="button" className="onboarding-tour-later" onClick={() => persist({ phase: "paused", index: state.index })}>Plus tard</button>
       {current.action === "verify" ? <button type="button" className="onboarding-tour-open" disabled={checking} onClick={() => void checkFacts()}>{checking ? "Vérification…" : "Vérifier mon carnet"}</button> : <span className="onboarding-tour-instruction">{current.action === "save" ? "Enregistrez le formulaire pour continuer" : "Cliquez sur la zone éclairée"}</span>}

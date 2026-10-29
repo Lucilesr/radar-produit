@@ -2,6 +2,8 @@
 
 ## 29 octobre 2026
 
+- Guide mobile : consignes de saisie compactes, champs dégagés pendant l’édition et espace de défilement jusqu’à l’enregistrement, au-dessus de la navigation du téléphone.
+
 - Guide de prise en main : panneau ancré en bas à droite du viewport sur les grands écrans, avec marge de sécurité en bas.
 - Navigation mobile : retrait du liseré citron latéral de l’onglet sélectionné.
 - Kanban : action « Déplacer » avec choix de colonne, statut automatique et motif de clôture conservé, en complément du glisser-déposer.
