@@ -16,15 +16,15 @@ test("vues distinctes : score, choix et candidature ne se substituent pas", () =
   assert(!inOpportunityView({ ...job, reviewState: "selected" }, "to_review"));
   assert(inOpportunityView({ ...job, status: "watchlist" }, "to_review"));
   assert(inOpportunityView({ ...job, status: "prepare" }, "selected"));
-  assert(inOpportunityView({ ...job, status: "closed" }, "all"));
   assert(!inOpportunityView({ ...job, status: "closed" }, "to_review"));
   assert(inOpportunityView({ ...job, matchTier: "excluded", matchScore: 90 }, "to_review"));
   assert(!inOpportunityView({ ...job, matchTier: "excluded", matchScore: 90 }, "good_matches"));
   assert(!inOpportunityView({ ...job, matchScore: 74 }, "good_matches"));
-  assert(inOpportunityView({ ...job, status: "applied" }, "all"));
   assert(!inOpportunityView({ ...job, status: "applied" }, "to_review"));
+  assert(!inOpportunityView({ ...job, status: "applied" }, "good_matches"));
+  assert(!inOpportunityView({ ...job, status: "new", interviews: [{}] }, "good_matches"));
   assert(inOpportunityView({ ...job, deletedAt: "2026-10-19" }, "trash"));
-  assert(!inOpportunityView({ ...job, deletedAt: "2026-10-19" }, "all"));
+  assert(!inOpportunityView({ ...job, deletedAt: "2026-10-19" }, "good_matches"));
 });
 
 test("la fiche Opportunités prépare l’offre ; le suivi détaillé reste dans Candidatures", () => {
