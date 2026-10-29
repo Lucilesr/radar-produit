@@ -19,6 +19,7 @@ import "./signal-sources.css";
 import "./signal-today.css";
 import "./signal-brief.css";
 import "./signal-kanban.css";
+import "./onboarding-tour.css";
 import "./signal-micro-motion.css";
 
 export const metadata: Metadata = {
