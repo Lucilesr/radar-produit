@@ -2,6 +2,7 @@
 
 ## 29 octobre 2026
 
+- Profil : exemples dans les cinq champs de Ma présentation, sur mobile et ordinateur.
 - Interface : espacement de fin de page réduit, réserve mobile ajustée à la navigation fixe.
 - Candidatures sur tablette : identité, date et prochaine action regroupées, commandes alignées et lignes compactes.
 - Performance : la lecture d’une offre après modification ou enregistrement d’un entretien cible désormais cette offre, ses entretiens et sa dernière note. Le chargement de la liste regroupe les entretiens en un seul passage.
