@@ -12,16 +12,16 @@ const setup: Step[] = [
   { target: "nav-profile", title: "Ouvrez votre profil", detail: "Cliquez sur l’onglet mis en lumière pour commencer.", action: "click" },
   { target: "profile-presentation", title: "Votre présentation", detail: "Ouvrez Ma présentation pour renseigner l’essentiel.", action: "click" },
   { target: "presentation-form", title: "Votre présentation", detail: "Renseignez un titre ciblé, un résumé et vos compétences, puis enregistrez. Le guide avancera après l’enregistrement.", mobileDetail: "Titre ciblé, résumé et compétences : complétez ces champs, puis enregistrez.", action: "save" },
-  { target: "profile-documents", title: "Ajoutez votre CV", detail: "Ouvrez Mes documents. Le CV est recommandé pour préparer votre carnet, mais vous pouvez aussi le remplir à la main.", action: "click" },
-  { target: "profile-documents-panel", title: "Déposez votre CV", detail: "Importez votre CV français ou anglais. Les expériences seront proposées dans le carnet : vous devrez les relire et les valider.", mobileDetail: "Touchez Importer sous CV français ou CV anglais, puis choisissez votre fichier. Vous relirez les expériences à l’étape suivante.", action: "upload" },
-  { target: "profile-experiences", title: "Votre carnet d’expériences", detail: "Ouvrez le carnet pour relire les éléments du CV ou ajouter une expérience manuellement.", action: "click" },
+  { target: "profile-documents", title: "Ajoutez votre CV", detail: "Ouvrez Mes documents. Le CV peut alimenter Mon parcours, que vous pouvez aussi compléter à la main.", action: "click" },
+  { target: "profile-documents-panel", title: "Déposez votre CV", detail: "Importez votre CV français ou anglais. Les expériences seront proposées dans Mon parcours : vous devrez les relire et les valider.", mobileDetail: "Touchez Importer sous CV français ou CV anglais, puis choisissez votre fichier. Vous relirez les expériences à l’étape suivante.", action: "upload" },
+  { target: "profile-experiences", title: "Votre parcours", detail: "Ouvrez Mon parcours pour relire les éléments du CV ou ajouter une expérience manuellement.", action: "click" },
   { target: "experience-library", title: "Relisez votre première expérience", detail: "Ouvrez une expérience ou une réalisation, puis touchez le crayon pour relire les champs. Enregistrer valide les faits relus. L’autorisation d’usage en candidature reste un choix séparé.", mobileDetail: "Ouvrez une réalisation, touchez le crayon, puis Enregistrer pour valider les faits relus. Sans CV : Ajouter une expérience.", action: "verify" },
 ];
 const tour = (demo: boolean): Step[] => [
   { target: "nav-dashboard", title: "Aujourd’hui", detail: "Votre point de départ : priorités, actions à faire et prochains entretiens.", action: "click" },
   { target: "nav-offers", title: "Opportunités", detail: "Examinez les annonces, sélectionnez celles qui vous intéressent pour préparer vos candidatures avec Radar, et écartez les autres.", action: "click" },
   { target: "nav-pipeline", title: "Candidatures", detail: "Suivez vos candidatures en Tableau ou en Kanban. Déplacez une carte pour mettre à jour son étape, puis ouvrez-la pour préparer une relance ou un entretien.", action: "click" },
-  { target: "nav-profile", title: "Mon profil", detail: "Complétez Ma présentation, importez votre CV dans Mes documents et enrichissez votre Carnet d’expériences pour préparer vos candidatures.", action: "click" },
+  { target: "nav-profile", title: "Mon profil", detail: "Complétez Ma présentation, importez votre CV dans Mes documents et enrichissez Mon parcours pour préparer vos candidatures.", action: "click" },
   { target: "nav-sources", title: "Sources", detail: demo ? "Découvrez d’où viennent les annonces. L’actualisation externe est désactivée dans cette démo." : "Choisissez vos sources de veille et contrôlez leur actualisation.", action: "click" },
 ];
 const mobileTourLabels: Record<string,string> = {"nav-dashboard":"Accueil","nav-offers":"Offres","nav-pipeline":"Suivi","nav-profile":"Profil","nav-sources":"Sources"};
