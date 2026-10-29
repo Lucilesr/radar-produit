@@ -57,6 +57,9 @@ test("corbeille SQLite : isolation A/B, relance, réimport, rappels et restaurat
   assert.equal(sqlite.prepare("SELECT applied_at AS appliedAt FROM jobs WHERE id=?").get(a.id).appliedAt, appliedAt);
   sqlite.prepare("UPDATE jobs SET status='interview' WHERE id=?").run(a.id);
   sqlite.prepare("INSERT INTO profiles(user_id,data) VALUES(?,?)").run("alice", JSON.stringify({ applicationNotes: { [a.id]: "Note fictive conservée" } }));
+  sqlite.prepare("INSERT INTO workspace_writes(user_id,key,version,value,created_at) VALUES(?,?,?,?,?)").run("alice", `note:${a.id}`, 1, "Note fictive actualisée", "2026-01-01T08:00:00Z");
+  assert.equal((await store.getOffer("alice", a.id)).candidateNote, "Note fictive actualisée", "la lecture ciblée conserve la dernière note");
+  assert.equal((await store.listOffers("alice"))[0].candidateNote, "Note fictive actualisée", "la liste et le détail concordent");
   sqlite.prepare("INSERT INTO interviews(id,user_id,job_id,label,start_at,end_at,time_zone) VALUES(?,?,?,?,?,?,?)").run("entretien-fictif", "alice", a.id, "Échange fictif", "2026-01-01T09:00:00Z", "2026-01-01T10:00:00Z", "Europe/Paris");
   const beforeMoves = await store.getOffer("alice", a.id);
   const profileBeforeMoves = sqlite.prepare("SELECT data FROM profiles WHERE user_id='alice'").get().data;
