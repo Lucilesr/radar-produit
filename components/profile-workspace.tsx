@@ -14,7 +14,7 @@ const presentationExamples = {
   location: "Ex. Lyon · remote · dès janvier",
   linkedinUrl: "https://www.linkedin.com/in/votre-profil",
 };
-const sections: [Section,string][]=[["experiences","Mon parcours"],["documents","Mes documents"],["presentation","Ma présentation"]];
+const sections: [Section,string][]=[["experiences","Mes expériences"],["documents","Mes documents"],["presentation","Ma présentation"]];
 export function ProfileWorkspace({profile,onSave,onDocumentsLinked,initialSection="experiences",active=true}:{profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onDocumentsLinked:(links:DocumentLinks)=>void;initialSection?:Section;active?:boolean}) {
   const [draft,setDraft]=useState(profile),[section,setSection]=useState<Section>(initialSection);
   const [saving,setSaving]=useState(false),[filesBusy,setFilesBusy]=useState(false),[saveError,setSaveError]=useState("");
@@ -33,7 +33,7 @@ export function ProfileWorkspace({profile,onSave,onDocumentsLinked,initialSectio
     <div id="profile-panel-documents" data-radar-guide="profile-documents-panel" hidden={section!=="documents"}><ProfileDocuments links={draft} onLinked={linked} onBusyChange={setFilesBusy}/></div>
     <section id="profile-panel-presentation" hidden={section!=="presentation"} className="profile-presentation" aria-labelledby="profile-presentation-title">
       <WorkspacePanelHeader id="profile-presentation-title" title="Ma présentation"/>
-      <p className="workspace-caption">Ces informations décrivent votre profil. Les faits utilisés dans vos candidatures restent à valider et à autoriser dans Mon parcours.</p>
+      <p className="workspace-caption">Ces informations décrivent votre profil. Les faits utilisés dans vos candidatures restent à valider et à autoriser dans « Mes expériences ».</p>
       <form data-radar-guide="presentation-form" className="profile-presentation-form" onSubmit={async event=>{event.preventDefault();if(writeLock.current||filesBusy||!dirty)return;writeLock.current=true;setSaving(true);setSaveError("");try{if(!await onSave(draft))setSaveError("Présentation non enregistrée. Votre saisie est conservée ; vous pouvez réessayer.");}finally{writeLock.current=false;setSaving(false);}}}>
         <div data-radar-guide-slot />{field("headline","Titre ciblé")}{field("summary","Résumé professionnel",true)}
         <div className="profile-field-row">{field("location","Localisation / disponibilité")}{field("linkedinUrl","Lien LinkedIn")}</div>
