@@ -2,7 +2,7 @@
 
 import { ArrowUpRight, CalendarDays, Pencil, Plus } from "lucide-react";
 import { ApplicationDrag, ApplicationDropColumn, DraggableApplicationCard } from "@/components/application-drag";
-import { StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
+import type { WorkspaceView } from "@/components/offer-workspace";
 import { applicationAge, formatDate, reviewDue, statusLabels, terminalStatuses } from "@/lib/application-workflow";
 import { applicationColumn, applicationDestination, applicationInterviewStep } from "@/lib/application-board";
 import { defaultBoard, personalColumn, type PersonalBoard, type PersonalColumn } from "@/lib/personal-board";
@@ -14,7 +14,7 @@ export function ApplicationKanban({ jobs, now, busy, onStatus, onOpen, board = d
     {columns.map(column => {
       const items = jobs.filter(job => personalColumn(job, columns) === column.id);
       return <ApplicationDropColumn key={column.id} column={column.id} stage={column.stage} busy={!!busy}>
-        <header className="application-column-heading"><h2 id={`application-column-${column.id}`}>{column.label}</h2>{onColumn ? <button type="button" className="board-column-edit" aria-label={`Renommer la colonne ${column.label}`} disabled={!!busy} onClick={()=>onColumn(column)}><Pencil size={14} aria-hidden/></button> : null}<span className="workspace-badge" aria-label={`${items.length} candidature${items.length === 1 ? "" : "s"}`}>{items.length}</span></header>
+        <header className="application-column-heading"><h2 id={`application-column-${column.id}`}>{column.label}</h2>{onColumn ? <button type="button" className="board-column-edit" aria-label={`Modifier la colonne ${column.label}`} disabled={!!busy} onClick={()=>onColumn(column)}><Pencil size={14} aria-hidden/></button> : null}<span className="workspace-badge" aria-label={`${items.length} candidature${items.length === 1 ? "" : "s"}`}>{items.length}</span></header>
         <div className="application-column-cards">{items.length ? items.map(job => {
           const age = applicationAge(job.appliedAt, now);
           const step = applicationInterviewStep(job, now);
@@ -29,7 +29,6 @@ export function ApplicationKanban({ jobs, now, busy, onStatus, onOpen, board = d
               {due ? <span className="workspace-badge is-warning">Bilan à faire</span> : null}
               {step.next ? <p><CalendarDays size={14} aria-hidden/><span>{formatDate(step.next.startAt, step.next.timeZone, true)}<small>{step.next.timeZone}</small></span></p> : <p className="signal-help">{step.current?.state === "reviewed" ? "Entretien effectué · suite à suivre" : step.current ? "Rendez-vous terminé" : "Ajoutez le prochain rendez-vous dans le dossier."}</p>}
             </div> : column.stage === "closed" || column.stage === "other" ? <p className="application-card-outcome">{statusLabels[job.status]}</p> : null}
-            <div id={`application-status-${job.id}`} className="application-card-status"><StatusSelect compact value={job.status} disabled={!!busy} label={`Statut · ${job.company || job.title}`} onChange={status => void onStatus(job, status)}/></div>
           </DraggableApplicationCard>;
         }) : <p className="application-column-empty">Aucune candidature</p>}</div>
       </ApplicationDropColumn>;
