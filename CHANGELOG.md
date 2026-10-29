@@ -2,6 +2,8 @@
 
 ## 29 octobre 2026
 
+- Navigation : le logo Radar ramène à Aujourd’hui, au clic comme au clavier.
+
 - Guide mobile : consignes de saisie compactes, champs dégagés pendant l’édition et espace de défilement jusqu’à l’enregistrement, au-dessus de la navigation du téléphone.
 
 - Guide de prise en main : panneau ancré en bas à droite du viewport sur les grands écrans, avec marge de sécurité en bas.
