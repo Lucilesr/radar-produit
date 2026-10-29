@@ -1,3 +1,9 @@
+## Guide de découverte : consignes plus lisibles
+
+- Instruction vers le prochain onglet séparée de « Plus tard », sur toute la largeur.
+- Vocabulaire aligné sur les actions et rubriques de l’application.
+- Intensité maximale du halo réduite de 18 %.
+
 # Évolutions de Radar Produit
 
 ## 29 octobre 2026
@@ -5,6 +11,7 @@
 - Sources : chaque panneau « Configurer cette source » explique les étapes sur la plateforme, les actions possibles dans Radar et le sens du statut enregistré.
 - Visite : carte de lancement, description de la page affichée et halo sur le prochain onglet à cliquer ; fin explicite.
 
+- Sources : logo de chaque plateforme affiché à côté de son nom et fiches alignées sur une hauteur uniforme.
 - Navigation : le logo Radar ramène à Aujourd’hui, au clic comme au clavier.
 - Démo recruteur intégrée à Radar : un lien permanent crée un espace fictif isolé par visiteur, avec parcours d’onboarding accessible et connecteurs externes désactivés.
 - Visite : explication synchronisée avec la page affichée, commandes Précédent/Suivant et fin explicite ; halo à pulsation plus contrastée.

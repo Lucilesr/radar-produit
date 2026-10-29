@@ -12,7 +12,7 @@
 .radar-guide-launcher{display:flex;align-items:center;gap:8px;width:100%;padding:9px 11px;border-radius:6px;color:var(--signal-petrol-dark);font-size:12px;font-weight:700;text-align:left}.radar-guide-launcher:hover,.radar-guide-launcher:focus-visible{background:#dce6eb}
 .onboarding-tour-reopen{display:none;position:fixed;right:14px;bottom:calc(86px + env(safe-area-inset-bottom));z-index:47;padding:10px 14px;border-radius:999px;background:var(--signal-petrol-dark);color:#fff;font-size:12px;font-weight:700;box-shadow:0 8px 24px #193f5040}
 @keyframes onboarding-arrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes radar-guide-glow{0%,100%{opacity:.16}50%{opacity:1}}
+@keyframes radar-guide-glow{0%,100%{opacity:.16}50%{opacity:.82}}
 .radar-header-actions{display:contents}.radar-mobile-guide-launcher{display:none}
 @media(max-width:1023px){.radar-header-actions{display:flex;align-items:center;gap:8px}.radar-mobile-guide-launcher{display:grid;place-items:center;min-width:44px;min-height:44px;padding:10px}}
 @media(max-width:640px){
@@ -26,7 +26,7 @@
   .onboarding-tour[data-guide-action="save"] p,.onboarding-tour[data-guide-action="verify"] p{font-size:13px;margin-top:4px}
   .onboarding-tour[data-guide-action="save"] .onboarding-tour-actions,.onboarding-tour[data-guide-action="verify"] .onboarding-tour-actions{margin-top:8px}
 }
-@media(prefers-reduced-motion:reduce){.onboarding-tour,[data-radar-guide-active="true"]::after{animation:none}[data-radar-guide-active="true"]::after{opacity:.65}}
+@media(prefers-reduced-motion:reduce){.onboarding-tour,[data-radar-guide-active="true"]::after{animation:none}[data-radar-guide-active="true"]::after{opacity:.55}}
 
 .profile-required { display:block; font-size:12px; font-weight:400; color:var(--muted-foreground); }
 @media(max-width:640px) {
@@ -49,3 +49,8 @@
 .onboarding-tour-navigation{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:6px 10px;min-width:0}
 .onboarding-tour-navigation .onboarding-tour-open{white-space:normal;text-align:center;min-height:44px}
 .onboarding-tour-back{min-height:44px;padding:7px 0;font-size:12px;color:var(--signal-petrol-dark);text-decoration:underline;text-underline-offset:3px}
+
+/* Keep the next-tab instruction separate from the secondary dismissal action. */
+.onboarding-tour-next{margin-top:16px;padding:12px 14px;border-radius:10px;background:var(--signal-bg-soft,#edf3f5);font-size:13px;line-height:1.5;color:var(--signal-petrol-dark);text-align:left}
+.onboarding-tour-next strong{font-weight:800}
+.onboarding-tour-next + .onboarding-tour-actions{margin-top:6px}
