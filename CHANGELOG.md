@@ -1,5 +1,9 @@
 # Évolutions de Radar Produit
 
+## 29 octobre 2026
+
+- Kanban : action « Déplacer » avec choix de colonne, statut automatique et motif de clôture conservé, en complément du glisser-déposer.
+
 ## 28 octobre 2026
 
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.
