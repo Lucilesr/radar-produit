@@ -6,6 +6,7 @@ export async function POST(request: Request) {
   const user = await getChatGPTUser();
   if (!user) return Response.json({ error: "Authentification requise" }, { status: 401 });
   if (!ensureSameOrigin(request)) return Response.json({ error: "Origine non autorisée" }, { status: 403 });
+  if (user.userId.startsWith("demo:")) return Response.json({ error: "Les alertes externes sont désactivées dans la démo." }, { status: 403 });
   try {
     const input = await request.json() as { url?: string };
     if (!input || Object.keys(input).some(key => key !== "url")) throw new Error("Champs invalides");

@@ -64,6 +64,7 @@ export async function POST(request: Request) {
     if (rpc.method !== "tools/call") return failure(id, -32601, "Méthode inconnue");
     const user = await getChatGPTUser();
     if (!user) return failure(id, -32001, "Connexion ChatGPT requise pour les données privées", 401);
+    if (user.userId.startsWith("demo:")) return failure(id, -32001, "Le connecteur privé est désactivé dans la démo", 403);
     const name = rpc.params?.name;
     const args = rpc.params?.arguments ?? {};
     try {
