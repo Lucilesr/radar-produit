@@ -14,6 +14,7 @@ test("navigation : lien partageable, filtres et recherche restaurés sans perdre
 test("navigation : anciens liens d’entretien et paramètres invalides", () => {
   assert.equal(readRadarRoute("?offer=demo&view=interviews").tab,"pipeline");
   assert.equal(readRadarRoute("?tab=invalid&filter=unknown&view=bad").tab,"dashboard");
+  assert.equal(readRadarRoute("?tab=offers&filter=all").filter,"to_review");
   assert.equal(readRadarRoute("?q="+"a".repeat(400)).query.length,200);
 });
 test("navigation : Mes documents → Candidatures → Mon profil revient au carnet", () => {
