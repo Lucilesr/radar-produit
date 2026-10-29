@@ -25,3 +25,17 @@
   .onboarding-tour[data-guide-action="save"] .onboarding-tour-actions,.onboarding-tour[data-guide-action="verify"] .onboarding-tour-actions{margin-top:8px}
 }
 @media(prefers-reduced-motion:reduce){.onboarding-tour,[data-radar-guide-active="true"]{animation:none}}
+
+.profile-required { display:block; font-size:12px; font-weight:400; color:var(--muted-foreground); }
+@media(max-width:640px) {
+ .radar-app:has(.onboarding-tour[data-guide-action="upload"]) .radar-page { padding-bottom:290px; }
+ .onboarding-tour[data-guide-action="upload"] { padding:14px 16px; }
+ .onboarding-tour-open { min-height:44px; }
+}
+
+[data-radar-guide-slot]:empty { display:none; }
+@media(max-width:640px) {
+ .onboarding-tour.is-inline { position:static; width:100%; max-height:none; margin:0 0 16px; box-shadow:none; opacity:1!important; pointer-events:auto!important; }
+ .radar-app:has(.onboarding-tour.is-inline) .radar-page { padding-bottom:12px; }
+ :is([data-radar-guide="presentation-form"],[data-radar-guide="profile-documents-panel"],[data-radar-guide="experience-library"])[data-radar-guide-active="true"] { z-index:auto!important; outline:none!important; box-shadow:none!important; animation:none; }
+}

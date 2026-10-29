@@ -2,6 +2,10 @@
 
 ## 29 octobre 2026
 
+- Onboarding : étape CV facultative, carnet alimenté par le CV en l’absence de document détaillé, champs nécessaires identifiés et consignes intégrées aux formulaires mobiles.
+
+## 29 octobre 2026
+
 - Mobile : retour aux offres visible dès l’ouverture, actions tactiles agrandies et aide du guide dans l’en-tête pour libérer les cartes.
 
 - Guide mobile : consignes de saisie compactes, champs dégagés pendant l’édition et espace de défilement jusqu’à l’enregistrement, au-dessus de la navigation du téléphone.

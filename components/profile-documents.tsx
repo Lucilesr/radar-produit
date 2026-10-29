@@ -58,8 +58,9 @@ export function ProfileDocuments({ links, onLinked, onBusyChange }: { links: Doc
     finally { writeLock.current=false;setBusy(null); }
   }
   return <section className="profile-documents" aria-labelledby="profile-documents-title">
+    <div data-radar-guide-slot />
     <WorkspacePanelHeader id="profile-documents-title" title="Documents privés" className="profile-documents-heading" actions={<WorkspaceButton disabled={loading||!!busy} onClick={()=>{setError(null);void refresh();}} aria-label="Actualiser les fichiers"><RefreshCw size={15} className={loading?"animate-spin":""} aria-hidden/>Actualiser</WorkspaceButton>}/>
-    <p className="profile-document-intro">Glissez un fichier sur sa ligne ou importez-le.</p>
+    <p className="profile-document-intro">Importez votre CV français ou anglais pour préparer le carnet d’expériences. Vous pourrez relire et corriger les éléments extraits. Le document détaillé reste prioritaire si vous en ajoutez un.</p>
     <p className="profile-document-formats">PDF, DOC, DOCX, MD ou TXT · 8 Mo max. · Versions précédentes conservées.</p>
     {error?<p role="alert" className="experience-error">{error}</p>:null}
     <div className="profile-document-list">{slots.map(slot=><DocumentCard key={slot.id} slot={slot} document={files.find(file=>file.id===links[slot.id])} linkedId={links[slot.id]} files={files} busy={busy} onUpload={upload} onLink={link} onError={message=>setError(message)}/>)}</div>

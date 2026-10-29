@@ -84,9 +84,9 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
       .then(async ([s, d]) => {
         if (!live) return; setState(s); setDocs(d.documents);
         const reference = d.documents.find(doc => doc.id === s.reference?.documentId);
-        // A new detailed document is enough: no second extraction chore.
+        // A new reference document is enough: no second extraction chore.
         if (reference && !s.extractions.some(e => e.documentId === reference.id)) {
-          setNotice("Lecture de la dernière version du document détaillé…");
+          setNotice("Lecture du document de référence…");
           const r = await fetch("/api/documents/" + reference.id);
           if (!r.ok) throw new Error("Le dernier document est indisponible. L’historique est conservé.");
           const extraction = await extractDocument(reference.originalName, await r.arrayBuffer());
@@ -269,6 +269,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
 
   const reviewCount=[...groups.filter(g=>g.validation!=="rejected").flatMap(family),...ungrouped].filter(i=>i.validation==="proposed").length;
   return <section className="experience-library glass-panel mt-6 p-5 sm:p-7" aria-labelledby="experience-title" aria-busy={busy || loading}>
+    <div data-radar-guide-slot />
     <WorkspacePanelHeader id="experience-title" title="Mon carnet d’expériences" className="experience-library-heading library-heading-simple" hint={<LibraryHint label="Origine du carnet">Le carnet est créé à partir du fichier « Expériences détaillées » de Mes documents. Vous pouvez ensuite le corriger et le compléter à la main.</LibraryHint>} actions={<><WorkspaceButton aria-haspopup="dialog" disabled={busy||loading||adding||addingTo!==null||editing.length>0} onClick={()=>{setRightsDraft({});setError("");setShowConsentManager(true);}}><SlidersHorizontal size={15} aria-hidden/>Droits d’usage</WorkspaceButton>{!adding?<WorkspaceButton variant="primary" disabled={busy||loading||addingTo!==null||editing.length>0} onClick={()=>setAdding(true)}><Plus size={15} aria-hidden/>Ajouter une expérience</WorkspaceButton>:null}</>}/>
 
 
@@ -397,8 +398,8 @@ function ItemForm({ initial, item, example=false, focusTarget, busy, onSubmit, o
       </div>)}
     </fieldset>:null}
     {(Object.keys(fieldNames) as (keyof Fields)[]).filter(k => item?.kind === "experience" ? !["contribution", "result", "claimKey"].includes(k) : item?.kind!=="fact" || advanced || ["title","context","contribution","result"].includes(k)).filter(k=>(!isExperience||!["title","contribution","result","claimKey"].includes(k))&&(!isExample||!["context","contribution","result"].includes(k))).filter(k=>!isExample||k==="title"||!!item&&advanced).map(k =>
-      k === "context" ? <label key={k} className="library-example-field sm:col-span-2"><span>Présentation de l’entreprise et des produits</span><Textarea required={!item} disabled={busy} aria-label="Présentation de l’entreprise et des produits" data-field="context" data-start={contextHeading.length} data-end={data.context.length} rows={5} maxLength={6000-contextHeading.length} value={data.context.slice(contextHeading.length).trimStart()} onChange={event=>setData({...data,context:contextHeading+event.target.value})} placeholder="Présentez brièvement l’activité de l’entreprise, ses produits ou services et les publics auxquels ils s’adressent."/>{issueText("context")}</label> :
-      <label key={k} className={"text-xs font-semibold "+(["contribution","result"].includes(k)?"sm:col-span-2":"")}>{isExample&&k==="title"?"Titre de la réalisation":fieldNames[k]}{help[k] ? <span className="my-2 block font-normal leading-5">{help[k]}</span> : null}
+      k === "context" ? <label key={k} className="library-example-field sm:col-span-2"><span>Présentation de l’entreprise et des produits{!item?" · obligatoire":""}</span><Textarea required={!item} disabled={busy} aria-label="Présentation de l’entreprise et des produits" data-field="context" data-start={contextHeading.length} data-end={data.context.length} rows={5} maxLength={6000-contextHeading.length} value={data.context.slice(contextHeading.length).trimStart()} onChange={event=>setData({...data,context:contextHeading+event.target.value})} placeholder="Présentez brièvement l’activité de l’entreprise, ses produits ou services et les publics auxquels ils s’adressent."/>{issueText("context")}</label> :
+      <label key={k} className={"text-xs font-semibold "+(["contribution","result"].includes(k)?"sm:col-span-2":"")}>{isExample&&k==="title"?"Titre de la réalisation":fieldNames[k]}{(isExperience?k==="organization":k==="title")?<span className="profile-required">Obligatoire</span>:null}{help[k] ? <span className="my-2 block font-normal leading-5">{help[k]}</span> : null}
         {["contribution","result"].includes(k) ? <Textarea disabled={busy} data-field={k} className={inputClass} rows={3} maxLength={4000} value={data[k]} onChange={e=>setData(fieldsOnly(replaceDocumentedField({...initial,...data},k as "contribution" | "result",e.target.value)))} /> : <input disabled={busy} required={isExperience?k==="organization":k==="title"} className={inputClass} maxLength={k==="period"?160:k==="organization"||k==="role"?200:180} value={data[k]} placeholder={k==="title"?"Ex. Refonte de l’espace client":k==="organization"?"Nom de l’entreprise":k==="role"?"Ex. Product Manager":k==="period"?"Ex. 2022–2026":undefined} onChange={e=>setData({...data,[k]:e.target.value})} />}
         {issueText(k)}
       </label>)}
