@@ -9,6 +9,7 @@ import { WorkspaceButton, WorkspaceFormError } from "@/components/workspace-form
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
 import { formatDate } from "@/lib/application-workflow";
 import { sourceCatalog } from "@/lib/source-catalog";
+import { SourceLogo } from "@/components/source-logo";
 
 export type SourceSetting = { source: string; state?: string; notes?: string; verification?: string; lastSyncedAt?: string; error?: string; updatedAt?: string; latestAlert?: { url: string; notificationAt: string; label: string } };
 const states=[{value:"not_configured",label:"À configurer / à examiner"},{value:"action_needed",label:"Connexion ou action requise"},{value:"configured",label:"Alerte activée"},{value:"paused",label:"En pause"}];
@@ -33,7 +34,7 @@ export function SourceCard({ source, setting, count, hidden, onSaved }: { source
     finally{locked.current=false;setBusy(false);}
   }
   return <section hidden={hidden} className="signal-source-card" aria-labelledby={title}>
-    <div className="signal-source-heading"><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span></div>
+    <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span></div>
     <p className="signal-source-description">{source.note}</p>
     <a href={source.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a>
     {setting?.lastSyncedAt?<p className="signal-help">Flux vérifié le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
