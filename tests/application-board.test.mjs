@@ -105,5 +105,11 @@ test("colonnes personnelles : ajout, renommage et projection préservent les dos
   assert.deepEqual(record,before);
   assert.throws(()=>personal.editBoard(next,{action:"add",label:" ",stage:"interviews"}));
   assert.throws(()=>personal.editBoard(next,{action:"add",label:"Test",stage:"unknown"}));
-  assert.throws(()=>personal.editBoard(next,{action:"delete",id:added.id,label:"Test"}));
+  const deleted=personal.editBoard(renamed,{action:"delete",id:added.id});
+  assert.equal(deleted.columns.length,5);
+  assert.equal(deleted.version,renamed.version+1);
+  assert.equal(personal.personalColumn(record,deleted.columns),"interviews","une carte revient à son étape sans perdre son statut");
+  assert.deepEqual(record,before,"la suppression de colonne ne modifie pas la candidature");
+  assert.throws(()=>personal.editBoard(next,{action:"delete",id:"interviews"}),/Seule une colonne créée/);
+  assert.throws(()=>personal.editBoard(next,{action:"delete",id:"custom-inconnue"}),/Seule une colonne créée/);
 });
