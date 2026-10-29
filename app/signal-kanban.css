@@ -135,3 +135,20 @@
 
 /* Le choix de vue appartient à l’en-tête ; les filtres restent propres au tableau. */
 .workspace-page-header:has(.application-display-toggle){flex-wrap:wrap;align-items:center}.workspace-page-header:has(.application-display-toggle)>div{margin-left:auto}.workspace-page-header .application-display-toggle{margin-left:0}
+
+/* Tablet list: keep identity, date and next step together beside aligned controls. */
+@media(min-width:641px) and (max-width:1250px) {
+ .applications-workspace .application-row { grid-template-columns:minmax(0,1fr) minmax(150px,190px) 120px; grid-template-rows:auto auto; gap:8px 16px; padding:16px 20px; align-items:center; }
+ .applications-workspace .application-identity { grid-column:1; grid-row:1; align-self:start; }
+ .applications-workspace .application-identity>div { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px; }
+ .applications-workspace .application-identity h2 { flex-basis:100%; font-size:15px; line-height:1.4; }
+ .applications-workspace .application-identity h2 button { min-height:32px; }
+ .applications-workspace .application-identity p { margin:0; font-size:13px; }
+ .applications-workspace .application-inline-sent { margin:0; }
+ .applications-workspace .application-next { grid-column:1; grid-row:2; display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; }
+ .applications-workspace .application-next .application-cell-label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+ .applications-workspace .application-next p { font-size:12px; }
+ .applications-workspace .application-status { grid-column:2; grid-row:1/3; width:100%; max-width:none; justify-self:stretch; }
+ .applications-workspace .application-open { grid-column:3; grid-row:1/3; align-self:center; white-space:normal; width:100%; max-width:120px; }
+ .applications-workspace .application-status .choice-select-trigger,.applications-workspace .application-open { min-height:44px; }
+}
