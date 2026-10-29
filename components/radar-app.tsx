@@ -92,7 +92,7 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
       const [jobResult, profileResult] = await Promise.allSettled([json<{jobs:JobRecord[]}>("/api/jobs?includeDeleted=true"), json<{profile:CandidateProfile|null}>("/api/profile")]);
       if (!active) return;
       if (jobResult.status === "fulfilled") setJobs(jobResult.value.jobs);
-      if (profileResult.status === "fulfilled") { if(profileResult.value.profile)setProfile(profileResult.value.profile);setProfileLoaded(true); }
+      if (profileResult.status === "fulfilled") { setProfile(profileResult.value.profile ?? profileTemplate);setProfileLoaded(true); }
       setLoadErrors({jobs:jobResult.status === "rejected",profile:profileResult.status === "rejected"});
       setLoading(false);
     }
