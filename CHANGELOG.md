@@ -1,5 +1,9 @@
 # Évolutions de Radar Produit
 
+## 29 octobre 2026
+
+- Ancien lien de démo recruteur : redirection vers la démo unifiée du Site principal, avec conservation du lien vers le parcours d’onboarding.
+
 ## 28 octobre 2026
 
 - Démo recruteurs : test du parcours d’onboarding sur un profil fictif vide, avec onglets éclairés, progression après enregistrement réel et mini-visite contextuelle des cinq écrans.
