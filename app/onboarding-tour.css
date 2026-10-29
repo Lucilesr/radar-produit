@@ -4,6 +4,7 @@
 .onboarding-tour{position:fixed;right:24px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:47;width:min(360px,calc(100vw - 28px));padding:20px 21px;border:1px solid var(--signal-line);border-left:5px solid var(--signal-citron);border-radius:16px;background:#fff;box-shadow:0 18px 50px #203b4938;color:var(--foreground);animation:onboarding-arrive .25s ease-out}
 .onboarding-tour-kicker{display:block;margin-bottom:8px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--signal-petrol-dark)}
 .onboarding-tour-title{display:block;font-size:17px;line-height:1.3}.onboarding-tour p{margin-top:7px;font-size:13px;line-height:1.5;color:var(--muted-foreground)}
+.onboarding-tour[data-guide-phase="tour"] p{font-size:14px;color:var(--foreground)}
 .onboarding-tour-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px}
 .onboarding-tour-later{flex-shrink:0;min-height:44px;white-space:nowrap;padding:7px 0;font-size:12px;font-weight:700;color:var(--signal-petrol-dark);text-decoration:underline;text-underline-offset:3px}
 .onboarding-tour-instruction{font-size:11px;font-weight:700;text-align:right;color:var(--signal-petrol-dark)}
@@ -50,7 +51,7 @@
 .onboarding-tour-navigation .onboarding-tour-open{white-space:normal;text-align:center;min-height:44px}
 .onboarding-tour-back{min-height:44px;padding:7px 0;font-size:12px;color:var(--signal-petrol-dark);text-decoration:underline;text-underline-offset:3px}
 
-/* Keep the next-tab instruction separate from the secondary dismissal action. */
-.onboarding-tour-next{margin-top:16px;padding:12px 14px;border-radius:10px;background:var(--signal-bg-soft,#edf3f5);font-size:13px;line-height:1.5;color:var(--signal-petrol-dark);text-align:left}
-.onboarding-tour-next strong{font-weight:800}
+/* The page description leads; the next-tab instruction remains a quiet cue. */
+.onboarding-tour-next{margin-top:14px;padding-top:10px;border-top:1px solid var(--signal-line);font-size:12px;line-height:1.5;color:var(--muted-foreground);text-align:left}
+.onboarding-tour-next strong{font-weight:700;color:var(--foreground)}
 .onboarding-tour-next + .onboarding-tour-actions{margin-top:6px}
