@@ -79,7 +79,7 @@ export function ApplicationDrag({ jobs, busy, onStatus, children, columns = defa
     onDragStart={({ active }) => { setActiveId(String(active.id)); setMessage(""); }}
     onDragCancel={({ active }) => { setActiveId(null); setMessage("Déplacement annulé. Étape conservée."); focusCard(String(active.id)); }}
     onDragEnd={({ active, over }) => { setActiveId(null); if (over) void move(String(active.id), String(over.id)); else { setMessage("Déplacement annulé. Étape conservée."); focusCard(String(active.id)); } }}>
-    <p className="application-drag-help">Glissez une carte pour changer d’étape. Sur mobile, maintenez-la un instant.</p>
+    <p className="application-drag-help">Glissez une carte vers une colonne : son statut se met à jour automatiquement. Pour « Closes », choisissez un motif. Sur mobile, maintenez la carte un instant.</p>
     <p className="sr-only" role="status">{message}</p>
     {children}
     <DragOverlay dropAnimation={null} zIndex={90}>{active ? <div className="application-drag-preview" aria-hidden><strong>{active.title}</strong><p>{active.company || "Entreprise à confirmer"}</p></div> : null}</DragOverlay>
