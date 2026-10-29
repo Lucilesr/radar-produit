@@ -18,6 +18,7 @@ import { OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/componen
 import { activeStatuses, terminalStatuses } from "@/lib/application-workflow";
 import { profileTemplate } from "@/lib/profile-template";
 import { OnboardingTour } from "@/components/onboarding-tour";
+import { DemoModeProvider } from "@/components/demo-mode";
 import type { CandidateProfile, DismissalReason, JobRecord, JobStatus } from "@/lib/types";
 import type { RadarInitialState } from "@/lib/radar-bootstrap";
 import type { RadarRoute, ProfileSection } from "@/lib/radar-navigation";
@@ -40,7 +41,7 @@ const dismissalLabels: Record<DismissalReason, string> = { filled: "Poste pourvu
 
 
 type RadarAppProps = { ownerId?: string; userName: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection };
-export function RadarApp(props: RadarAppProps) { return <AutosaveOwner owner={props.ownerId??""}><WorkspaceFeedbackProvider><RadarWorkspace {...props} /></WorkspaceFeedbackProvider></AutosaveOwner>; }
+export function RadarApp(props: RadarAppProps) { return <DemoModeProvider enabled={!!props.ownerId?.startsWith("demo:")}><AutosaveOwner owner={props.ownerId??""}><WorkspaceFeedbackProvider><RadarWorkspace {...props} /></WorkspaceFeedbackProvider></AutosaveOwner></DemoModeProvider>; }
 function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initialProfileSection }: RadarAppProps) {
   const { route, navigate } = useRadarNavigation(initialRoute);
   const { tab, filter, query, view: workspaceView } = route;
@@ -93,7 +94,7 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
       const [jobResult, profileResult] = await Promise.allSettled([json<{jobs:JobRecord[]}>("/api/jobs?includeDeleted=true"), json<{profile:CandidateProfile|null}>("/api/profile")]);
       if (!active) return;
       if (jobResult.status === "fulfilled") setJobs(jobResult.value.jobs);
-      if (profileResult.status === "fulfilled") { if(profileResult.value.profile)setProfile(profileResult.value.profile);setProfileLoaded(true); }
+      if (profileResult.status === "fulfilled") { setProfile(profileResult.value.profile ?? profileTemplate);setProfileLoaded(true); }
       setLoadErrors({jobs:jobResult.status === "rejected",profile:profileResult.status === "rejected"});
       setLoading(false);
     }
@@ -158,7 +159,7 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
     setToast(job.deletedAt ? "Cette offre est déjà dans la corbeille. Restaurez-la depuis Opportunités → Corbeille si nécessaire." : deduplicated ? "Cette opportunité était déjà dans votre radar." : "Opportunité ajoutée et qualifiée.");
   }
   const searchedJobs = allJobs.filter(job => `${job.title} ${job.company} ${job.source}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
-  const viewCounts = Object.fromEntries((["to_review", "selected", "good_matches", "all", "trash"] as OfferFilter[]).map(view => [view, searchedJobs.filter(job => inOpportunityView(job, view)).length])) as Record<OfferFilter, number>;
+  const viewCounts = Object.fromEntries((["to_review", "selected", "good_matches", "trash"] as OfferFilter[]).map(view => [view, searchedJobs.filter(job => inOpportunityView(job, view)).length])) as Record<OfferFilter, number>;
   const shownJobs = filter === "to_review" ? sortOffersForTriage(searchedJobs) : searchedJobs.filter(job => inOpportunityView(job, filter));
   function selectTab(next: Tab) { navigate({ tab: next, offer: undefined }); }
 
@@ -182,7 +183,7 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
     <div className="radar-shell" inert={jobDialogOpen || deleteTarget.length>0 || (!!selectedJob && tab!=="offers")}>
       <aside className="radar-sidebar">
         <div className="flex items-center justify-between gap-4 lg:block">
-          <WorkspaceBrand />
+          <button type="button" className="radar-home-link" aria-label="Radar — revenir à Aujourd’hui" onClick={() => selectTab("dashboard")}><WorkspaceBrand /></button>
           <div className="radar-header-actions"><button type="button" className="radar-mobile-guide-launcher secondary-button" aria-label="Guide de prise en main" onClick={() => window.dispatchEvent(new Event("radar:open-guide"))}><CircleHelp size={18} aria-hidden/></button>
           <button onClick={() => setJobDialogOpen(true)} className="radar-add-button lg:mt-8 lg:w-full" aria-label="Ajouter une offre"><Plus size={17} /><span className="hidden sm:inline">Ajouter une offre</span></button>
           </div>

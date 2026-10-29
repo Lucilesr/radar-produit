@@ -40,3 +40,9 @@
 .signal-source-form .workspace-field { gap:7px; font-size:13px; }
 .signal-source-actions { display:flex; justify-content:flex-end; }
 @media(max-width:640px) { .signal-source-card { padding:20px 16px; }.signal-source-actions .signal-form-button { max-width:100%; }.source-workspace .signal-source-config .library-section-title { padding-top:12px; } }
+
+@media(max-width:760px) {
+ .radar-app .source-workspace.signal-sources-workspace :is(input,textarea,.choice-select-trigger) { font-size:16px; }
+ .source-workspace .choice-select-trigger { min-height:44px; height:auto; white-space:normal; }
+ .source-workspace .signal-form-button { min-height:44px; white-space:normal; }
+}

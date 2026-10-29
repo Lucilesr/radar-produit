@@ -56,3 +56,15 @@
   .page-refresh-action { min-width: 40px; min-height: 44px; padding: 9px; }
   .page-refresh-label { display: none; }
 }
+
+/* A single compact end-of-page spacing; mobile reserves only the fixed nav height. */
+.radar-footer { margin-top:16px; padding:0; }
+.radar-page { padding-bottom:16px; }
+@media(max-width:640px) {
+ .radar-app { padding-bottom:calc(70px + env(safe-area-inset-bottom)); }
+ .radar-shell { min-height:calc(100dvh - 70px - env(safe-area-inset-bottom)); }
+ .radar-page { padding-bottom:12px; }
+ .radar-footer { margin-top:12px; font-size:11px; }
+}
+
+.radar-home-link { display:block; min-height:44px; text-align:left; border-radius:6px; }
