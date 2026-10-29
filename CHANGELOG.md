@@ -8,7 +8,7 @@
 
 ## 29 octobre 2026
 
-- Profil : « Mon parcours » explique comment vérifier les expériences et réalisations, puis autoriser leur réutilisation pour les candidatures et la présentation professionnelle.
+- Profil : « Mes expériences » explique comment vérifier les expériences et réalisations, puis autoriser leur réutilisation pour les candidatures et la présentation professionnelle.
 
 - Sources : chaque panneau « Configurer cette source » explique les étapes sur la plateforme, les actions possibles dans Radar et le sens du statut enregistré.
 - Visite : carte de lancement, description de la page affichée et halo sur le prochain onglet à cliquer ; fin explicite.
