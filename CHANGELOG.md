@@ -8,7 +8,7 @@
 
 ## 29 octobre 2026
 
-- Profil : « Mes expériences » explique comment vérifier les expériences et réalisations, puis autoriser leur réutilisation pour les candidatures et la présentation professionnelle.
+- Profil : « Mes expériences » explique comment les faits relus et autorisés alimentent la personnalisation des candidatures, avec des pistes d’adaptation du CV et des réponses à chaque offre.
 
 - Sources : chaque panneau « Configurer cette source » explique les étapes sur la plateforme, les actions possibles dans Radar et le sens du statut enregistré.
 - Visite : carte de lancement, description de la page affichée et halo sur le prochain onglet à cliquer ; fin explicite.
