@@ -6,6 +6,7 @@
 
 ## 28 octobre 2026
 
+- Retouches visuelles discrètes de la navigation, des opportunités et des candidatures : contours, typographie et animations courtes, avec prise en compte de la réduction des animations. Les parcours et actions existants sont conservés.
 - Opportunités : suppression du filtre « Toutes » pour éviter de mélanger les offres à examiner et les candidatures. Les correspondances Radar excluent aussi les offres déjà passées en candidature ; les anciens liens « Toutes » ouvrent « À examiner ».
 
 - Identité : le favicon reprend le logo Orbite de l’interface Signal et son URL est versionnée pour renouveler le cache du navigateur.
