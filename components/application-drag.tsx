@@ -82,7 +82,7 @@ export function ApplicationDrag({ jobs, busy, onStatus, children, columns = defa
     onDragStart={({ active }) => { setActiveId(String(active.id)); setMessage(""); }}
     onDragCancel={({ active }) => { setActiveId(null); setMessage("Déplacement annulé. Étape conservée."); focusCard(String(active.id)); }}
     onDragEnd={({ active, over }) => { setActiveId(null); if (over) void move(String(active.id), String(over.id)); else { setMessage("Déplacement annulé. Étape conservée."); focusCard(String(active.id)); } }}>
-    <p className="application-drag-help">Faites défiler les colonnes. Glissez une carte ou touchez « Déplacer » pour choisir sa destination : son statut se met à jour automatiquement.</p>
+    <p className="application-drag-help">Faites défiler les colonnes. Glissez une carte ou touchez « Déplacer » pour choisir sa destination : son statut se met à jour automatiquement. Pour « Closes », choisissez un motif.</p>
     <p className={message ? "application-drag-help" : "sr-only"} role="status">{message}</p>
     <MoveApplicationContext.Provider value={jobId => { if (!busy && !locked.current) { lastFocus.current = jobId; setError(""); setChoosingId(jobId); } }}>{children}</MoveApplicationContext.Provider>
     <DragOverlay dropAnimation={null} zIndex={90}>{active ? <div className="application-drag-preview" aria-hidden><strong>{active.title}</strong><p>{active.company || "Entreprise à confirmer"}</p></div> : null}</DragOverlay>

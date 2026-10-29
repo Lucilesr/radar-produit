@@ -1,0 +1,76 @@
+/* Small visual refinements on the existing Radar screens.
+   The opportunity and application components, data, actions and layout stay in place. */
+:root {
+  --signal-surface-radius: 8px;
+  --signal-soft-shadow: 0 7px 22px #193f500b;
+  --signal-raised-shadow: 0 12px 26px #193f5019;
+}
+
+.radar-sidebar .radar-nav button {
+  border-radius: var(--signal-surface-radius);
+  transition: background-color .22s ease, color .22s ease, transform .22s ease, box-shadow .22s ease;
+}
+.radar-sidebar .radar-nav button:hover:not(.is-active) { transform: translateX(2px); }
+.radar-sidebar .radar-nav button.is-active { box-shadow: inset 3px 0 0 var(--signal-citron); }
+.workspace-page-header h1 { letter-spacing: -.045em; }
+
+.opportunities-toolbar,
+.applications-toolbar { animation: signal-enter .42s cubic-bezier(.2,.8,.2,1) both; }
+.review-radar-filter,
+.signal-selected-button { border-radius: var(--signal-surface-radius); }
+.review-radar-filter { border-color: var(--signal-input); }
+.opportunity-list-row,
+.opportunity-open { transition: background-color .22s ease, border-color .22s ease, box-shadow .22s ease; }
+.opportunity-list-row.is-current {
+  box-shadow: inset 0 0 0 1px #b9cdd6;
+  animation: signal-selected .42s ease-out both;
+}
+.opportunity-open > strong,
+.opportunity-detail-header h2 { letter-spacing: -.025em; }
+.offer-signal { border-radius: var(--signal-surface-radius); }
+
+.applications-workspace .applications-list {
+  border-radius: var(--signal-surface-radius);
+  box-shadow: var(--signal-soft-shadow);
+  animation: signal-enter .48s cubic-bezier(.2,.8,.2,1) both;
+}
+.applications-workspace .application-row { transition: background-color .22s ease; }
+.applications-workspace .application-identity h2 { letter-spacing: -.015em; }
+.application-display-toggle { border-radius: var(--signal-surface-radius); }
+.application-display-toggle button { border-radius: 6px; transition: background-color .22s ease, color .22s ease; }
+.application-display-toggle,
+.applications-workspace .application-status .choice-select-trigger,
+.application-card .choice-select-trigger { border-color: var(--signal-input); }
+.application-column,
+.application-card { border-radius: var(--signal-surface-radius); }
+.application-column { box-shadow: var(--signal-soft-shadow); }
+.application-card {
+  transition: box-shadow .22s ease, border-color .22s ease;
+}
+.application-card:hover:not(.is-dragging) {
+  box-shadow: var(--signal-raised-shadow);
+}
+.application-card:focus-within { box-shadow: 0 0 0 2px var(--signal-petrol); }
+.application-card.is-dragging { transition: none; }
+
+@keyframes signal-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes signal-selected {
+  from { box-shadow: inset 0 0 0 1px #b9cdd600; }
+  to { box-shadow: inset 0 0 0 1px #b9cdd6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-sidebar .radar-nav button,
+  .opportunities-toolbar,
+  .applications-toolbar,
+  .opportunity-list-row,
+  .opportunity-open,
+  .applications-workspace .applications-list,
+  .applications-workspace .application-row,
+  .application-display-toggle button,
+  .application-card { animation: none !important; transition: none !important; }
+  .radar-sidebar .radar-nav button:hover:not(.is-active) { transform: none; }
+}
