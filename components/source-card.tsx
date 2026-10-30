@@ -12,7 +12,7 @@ import { sourceCatalog } from "@/lib/source-catalog";
 import { SourceLogo } from "@/components/source-logo";
 import { sourceGuidance } from "@/lib/source-guidance";
 
-export type SourceSetting = { source: string; state?: string; notes?: string; verification?: string; lastSyncedAt?: string; error?: string; updatedAt?: string; latestAlert?: { url: string; notificationAt: string; label: string } };
+export type SourceSetting = { source: string; state?: string; notes?: string; verification?: string; lastSyncedAt?: string; error?: string; updatedAt?: string; searchLinks?: Record<string, import("@/lib/web-discovery").SearchLinks>; latestAlert?: { url: string; notificationAt: string; label: string } };
 const states=[{value:"not_configured",label:"Pas encore commencé"},{value:"action_needed",label:"Étapes en cours"},{value:"configured",label:"Étapes faites"},{value:"paused",label:"En pause"}];
 const stateLabels:Record<string,string>={not_configured:"À configurer",action_needed:"Action requise",configured:"Étapes faites",paused:"En pause"};
 

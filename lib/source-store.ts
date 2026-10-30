@@ -5,6 +5,7 @@ import { sourceSettings } from "@/db/schema";
 import { sourceCatalog } from "./source-catalog";
 import { parseWwrFeed } from "./rss-offers";
 import { saveOffer } from "./job-store";
+import { validSearchLink } from "./web-discovery";
 
 export async function listSourceSettings(userId: string) { const rows = await getDb().select().from(sourceSettings).where(eq(sourceSettings.userId, userId)); return rows.map(row => ({ source: row.source, ...JSON.parse(row.data), updatedAt: row.updatedAt })); }
 export async function saveSourceSetting(userId: string, source: string, data: Record<string, unknown>) {
@@ -17,6 +18,17 @@ export async function saveSourceSetting(userId: string, source: string, data: Re
 export async function userSourceSetting(userId: string, value: unknown) {
   const input = z.object({ source: z.string().refine(name => sourceCatalog.some(source => source.name === name)), state: z.enum(["not_configured", "action_needed", "configured", "paused"]), notes: z.string().max(1500).default("") }).strict().parse(value);
   return saveSourceSetting(userId, input.source, { state: input.state, notes: input.notes, verification: "Déclarée dans le Radar" });
+}
+export async function userSearchLinks(userId: string, value: unknown) {
+  const input = z.object({
+    source: z.enum(["LinkedIn Jobs", "Welcome to the Jungle"]),
+    role: z.string().trim().min(2).max(80).refine(role => !["__proto__", "constructor", "prototype"].includes(role)),
+    links: z.object({ Google: z.string().max(2048).optional(), Bing: z.string().max(2048).optional(), Site: z.string().max(2048).optional() }).strict(),
+  }).strict().parse(value);
+  if (Object.values(input.links).some(url => url && !validSearchLink(url))) throw new Error("Lien invalide");
+  const previous = (await listSourceSettings(userId)).find(setting => setting.source === input.source) as { searchLinks?: Record<string, unknown> } | undefined;
+  const searchLinks = { ...(previous?.searchLinks ?? {}), [input.role]: input.links };
+  return saveSourceSetting(userId, input.source, { searchLinks });
 }
 export async function recordCollectiveAlert(userId: string, value: unknown) {
   const alert = z.object({
