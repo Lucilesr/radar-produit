@@ -1,3 +1,7 @@
+## Guide de découverte : hiérarchie des modales
+
+- La description de l’écran devient le contenu principal de la carte ; la consigne vers l’onglet suivant est plus discrète et plus courte.
+
 ## Guide de découverte : consignes plus lisibles
 
 - Instruction vers le prochain onglet séparée de « Plus tard », sur toute la largeur.
