@@ -1,3 +1,9 @@
+## 30 octobre 2026 — Ma recherche
+
+- L’onglet Sources devient Ma recherche : postes PO/PM, contrats, présence acceptable et seuils de rémunération peuvent être enregistrés et sont utilisés pour classer les offres existantes et nouvelles.
+- Ma présentation quitte le profil et le guide de prise en main commence par les critères de recherche. Le CV et le carnet d’expériences restent dans Mon profil.
+- Les annonces sans rémunération ou sans politique de télétravail précise restent à vérifier ; les alertes configurées sur les plateformes externes ne sont pas modifiées par ces critères.
+
 ## Guide de découverte : hiérarchie des modales
 
 - La description de l’écran devient le contenu principal de la carte ; la consigne vers l’onglet suivant est plus discrète et plus courte.

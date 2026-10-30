@@ -12,12 +12,22 @@ function moduleUrl(name, imports = {}) {
 const arrangement = moduleUrl("work-arrangement");
 const workflow = moduleUrl("application-workflow");
 const marketScope = moduleUrl("market-scope");
-const { assessJob } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope }));
+const preferences = moduleUrl("search-preferences");
+const { assessJob } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences }));
 const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement }));
 const { createCandidateBrief, briefOffer } = await import(moduleUrl("candidate-brief"));
 const opportunityViews = moduleUrl("opportunity-views");
 const { selectTriageActions, sortOffersForTriage } = await import(moduleUrl("triage", { "./application-workflow": workflow, "./opportunity-views": opportunityViews }));
 const baseline = { title: "Product Owner", company: "Fixture", contractType: "cdi", annualSalary: 55000, remoteMode: "full_remote", language: "fr", source: "Autre" };
+
+test("les critères enregistrés personnalisent les matchs et conservent les offres incomplètes", () => {
+  const search = { roles: ["pm"], contracts: ["cdi"], remote: "full_remote", minimumSalary: 65000, minimumDailyRate: 600 };
+  assert.equal(assessJob(baseline, search).tier, "excluded");
+  assert.equal(assessJob({ ...baseline, title: "Product Manager", annualSalary: 65000 }, search).tier, "priority");
+  assert.equal(assessJob({ ...baseline, title: "Product Manager", annualSalary: null }, search).tier, "exception");
+  assert.equal(assessJob({ ...baseline, title: "Product Manager", annualSalary: 65000, remoteMode: "exceptional" }, search).tier, "excluded");
+  assert.equal(assessJob({ ...baseline, title: "Product Manager", annualSalary: 65000, contractType: "freelance", dailyRate: 650 }, search).tier, "excluded");
+});
 
 test("full remote et présence exceptionnelle restent prioritaires", () => {
   assert.equal(assessJob(baseline).tier, "priority");

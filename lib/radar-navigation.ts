@@ -1,7 +1,7 @@
 export type RadarTab = "dashboard" | "offers" | "pipeline" | "profile" | "sources";
-export type ProfileSection = "experiences" | "documents" | "presentation";
+export type ProfileSection = "experiences" | "documents";
 export function readProfileSection(value: string | null): ProfileSection {
-  return value === "documents" || value === "presentation" ? value : "experiences";
+  return value === "documents" ? value : "experiences";
 }
 export type RadarRoute = { tab: RadarTab; filter: "to_review" | "selected" | "good_matches" | "trash"; query: string; offer?: string; view: "offer" | "application" | "interviews" | "brief" };
 export const defaultRoute: RadarRoute = { tab: "dashboard", filter: "to_review", query: "", view: "offer" };

@@ -35,7 +35,7 @@ const tabs: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof La
   { id: "offers", label: "Opportunités", mobileLabel: "Offres", icon: Search },
   { id: "pipeline", label: "Candidatures", mobileLabel: "Suivi", icon: ClipboardCheck },
   { id: "profile", label: "Mon profil", mobileLabel: "Profil", icon: UserRound },
-  { id: "sources", label: "Sources", mobileLabel: "Sources", icon: Mail },
+  { id: "sources", label: "Ma recherche", mobileLabel: "Recherche", icon: Mail },
 ];
 const dismissalLabels: Record<DismissalReason, string> = { filled: "Poste pourvu", applications_closed: "Candidatures fermées", not_interested: "Je ne souhaite pas postuler", other: "Autre raison" };
 
@@ -153,6 +153,12 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
       setProfile(result.profile); setToast("Profil enregistré dans votre espace privé."); return true;
     } catch { setToast("Le profil n’a pas été enregistré. Vos modifications restent disponibles à l’écran.", true); return false; }
   }
+  async function saveSearch(next: CandidateProfile) {
+    const saved = await saveProfile(next);
+    if (!saved) return false;
+    await refreshOffers({silent:true});
+    return true;
+  }
   function onJobCreated(job: JobRecord, deduplicated?: boolean) {
     setJobs((current) => current.some((item) => item.id === job.id) ? current : [job, ...current]);
     setJobDialogOpen(false);
@@ -207,8 +213,8 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
         {trashError ? <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">{trashError}<button className="ml-3 underline" onClick={() => { setTrashError(null); void refreshOffers(); }}>Actualiser pour vérifier</button></div> : null}
         {!loading && !loadErrors.jobs && tab === "offers" ? <OpportunitiesWorkspace currentJob={selectedJob} jobs={shownJobs} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>void changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>{setJobs(current=>current.map(job=>job.id===updated.id?updated:job));setToast("Offre mise à jour.");}} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing} /> : null}
         {tab === "pipeline" ? <ApplicationsWorkspace placeholder={loading?<WorkspaceLoading/>:loadErrors.jobs?loadNotice:undefined} notice={!loading&&!loadErrors.jobs?loadNotice:undefined} jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
-        {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace active={tab === "profile"} initialSection={initialProfileSection} profile={profile} onSave={saveProfile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
-        {(tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel jobs={jobs} onSynced={()=>refreshOffers({silent:true})} /></Suspense></WorkspaceBoundary></div> : null}
+        {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace active={tab === "profile"} initialSection={initialProfileSection} profile={profile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
+        {profileLoaded && (tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel jobs={jobs} profile={profile} onSave={saveSearch} onSynced={()=>refreshOffers({silent:true})} /></Suspense></WorkspaceBoundary></div> : null}
         {tab !== "profile" && tab !== "offers" ? <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span></footer> : null}
         </div>
       </section>

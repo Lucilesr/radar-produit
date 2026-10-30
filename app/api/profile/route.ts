@@ -6,6 +6,7 @@ import { ensureSameOrigin, parseProfile } from "@/lib/server";
 import { documentLinks } from "@/lib/document-input";
 import { profileTemplate } from "@/lib/profile-template";
 import { readCandidateProfile } from "@/lib/profile-store";
+import { searchPreferences } from "@/lib/search-preferences";
 
 export async function GET() {
   const user = await getChatGPTUser();
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
     const current = stored ? parseProfile(JSON.parse(stored.data)) : profileTemplate;
     // Document links and job notes have dedicated writes; a stale profile form
     // must not undo an upload or overwrite another candidature's private note.
-    const profile = { ...incoming, ...documentLinks(current), applicationNotes: current.applicationNotes };
+    const profile = { ...incoming, searchPreferences: searchPreferences(incoming.searchPreferences), ...documentLinks(current), applicationNotes: current.applicationNotes };
     const now = new Date().toISOString();
     await getDb()
       .insert(profiles)

@@ -56,6 +56,7 @@ export type InterviewRecord = {
 };
 
 export type CandidateProfile = {
+  searchPreferences?: SearchPreferences;
   headline: string;
   summary: string;
   location: string;
@@ -77,4 +78,12 @@ export type Assessment = {
   tier: MatchTier;
   reasons: string[];
   flags: string[];
+};
+
+export type SearchPreferences = {
+  roles: Array<"po" | "pm">;
+  contracts: Array<"cdi" | "freelance">;
+  remote: "full_remote" | "occasional" | "light_hybrid";
+  minimumSalary: number;
+  minimumDailyRate: number;
 };

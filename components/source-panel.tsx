@@ -12,9 +12,11 @@ import { WebDiscoveryPanel } from "@/components/web-discovery-panel";
 import { sourceCatalog, searchTracks } from "@/lib/source-catalog";
 import { formatDate } from "@/lib/application-workflow";
 import type { JobRecord } from "@/lib/types";
+import type { CandidateProfile } from "@/lib/types";
+import { SearchPreferencesForm } from "@/components/search-preferences-form";
 import { useDemoMode } from "@/components/demo-mode";
 
-export function SourcePanel({jobs,onSynced}:{jobs:JobRecord[];onSynced:()=>Promise<boolean>}) {
+export function SourcePanel({jobs,profile,onSave,onSynced}:{jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSynced:()=>Promise<boolean>}) {
   const demo=useDemoMode();
   const notify=useWorkspaceFeedback();
   const [settings,setSettings]=useState<SourceSetting[]|null>(null),[group,setGroup]=useState("all");
@@ -57,6 +59,7 @@ export function SourcePanel({jobs,onSynced}:{jobs:JobRecord[];onSynced:()=>Promi
   }
   const collectiveAlert=settings?.find(item=>item.source==="Collective")?.latestAlert;
   return <div className="source-workspace signal-sources-workspace">
+    <SearchPreferencesForm profile={profile} onSave={onSave}/>
     <div className="market-boundary-note"><span className="market-boundary-dot"/><p><strong>Recherche sans filtre de pays.</strong> La langue de l’annonce et les pays autorisés pour le télétravail restent à vérifier sur la page employeur.</p></div>
     {collectiveAlert?<section className="signal-source-panel" aria-labelledby="collective-latest-title"><WorkspacePanelHeader id="collective-latest-title" title="Alerte Collective à consulter"/><p className="signal-source-description">{collectiveAlert.label}</p><p className="signal-help">Signalée le {formatDate(collectiveAlert.notificationAt,"Indian/Mauritius",true)}. Ce lien mène à une liste de résultats ; chaque annonce doit être vérifiée avant de devenir une fiche Radar.</p><a href={collectiveAlert.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Voir les annonces sur Collective</a></section>:null}
     {!demo?<section className="signal-source-panel" aria-labelledby="collective-add-title"><WorkspacePanelHeader id="collective-add-title" title="Ajouter une alerte Collective"/><p className="signal-help">Copiez le lien « See jobs » de l’email. La recherche sera visible ici, sans créer d’offres fictives.</p><form className="signal-collective-form" onSubmit={event=>{event.preventDefault();void saveCollectiveAlert();}}><input type="url" required disabled={busy} aria-label="Lien See jobs de Collective" value={collectiveUrl} onChange={event=>setCollectiveUrl(event.target.value)} placeholder="https://app.collective.work/my-personal-space/jobs?..."/><WorkspaceButton type="submit" variant="primary" busy={operation==="alert"} disabled={busy||!collectiveUrl.trim()}><Save size={14} aria-hidden/>Enregistrer l’alerte</WorkspaceButton></form><WorkspaceFormError message={alertError}/></section>:null}
