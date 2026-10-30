@@ -124,8 +124,9 @@ body .library-hint-trigger{width:24px;height:24px;min-height:24px;display:inline
 .radar-app .experience-group-body>.experience-details-heading{padding-top:0;margin:20px 0 12px;align-items:center}
 .radar-app .library-content-actions>.signal-form-button{width:auto;flex:0 1 auto}
 
-/* A bounded column keeps the carnet and its expanded passages easy to scan. */
-.profile-workspace{width:100%;max-width:960px}
+/* Center the bounded experience section without moving the profile tabs. */
+.profile-workspace{width:100%}
+.profile-workspace #profile-panel-experiences{width:100%;max-width:960px;margin-inline:auto}
 .profile-workspace .experience-rich-text>:is(p,ul){max-width:72ch}
 .profile-workspace .experience-library>.space-y-4{row-gap:20px}
 @media(max-width:640px){.profile-workspace .experience-library>.space-y-4{row-gap:16px}}
