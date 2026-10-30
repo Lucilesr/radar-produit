@@ -57,3 +57,18 @@
  .source-workspace .choice-select-trigger { min-height:44px; height:auto; white-space:normal; }
  .source-workspace .signal-form-button { min-height:44px; white-space:normal; }
 }
+
+/* Search settings use a reading column; source collections keep room for cards. */
+.source-workspace.signal-sources-workspace{width:100%;max-width:1120px}
+.source-workspace.signal-sources-workspace>:is([data-radar-guide="search-preferences-form"],.source-narrow-panel,.market-boundary-note){width:100%;max-width:760px;justify-self:start}
+.source-workspace.signal-sources-workspace>.market-boundary-note{margin:0}
+.source-workspace.signal-sources-workspace>.market-boundary-note{font-size:14px}
+.source-workspace [data-radar-guide="search-preferences-form"] form>.grid>label{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.source-workspace [data-radar-guide="search-preferences-form"] form>.grid>label>input{max-width:160px}
+.source-workspace .source-narrow-panel .signal-source-tracks{grid-template-columns:repeat(2,minmax(0,1fr))}
+.source-workspace [data-radar-guide="search-preferences-form"] p,
+.source-workspace .source-narrow-panel :is(.signal-help,.signal-source-description),
+.source-workspace .signal-source-strategies .signal-help,
+.source-workspace .signal-source-message p{font-size:14px;line-height:1.6}
+.source-workspace .signal-source-message p{max-width:72ch}
+@media(max-width:760px){.source-workspace .source-narrow-panel .signal-source-tracks{grid-template-columns:1fr}}

@@ -1,3 +1,9 @@
+## 30 octobre 2026 — Lecture de Mon profil et Ma recherche
+
+- Le carnet d’expériences et les documents sont limités respectivement à 960 et 800 px sur grand écran ; les passages détaillés gardent une longueur de ligne lisible.
+- Les critères et alertes de Ma recherche sont limités à 760 px, tandis que les collections de sources peuvent utiliser jusqu’à 1 120 px. Tous les blocs restent alignés à gauche, comme les titres des autres pages.
+- Les textes d’aide et les champs de rémunération gagnent en lisibilité.
+
 ## 30 octobre 2026 — Accès direct aux recherches
 
 - Bing disparaît des liens proposés. Chaque poste ouvre en priorité LinkedIn Jobs ou Welcome to the Jungle ; l’URL de recherche filtrée peut être enregistrée dans Radar.
