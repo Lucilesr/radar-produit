@@ -7,7 +7,7 @@ const file = new URL("../lib/web-discovery.ts", import.meta.url);
 const source = readFileSync(file, "utf8");
 const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
 const moduleUrl = "data:text/javascript;base64," + Buffer.from(js).toString("base64");
-const { discoveryQueries, searchUrl } = await import(moduleUrl);
+const { discoveryQueries, discoveryQueriesForRoles, searchUrl } = await import(moduleUrl);
 
 test("propose quatre recherches PO/PM en français, sans filtre géographique", () => {
   assert.deepEqual(discoveryQueries.map(query => query.id), ["linkedin-po", "linkedin-pm", "wttj-po", "wttj-pm"]);
@@ -24,4 +24,12 @@ test("les liens ouvrent les moteurs publics choisis, sans compte ni service tier
   assert.equal(google.searchParams.get("q"), query);
   assert.equal(bing.searchParams.get("q"), query);
   assert(!searchUrl(query, "Google").includes("brave"));
+});
+
+test("les liens web suivent les intitulés saisis et neutralisent les guillemets", () => {
+  const queries = discoveryQueriesForRoles(["Product Ops", 'Chef de projet "digital"']);
+  assert.equal(queries.length, 4);
+  assert.deepEqual(queries.map(query => query.role), ["Product Ops", "Product Ops", 'Chef de projet "digital"', 'Chef de projet "digital"']);
+  assert(queries[0].expression.includes('"Product Ops"'));
+  assert(queries[2].expression.includes('"Chef de projet  digital"'));
 });

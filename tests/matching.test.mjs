@@ -13,6 +13,7 @@ const arrangement = moduleUrl("work-arrangement");
 const workflow = moduleUrl("application-workflow");
 const marketScope = moduleUrl("market-scope");
 const preferences = moduleUrl("search-preferences");
+const { searchPreferences } = await import(preferences);
 const { assessJob } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences }));
 const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement }));
 const { createCandidateBrief, briefOffer } = await import(moduleUrl("candidate-brief"));
@@ -20,9 +21,22 @@ const opportunityViews = moduleUrl("opportunity-views");
 const { selectTriageActions, sortOffersForTriage } = await import(moduleUrl("triage", { "./application-workflow": workflow, "./opportunity-views": opportunityViews }));
 const baseline = { title: "Product Owner", company: "Fixture", contractType: "cdi", annualSalary: 55000, remoteMode: "full_remote", language: "fr", source: "Autre" };
 
-test("les critères enregistrés personnalisent les matchs et conservent les offres incomplètes", () => {
-  const search = { roles: ["pm"], contracts: ["cdi"], remote: "full_remote", minimumSalary: 65000, minimumDailyRate: 600 };
-  assert.equal(assessJob(baseline, search).tier, "excluded");
+test("les anciens choix PO/PM deviennent des intitulés éditables", () => {
+  assert.deepEqual(searchPreferences({ roles: ["po", "pm"] }).roles, ["Product Owner", "Product Manager"]);
+  assert.deepEqual(searchPreferences({ roles: ["product ops", "Product Ops", "!!!"] }).roles, ["Product Ops"]);
+});
+
+test("les intitulés libres donnent la priorité aux postes saisis", () => {
+  const search = { roles: ["Product Ops", "Chef de projet digital"], contracts: ["cdi"], remote: "full_remote", minimumSalary: 65000, minimumDailyRate: 600 };
+  assert.equal(assessJob({ ...baseline, annualSalary: 65000 }, search).tier, "exception");
+  assert.match(assessJob({ ...baseline, annualSalary: 65000 }, search).flags.join(" "), /Rôle secondaire/);
+  assert.equal(assessJob({ ...baseline, title: "Senior Product Ops", annualSalary: 65000 }, search).tier, "priority");
+  assert.equal(assessJob({ ...baseline, title: "Chef de projet digital", annualSalary: 65000 }, search).tier, "priority");
+  assert.equal(assessJob({ ...baseline, title: "Product Ops", annualSalary: null }, search).tier, "exception");
+});
+
+test("les autres critères de recherche restent appliqués", () => {
+  const search = { roles: ["Product Manager"], contracts: ["cdi"], remote: "full_remote", minimumSalary: 65000, minimumDailyRate: 600 };
   assert.equal(assessJob({ ...baseline, title: "Product Manager", annualSalary: 65000 }, search).tier, "priority");
   assert.equal(assessJob({ ...baseline, title: "Product Manager", annualSalary: null }, search).tier, "exception");
   assert.equal(assessJob({ ...baseline, title: "Product Manager", annualSalary: 65000, remoteMode: "exceptional" }, search).tier, "excluded");
@@ -108,12 +122,12 @@ test("négation du full remote et intitulés abrégés sont correctement qualifi
   assert.equal(result.tier, "exception");
   assert.match(result.flags.join(" "), /remote à confirmer/);
   assert.doesNotMatch(result.reasons.join(" "), /Full remote explicite/);
-  assert.match(result.reasons.join(" "), /cœur de cible/);
+  assert.match(result.reasons.join(" "), /votre recherche/);
 });
 
 test("mention de PO dans une annonce développeur et exigence bilingue ne passent pas inaperçues", () => {
   const developer = assessJob({ ...baseline, title: "Développeur React", description: "Travailler avec le Product Owner" });
-  assert.doesNotMatch(developer.reasons.join(" "), /cœur de cible/);
+  assert.doesNotMatch(developer.reasons.join(" "), /votre recherche/);
   const bilingual = assessJob({ ...baseline, language: "en", description: "Bilingual French and English required" });
   assert.equal(bilingual.tier, "exception");
   assert.match(bilingual.flags.join(" "), /bilingue/);

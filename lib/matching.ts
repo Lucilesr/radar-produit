@@ -4,9 +4,16 @@ import { detectWorkArrangement } from "./work-arrangement";
 import { activeStatuses } from "./application-workflow";
 import { isNorthAmericaRestricted } from "./market-scope";
 
-const ownerRoles = [/product owner/i, /\bpo\b/i];
-const managerRoles = [/product manager/i, /\bpm\b/i, /chef de produit (?:digital|numerique|numérique)/i];
-const adjacentRoles = [/product builder/i, /product ops/i, /product lead/i];
+const ownerRoles = [/\bproduct owner\b/i, /\bpo\b/i];
+const managerRoles = [/\bproduct manager\b/i, /\bpm\b/i, /chef de produit (?:digital|numerique|numérique)\b/i];
+const productRole = /\bproduct\b|\bproduit\b|\b(?:po|pm)\b/i;
+
+function matchesSearchedRole(title: string, role: string) {
+  if (role === "Product Owner") return ownerRoles.some(pattern => pattern.test(title));
+  if (role === "Product Manager") return managerRoles.some(pattern => pattern.test(title));
+  const normalized = (value: string) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("fr").replace(/[^a-z0-9]+/g, " ").trim();
+  return (` ${normalized(title)} `).includes(` ${normalized(role)} `);
+}
 
 export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: SearchPreferences): Assessment {
   const search = searchPreferences(preferences);
@@ -22,17 +29,14 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     flags.push("Marché limité aux États-Unis / Amérique du Nord : hors de votre recherche.");
   }
 
-  const owner = ownerRoles.some(pattern => pattern.test(job.title));
-  const manager = managerRoles.some(pattern => pattern.test(job.title));
-  if ((owner && search.roles.includes("po")) || (manager && search.roles.includes("pm"))) {
+  const matchedRole = search.roles.find(role => matchesSearchedRole(job.title, role));
+  if (matchedRole) {
     score += 38;
-    reasons.push("Rôle Product Owner / Product Manager au cœur de cible.");
-  } else if (owner || manager) {
-    excluded = true;
-    flags.push("Rôle non recherché dans vos critères.");
-  } else if (adjacentRoles.some((pattern) => pattern.test(job.title))) {
+    reasons.push(`Intitulé proche de votre recherche : ${matchedRole}.`);
+  } else if (productRole.test(job.title)) {
     score += 27;
-    reasons.push("Rôle produit adjacent : à examiner comme alternative.");
+    exception = true;
+    reasons.push("Autre rôle produit : à examiner comme piste secondaire.");
     flags.push("Rôle secondaire");
   } else {
     flags.push("Intitulé éloigné des rôles ciblés");

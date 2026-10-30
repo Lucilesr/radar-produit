@@ -81,7 +81,7 @@ export type Assessment = {
 };
 
 export type SearchPreferences = {
-  roles: Array<"po" | "pm">;
+  roles: string[];
   contracts: Array<"cdi" | "freelance">;
   remote: "full_remote" | "occasional" | "light_hybrid";
   minimumSalary: number;
