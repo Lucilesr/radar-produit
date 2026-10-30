@@ -14,12 +14,14 @@ import { sourceGuidance } from "@/lib/source-guidance";
 
 export type SourceSetting = { source: string; state?: string; notes?: string; verification?: string; lastSyncedAt?: string; error?: string; updatedAt?: string; latestAlert?: { url: string; notificationAt: string; label: string } };
 const states=[{value:"not_configured",label:"Pas encore commencé"},{value:"action_needed",label:"Étapes en cours"},{value:"configured",label:"Étapes faites"},{value:"paused",label:"En pause"}];
+const stateLabels:Record<string,string>={not_configured:"À configurer",action_needed:"Action requise",configured:"Étapes faites",paused:"En pause"};
 
 export function SourceCard({ source, setting, count, hidden, onSaved }: { source: typeof sourceCatalog[number]; setting?: SourceSetting; count: number; hidden?: boolean; onSaved: (setting: SourceSetting) => void }) {
   const title=useId();
   const notify=useWorkspaceFeedback();
   const [draft,setDraft]=useState<{state:string;notes:string}|null>(null);
   const current=draft??{state:setting?.state??"not_configured",notes:setting?.notes??""};
+  const savedState=setting?.state??"not_configured";
   const [busy,setBusy]=useState(false),[error,setError]=useState("");
   const locked=useRef(false);
   const dirty=draft!==null&&(draft.state!==(setting?.state??"not_configured")||draft.notes!==(setting?.notes??""));
@@ -36,6 +38,7 @@ export function SourceCard({ source, setting, count, hidden, onSaved }: { source
   }
   return <section hidden={hidden} className="signal-source-card" aria-labelledby={title}>
     <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span></div>
+    <span className="signal-source-status" data-state={savedState}>{stateLabels[savedState]??"À configurer"}</span>
     <p className="signal-source-description">{source.note}</p>
     <a href={source.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a>
     {setting?.lastSyncedAt?<p className="signal-help">Flux vérifié le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
