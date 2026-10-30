@@ -1,6 +1,7 @@
 ## 30 octobre 2026 — Ma recherche
 
-- Les postes recherchés se saisissent librement, un intitulé par ligne. Un intitulé saisi devient prioritaire dans les matchs ; les autres rôles produit restent des pistes secondaires.
+- Un poste saisi avec Entrée est enregistré immédiatement et apparaît dans la liste des postes recherchés. La suppression d’un poste s’enregistre aussi immédiatement ; le bouton du bas ne concerne plus que les autres critères.
+- Les postes recherchés se saisissent librement. Un intitulé saisi devient prioritaire dans les matchs ; les autres rôles produit restent des pistes secondaires.
 - L’onglet Sources devient Ma recherche : les postes saisis, contrats, présence acceptable et seuils de rémunération sont utilisés pour classer les offres existantes et nouvelles. Les liens de recherche web suivent aussi les intitulés saisis.
 - Ma présentation quitte le profil et le guide de prise en main commence par les critères de recherche. Le CV et le carnet d’expériences restent dans Mon profil.
 - Les annonces sans rémunération ou sans politique de télétravail précise restent à vérifier ; les alertes configurées sur les plateformes externes ne sont pas modifiées par ces critères.
