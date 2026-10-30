@@ -1,12 +1,22 @@
-import type { Assessment, JobInput, JobStatus } from "./types";
+import type { Assessment, JobInput, JobStatus, SearchPreferences } from "./types";
+import { searchPreferences } from "./search-preferences";
 import { detectWorkArrangement } from "./work-arrangement";
 import { activeStatuses } from "./application-workflow";
 import { isNorthAmericaRestricted } from "./market-scope";
 
-const coreRoles = [/product owner/i, /product manager/i, /\b(?:po|pm)\b/i, /chef de produit (?:digital|numerique|numérique)/i];
-const adjacentRoles = [/product builder/i, /product ops/i, /product lead/i];
+const ownerRoles = [/\bproduct owner\b/i, /\bpo\b/i];
+const managerRoles = [/\bproduct manager\b/i, /\bpm\b/i, /chef de produit (?:digital|numerique|numérique)\b/i];
+const productRole = /\bproduct\b|\bproduit\b|\b(?:po|pm)\b/i;
 
-export function assessJob(job: JobInput & { status?: JobStatus }): Assessment {
+function matchesSearchedRole(title: string, role: string) {
+  if (role === "Product Owner") return ownerRoles.some(pattern => pattern.test(title));
+  if (role === "Product Manager") return managerRoles.some(pattern => pattern.test(title));
+  const normalized = (value: string) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("fr").replace(/[^a-z0-9]+/g, " ").trim();
+  return (` ${normalized(title)} `).includes(` ${normalized(role)} `);
+}
+
+export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: SearchPreferences): Assessment {
+  const search = searchPreferences(preferences);
   const text = `${job.title} ${job.description ?? ""}`;
   const reasons: string[] = [];
   const flags: string[] = [];
@@ -19,12 +29,14 @@ export function assessJob(job: JobInput & { status?: JobStatus }): Assessment {
     flags.push("Marché limité aux États-Unis / Amérique du Nord : hors de votre recherche.");
   }
 
-  if (coreRoles.some((pattern) => pattern.test(job.title))) {
+  const matchedRole = search.roles.find(role => matchesSearchedRole(job.title, role));
+  if (matchedRole) {
     score += 38;
-    reasons.push("Rôle Product Owner / Product Manager au cœur de cible.");
-  } else if (adjacentRoles.some((pattern) => pattern.test(job.title))) {
+    reasons.push(`Intitulé proche de votre recherche : ${matchedRole}.`);
+  } else if (productRole.test(job.title)) {
     score += 27;
-    reasons.push("Rôle produit adjacent : à examiner comme alternative.");
+    exception = true;
+    reasons.push("Autre rôle produit : à examiner comme piste secondaire.");
     flags.push("Rôle secondaire");
   } else {
     flags.push("Intitulé éloigné des rôles ciblés");
@@ -39,14 +51,14 @@ export function assessJob(job: JobInput & { status?: JobStatus }): Assessment {
   if (arrangement.mode === "full_remote") {
     score += 25;
     reasons.push("Full remote explicite.");
-  } else if (arrangement.mode === "exceptional") {
+  } else if (arrangement.mode === "exceptional" && search.remote !== "full_remote") {
     score += 21;
     reasons.push("Présence ponctuelle compatible avec vos préférences.");
   } else if (arrangement.mode === "unknown") {
     score += 5;
     exception = true;
     flags.push("Politique remote à confirmer");
-  } else if (arrangement.mode === "hybrid" && arrangement.lightHybrid !== false) {
+  } else if (arrangement.mode === "hybrid" && arrangement.lightHybrid !== false && search.remote === "light_hybrid") {
     score += 12;
     exception = true;
     flags.push(arrangement.daysOnsite === 1
@@ -57,22 +69,27 @@ export function assessJob(job: JobInput & { status?: JobStatus }): Assessment {
     flags.push("Candidature suivie par votre choix ; dérogation remote à négocier, non acquise");
   } else {
     excluded = true;
-    flags.push("Présence régulière incompatible avec le remote recherché");
+    flags.push("Présence sur site incompatible avec votre recherche");
+  }
+
+  if ((job.contractType === "cdi" || job.contractType === "freelance") && !search.contracts.includes(job.contractType)) {
+    excluded = true;
+    flags.push("Type de contrat non recherché.");
   }
 
   if (job.contractType === "cdi") {
     if (job.annualSalary == null) {
       exception = true;
       flags.push("Salaire non communiqué");
-    } else if (job.annualSalary >= 55000) {
+    } else if (job.annualSalary >= search.minimumSalary) {
       score += 20;
-      reasons.push(`Rémunération annoncée à ${formatEuro(job.annualSalary)} brut/an ou plus.`);
-    } else if (job.annualSalary >= 50000) {
+      reasons.push(`Rémunération annoncée à ${formatEuro(job.annualSalary)} brut/an.`);
+    } else if (job.annualSalary >= search.minimumSalary - 5000) {
       exception = true;
-      flags.push("Salaire légèrement sous le seuil de 55 k€");
+      flags.push(`Salaire légèrement sous votre seuil de ${formatEuro(search.minimumSalary)}.`);
     } else {
       excluded = true;
-      flags.push("Salaire clairement sous le seuil de 55 k€");
+      flags.push(`Salaire sous votre seuil de ${formatEuro(search.minimumSalary)}.`);
     }
   }
 
@@ -80,15 +97,15 @@ export function assessJob(job: JobInput & { status?: JobStatus }): Assessment {
     if (job.dailyRate == null) {
       exception = true;
       flags.push("TJM non communiqué");
-    } else if (job.dailyRate >= 500) {
+    } else if (job.dailyRate >= search.minimumDailyRate) {
       score += 20;
-      reasons.push(`TJM annoncé à ${formatEuro(job.dailyRate)} HT/jour ou plus.`);
-    } else if (job.dailyRate >= 450) {
+      reasons.push(`TJM annoncé à ${formatEuro(job.dailyRate)} HT/jour.`);
+    } else if (job.dailyRate >= search.minimumDailyRate - 50) {
       exception = true;
-      flags.push("TJM légèrement sous le seuil de 500 €");
+      flags.push(`TJM légèrement sous votre seuil de ${formatEuro(search.minimumDailyRate)}.`);
     } else {
       excluded = true;
-      flags.push("TJM clairement sous le seuil de 500 €");
+      flags.push(`TJM sous votre seuil de ${formatEuro(search.minimumDailyRate)}.`);
     }
   }
 

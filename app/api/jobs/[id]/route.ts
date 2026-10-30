@@ -4,6 +4,8 @@ import { getDb } from "@/db";
 import { jobs } from "@/db/schema";
 import { ensureSameOrigin, isStatus, rowToJob } from "@/lib/server";
 import { assessJob } from "@/lib/matching";
+import { searchPreferences } from "@/lib/search-preferences";
+import { readCandidateProfile } from "@/lib/profile-store";
 import { readWorkspaceWrite, saveWorkspaceWrite } from "@/lib/workspace-write-store";
 import { getOffer, updateOffer, setOfferDeleted } from "@/lib/job-store";
 import { readBoard } from "@/lib/personal-board-store";
@@ -59,7 +61,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       if (!column || column.stage === "other" || applicationColumn({ ...current, status }) !== column.stage) return Response.json({ error: "Colonne et statut incompatibles." }, { status: 400 });
       boardColumnId = column.id;
     } else if (Object.hasOwn(body, "status")) boardColumnId = null;
-    const assessment = assessJob({ ...current, status });
+    const assessment = assessJob({ ...current, status }, searchPreferences((await readCandidateProfile(user.userId))?.searchPreferences));
     const now = new Date().toISOString();
     if (typeof body.candidateNote === "string") {
       if (Object.hasOwn(body,"status") || Object.hasOwn(body,"reviewState") || Object.hasOwn(body,"boardColumnId")) return Response.json({error:"Enregistrez la note séparément de l’étape."},{status:400});

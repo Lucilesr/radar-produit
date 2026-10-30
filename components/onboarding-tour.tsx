@@ -9,9 +9,9 @@ type Phase = "setup" | "intro" | "tour" | "paused" | "done";
 type State = { phase: Phase; index: number };
 type Step = { target: string; title: string; detail: string; mobileDetail?: string; action: "click" | "save" | "upload" | "verify" };
 const setup: Step[] = [
-  { target: "nav-profile", title: "Ouvrez votre profil", detail: "Cliquez sur l’onglet mis en lumière pour commencer.", action: "click" },
-  { target: "profile-presentation", title: "Votre présentation", detail: "Ouvrez Ma présentation pour renseigner l’essentiel.", action: "click" },
-  { target: "presentation-form", title: "Votre présentation", detail: "Renseignez un titre ciblé, un résumé et vos compétences, puis enregistrez. Le guide avancera après l’enregistrement.", mobileDetail: "Titre ciblé, résumé et compétences : complétez ces champs, puis enregistrez.", action: "save" },
+  { target: "nav-sources", title: "Définissez votre recherche", detail: "Ouvrez Ma recherche pour choisir les offres qui vous intéressent.", action: "click" },
+  { target: "search-preferences-form", title: "Vos critères", detail: "Écrivez un poste et appuyez sur Entrée pour l’enregistrer. Réglez ensuite les autres critères si besoin.", action: "save" },
+  { target: "nav-profile", title: "Ouvrez votre profil", detail: "Votre CV et votre carnet d’expériences se trouvent ici.", action: "click" },
   { target: "profile-documents", title: "Ajoutez votre CV", detail: "Ouvrez Mes documents. Le CV est recommandé pour préparer votre carnet, mais vous pouvez aussi le remplir à la main.", action: "click" },
   { target: "profile-documents-panel", title: "Déposez votre CV", detail: "Importez votre CV français ou anglais. Les expériences seront proposées dans le carnet : vous devrez les relire et les valider.", mobileDetail: "Touchez Importer sous CV français ou CV anglais, puis choisissez votre fichier. Vous relirez les expériences à l’étape suivante.", action: "upload" },
   { target: "profile-experiences", title: "Votre carnet d’expériences", detail: "Ouvrez le carnet pour relire les éléments du CV ou ajouter une expérience manuellement.", action: "click" },
@@ -21,11 +21,11 @@ const tour = (demo: boolean): Step[] => [
   { target: "nav-dashboard", title: "Aujourd’hui", detail: "Votre point de départ : priorités, actions à faire et prochains entretiens.", action: "click" },
   { target: "nav-offers", title: "Opportunités", detail: "Examinez les annonces, sélectionnez celles qui vous intéressent pour préparer vos candidatures avec Radar, et écartez les autres.", action: "click" },
   { target: "nav-pipeline", title: "Candidatures", detail: "Suivez vos candidatures en Tableau ou en Kanban. Déplacez une carte pour mettre à jour son étape, puis ouvrez-la pour préparer une relance ou un entretien.", action: "click" },
-  { target: "nav-profile", title: "Mon profil", detail: "Complétez Ma présentation, importez votre CV dans Mes documents et enrichissez votre Carnet d’expériences pour préparer vos candidatures.", action: "click" },
-  { target: "nav-sources", title: "Sources", detail: demo ? "Découvrez d’où viennent les annonces. L’actualisation externe est désactivée dans cette démo." : "Choisissez vos sources de veille et contrôlez leur actualisation.", action: "click" },
+  { target: "nav-profile", title: "Mon profil", detail: "Importez votre CV dans Mes documents et enrichissez votre Carnet d’expériences pour préparer vos candidatures.", action: "click" },
+  { target: "nav-sources", title: "Ma recherche", detail: demo ? "Définissez vos critères et découvrez les sources d’offres fictives." : "Définissez vos critères, choisissez vos sources de veille et contrôlez leur actualisation.", action: "click" },
 ];
-const mobileTourLabels: Record<string,string> = {"nav-dashboard":"Accueil","nav-offers":"Offres","nav-pipeline":"Suivi","nav-profile":"Profil","nav-sources":"Sources"};
-const complete = (p: CandidateProfile) => Boolean(p.headline.trim() && p.summary.trim() && p.skills.length);
+const mobileTourLabels: Record<string,string> = {"nav-dashboard":"Accueil","nav-offers":"Offres","nav-pipeline":"Suivi","nav-profile":"Profil","nav-sources":"Recherche"};
+const complete = (p: CandidateProfile) => Boolean(p.searchPreferences);
 
 export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ownerId: string; profile: CandidateProfile; activeTab: RadarTab; onNavigate: (tab: RadarTab) => void }) {
   const [state, setState] = useState<State | null>(null);
@@ -34,7 +34,7 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ow
   useEffect(() => { const query = window.matchMedia("(max-width:640px)"); const update = () => setMobile(query.matches); update(); query.addEventListener("change", update); return () => query.removeEventListener("change", update); }, []);
   const [hasFact, setHasFact] = useState(false);
   const [checking, setChecking] = useState(false);
-  const key = "radar:onboarding:v3:" + ownerId;
+  const key = "radar:onboarding:v4:" + ownerId;
   const demo = ownerId.startsWith("demo:");
   const ready = complete(profile);
   const steps = state?.phase === "setup" ? setup : tour(demo);
@@ -65,8 +65,7 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ow
       if (!live) return;
       try {
         const raw = localStorage.getItem(key);
-        const saved = JSON.parse(raw || localStorage.getItem("radar:onboarding:v2:" + ownerId) || "null") as State | null;
-        if (!raw && saved && (saved.phase === "setup" || saved.phase === "paused") && saved.index >= 3) saved.index += 2;
+        const saved = JSON.parse(raw || "null") as State | null;
         if (saved && ["setup", "intro", "tour", "paused", "done"].includes(saved.phase)) {
           setState({ phase: saved.phase, index: Math.max(0, Math.min(saved.index || 0, saved.phase === "setup" ? setup.length - 1 : tour(demo).length - 1)) });
         } else setState({ phase: !ready || !found ? "setup" : demo ? "intro" : "done", index: 0 });
@@ -78,7 +77,7 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ow
   }, [ownerId, key]);
   useEffect(() => {
     if (state?.phase !== "setup") return;
-    if (state.index === 2 && ready) persist({ phase: "setup", index: 3 });
+    if (state.index === 1 && ready) persist({ phase: "setup", index: 2 });
     if (state.index === 4 && (profile.cvFrDocumentId || profile.cvEnDocumentId)) persist({ phase: "setup", index: 5 });
     if (state.index === 6 && hasFact) persist({ phase: "intro", index: 0 });
   }, [state, ready, hasFact, profile.cvFrDocumentId, profile.cvEnDocumentId, persist]);
@@ -125,7 +124,7 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ow
     {state.phase === "tour" && index < steps.length - 1 ? <div className="onboarding-tour-next">Cliquez sur « <strong>{mobile ? mobileTourLabels[steps[index + 1].target] : steps[index + 1].title}</strong> » pour continuer.</div> : null}
     <div className="onboarding-tour-actions">
       <button type="button" className="onboarding-tour-later" onClick={() => persist({ phase: "paused", index: state.index })}>Plus tard</button>
-      {state.phase === "intro" ? <button type="button" className="onboarding-tour-open" onClick={() => { onNavigate("dashboard"); persist({phase:"tour",index:0}); }}>Lancer la visite</button> : state.phase === "tour" ? (index === steps.length - 1 ? <button type="button" className="onboarding-tour-open" onClick={() => persist({phase:"done",index:0})}>Terminer la visite</button> : null) : current.action === "upload" ? <button type="button" className="onboarding-tour-open" onClick={() => persist({ phase: "setup", index: 5 })}>Continuer sans CV</button> : current.action === "verify" ? <button type="button" className="onboarding-tour-open" disabled={checking} onClick={() => void checkFacts()}>{checking ? "Vérification…" : "Vérifier mon carnet"}</button> : <span className="onboarding-tour-instruction">{current.action === "save" ? "Enregistrez le formulaire pour continuer" : "Ouvrez l’onglet mis en lumière"}</span>}
+      {state.phase === "intro" ? <button type="button" className="onboarding-tour-open" onClick={() => { onNavigate("dashboard"); persist({phase:"tour",index:0}); }}>Lancer la visite</button> : state.phase === "tour" ? (index === steps.length - 1 ? <button type="button" className="onboarding-tour-open" onClick={() => persist({phase:"done",index:0})}>Terminer la visite</button> : null) : current.action === "upload" ? <button type="button" className="onboarding-tour-open" onClick={() => persist({ phase: "setup", index: 5 })}>Continuer sans CV</button> : current.action === "verify" ? <button type="button" className="onboarding-tour-open" disabled={checking} onClick={() => void checkFacts()}>{checking ? "Vérification…" : "Vérifier mon carnet"}</button> : <span className="onboarding-tour-instruction">{current.action === "save" ? "Saisissez un poste et appuyez sur Entrée" : "Ouvrez l’onglet mis en lumière"}</span>}
     </div>
   </aside>;
   return mobile && guideHost ? createPortal(card, guideHost) : card;

@@ -2,6 +2,8 @@ import { and, desc, eq, isNull, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { jobs, profiles, interviews } from "@/db/schema";
 import { assessJob, createFingerprint } from "./matching";
+import { searchPreferences } from "./search-preferences";
+import { readCandidateProfile } from "./profile-store";
 import { normalizeJobInput, rowToJob } from "./server";
 import { offerPatchSchema } from "./import-contract";
 import { rowToInterview } from "./interview-store";
@@ -13,7 +15,7 @@ export async function saveOffer(userId: string, value: unknown) {
   const input = normalizeJobInput(value);
   const fingerprint = createFingerprint(input);
   const db = getDb();
-  const assessment = assessJob(input);
+  const assessment = assessJob(input, searchPreferences((await readCandidateProfile(userId))?.searchPreferences));
   const record = {
     id: crypto.randomUUID(), userId, fingerprint, ...input,
     company: input.company ?? "Entreprise non précisée",
@@ -35,7 +37,7 @@ export async function saveOffer(userId: string, value: unknown) {
   // Reassess stored facts after a scoring correction, never overwrite an
   // existing description, contact or application status with a repeated import.
   const current = rowToJob(existing);
-  const updatedAssessment = assessJob(current);
+  const updatedAssessment = assessJob(current, searchPreferences((await readCandidateProfile(userId))?.searchPreferences));
   const updated = {
     matchScore: updatedAssessment.score, matchTier: updatedAssessment.tier,
     reasons: JSON.stringify(updatedAssessment.reasons), flags: JSON.stringify(updatedAssessment.flags),
@@ -59,6 +61,7 @@ export async function listOffers(userId: string, limit?: number, includeDeleted 
     workspaceNoteValues(userId),
   ]);
   const notes = { ...(profileRows[0] ? JSON.parse(profileRows[0].data).applicationNotes ?? {} : {}), ...savedNotes };
+  const preferences = searchPreferences(profileRows[0] ? JSON.parse(profileRows[0].data).searchPreferences : undefined);
   const interviewsByJob = new Map<string, ReturnType<typeof rowToInterview>[]>();
   for (const row of interviewRows) {
     const entries = interviewsByJob.get(row.jobId) ?? [];
@@ -67,7 +70,7 @@ export async function listOffers(userId: string, limit?: number, includeDeleted 
   }
   return rows.map(row => {
     const job = rowToJob(row);
-    const assessment = assessJob(job);
+    const assessment = assessJob(job, preferences);
     return { ...job, matchScore: assessment.score, matchTier: assessment.tier,
       reasons: assessment.reasons, flags: assessment.flags,
       candidateNote: typeof notes[job.id] === "string" ? notes[job.id] : undefined,
@@ -85,7 +88,7 @@ export async function getOffer(userId: string, id: string, includeDeleted = fals
   ]);
   if (!rows[0]) return undefined;
   const job = rowToJob(rows[0]);
-  const assessment = assessJob(job);
+  const assessment = assessJob(job, searchPreferences(profileRows[0] ? JSON.parse(profileRows[0].data).searchPreferences : undefined));
   const notes = profileRows[0] ? JSON.parse(profileRows[0].data).applicationNotes ?? {} : {};
   return { ...job, matchScore: assessment.score, matchTier: assessment.tier,
     reasons: assessment.reasons, flags: assessment.flags,
@@ -138,7 +141,7 @@ export async function updateOffer(userId: string, id: string, value: unknown) {
   if (!current) throw new Error("Offre introuvable");
   const normalized = normalizeJobInput({ ...current, ...patch });
   const changed = Object.fromEntries(Object.keys(patch).map(key => [key, normalized[key as keyof typeof normalized] ?? null]));
-  const assessment = assessJob({ ...current, ...normalized });
+  const assessment = assessJob({ ...current, ...normalized }, searchPreferences((await readCandidateProfile(userId))?.searchPreferences));
   await getDb().update(jobs).set({ ...changed, matchScore: assessment.score, matchTier: assessment.tier,
     reasons: JSON.stringify(assessment.reasons), flags: JSON.stringify(assessment.flags), updatedAt: new Date().toISOString() })
     .where(and(eq(jobs.id, id), eq(jobs.userId, userId)));
