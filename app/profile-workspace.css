@@ -99,6 +99,9 @@
   .experience-group>.radar-collapsible-content { padding-top: 12px; }
 }
 
+[data-radar-guide="search-preferences-form"] #searched-role,
+.search-preferences-presence,
+.search-pay-grid { width: 75%; }
 .search-pay-field { position: relative; display: block; min-width: 0; font-size: 14px; }
 .search-pay-label { position: absolute; z-index: 1; top: -9px; left: 0; padding: 0 5px 0 0; background: #fff; color: #243c4a; font-size: 12px; font-weight: 600; line-height: 18px; }
 .radar-app .source-workspace [data-radar-guide="search-preferences-form"] input.search-pay-input { display: block; width: 100%; height: 48px; min-width: 0; border: 1px solid #d0d4e4; border-radius: 8px; background: #fff; padding: 11px 92px 11px 12px; color: #243c4a; font: inherit; text-align: right; appearance: textfield; }
