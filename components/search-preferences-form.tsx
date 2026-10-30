@@ -96,7 +96,7 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
         <label className="search-pay-field"><span className="search-pay-label">TJM min souhaité<span className="sr-only">, en euros hors taxes par jour</span></span><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></label>
       </div>
       <p className="text-xs text-[#535768]">Une rémunération légèrement inférieure est signalée comme exception ; une rémunération non indiquée reste à vérifier.</p>
-      <div className="flex flex-wrap items-center gap-3"><button className="radar-add-button" disabled={saving || savingRole}>{saving ? "Enregistrement…" : "Enregistrer"}</button><span role="status" className="text-sm">{message}</span></div>
+      <div className="signal-source-actions flex-wrap items-center gap-3"><span role="status" className="mr-auto text-sm">{message}</span><button type="submit" className="radar-add-button" disabled={saving || savingRole}>{saving ? "Enregistrement…" : "Enregistrer"}</button></div>
     </form>
   </section>;
 }
