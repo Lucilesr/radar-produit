@@ -1,3 +1,7 @@
+## 30 octobre 2026 — Largeur des critères de recherche
+
+- Les champs des postes recherchés, de la présence acceptable, du salaire minimum et du TJM minimum sont réduits de 25 %.
+
 ## 30 octobre 2026 — Unités dans les champs de rémunération
 
 - Les champs de salaire et de TJM occupent toute la largeur disponible : leurs unités restent à l’intérieur de la bordure. Les libellés s’alignent sur le bord gauche des champs.
