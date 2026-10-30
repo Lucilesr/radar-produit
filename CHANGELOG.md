@@ -1,3 +1,7 @@
+## 30 octobre 2026 — Champs de rémunération
+
+- Le salaire minimum et le TJM minimum s’affichent côte à côte lorsque la largeur le permet. Leurs libellés reposent sur la bordure et les unités restent visibles pendant la saisie.
+
 ## 30 octobre 2026 — Lecture de Mon profil et Ma recherche
 
 - Le carnet d’expériences et les documents sont limités respectivement à 960 et 800 px sur grand écran ; les passages détaillés gardent une longueur de ligne lisible.
