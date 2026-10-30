@@ -1,6 +1,6 @@
 # Recherche d’offres LinkedIn et Welcome to the Jungle
 
-Radar affiche des liens de recherche Google et Bing ciblant Product Owner / Product Manager, avec des termes français, sans filtre de pays. L’utilisateur ouvre l’index et vérifie chaque résultat lui-même. Radar n’interroge pas LinkedIn ou Welcome to the Jungle, ne récupère ni ne conserve les résultats, et n’utilise ni compte, cookies, extension ou Brave.
+Radar affiche un accès direct à LinkedIn Jobs ou Welcome to the Jungle, modifiable avec l’URL d’une recherche filtrée, et un lien Google complémentaire ciblant Product Owner / Product Manager. L’utilisateur vérifie chaque résultat lui-même. Radar n’interroge pas LinkedIn ou Welcome to the Jungle, ne récupère ni ne conserve les résultats, et n’utilise ni compte, cookies, extension ou Brave.
 
 Cette limite est volontaire. Les conditions LinkedIn interdisent le scraping, y compris automatisé via des tiers, et la copie/distribution de contenus sans consentement. Les CGU publiques de Welcome to the Jungle interdisent également l’extraction et la copie automatisées, tout en prévoyant une permission limitée pour les moteurs publics qui indexent leurs pages. Une recherche disponible sur un moteur ne vaut pas autorisation pour Radar de constituer une copie d’offres.
 
@@ -19,4 +19,3 @@ Les fiches Radar peuvent être complétées depuis des sources employeur officie
 - Welcome to the Jungle, [Conditions d’utilisation](https://www.welcometothejungle.com/fr/pages/terms), règles d’accès automatisé et d’indexation.
 - Greenhouse, [Job Board API](https://docs.greenhouse.io/job-board) : GET public des fiches, sans authentification.
 - Ashby, [Job Postings API](https://developers.ashbyhq.com/docs/public-job-posting-api) : GET des annonces publiées du tableau employeur.
-- Microsoft, [Retrait des API Bing Search le 11 août 2025](https://learn.microsoft.com/en-us/lifecycle/announcements/bing-search-api-retirement). Radar ouvre le moteur web Bing ; il ne dépend pas de l’ancienne API Bing Search.

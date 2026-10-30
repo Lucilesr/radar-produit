@@ -12,7 +12,7 @@ export const sourceGuidance: Record<SourceName, { steps: [string, ...string[]]; 
     result: "Radar mémorise votre suivi. Il ne modifie pas votre profil Malt et ne récupère pas vos messages.",
   },
   "LinkedIn Jobs": {
-    steps: ["Utilisez les liens Google ou Bing dans « Recherche PO/PM en français » pour repérer des annonces.", "Ouvrez et vérifiez chaque annonce, puis ajoutez volontairement son lien et son descriptif dans Radar."],
+    steps: ["Ouvrez la recherche sur LinkedIn et enregistrez son URL filtrée dans « Recherches web pour vos postes ».", "Google peut compléter la recherche ; vérifiez chaque annonce avant de l’ajouter volontairement à Radar."],
     result: "Radar n'active pas d'alerte LinkedIn et ne lit pas votre compte.",
   },
   Apec: {
@@ -20,7 +20,7 @@ export const sourceGuidance: Record<SourceName, { steps: [string, ...string[]]; 
     result: "Radar conserve seulement l'état et vos notes ; l'alerte reste gérée par Apec.",
   },
   "Welcome to the Jungle": {
-    steps: ["Utilisez les liens Google ou Bing dans « Recherche PO/PM en français » pour repérer des annonces.", "Vérifiez l'annonce, idéalement sur la page carrière de l'employeur, avant de l'ajouter à Radar."],
+    steps: ["Ouvrez la recherche sur Welcome to the Jungle et enregistrez son URL filtrée dans « Recherches web pour vos postes ».", "Google peut compléter la recherche ; vérifiez l'annonce, idéalement sur la page carrière de l'employeur, avant de l'ajouter à Radar."],
     result: "Radar n'active pas d'alerte Welcome to the Jungle et ne collecte pas ses résultats.",
   },
   "Free-Work": {

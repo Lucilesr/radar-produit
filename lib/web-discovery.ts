@@ -15,18 +15,17 @@ export function discoveryQueriesForRoles(roles: string[]) {
   });
 }
 
-export function searchUrl(expression: string, provider: "Google" | "Bing") {
-  const url = new URL(provider === "Google" ? "https://www.google.com/search" : "https://www.bing.com/search");
+export function searchUrl(expression: string) {
+  const url = new URL("https://www.google.com/search");
   url.searchParams.set("q", expression);
   return url.toString();
 }
 
-export type SearchLinks = { Google?: string; Bing?: string; Site?: string };
+export type SearchLinks = { Google?: string; Site?: string };
 export function defaultSearchLinks(query: { source: string; expression: string }): SearchLinks {
   return {
-    ...(query.source === "Welcome to the Jungle" ? { Site: "https://www.welcometothejungle.com/fr/jobs" } : {}),
-    Google: searchUrl(query.expression, "Google"),
-    Bing: searchUrl(query.expression, "Bing"),
+    Site: query.source === "Welcome to the Jungle" ? "https://www.welcometothejungle.com/fr/jobs" : "https://www.linkedin.com/jobs/",
+    Google: searchUrl(query.expression),
   };
 }
 

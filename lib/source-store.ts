@@ -23,7 +23,7 @@ export async function userSearchLinks(userId: string, value: unknown) {
   const input = z.object({
     source: z.enum(["LinkedIn Jobs", "Welcome to the Jungle"]),
     role: z.string().trim().min(2).max(80).refine(role => !["__proto__", "constructor", "prototype"].includes(role)),
-    links: z.object({ Google: z.string().max(2048).optional(), Bing: z.string().max(2048).optional(), Site: z.string().max(2048).optional() }).strict(),
+    links: z.object({ Google: z.string().max(2048).optional(), Site: z.string().max(2048).optional() }).strict(),
   }).strict().parse(value);
   if (Object.values(input.links).some(url => url && !validSearchLink(url))) throw new Error("Lien invalide");
   const previous = (await listSourceSettings(userId)).find(setting => setting.source === input.source) as { searchLinks?: Record<string, unknown> } | undefined;
