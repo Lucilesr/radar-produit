@@ -2,6 +2,7 @@
 
 - Le choix de présence propose Présentiel, Hybride, Hybride avec présence exceptionnelle et Full Remote dans le sélecteur commun de l’application. Le classement des offres suit le niveau choisi.
 - CDD peut être sélectionné dans la recherche et renseigné sur une offre ; il est reconnu dans les annonces et évalué avec le seuil de salaire annuel.
+- Les champs salaire annuel et TJM affichent leur intitulé et leur montant sur la même ligne, avec des libellés raccourcis ; le bouton de sauvegarde indique « Enregistrer ».
 
 ## 30 octobre 2026 — Ma recherche
 
