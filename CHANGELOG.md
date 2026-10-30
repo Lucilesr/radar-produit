@@ -1,3 +1,8 @@
+## 30 octobre 2026 — Liens de recherche modifiables
+
+- Chaque recherche LinkedIn ou Welcome to the Jungle permet d’enregistrer ses propres URL Google et Bing ; Welcome to the Jungle propose aussi un lien direct modifiable vers sa page d’offres.
+- Les liens enregistrés restent disponibles sur les autres appareils via le compte Radar. Vider un champ rétablit le lien proposé par Radar.
+
 ## 30 octobre 2026 — Statut et hauteur des sources
 
 - Les cartes de « Mes sources » affichent leur état de configuration dès la vue fermée, avec un repère plus visible pour les sources à configurer ou nécessitant une action.

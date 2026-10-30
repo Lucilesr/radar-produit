@@ -20,3 +20,19 @@ export function searchUrl(expression: string, provider: "Google" | "Bing") {
   url.searchParams.set("q", expression);
   return url.toString();
 }
+
+export type SearchLinks = { Google?: string; Bing?: string; Site?: string };
+export function defaultSearchLinks(query: { source: string; expression: string }): SearchLinks {
+  return {
+    ...(query.source === "Welcome to the Jungle" ? { Site: "https://www.welcometothejungle.com/fr/jobs" } : {}),
+    Google: searchUrl(query.expression, "Google"),
+    Bing: searchUrl(query.expression, "Bing"),
+  };
+}
+
+export function validSearchLink(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password && value.length <= 2048;
+  } catch { return false; }
+}
