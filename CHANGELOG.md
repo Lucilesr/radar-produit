@@ -1,3 +1,7 @@
+## 30 octobre 2026 — Centrage des blocs de recherche et d’expériences
+
+- Les blocs de Ma recherche sont centrés dans la page. Dans Mon profil, la section commençant par « Mes expériences » est centrée, titre compris ; la navigation du profil reste à sa place.
+
 ## 30 octobre 2026 — Boutons d’enregistrement de Ma recherche
 
 - Les boutons d’enregistrement des critères, des liens de recherche et de l’alerte Collective sont alignés en bas à droite de leurs blocs, y compris sur mobile.
