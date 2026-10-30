@@ -1,3 +1,8 @@
+## 30 octobre 2026 — Accès direct aux recherches
+
+- Bing disparaît des liens proposés. Chaque poste ouvre en priorité LinkedIn Jobs ou Welcome to the Jungle ; l’URL de recherche filtrée peut être enregistrée dans Radar.
+- Google reste disponible en complément pour repérer des annonces publiques ; il n’est plus présenté comme l’accès principal.
+
 ## 30 octobre 2026 — Liens de recherche modifiables
 
 - Chaque recherche LinkedIn ou Welcome to the Jungle permet d’enregistrer ses propres URL Google et Bing ; Welcome to the Jungle propose aussi un lien direct modifiable vers sa page d’offres.

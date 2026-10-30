@@ -15,15 +15,12 @@ test("propose quatre recherches PO/PM en français, sans filtre géographique", 
   assert(discoveryQueries.every(query => query.expression.includes("site:")));
 });
 
-test("les liens ouvrent les moteurs publics choisis, sans compte ni service tiers", () => {
+test("Google est un lien complémentaire vers un index public", () => {
   const query = 'site:linkedin.com/jobs/view/ "Product Owner"';
-  const google = new URL(searchUrl(query, "Google"));
-  const bing = new URL(searchUrl(query, "Bing"));
+  const google = new URL(searchUrl(query));
   assert.equal(google.origin, "https://www.google.com");
-  assert.equal(bing.origin, "https://www.bing.com");
   assert.equal(google.searchParams.get("q"), query);
-  assert.equal(bing.searchParams.get("q"), query);
-  assert(!searchUrl(query, "Google").includes("brave"));
+  assert(!searchUrl(query).includes("bing"));
 });
 
 test("les liens web suivent les intitulés saisis et neutralisent les guillemets", () => {
@@ -42,4 +39,10 @@ test("Welcome to the Jungle propose une page directe et refuse les liens dangere
   assert(validSearchLink("https://www.welcometothejungle.com/fr/jobs?query=Product+Owner"));
   assert(!validSearchLink("javascript:alert(1)"));
   assert(!validSearchLink("https://user:secret@example.com/jobs"));
+});
+
+test("LinkedIn propose également un lien direct vers le site", () => {
+  const query = discoveryQueriesForRoles(["Product Owner"]).find(item => item.source === "LinkedIn Jobs");
+  assert.equal(new URL(defaultSearchLinks(query).Site).pathname, "/jobs/");
+  assert.deepEqual(Object.keys(defaultSearchLinks(query)).sort(), ["Google", "Site"]);
 });
