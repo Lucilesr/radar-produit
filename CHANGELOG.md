@@ -12,6 +12,8 @@
 
 ## 29 octobre 2026
 
+- Profil : « Mes expériences » explique comment les expériences détaillées alimentent la personnalisation des candidatures, avec des pistes d’adaptation du CV et des réponses pour chaque offre.
+
 - Sources : chaque panneau « Configurer cette source » explique les étapes sur la plateforme, les actions possibles dans Radar et le sens du statut enregistré.
 - Visite : carte de lancement, description de la page affichée et halo sur le prochain onglet à cliquer ; fin explicite.
 

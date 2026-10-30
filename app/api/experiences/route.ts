@@ -7,7 +7,7 @@ const headers={"Cache-Control":"private, no-store"};
 export async function GET(request:Request){
   const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401,headers});
   try{const id=new URL(request.url).searchParams.get("history");return Response.json(id?{revisions:await history(user.userId,id)}:await library(user.userId),{headers});}
-  catch{return Response.json({error:"Lecture du carnet impossible."},{status:503,headers});}
+  catch{return Response.json({error:"Lecture des expériences impossible."},{status:503,headers});}
 }
 export async function POST(request:Request){
   const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401,headers});
@@ -18,7 +18,7 @@ export async function POST(request:Request){
     return Response.json(body.action==="extract"?await importExtraction(user.userId,body.extraction):await mutateLibrary(user.userId,body),{headers});
   }catch(error){
     if(error instanceof ReviewBlockedError)return Response.json({error:error.message,issues:error.issues},{status:409,headers});
-    const message=error instanceof Error&&!/SQL|D1|constraint|Zod|\[\s*\{/i.test(error.message)?error.message:"Écriture non confirmée ou version périmée. Rechargez le carnet avant de réessayer.";
+    const message=error instanceof Error&&!/SQL|D1|constraint|Zod|\[\s*\{/i.test(error.message)?error.message:"Écriture non confirmée ou version périmée. Rechargez Mes expériences avant de réessayer.";
     return Response.json({error:message},{status:409,headers});
   }
 }
