@@ -1,3 +1,8 @@
+## 30 octobre 2026 — Statut et hauteur des sources
+
+- Les cartes de « Mes sources » affichent leur état de configuration dès la vue fermée, avec un repère plus visible pour les sources à configurer ou nécessitant une action.
+- Les cartes fermées gardent une hauteur cohérente ; ouvrir une configuration ne force plus la carte voisine à s’étirer.
+
 ## 30 octobre 2026 — Présence acceptable et CDD
 
 - Le choix de présence propose Présentiel, Hybride, Hybride avec présence exceptionnelle et Full Remote dans le sélecteur commun de l’application. Le classement des offres suit le niveau choisi.

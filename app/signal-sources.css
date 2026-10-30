@@ -25,9 +25,16 @@
 .signal-source-message p { margin-top:8px; font:400 13px/1.8 var(--font-sans); color:var(--muted-foreground); }
 @media(max-width:1000px) { .signal-source-tracks,.signal-source-strategies { grid-template-columns:1fr; } }
 @media(max-width:640px) { .signal-source-panel { padding:20px 16px; }.signal-collective-form { flex-direction:column; align-items:stretch; }.signal-collective-form input { flex:auto; width:100%; }.signal-collective-form .signal-form-button,.signal-source-panel .signal-panel-actions .signal-form-button { max-width:100%; width:auto; }.signal-source-panel .signal-panel-actions { width:auto; min-width:0; } }
-.source-workspace .source-settings-grid { gap:20px; align-items:stretch; grid-auto-rows:1fr; }
+.source-workspace .source-settings-grid { gap:20px; align-items:start; }
 .signal-source-card { display:flex; flex-direction:column; min-width:0; padding:24px; border:1px solid var(--border); border-top:2px solid #adbfca; border-radius:5px; background:var(--card); }
+.signal-source-card:not(:has(.signal-source-config .radar-collapsible-content:not([hidden]))) { min-height:320px; }
+.signal-source-card:has(.signal-source-config .radar-collapsible-content:not([hidden])) .signal-source-description { flex:none; }
+.signal-source-card:has(>.signal-source-status:is([data-state="not_configured"],[data-state="action_needed"])) { border-top-color:#c89037; }
 .signal-source-card[hidden] { display:none; }
+.signal-source-status { align-self:flex-start; margin-top:14px; padding:4px 9px; border-radius:4px; font:600 12px/1.4 var(--font-sans); }
+.signal-source-status:is([data-state="not_configured"],[data-state="action_needed"]) { color:#80500a; background:#fff1d6; }
+.signal-source-status[data-state="configured"] { color:#246348; background:#e5f5eb; }
+.signal-source-status[data-state="paused"] { color:#596774; background:#edf1f3; }
 .signal-source-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
 .signal-source-heading>div { min-width:0; }
 .signal-source-identity { display:flex; align-items:center; gap:12px; min-width:0; }
@@ -43,7 +50,7 @@
 .signal-source-form { display:grid; gap:16px; }
 .signal-source-form .workspace-field { gap:7px; font-size:13px; }
 .signal-source-actions { display:flex; justify-content:flex-end; }
-@media(max-width:640px) { .signal-source-card { padding:20px 16px; }.signal-source-actions .signal-form-button { max-width:100%; }.source-workspace .signal-source-config .library-section-title { padding-top:12px; } }
+@media(max-width:640px) { .signal-source-card { padding:20px 16px; }.signal-source-card:not(:has(.signal-source-config .radar-collapsible-content:not([hidden]))) { min-height:0; }.signal-source-actions .signal-form-button { max-width:100%; }.source-workspace .signal-source-config .library-section-title { padding-top:12px; } }
 
 @media(max-width:760px) {
  .radar-app .source-workspace.signal-sources-workspace :is(input,textarea,.choice-select-trigger) { font-size:16px; }
