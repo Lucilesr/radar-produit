@@ -63,8 +63,6 @@
 .source-workspace.signal-sources-workspace>:is([data-radar-guide="search-preferences-form"],.source-narrow-panel,.market-boundary-note){width:100%;max-width:760px;justify-self:start}
 .source-workspace.signal-sources-workspace>.market-boundary-note{margin:0}
 .source-workspace.signal-sources-workspace>.market-boundary-note{font-size:14px}
-.source-workspace [data-radar-guide="search-preferences-form"] form>.grid>label{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
-.source-workspace [data-radar-guide="search-preferences-form"] form>.grid>label>input{max-width:160px}
 .source-workspace .source-narrow-panel .signal-source-tracks{grid-template-columns:repeat(2,minmax(0,1fr))}
 .source-workspace [data-radar-guide="search-preferences-form"] p,
 .source-workspace .source-narrow-panel :is(.signal-help,.signal-source-description),

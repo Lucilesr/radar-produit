@@ -1,3 +1,7 @@
+## 30 octobre 2026 — Unités dans les champs de rémunération
+
+- Les champs de salaire et de TJM occupent toute la largeur disponible : leurs unités restent à l’intérieur de la bordure. Les libellés s’alignent sur le bord gauche des champs.
+
 ## 30 octobre 2026 — Champs de rémunération
 
 - Le salaire minimum et le TJM minimum s’affichent côte à côte lorsque la largeur le permet. Leurs libellés reposent sur la bordure et les unités restent visibles pendant la saisie.
