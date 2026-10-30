@@ -1,3 +1,7 @@
+## 30 octobre 2026 — Boutons d’enregistrement de Ma recherche
+
+- Les boutons d’enregistrement des critères, des liens de recherche et de l’alerte Collective sont alignés en bas à droite de leurs blocs, y compris sur mobile.
+
 ## 30 octobre 2026 — Largeur des critères de recherche
 
 - Les champs des postes recherchés, de la présence acceptable, du salaire minimum et du TJM minimum sont réduits de 25 %.

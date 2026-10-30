@@ -45,7 +45,7 @@ function SearchCard({ query, setting, onSaved }: { query: Query; setting?: Sourc
     <button type="button" className="mt-3 text-sm underline" onClick={() => { setDraft({ Site: saved.Site, Google: saved.Google }); setEditing(!editing); setError(""); }}>{editing ? "Fermer" : "Modifier les liens"}</button>
     {editing ? <div className="mt-3 space-y-3">{fields.map(field => <label key={field} className="block text-sm"><span className="block font-medium">{field === "Site" ? "Recherche sur le site" : field}</span><input type="url" value={draft?.[field] ?? ""} onChange={event => setDraft({ ...(draft ?? {}), [field]: event.target.value })} placeholder={defaults[field]} className="mt-1 w-full rounded-lg border border-[#d0d4e4] px-3 py-2 text-sm"/><span className="block text-xs text-[#535768]">Vide = lien proposé par Radar</span></label>)}
       {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
-      <button type="button" disabled={busy} onClick={() => void save()} className="radar-add-button">{busy ? "Enregistrement…" : "Enregistrer les liens"}</button>
+      <div className="signal-source-actions"><button type="button" disabled={busy} onClick={() => void save()} className="radar-add-button">{busy ? "Enregistrement…" : "Enregistrer les liens"}</button></div>
     </div> : null}
   </li>;
 }
