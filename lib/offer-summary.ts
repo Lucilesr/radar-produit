@@ -16,7 +16,7 @@ function shorten(text: string, max = 310) {
 
 /** Extracts a compact, faithful overview from supplied offer text; it never invents missing facts. */
 export function summarizeOfferDescription(offer: {
-  title: string; company?: string; contractType: "cdi" | "freelance" | "other";
+  title: string; company?: string; contractType: "cdi" | "cdd" | "freelance" | "other";
   annualSalary?: number | null; dailyRate?: number | null;
   remoteMode: "full_remote" | "exceptional" | "hybrid" | "onsite" | "unknown";
   description?: string;
@@ -29,7 +29,7 @@ export function summarizeOfferDescription(offer: {
     .map(cleanLine)
     .filter(line => line.length >= 45 && !heading.test(line) && !boilerplate.test(line));
   if (!lines.length) {
-    const contract = offer.contractType === "cdi" ? "CDI" : offer.contractType === "freelance" ? "Freelance" : "contrat à confirmer";
+    const contract = offer.contractType === "cdi" ? "CDI" : offer.contractType === "cdd" ? "CDD" : offer.contractType === "freelance" ? "Freelance" : "contrat à confirmer";
     const work = { full_remote: "full remote annoncé", exceptional: "présence ponctuelle annoncée", hybrid: "organisation hybride à confirmer", onsite: "présence sur site annoncée", unknown: "mode de travail à vérifier" }[offer.remoteMode];
     const pay = offer.annualSalary != null ? `${new Intl.NumberFormat("fr-FR").format(offer.annualSalary)} € brut/an` : offer.dailyRate != null ? `${new Intl.NumberFormat("fr-FR").format(offer.dailyRate)} € HT/jour` : "rémunération non communiquée";
     return `${offer.title}${offer.company ? ` chez ${offer.company}` : ""} · ${contract} · ${work} · ${pay}. Le texte reçu ne décrit pas les missions : le lien d’origine reste nécessaire.`;

@@ -16,8 +16,8 @@ export function suggestOfferFields(text:string):OfferSuggestion[] {
   const header=titleLine?.replace(/^(?:intitulé|titre|poste|job title|title)\s*:\s*/i,"")??(/^(?:(?:senior|lead|junior|staff)\s+)?(?:product owner|product manager|product builder|product ops|product lead)\b/i.test(lines[0]??"")?lines[0]:undefined);
   if(header&&header.length<=180)result.push({field:"title",value:header,quote:titleLine??lines[0]});
   add("company",parsed.company,/^(?:chez|at|company|entreprise)\s*[:\-]/i);
-  const permanent=/\bCDI\b|\bpermanent\b/i.test(text),freelance=/\bfreelance\b|\bcontractor\b/i.test(text);
-  if(permanent!==freelance&&!/(?:pas de|sans|no|not)\s+(?:CDI|freelance|permanent|contractor)/i.test(text))add("contractType",permanent?"cdi":"freelance",/\bCDI\b|\bfreelance\b|\bcontractor\b|\bpermanent\b/i);
+  const permanent=/\bCDI\b|\bpermanent\b/i.test(text),fixedTerm=/\bCDD\b|contrat à durée déterminée/i.test(text),freelance=/\bfreelance\b|\bcontractor\b/i.test(text);
+  if(Number(permanent)+Number(fixedTerm)+Number(freelance)===1&&!/(?:pas de|sans|no|not)\s+(?:CDI|CDD|freelance|permanent|contractor)/i.test(text))add("contractType",permanent?"cdi":fixedTerm?"cdd":"freelance",/\bCDI\b|\bCDD\b|\bfreelance\b|\bcontractor\b|\bpermanent\b|contrat à durée déterminée/i);
   const salaryLine=lines.find(line=>/(?:salaire|salary|rémunération|compensation)/i.test(line)&&/annuel|annual|par an|per year|\/an/i.test(line));
   const euroAmount=salaryLine?.match(/(?<!\d)(\d{4,6}|\d{2,3}(?:[ \u00a0]\d{3})+)\s*(?:€|EUR\b|euros?)/i)?.[1];
   add("annualSalary",parsed.annualSalary??(euroAmount?Number(euroAmount.replace(/\s/g,"")):null),/(?:salaire|salary|rémunération|compensation)|\d\s*k\s*(?:€|euros)/i);

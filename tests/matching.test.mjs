@@ -52,12 +52,12 @@ for (const description of ["1 jour sur site par semaine", "1j sur site", "Prése
   test(`présence négociable conservée : ${description}`, () => {
     const parsed = parseOfferText(`Product Owner\nCDI 55k€\nFrançais\n${description}`, "Autre");
     assert.equal(parsed.remoteMode, "hybrid");
-    assert.equal(assessJob({ ...baseline, ...parsed }).tier, "exception");
+    assert.equal(assessJob({ ...baseline, ...parsed }).tier, "match");
   });
 }
 
-test("2 jours/semaine et sur site sont écartés par défaut", () => {
-  assert.equal(assessJob({ ...baseline, remoteMode: "hybrid", description: "2 jours sur site par semaine" }).tier, "excluded");
+test("le choix hybride accepte deux jours sur site, mais écarte le présentiel", () => {
+  assert.equal(assessJob({ ...baseline, remoteMode: "hybrid", description: "2 jours sur site par semaine" }).tier, "match");
   assert.equal(assessJob({ ...baseline, remoteMode: "onsite" }).tier, "excluded");
 });
 
@@ -69,24 +69,24 @@ test("les annonces explicitement limitées au marché US sont écartées, les of
   assert.equal(assessJob({ ...baseline, source: "We Work Remotely", description: "Headquarters: Australia. Remote | Permanent Contractor | Core EU Collaboration Hours." }).tier, "priority");
 });
 
-test("rythme hybride inconnu à vérifier, pas faux full remote", () => {
-  assert.equal(assessJob({ ...baseline, remoteMode: "hybrid" }).tier, "exception");
-  assert.equal(assessJob({ ...baseline, description: "Full remote, avec 1 jour sur site par semaine" }).tier, "exception");
+test("un rythme hybride annoncé reste hybride", () => {
+  assert.equal(assessJob({ ...baseline, remoteMode: "hybrid" }).tier, "match");
+  assert.equal(assessJob({ ...baseline, description: "Full remote, avec 1 jour sur site par semaine" }).tier, "match");
 });
 
-test("complément remote uniquement avec une semaine complète explicite", () => {
-  assert.equal(assessJob({ ...baseline, remoteMode: "hybrid", description: "Toute la semaine. Télétravail : 3 jours/semaine" }).tier, "excluded");
-  assert.equal(assessJob({ ...baseline, remoteMode: "hybrid", description: "Toute la semaine. Télétravail : 4 jours/semaine" }).tier, "exception");
-  assert.equal(assessJob({ ...baseline, remoteMode: "hybrid", description: "Télétravail : 3 jours/semaine" }).tier, "exception");
+test("les rythmes hybrides sont acceptés quand le choix est hybride", () => {
+  assert.equal(assessJob({ ...baseline, remoteMode: "hybrid", description: "Toute la semaine. Télétravail : 3 jours/semaine" }).tier, "match");
+  assert.equal(assessJob({ ...baseline, remoteMode: "hybrid", description: "Toute la semaine. Télétravail : 4 jours/semaine" }).tier, "match");
+  assert.equal(assessJob({ ...baseline, remoteMode: "hybrid", description: "Télétravail : 3 jours/semaine" }).tier, "match");
 });
 
 test("choix manuel d'entretien conservé, pas de dérogation présumée", () => {
   const offer = { ...baseline, remoteMode: "hybrid", description: "2 jours sur site par semaine" };
-  const result = assessJob({ ...offer, status: "interview" });
+  const result = assessJob({ ...offer, status: "interview" }, { ...searchPreferences(), remote: "exceptional" });
   assert.equal(result.tier, "exception");
   assert.match(result.flags.join(" "), /non acquise/);
-  assert.equal(assessJob({ ...offer, status: "closed" }).tier, "excluded");
-  assert.equal(assessJob({ ...offer, status: "interview", annualSalary: 40000 }).tier, "excluded");
+  assert.equal(assessJob({ ...offer, status: "closed" }, { ...searchPreferences(), remote: "exceptional" }).tier, "excluded");
+  assert.equal(assessJob({ ...offer, status: "interview", annualSalary: 40000 }, { ...searchPreferences(), remote: "exceptional" }).tier, "excluded");
 });
 
 test("seuils et rémunérations absentes inchangés", () => {
@@ -157,12 +157,30 @@ test("une offre sélectionnée n’est pas présentée comme une candidature dé
   assert.match(actions[1].detail, /Atlas.*envoyée/);
 });
 
-test("fréquences explicites : semaine et mois restent indépendants dans la qualification",()=>{
- const assess=(onsiteDaysPerWeek,onsiteDaysPerMonth)=>assessJob({...baseline,remoteMode:"hybrid",onsiteDaysPerWeek,onsiteDaysPerMonth});
- assert.equal(assess(1,null).tier,"exception");assert.equal(assess(2,null).tier,"excluded");assert.equal(assess(null,2).tier,"exception");assert.equal(assess(null,8).tier,"excluded");assert.equal(assess(1,8).tier,"excluded");
+test("les rythmes de présence explicites respectent le choix hybride",()=>{
+ const assess=(onsiteDaysPerWeek,onsiteDaysPerMonth)=>assessJob({...baseline,remoteMode:"hybrid",onsiteDaysPerWeek,onsiteDaysPerMonth},{...searchPreferences(),remote:"hybrid"});
+ assert.equal(assess(1,null).tier,"match");assert.equal(assess(2,null).tier,"match");assert.equal(assess(null,2).tier,"match");assert.equal(assess(null,8).tier,"match");assert.equal(assess(1,8).tier,"match");
 });
 
 test("brief : présence et pays de télétravail sont conservés parmi les faits d’annonce",()=>{
  const offer=briefOffer({...baseline,id:"demo",onsiteDaysPerWeek:1,onsiteDaysPerMonth:3,remoteCountry:"MU",candidateNote:"Note privée exclue"});
  assert.equal(offer.remoteCountry,"MU");assert.equal(offer.onsiteDaysPerMonth,3);assert.equal(offer.candidateNote,undefined);
+});
+
+test("les quatre niveaux de présence et les anciennes préférences sont reconnus", () => {
+  assert.equal(searchPreferences({ remote: "occasional" }).remote, "exceptional");
+  assert.equal(searchPreferences({ remote: "light_hybrid" }).remote, "hybrid");
+  const offer = { ...baseline, remoteMode: "hybrid", annualSalary: 65000 };
+  assert.equal(assessJob(offer, { ...searchPreferences(), remote: "full_remote" }).tier, "excluded");
+  assert.equal(assessJob(offer, { ...searchPreferences(), remote: "exceptional" }).tier, "excluded");
+  assert.equal(assessJob(offer, { ...searchPreferences(), remote: "hybrid" }).tier, "match");
+  assert.equal(assessJob({ ...offer, remoteMode: "onsite" }, { ...searchPreferences(), remote: "onsite" }).tier, "match");
+});
+
+test("CDD est conservé et filtré comme contrat salarié", () => {
+  const cdd = { ...baseline, contractType: "cdd", annualSalary: 65000 };
+  assert.deepEqual(searchPreferences({ contracts: ["cdd"] }).contracts, ["cdd"]);
+  assert.equal(assessJob(cdd, { ...searchPreferences(), contracts: ["cdi"] }).tier, "excluded");
+  assert.equal(assessJob(cdd, { ...searchPreferences(), contracts: ["cdd"] }).tier, "priority");
+  assert.equal(parseOfferText("Product Owner\nCDD\nSalaire 65k€", "Autre").contractType, "cdd");
 });

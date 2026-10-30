@@ -11,7 +11,7 @@ function display(field:SuggestedField,value:unknown) {
  if(field==="remoteMode")return workOptions.find(item=>item.value===value)?.label??String(value);
  if(field==="language")return languageOptions.find(item=>item.value===value)?.label??String(value);
  if(field==="remoteCountry")return countryLabel(String(value));
- if(field==="contractType")return value==="cdi"?"CDI":value==="freelance"?"Freelance":String(value);
+ if(field==="contractType")return value==="cdi"?"CDI":value==="cdd"?"CDD":value==="freelance"?"Freelance":String(value);
  return `${value}${field==="annualSalary"?" €/an":field==="dailyRate"?" €/jour":""}`;
 }
 export function OfferPrefill({text,current,onApply,disabled=false}:{text:string;current:Partial<JobInput>;onApply:(patch:Partial<JobInput>)=>void;disabled?:boolean}) {

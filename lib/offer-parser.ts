@@ -11,6 +11,8 @@ export function parseOfferText(text: string, source: string, sourceUrl?: string)
     ? "freelance"
     : /\bcdi\b|permanent|full[- ]time employment/i.test(cleaned)
       ? "cdi"
+      : /\bcdd\b|contrat à durée déterminée/i.test(cleaned)
+        ? "cdd"
       : "other";
   const arrangement = detectWorkArrangement(cleaned);
   const remoteMode = arrangement.mode;
