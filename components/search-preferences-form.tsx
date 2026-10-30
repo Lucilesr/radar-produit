@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { CandidateProfile, SearchPreferences } from "@/lib/types";
 import { normalizeRoleTitles, searchPreferences } from "@/lib/search-preferences";
+import { ChoiceSelect } from "@/components/choice-select";
 
 export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean> }) {
   const [draft, setDraft] = useState<SearchPreferences>(() => searchPreferences(profile.searchPreferences));
@@ -65,7 +66,7 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
     }
     void persistRoles(roles.filter(item => item !== role), roles);
   }
-  const toggle = (value: "cdi" | "freelance") => {
+  const toggle = (value: SearchPreferences["contracts"][number]) => {
     setDraft(current => {
       const selected = current.contracts;
       if (selected.includes(value) && selected.length === 1) return current;
@@ -88,8 +89,8 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
         <ul className="mt-3 flex flex-wrap gap-2" aria-label="Postes enregistrés">{roles.map(role => <li key={role} className="inline-flex items-center gap-2 rounded-full border border-[#d0d4e4] bg-white px-3 py-1 text-sm">{role}<button type="button" className="text-[#535768] hover:text-[#243c4a]" aria-label={`Retirer ${role}`} disabled={savingRole || saving} onClick={() => removeRole(role)}>×</button></li>)}</ul>
         <p role="status" className="mt-2 text-sm">{roleMessage}</p>
       </div>
-      <fieldset><legend className="text-sm font-semibold">Contrats</legend><div className="mt-2 flex flex-wrap gap-4 text-sm">{([["cdi", "CDI"], ["freelance", "Freelance"]] as const).map(([value, label]) => <label key={value} className="flex items-center gap-2"><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} />{label}</label>)}</div></fieldset>
-      <label className="block text-sm font-semibold">Présence acceptable<select className="mt-2 block w-full rounded-lg border border-[#d0d4e4] bg-white px-3 py-2 font-normal" value={draft.remote} onChange={event => { setDraft(current => ({ ...current, remote: event.target.value as SearchPreferences["remote"] })); setMessage(""); }}><option value="full_remote">Télétravail intégral uniquement</option><option value="occasional">Télétravail intégral ou présence exceptionnelle</option><option value="light_hybrid">Hybride léger à négocier aussi</option></select></label>
+      <fieldset><legend className="text-sm font-semibold">Contrats</legend><div className="mt-2 flex flex-wrap gap-4 text-sm">{([["cdi", "CDI"], ["cdd", "CDD"], ["freelance", "Freelance"]] as const).map(([value, label]) => <label key={value} className="flex items-center gap-2"><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} />{label}</label>)}</div></fieldset>
+      <ChoiceSelect label="Présence acceptable" value={draft.remote} onChange={remote => { setDraft(current => ({ ...current, remote })); setMessage(""); }} options={[{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Hybride avec présence exceptionnelle" }, { value: "full_remote", label: "Full Remote" }]} disabled={saving} />
       <div className="grid gap-4 sm:grid-cols-2"><label className="block text-sm font-semibold">Salaire annuel minimum souhaité (€ brut)<input className="mt-2 block w-full rounded-lg border border-[#d0d4e4] px-3 py-2 font-normal" type="number" min="0" max="1000000" step="1000" value={draft.minimumSalary} onChange={event => amount("minimumSalary", event.target.value)} /></label><label className="block text-sm font-semibold">TJM minimum souhaité (€ HT/jour)<input className="mt-2 block w-full rounded-lg border border-[#d0d4e4] px-3 py-2 font-normal" type="number" min="0" max="1000000" step="10" value={draft.minimumDailyRate} onChange={event => amount("minimumDailyRate", event.target.value)} /></label></div>
       <p className="text-xs text-[#535768]">Une rémunération légèrement inférieure est signalée comme exception ; une rémunération non indiquée reste à vérifier.</p>
       <div className="flex flex-wrap items-center gap-3"><button className="radar-add-button" disabled={saving || savingRole}>{saving ? "Enregistrement…" : "Enregistrer les autres critères"}</button><span role="status" className="text-sm">{message}</span></div>

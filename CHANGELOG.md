@@ -1,3 +1,8 @@
+## 30 octobre 2026 — Présence acceptable et CDD
+
+- Le choix de présence propose Présentiel, Hybride, Hybride avec présence exceptionnelle et Full Remote dans le sélecteur commun de l’application. Le classement des offres suit le niveau choisi.
+- CDD peut être sélectionné dans la recherche et renseigné sur une offre ; il est reconnu dans les annonces et évalué avec le seuil de salaire annuel.
+
 ## 30 octobre 2026 — Ma recherche
 
 - Un poste saisi avec Entrée est enregistré immédiatement et apparaît dans la liste des postes recherchés. La suppression d’un poste s’enregistre aussi immédiatement ; le bouton du bas ne concerne plus que les autres critères.

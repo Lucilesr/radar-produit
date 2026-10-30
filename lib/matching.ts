@@ -58,12 +58,12 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     score += 5;
     exception = true;
     flags.push("Politique remote à confirmer");
-  } else if (arrangement.mode === "hybrid" && arrangement.lightHybrid !== false && search.remote === "light_hybrid") {
+  } else if (arrangement.mode === "hybrid" && (search.remote === "hybrid" || search.remote === "onsite")) {
     score += 12;
-    exception = true;
-    flags.push(arrangement.daysOnsite === 1
-      ? "Présence annoncée : 1 jour sur site ; fréquence et dérogation remote à négocier"
-      : arrangement.lightHybrid ? "Présence limitée sur site : dérogation remote à négocier" : "Fréquence de présence sur site à confirmer et remote à négocier");
+    reasons.push("Organisation hybride compatible avec votre présence acceptable.");
+  } else if (arrangement.mode === "onsite" && search.remote === "onsite") {
+    score += 12;
+    reasons.push("Présence sur site compatible avec votre recherche.");
   } else if (pursued) {
     exception = true;
     flags.push("Candidature suivie par votre choix ; dérogation remote à négocier, non acquise");
@@ -72,12 +72,12 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     flags.push("Présence sur site incompatible avec votre recherche");
   }
 
-  if ((job.contractType === "cdi" || job.contractType === "freelance") && !search.contracts.includes(job.contractType)) {
+  if (job.contractType !== "other" && !search.contracts.includes(job.contractType)) {
     excluded = true;
     flags.push("Type de contrat non recherché.");
   }
 
-  if (job.contractType === "cdi") {
+  if (job.contractType === "cdi" || job.contractType === "cdd") {
     if (job.annualSalary == null) {
       exception = true;
       flags.push("Salaire non communiqué");

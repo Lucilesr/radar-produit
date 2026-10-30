@@ -5,7 +5,7 @@ import { broadMailQuery, sourceNames } from "./source-catalog";
 export const offerSchema = z.object({
   title: z.string().trim().min(1).max(180),
   company: z.string().max(160).optional(),
-  contractType: z.enum(["cdi", "freelance", "other"]),
+  contractType: z.enum(["cdi", "cdd", "freelance", "other"]),
   annualSalary: z.number().int().nonnegative().nullable().optional(),
   dailyRate: z.number().int().nonnegative().nullable().optional(),
   remoteMode: z.enum(["full_remote", "exceptional", "hybrid", "onsite", "unknown"]),
@@ -46,7 +46,7 @@ export const importRules = {
 const offerProperties = {
   title: { type: "string", minLength: 1, maxLength: 180 },
   company: { type: "string", maxLength: 160 },
-  contractType: { type: "string", enum: ["cdi", "freelance", "other"] },
+  contractType: { type: "string", enum: ["cdi", "cdd", "freelance", "other"] },
   annualSalary: { type: ["integer", "null"], minimum: 0 },
   dailyRate: { type: ["integer", "null"], minimum: 0 },
   remoteMode: { type: "string", enum: ["full_remote", "exceptional", "hybrid", "onsite", "unknown"] },

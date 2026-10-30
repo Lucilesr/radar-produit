@@ -2,7 +2,7 @@ import { isCountryCode } from "./countries";
 import type { CandidateProfile, JobInput, JobRecord, JobStatus } from "./types";
 import { statusLabels } from "./application-workflow";
 
-const contractTypes = new Set(["cdi", "freelance", "other"]);
+const contractTypes = new Set(["cdi", "cdd", "freelance", "other"]);
 const remoteModes = new Set(["full_remote", "exceptional", "hybrid", "onsite", "unknown"]);
 const languages = new Set(["fr", "en", "professional_en", "advanced_en", "unknown"]);
 const statuses = new Set(Object.keys(statusLabels));

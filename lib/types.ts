@@ -1,4 +1,4 @@
-export type ContractType = "cdi" | "freelance" | "other";
+export type ContractType = "cdi" | "cdd" | "freelance" | "other";
 export type RemoteMode = "full_remote" | "exceptional" | "hybrid" | "onsite" | "unknown";
 export type OfferLanguage = "fr" | "en" | "professional_en" | "advanced_en" | "unknown";
 export type JobStatus = "new" | "watchlist" | "shortlist" | "prepare" | "ready" | "applied" | "interview" | "awaiting_response" | "next_step" | "offer" | "rejected" | "withdrawn" | "closed";
@@ -82,8 +82,8 @@ export type Assessment = {
 
 export type SearchPreferences = {
   roles: string[];
-  contracts: Array<"cdi" | "freelance">;
-  remote: "full_remote" | "occasional" | "light_hybrid";
+  contracts: Array<"cdi" | "cdd" | "freelance">;
+  remote: "onsite" | "hybrid" | "exceptional" | "full_remote";
   minimumSalary: number;
   minimumDailyRate: number;
 };
