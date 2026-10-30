@@ -9,7 +9,7 @@ Pour chaque évolution, y compris les corrections, la documentation et les règl
 3. Vérifier le diff et exclure CV réels, documents, offres privées, profils personnels, sauvegardes, secrets et journaux.
 4. Exécuter les tests adaptés et indiquer leur résultat dans la PR.
 5. Ouvrir la PR vers `main` avec le compte GitHub connecté de la propriétaire. Indiquer que Codex a préparé les changements si c’est le cas.
-6. Ne pas pousser directement sur `main` et ne pas fusionner la PR à la place de la propriétaire sans demande explicite.
+6. Ne pas pousser directement sur `main`. Après les vérifications, fusionner automatiquement la PR si elle est fusionnable et si les contrôles requis réussissent, sans redemander confirmation. Si la fusion est bloquée, laisser la PR ouverte et expliquer le blocage.
 
 Un changement cohérent peut toucher plusieurs fichiers. Pour des PR dépendantes, indiquer la dépendance et adapter la branche de base afin que chaque diff reste ciblé. La description de chaque PR explique le problème traité, le résultat et les vérifications effectuées. Mettre à jour `CHANGELOG.md` pour les évolutions produit ; une modification documentaire seule ne nécessite pas de tests applicatifs.
 
