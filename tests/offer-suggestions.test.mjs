@@ -62,3 +62,23 @@ test('préremplissage : titre d’en-tête et entreprise explicite, sans prendre
  assert.equal(value('Titre : Responsable produit digital','title'),'Responsable produit digital');
  assert.equal(value('Entreprise :','company'),undefined);
 });
+
+test('enregistrement automatique : les conditions explicites du résumé complètent les critères absents',()=>{
+ const base={title:'Product Manager',source:'Free-Work',contractType:'other',remoteMode:'unknown',language:'unknown'};
+ const description='Contrat : CDI\nSalaire annuel brut : 65 000 €\nTélétravail : 50% remote\nAnglais courant requis';
+ const result=normalizeJobInput({...base,description});
+ assert.equal(result.contractType,'cdi');assert.equal(result.annualSalary,65000);
+ assert.equal(result.remoteMode,'hybrid');assert.equal(result.language,'advanced_en');
+ const existing=normalizeJobInput({...base,description,annualSalary:72000,remoteMode:'full_remote',language:'fr'});
+ assert.equal(existing.annualSalary,72000);assert.equal(existing.remoteMode,'full_remote');assert.equal(existing.language,'fr');
+});
+test('enregistrement automatique : les montants ambigus ou étrangers restent à confirmer',()=>{
+ const base={title:'Product Owner',source:'Free-Work',contractType:'freelance',remoteMode:'unknown',language:'unknown'};
+ for(const description of [
+  'Notification Free-Work : TJM affiché 550–650 €, politique exacte de télétravail non précisée.',
+  'Tarif journalier initial : selon profil, sans montant communiqué.',
+  'TJM 650 USD/jour',
+ ]) assert.equal(normalizeJobInput({...base,description}).dailyRate,null);
+ assert.equal(normalizeJobInput({...base,description:'TJM : 620 € HT/jour'}).dailyRate,620);
+ assert.equal(normalizeJobInput({...base,description:'English lessons available'}).language,'unknown');
+});

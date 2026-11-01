@@ -1,6 +1,7 @@
 import { isCountryCode } from "./countries";
 import type { CandidateProfile, JobInput, JobRecord, JobStatus } from "./types";
 import { statusLabels } from "./application-workflow";
+import { explicitOfferFacts } from "./explicit-offer-facts";
 
 const contractTypes = new Set(["cdi", "cdd", "freelance", "other"]);
 const remoteModes = new Set(["full_remote", "exceptional", "hybrid", "onsite", "unknown"]);
@@ -23,7 +24,7 @@ export function normalizeJobInput(value: unknown): JobInput {
   const title = asText(raw.title, 180);
   if (!title) throw new Error("L’intitulé du poste est obligatoire");
 
-  return {
+  const input: JobInput = {
     title,
     company: asText(raw.company, 160) || "Entreprise non précisée",
     contractType: contractTypes.has(raw.contractType as string)
@@ -50,6 +51,13 @@ export function normalizeJobInput(value: unknown): JobInput {
     contentCoverage: ["full", "summary", "partial", "unknown"].includes(String(raw.contentCoverage)) ? raw.contentCoverage as JobInput["contentCoverage"] : "unknown",
     notificationAt: asText(raw.notificationAt, 30),
   };
+  const facts = explicitOfferFacts(input.description ?? "");
+  if (input.annualSalary == null && facts.annualSalary != null) input.annualSalary = facts.annualSalary;
+  if (input.dailyRate == null && facts.dailyRate != null) input.dailyRate = facts.dailyRate;
+  if (input.contractType === "other" && facts.contractType) input.contractType = facts.contractType;
+  if (input.remoteMode === "unknown" && facts.remoteMode) input.remoteMode = facts.remoteMode;
+  if (input.language === "unknown" && facts.language) input.language = facts.language;
+  return input;
 }
 
 export function rowToJob(row: Record<string, unknown>): JobRecord {

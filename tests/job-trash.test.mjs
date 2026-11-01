@@ -150,6 +150,9 @@ test("corbeille SQLite : isolation A/B, relance, réimport, rappels et restaurat
   await assert.rejects(store.updateOffer("alice",a.id,{onsiteDaysPerWeek:6}));
   await store.updateOffer("alice",a.id,{onsiteDaysPerWeek:null,onsiteDaysPerMonth:null,remoteCountry:""});
   const cleared=await store.getOffer("alice",a.id);assert.equal(cleared.onsiteDaysPerWeek,null);assert.equal(cleared.remoteCountry,undefined);
+  const incomplete=(await store.saveOffer("alice",{title:"Product Owner test",source:"Free-Work",contractType:"other",remoteMode:"unknown",language:"unknown"})).job;
+  const completed=await store.updateOffer("alice",incomplete.id,{description:"Contrat : CDI\nSalaire annuel brut : 68 000 €\nAnglais professionnel requis"});
+  assert.equal(completed.contractType,"cdi");assert.equal(completed.annualSalary,68000);assert.equal(completed.language,"professional_en");
   sqlite.close();
 });
 
