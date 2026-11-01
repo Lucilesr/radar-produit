@@ -59,7 +59,7 @@
 }
 
 /* Align all search panels with the 960px experience section in Mon profil. */
-.source-workspace.signal-sources-workspace{width:100%;max-width:960px;margin-inline:auto}
+.source-workspace.signal-sources-workspace{display:block;width:100%;max-width:none}
 .source-workspace.signal-sources-workspace>:is([data-radar-guide="search-preferences-form"],.source-narrow-panel,.market-boundary-note){width:100%}
 .source-workspace.signal-sources-workspace>.market-boundary-note{margin:0}
 .source-workspace.signal-sources-workspace>.market-boundary-note{font-size:14px}
@@ -72,7 +72,7 @@
 @media(max-width:760px){.source-workspace .source-narrow-panel .signal-source-tracks{grid-template-columns:1fr}}
 
 /* The search page separates criteria, monitored channels and outreach. */
-.source-workspace .source-main-tabs{margin-bottom:0}
+.source-workspace .source-subpanel{width:100%;max-width:960px;margin-inline:auto}
 .source-subpanel,.source-kind-panel{display:grid;gap:24px;min-width:0}
 .source-subpanel[hidden],.source-kind-panel[hidden]{display:none}
 .source-kind-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
