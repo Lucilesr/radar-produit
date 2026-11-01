@@ -3,7 +3,7 @@ import { ensureSameOrigin } from "@/lib/server";
 import { setOffersDeleted } from "@/lib/job-store";
 import { z } from "zod";
 
-const schema = z.object({ ids: z.array(z.string().min(1).max(100)).min(1).max(50), deleted: z.boolean(), reason: z.enum(["filled", "applications_closed", "not_interested", "other"]).optional(), note: z.string().max(500).optional() }).strict().refine(value => !value.deleted || !!value.reason);
+const schema = z.object({ ids: z.array(z.string().min(1).max(100)).min(1).max(50), deleted: z.boolean(), reason: z.enum(["filled", "applications_closed", "not_interested", "other"]).optional(), note: z.string().max(500).optional() }).strict();
 export async function POST(request: Request) {
   const user = await getChatGPTUser();
   if (!user) return Response.json({ error: "Authentification requise" }, { status: 401 });

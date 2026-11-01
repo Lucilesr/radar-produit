@@ -1,4 +1,6 @@
 .opportunities-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.opportunity-date-order { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted-foreground); }
+.opportunity-date-order select { min-height: 44px; max-width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--card); color: var(--foreground); }
 .opportunities-batch { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; margin-bottom: 16px; background: var(--accent); border-radius: 9px; font-size: 14px; }
 .opportunities-split { display: grid; grid-template-columns: minmax(260px,.85fr) minmax(0,1.4fr); border: 1px solid var(--border); border-radius: 12px; background: var(--card); align-items: start; }
 .opportunity-list { min-width: 0; }

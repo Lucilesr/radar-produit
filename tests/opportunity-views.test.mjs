@@ -5,7 +5,7 @@ import ts from "typescript";
 
 const source = readFileSync(new URL("../lib/opportunity-views.ts", import.meta.url), "utf8");
 const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
-const { inOpportunityView, workspaceSections } = await import("data:text/javascript;base64," + Buffer.from(code).toString("base64"));
+const { inOpportunityView, sortOpportunitiesByDate, workspaceSections } = await import("data:text/javascript;base64," + Buffer.from(code).toString("base64"));
 const job = { id: "a", status: "new", matchScore: 80, matchTier: "match" };
 
 test("vues distinctes : score, choix et candidature ne se substituent pas", () => {
@@ -30,4 +30,18 @@ test("vues distinctes : score, choix et candidature ne se substituent pas", () =
 test("la fiche Opportunités prépare l’offre ; le suivi détaillé reste dans Candidatures", () => {
   assert.deepEqual([...workspaceSections("opportunity")], ["offer", "brief"]);
   assert.deepEqual([...workspaceSections("application")], ["offer", "application", "interviews", "brief"]);
+});
+
+test("tri des opportunités par mapping et de la corbeille par date d’écartement", () => {
+  const offers = [
+    { id: "a", createdAt: "2026-10-01T10:00:00Z", deletedAt: "2026-10-30T10:00:00Z" },
+    { id: "b", createdAt: "2026-10-03T10:00:00Z", deletedAt: "2026-10-20T10:00:00Z" },
+    { id: "c", createdAt: "2026-10-02T10:00:00Z", deletedAt: "2026-10-25T10:00:00Z" },
+  ];
+  const ids = (view, order) => sortOpportunitiesByDate(offers, view, order).map(offer => offer.id);
+  assert.deepEqual(ids("to_review", "newest"), ["b", "c", "a"]);
+  assert.deepEqual(ids("selected", "oldest"), ["a", "c", "b"]);
+  assert.deepEqual(ids("trash", "newest"), ["a", "c", "b"]);
+  assert.deepEqual(ids("trash", "oldest"), ["b", "c", "a"]);
+  assert.deepEqual(offers.map(offer => offer.id), ["a", "b", "c"]);
 });

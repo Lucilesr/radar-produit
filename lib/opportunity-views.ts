@@ -21,6 +21,15 @@ export function reviewState(job: JobRecord): "to_review" | "selected" | "none" {
 
 export type OpportunityView = "to_review" | "selected" | "good_matches" | "trash";
 
+export function sortOpportunitiesByDate(jobs: JobRecord[], view: OpportunityView, order: "newest" | "oldest") {
+  const field = view === "trash" ? "deletedAt" : "createdAt";
+  const direction = order === "newest" ? -1 : 1;
+  return [...jobs].sort((a, b) => {
+    const dateOrder = (a[field] ?? "").localeCompare(b[field] ?? "");
+    return dateOrder ? dateOrder * direction : a.id.localeCompare(b.id);
+  });
+}
+
 export function inOpportunityView(job: JobRecord, view: OpportunityView) {
   if (view === "trash") return !!job.deletedAt;
   if (job.deletedAt) return false;
