@@ -43,6 +43,9 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
   const documentHistory = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<Library>({ items: [], conflicts: [], extractions: [] });
   const [docs, setDocs] = useState<Document[]>([]), [loading, setLoading] = useState(true), [busy, setBusy] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const extractionInFlight = useRef(new Map<string, Promise<{ state: Library; status: "extracted" | "needs_conversion"; issue: string }>>());
+  const readsInFlight = useRef<{ key: string; experiences: Promise<Library>; documents: Promise<{ documents: Document[] }> } | null>(null);
   const [error, setError] = useState(""), [notice, setNotice] = useState(""), [selected, setSelected] = useState<string[]>([]);
   const [filter, setFilter] = useState("active"), [search, setSearch] = useState(""), [adding, setAdding] = useState(false), [addingTo, setAddingTo] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<"approved" | "rejected" | null>(null), [reason, setReason] = useState("hidden"), [duplicateOf, setDuplicateOf] = useState("");
@@ -79,21 +82,48 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
 
   useEffect(() => {
     let live = true;
-    setLoading(true); setSelected([]); setConfirm(null);
-    Promise.all([read("/api/experiences"), read<{ documents: Document[] }>("/api/documents")])
+    setLoading(true); setAnalyzing(false); setNotice(""); setSelected([]); setConfirm(null);
+    const key = documentId ?? "";
+    const requests = readsInFlight.current?.key === key ? readsInFlight.current : {
+      key, experiences: read("/api/experiences"), documents: read<{ documents: Document[] }>("/api/documents"),
+    };
+    readsInFlight.current = requests;
+    const experiences = requests.experiences.then(s => {
+      if (live) {
+        setState(s);
+        // The document list is only needed for history or a first extraction.
+        if (!s.reference || s.extractions.some(e => e.documentId === s.reference?.documentId)) setLoading(false);
+      }
+      return s;
+    });
+    Promise.all([experiences, requests.documents])
       .then(async ([s, d]) => {
-        if (!live) return; setState(s); setDocs(d.documents);
+        if (!live) return; setDocs(d.documents);
         const reference = d.documents.find(doc => doc.id === s.reference?.documentId);
-        // A new reference document is enough: no second extraction chore.
+        // A document ID is immutable. A recorded extraction remains valid after
+        // every human review, so opening this tab must not parse it again.
         if (reference && !s.extractions.some(e => e.documentId === reference.id)) {
+          setAnalyzing(true);
           setNotice("Lecture du document de référence…");
-          const r = await fetch("/api/documents/" + reference.id);
-          if (!r.ok) throw new Error("Le dernier document est indisponible. L’historique est conservé.");
-          const extraction = await extractDocument(reference.originalName, await r.arrayBuffer());
-          const next = await read("/api/experiences", { action: "extract", extraction: { documentId: reference.id, ...extraction } });
-          if (live) { setState(next); setNotice(extraction.status === "extracted" ? "Document chargé. Nouveaux éléments à relire." : extraction.issue); }
+          let work = extractionInFlight.current.get(reference.id);
+          if (!work) {
+            work = (async () => {
+              const r = await fetch("/api/documents/" + reference.id);
+              if (!r.ok) throw new Error("Le dernier document est indisponible. L’historique est conservé.");
+              const extraction = await extractDocument(reference.originalName, await r.arrayBuffer());
+              const state = await read("/api/experiences", { action: "extract", extraction: { documentId: reference.id, ...extraction } });
+              return { state, status: extraction.status, issue: extraction.issue };
+            })();
+            extractionInFlight.current.set(reference.id, work);
+            void work.finally(() => extractionInFlight.current.delete(reference.id)).catch(() => undefined);
+          }
+          const result = await work;
+          if (live) { setState(result.state); setNotice(result.status === "extracted" ? "Document chargé. Nouveaux éléments à relire." : result.issue); }
         }
-      }).catch(e => { if (live) setError(e.message); }).finally(() => { if (live) setLoading(false); });
+      }).catch(e => { if (live) setError(e.message); }).finally(() => {
+        if (readsInFlight.current === requests) readsInFlight.current = null;
+        if (live) { setLoading(false); setAnalyzing(false); }
+      });
     return () => { live = false; };
   }, [documentId]);
 
@@ -125,7 +155,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
       if(approveCreation&&body.action==="create"){
         setState(next);
         const created=next.items.find(item=>item.id===body.id);
-        if(!created)throw new Error("Le contenu créé est introuvable. Actualisez le carnet.");
+        if(!created)throw new Error("Le contenu créé est introuvable. Actualisez les expériences.");
         const approval={action:"review",selection:[{id:created.id,version:created.version}],validation:"approved",confirmed:true,requestId:pending.current!.approvalId??(pending.current!.approvalId=crypto.randomUUID())};
         try{next=await read("/api/experiences",approval);}catch(problem){
           if(!(problem instanceof Error)||!["AbortError","TypeError"].includes(problem.name))throw problem;
@@ -172,10 +202,10 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
   async function refresh() {
     if(locked.current) return;
     setError("");
-    try { setState(await read("/api/experiences")); setSelected([]); setConfirm(null); pending.current=null; setNotice("Carnet actualisé. Aucune page à recharger."); }
+    try { setState(await read("/api/experiences")); setSelected([]); setConfirm(null); pending.current=null; setNotice("Expériences actualisées. Aucune page à recharger."); }
     catch { setError("Lecture impossible pour le moment. Vous pouvez réessayer."); }
   }
-  const errorMessage = error ? <div role="alert" className="experience-error"><p>{error}</p>{issues.length ? <ul className="mt-3 space-y-3">{issues.map((issue,n) => <li key={n}><strong>{issue.title}</strong> · {issue.field==="reviewPoints"?"Question à résoudre":fieldNames[issue.field]} : « {issue.quote} » <button type="button" className="underline" disabled={busy} onClick={() => correct(issue)}>Corriger ce passage</button></li>)}</ul> : <button type="button" className="ml-3 underline" disabled={busy} onClick={refresh}>Actualiser le carnet</button>}</div> : null;
+  const errorMessage = error ? <div role="alert" className="experience-error"><p>{error}</p>{issues.length ? <ul className="mt-3 space-y-3">{issues.map((issue,n) => <li key={n}><strong>{issue.title}</strong> · {issue.field==="reviewPoints"?"Question à résoudre":fieldNames[issue.field]} : « {issue.quote} » <button type="button" className="underline" disabled={busy} onClick={() => correct(issue)}>Corriger ce passage</button></li>)}</ul> : <button type="button" className="ml-3 underline" disabled={busy} onClick={refresh}>Actualiser les expériences</button>}</div> : null;
 
   const active = currentItems(state.items, state.reference?.documentId).map(i=>({...i,data:structuredReview(i.data)}));
   const groups = active.filter(i => i.kind === "experience" && sectionType(i) !== "overview").sort((a,b)=>{
@@ -270,13 +300,14 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
   const reviewCount=[...groups.filter(g=>g.validation!=="rejected").flatMap(family),...ungrouped].filter(i=>i.validation==="proposed").length;
   return <section className="experience-library glass-panel mt-6 p-5 sm:p-7" aria-labelledby="experience-title" aria-busy={busy || loading}>
     <div data-radar-guide-slot />
-    <WorkspacePanelHeader id="experience-title" title="Mon carnet d’expériences" className="experience-library-heading library-heading-simple" hint={<LibraryHint label="Origine du carnet">Le carnet est créé à partir du fichier « Expériences détaillées » de Mes documents. Vous pouvez ensuite le corriger et le compléter à la main.</LibraryHint>} actions={<><WorkspaceButton aria-haspopup="dialog" disabled={busy||loading||adding||addingTo!==null||editing.length>0} onClick={()=>{setRightsDraft({});setError("");setShowConsentManager(true);}}><SlidersHorizontal size={15} aria-hidden/>Droits d’usage</WorkspaceButton>{!adding?<WorkspaceButton variant="primary" disabled={busy||loading||addingTo!==null||editing.length>0} onClick={()=>setAdding(true)}><Plus size={15} aria-hidden/>Ajouter une expérience</WorkspaceButton>:null}</>}/>
+    <WorkspacePanelHeader id="experience-title" title="Mes expériences" className="experience-library-heading library-heading-simple" hint={<LibraryHint label="D’où viennent ces informations ?">Les expériences proposées peuvent venir de vos documents. Vous pouvez les corriger, les compléter ou en ajouter à la main.</LibraryHint>} actions={<><WorkspaceButton aria-haspopup="dialog" disabled={busy||loading||adding||addingTo!==null||editing.length>0} onClick={()=>{setRightsDraft({});setError("");setShowConsentManager(true);}}><SlidersHorizontal size={15} aria-hidden/>Droits d’usage</WorkspaceButton>{!adding?<WorkspaceButton variant="primary" disabled={busy||loading||addingTo!==null||editing.length>0} onClick={()=>setAdding(true)}><Plus size={15} aria-hidden/>Ajouter une expérience</WorkspaceButton>:null}</>}/>
 
 
+    <p className="workspace-caption mt-3">Vos expériences et réalisations aident Radar à personnaliser vos candidatures. À partir des expériences que vous avez détaillées, Radar peut préparer des pistes d’adaptation du CV et des réponses pour chaque offre.</p>
     {state.extractions.find(e=>e.documentId===state.reference?.documentId)?.status==="needs_conversion"?<p role="alert" className="experience-error">{state.extractions.find(e=>e.documentId===state.reference?.documentId)?.issue||"Ce document nécessite une conversion en texte lisible."}</p>:null}
     <dialog ref={rightsDialog} aria-labelledby="library-rights-title" className="signal-library-dialog library-rights-dialog" onCancel={event=>{event.preventDefault();if(!rightsSaving&&!busy){setShowConsentManager(false);setRightsDraft({});}}}>
       <header className="library-dialog-heading"><div><h2 id="library-rights-title">Droits d’usage</h2><p>Choisissez où chaque contenu peut être utilisé. Sans autorisation, il reste privé.</p></div><button type="button" className="library-close" aria-label="Fermer les droits d’usage" disabled={rightsSaving||busy} onClick={()=>{setShowConsentManager(false);setRightsDraft({});}}><X size={19}/></button></header>
-      <div className="library-dialog-body"><div className="library-rights-columns"><span>Contenu</span><span className="library-column-title">Candidatures<LibraryHint label="Usage dans les candidatures">Inclut les contenus sélectionnés dans les prompts de candidature. Cocher une expérience sélectionne ses contenus validés ; vous pouvez ensuite décocher des exemples.</LibraryHint></span><span className="library-column-title">Présentation pro<LibraryHint label="Usage dans une présentation professionnelle">Permet de réutiliser les contenus sélectionnés dans une présentation professionnelle à partager, par exemple une bio LinkedIn. Cette case ne publie rien. La sélection par expérience fonctionne comme pour les candidatures.</LibraryHint></span></div>{groups.filter(g=>g.validation!=="rejected").map(g=><section className="library-rights-group" key={g.id} aria-label={experienceHeading(g).organization}><h3>{experienceHeading(g).organization}<span>{experienceHeading(g).role}</span></h3>{rightsRow(g,experienceHeading(g).organization)}{childrenOf(g).some(i=>i.validation!=="rejected")?<div className="library-rights-examples">{childrenOf(g).filter(i=>i.validation!=="rejected").map(i=>rightsRow(i,experienceHeading(g).organization))}</div>:null}</section>)}{ungrouped.filter(i=>i.validation!=="rejected").map(i=>rightsRow(i,"Complément personnel"))}{!active.length?<p>Aucun contenu dans le carnet.</p>:null}{errorMessage}</div>
+      <div className="library-dialog-body"><div className="library-rights-columns"><span>Contenu</span><span className="library-column-title">Candidatures<LibraryHint label="Usage dans les candidatures">Inclut les contenus sélectionnés dans les prompts de candidature. Cocher une expérience sélectionne ses contenus validés ; vous pouvez ensuite décocher des exemples.</LibraryHint></span><span className="library-column-title">Présentation pro<LibraryHint label="Usage dans une présentation professionnelle">Permet de réutiliser les contenus sélectionnés dans une présentation professionnelle à partager, par exemple une bio LinkedIn. Cette case ne publie rien. La sélection par expérience fonctionne comme pour les candidatures.</LibraryHint></span></div>{groups.filter(g=>g.validation!=="rejected").map(g=><section className="library-rights-group" key={g.id} aria-label={experienceHeading(g).organization}><h3>{experienceHeading(g).organization}<span>{experienceHeading(g).role}</span></h3>{rightsRow(g,experienceHeading(g).organization)}{childrenOf(g).some(i=>i.validation!=="rejected")?<div className="library-rights-examples">{childrenOf(g).filter(i=>i.validation!=="rejected").map(i=>rightsRow(i,experienceHeading(g).organization))}</div>:null}</section>)}{ungrouped.filter(i=>i.validation!=="rejected").map(i=>rightsRow(i,"Complément personnel"))}{!active.length?<p>Aucun contenu enregistré.</p>:null}{errorMessage}</div>
       <footer className="library-dialog-actions"><button type="button" className="secondary-button signal-form-button" disabled={rightsSaving||busy} onClick={()=>{setShowConsentManager(false);setRightsDraft({});}}>Annuler</button><button type="button" className="radar-add-button signal-form-button" disabled={rightsSaving||busy||!Object.keys(rightsDraft).some(id=>{const i=active.find(i=>i.id===id),d=rightsDraft[id];return i&&(i.applicationAllowed!==d.applicationAllowed||i.publicProfileAllowed!==d.publicProfileAllowed);})} onClick={()=>void saveRights()}>{rightsSaving?"Enregistrement…":"Enregistrer"}</button></footer>
     </dialog>
     <dialog ref={hideDialog} aria-labelledby="library-hide-title" className="signal-library-dialog library-hide-dialog" onCancel={event=>{event.preventDefault();cancelHide();}}>
@@ -289,7 +320,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
     <dialog ref={consentDialog} aria-label="Autoriser la personnalisation des candidatures" className="experience-consent-dialog" onCancel={e=>{e.preventDefault();if(!busy&&consentPrompt.length)void act({action:"applicationConsent",selection:consentPrompt.map(({id,version})=>({id,version})),allowed:false});}}>{consentPrompt.length?<><strong>Utiliser ce contenu pour vos candidatures ?</strong><p className="mt-2 text-sm">{consentPrompt.length} bloc{consentPrompt.length>1?"s viennent":" vient"} d’être validé{consentPrompt.length>1?"s":""}. Autoriser {consentPrompt.length>1?"leur":"son"} utilisation pour personnaliser vos candidatures ?</p><ul className="my-3 list-disc pl-5 text-xs">{consentPrompt.map(i=><li key={i.id}>{i.title}</li>)}</ul><div className="experience-actions"><button type="button" className="radar-add-button" disabled={busy} onClick={()=>act({action:"applicationConsent",selection:consentPrompt.map(({id,version})=>({id,version})),allowed:true})}>Autoriser la personnalisation</button><button type="button" className="secondary-button" disabled={busy} onClick={()=>act({action:"applicationConsent",selection:consentPrompt.map(({id,version})=>({id,version})),allowed:false})}>Pas maintenant</button></div>{errorMessage}</>:null}</dialog>
     {notice ? <p role="status" className="my-3 text-sm text-primary">{notice}</p> : null}
     {!selection.length ? errorMessage : null}
-    {loading ? <LoadingSkeleton label="Chargement de votre parcours…" /> : null}
+    {analyzing ? <LoadingSkeleton label="Analyse du nouveau document…" /> : null}
     {adding ? <ManualForm busy={busy} onCancel={()=>setAdding(false)} onSave={async body => { if (await act(body,true)) setAdding(false); }} /> : null}
     <div className="experience-filters"><ChoiceSelect label="Afficher" value={filter} onChange={value=>{setFilter(value);setSelected([]);setConfirm(null);}} options={[{value:"active",label:"Tout le parcours"},{value:"proposed",label:`À relire${reviewCount?` (${reviewCount})`:""}`},{value:"approved",label:"Validés"},{value:"rejected",label:`Masqués${hiddenCount?` (${hiddenCount})`:""}`}]} /><label className="experience-search"><span>Rechercher</span><input className={inputClass} value={search} onChange={e => setSearch(e.target.value)} placeholder="Entreprise, mission, réalisation…" /></label></div>
     <div className="space-y-4">{groups.filter(g => sectionType(g) === "experience").map(group)}</div>
@@ -349,7 +380,7 @@ function DetailCard({ item, metadata, editRequest, actions, onHide, onEditing, f
 
     {historyLoading?<p role="status" className="review-help">Lecture des versions…</p>:null}
 
-    {edit ? <div><ItemForm key={item.version} initial={item.data} item={item} focusTarget={target} busy={busy} onCancel={()=>setEdit(false)} advancedContent={dirty=><>{item.kind==="fact"?<ChoiceSelect label="Expérience concernée" value={parentId} onChange={setParentId} options={[{value:"",label:"Complément non rattaché"},...experiences.map(g=>({value:g.id,label:g.data.title}))]}/>:null}<div className="library-management-actions">{onHide||onReview&&item.validation!=="rejected"?<WorkspaceButton disabled={busy||dirty||parentId!==(item.parentId||"")} onClick={()=>{if(onHide)onHide();else onReview?.("rejected");}}>Masquer</WorkspaceButton>:null}{onReview&&item.validation==="rejected"?<WorkspaceButton disabled={busy} onClick={()=>void onSave({action:"restore",selection:selectedVersions([item])})}>Restaurer</WorkspaceButton>:null}<WorkspaceButton disabled={busy||historyLoading} onClick={async()=>{setError("");setHistoryLoading(true);try{setRevisions((await read<{revisions:Revision[]}>("/api/experiences?history="+encodeURIComponent(item.id))).revisions);setHistoryVisible(true);}catch{setError("Historique indisponible. Réessayez.");}finally{setHistoryLoading(false);}}}>Versions et origine</WorkspaceButton></div></>} onSubmit={async(data,permissions)=>{setError("");if(await onSave({action:"edit",validate:true,id:item.id,version:item.version,data,permissions,...(item.kind==="fact"?{parentId:parentId||null}:{})})){setEdit(false);}else setError("Correction non enregistrée. Votre saisie reste ici : consultez le message du carnet avant de réessayer.");}}/></div>:null}
+    {edit ? <div><ItemForm key={item.version} initial={item.data} item={item} focusTarget={target} busy={busy} onCancel={()=>setEdit(false)} advancedContent={dirty=><>{item.kind==="fact"?<ChoiceSelect label="Expérience concernée" value={parentId} onChange={setParentId} options={[{value:"",label:"Complément non rattaché"},...experiences.map(g=>({value:g.id,label:g.data.title}))]}/>:null}<div className="library-management-actions">{onHide||onReview&&item.validation!=="rejected"?<WorkspaceButton disabled={busy||dirty||parentId!==(item.parentId||"")} onClick={()=>{if(onHide)onHide();else onReview?.("rejected");}}>Masquer</WorkspaceButton>:null}{onReview&&item.validation==="rejected"?<WorkspaceButton disabled={busy} onClick={()=>void onSave({action:"restore",selection:selectedVersions([item])})}>Restaurer</WorkspaceButton>:null}<WorkspaceButton disabled={busy||historyLoading} onClick={async()=>{setError("");setHistoryLoading(true);try{setRevisions((await read<{revisions:Revision[]}>("/api/experiences?history="+encodeURIComponent(item.id))).revisions);setHistoryVisible(true);}catch{setError("Historique indisponible. Réessayez.");}finally{setHistoryLoading(false);}}}>Versions et origine</WorkspaceButton></div></>} onSubmit={async(data,permissions)=>{setError("");if(await onSave({action:"edit",validate:true,id:item.id,version:item.version,data,permissions,...(item.kind==="fact"?{parentId:parentId||null}:{})})){setEdit(false);}else setError("Correction non enregistrée. Votre saisie reste ici : consultez le message affiché dans Mes expériences avant de réessayer.");}}/></div>:null}
 
     {error ? <p role="alert" className="experience-error">{error}</p> : null}
     {historyVisible?<section className="library-content-history" aria-label="Versions et origine"><div className="signal-section-heading"><h4>Versions et origine</h4><WorkspaceButton variant="quiet" aria-label="Fermer les versions et l’origine" onClick={()=>setHistoryVisible(false)}><X size={15}/></WorkspaceButton></div><p className="review-help">Le fichier d’origine et les versions enregistrées de ce contenu.</p>{item.data.provenance.map((p,n)=><div key={n} className="library-origin"><p>{p.name}{p.page?" · page "+p.page:""}{p.line?" · ligne "+p.line:""}</p><blockquote>{p.quote}</blockquote></div>)}{!item.data.provenance.length?<p className="review-help">Aucun extrait de fichier associé.</p>:null}<History revisions={revisions}/>{!revisions.length?<p className="review-help">Aucune version enregistrée disponible.</p>:null}</section>:null}

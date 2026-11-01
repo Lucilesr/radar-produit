@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Ouverture plus rapide de Mon profil
+
+- Mes expériences réutilise l’extraction enregistrée du document courant. Le chargement du carnet s’affiche dès sa réponse, sans attendre l’historique des fichiers ; l’indicateur d’analyse apparaît seulement pour un nouveau document. Les deux sous-onglets du profil chargent leurs données à la première ouverture, puis conservent leur état.
+
 ## 1er novembre 2026 — Critères explicites repris automatiquement
 
 - À l’ajout ou à l’enrichissement d’une opportunité, les conditions explicites du descriptif complètent les champs encore inconnus : contrat, rémunération, télétravail et niveau d’anglais. Les valeurs déjà renseignées sont conservées ; les fourchettes et montants ambigus restent à confirmer.
