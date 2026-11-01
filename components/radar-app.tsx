@@ -132,7 +132,11 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
     if(saved){navigate({tab:"offers",filter:destination,offer:undefined,view:"offer"});setToast("Candidature annulée. L’offre est revenue dans sa liste.");}
     return saved;
   }
-  function requestDelete(job: JobRecord) { requestDeleteMany([job]); }
+  function requestDelete(job: JobRecord, next?: JobRecord) {
+    if (trashLock.current || refreshing) return;
+    navigate({offer:next?.id,view:"offer"});
+    void changeTrash([job], true);
+  }
   function requestDeleteMany(selection: JobRecord[]) { if (trashLock.current || refreshing) return; closeJob(); void changeTrash(selection, true); }
   async function changeTrash(selection: JobRecord[], deleted: boolean) {
     if (trashLock.current || refreshing || !selection.length) return;

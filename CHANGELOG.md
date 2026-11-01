@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Continuer sur l’offre suivante
+
+- Après l’écartement d’une opportunité, la fiche juste en dessous s’ouvre. Si la dernière est écartée, la fiche précédente reste ouverte.
+
 ## 1er novembre 2026 — Mes documents alignés sur Mes expériences
 
 - Le panneau Mes documents est centré sur la même largeur maximale de 960 px que Mes expériences, tout en restant fluide sur écran étroit.
