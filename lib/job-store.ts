@@ -140,7 +140,10 @@ export async function updateOffer(userId: string, id: string, value: unknown) {
   const patch = offerPatchSchema.parse(value); const current = await getOffer(userId, id);
   if (!current) throw new Error("Offre introuvable");
   const normalized = normalizeJobInput({ ...current, ...patch });
-  const changed = Object.fromEntries(Object.keys(patch).map(key => [key, normalized[key as keyof typeof normalized] ?? null]));
+  const inferred = (["annualSalary", "dailyRate", "contractType", "remoteMode", "language"] as const)
+    .filter(key => (current[key] == null || current[key] === "other" || current[key] === "unknown") && normalized[key] !== current[key]);
+  const changed = Object.fromEntries([...new Set([...Object.keys(patch), ...inferred])]
+    .map(key => [key, normalized[key as keyof typeof normalized] ?? null]));
   const assessment = assessJob({ ...current, ...normalized }, searchPreferences((await readCandidateProfile(userId))?.searchPreferences));
   await getDb().update(jobs).set({ ...changed, matchScore: assessment.score, matchTier: assessment.tier,
     reasons: JSON.stringify(assessment.reasons), flags: JSON.stringify(assessment.flags), updatedAt: new Date().toISOString() })

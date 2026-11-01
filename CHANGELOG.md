@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Critères explicites repris automatiquement
+
+- À l’ajout ou à l’enrichissement d’une opportunité, les conditions explicites du descriptif complètent les champs encore inconnus : contrat, rémunération, télétravail et niveau d’anglais. Les valeurs déjà renseignées sont conservées ; les fourchettes et montants ambigus restent à confirmer.
+
 ## 1er novembre 2026 — Alignement des sous-onglets de Ma recherche
 
 - Les sous-onglets de Ma recherche utilisent la même largeur et la même disposition que ceux de Mon profil. Le contenu des panneaux reste centré sur 960 px.
