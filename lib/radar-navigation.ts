@@ -3,6 +3,10 @@ export type ProfileSection = "experiences" | "documents";
 export function readProfileSection(value: string | null): ProfileSection {
   return value === "documents" ? value : "experiences";
 }
+export type SearchSection = "criteria" | "channels" | "outreach";
+export function readSearchSection(value: string | null): SearchSection {
+  return value === "channels" || value === "outreach" ? value : "criteria";
+}
 export type RadarRoute = { tab: RadarTab; filter: "to_review" | "selected" | "good_matches" | "trash"; query: string; offer?: string; view: "offer" | "application" | "interviews" | "brief" };
 export const defaultRoute: RadarRoute = { tab: "dashboard", filter: "to_review", query: "", view: "offer" };
 export function readRadarRoute(search: string): RadarRoute {
@@ -19,7 +23,7 @@ export function radarSearch(route: RadarRoute, search = "") {
   const params = new URLSearchParams(search);
   // A primary-tab visit starts at the profile overview. Browser history still
   // retains the original URL for Back/Forward and direct subsection links.
-  if (params.get("tab") !== route.tab) params.delete("profile");
+  if (params.get("tab") !== route.tab) { params.delete("profile"); params.delete("sources"); }
   for (const key of ["tab", "filter", "q", "offer", "view"]) params.delete(key);
   params.set("tab", route.tab);
   if (route.filter !== "to_review") params.set("filter", route.filter);
