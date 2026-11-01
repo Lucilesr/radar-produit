@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Ma recherche en sous-onglets
+
+- « Ma recherche » distingue Mes critères, Jobboards & alertes et Autres pistes. Les jobboards ouvrent des recherches à consulter ; les alertes et flux apportent des notifications ou des résultats synchronisés. Chaque type a ses réglages et explications dans son propre panneau.
+
 ## 1er novembre 2026 — Continuer sur l’offre suivante
 
 - Après l’écartement d’une opportunité, la fiche juste en dessous s’ouvre. Si la dernière est écartée, la fiche précédente reste ouverte.

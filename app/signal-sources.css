@@ -70,3 +70,18 @@
 .source-workspace .signal-source-message p{font-size:14px;line-height:1.6}
 .source-workspace .signal-source-message p{max-width:72ch}
 @media(max-width:760px){.source-workspace .source-narrow-panel .signal-source-tracks{grid-template-columns:1fr}}
+
+/* The search page separates criteria, monitored channels and outreach. */
+.source-workspace .source-main-tabs{margin-bottom:0}
+.source-subpanel,.source-kind-panel{display:grid;gap:24px;min-width:0}
+.source-subpanel[hidden],.source-kind-panel[hidden]{display:none}
+.source-kind-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.source-kind-picker button{display:grid;align-content:start;gap:7px;min-height:100px;padding:16px 18px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--foreground);text-align:left;cursor:pointer}
+.source-kind-picker button:hover{background:var(--accent)}
+.source-kind-picker button[aria-pressed=true]{border-color:var(--primary);background:var(--accent);box-shadow:inset 3px 0 var(--primary)}
+.source-kind-picker button:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.source-kind-picker strong{font:600 15px/1.4 var(--font-sans)}
+.source-kind-picker span,.source-manual-heading p{font:400 13px/1.6 var(--font-sans);color:var(--muted-foreground)}
+.source-manual-heading h2{font:600 18px/1.4 var(--font-sans)}
+.source-manual-heading p{margin-top:5px}
+@media(max-width:640px){.source-kind-picker{grid-template-columns:1fr}.source-kind-picker button{min-height:0;padding:14px 16px}}
