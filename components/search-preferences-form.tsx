@@ -78,25 +78,36 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
     setDraft(current => ({ ...current, [key]: Math.max(0, Math.min(1000000, Number(value) || 0)) }));
     setMessage("");
   };
-  return <section className="signal-source-panel" aria-labelledby="search-preferences-title" data-radar-guide="search-preferences-form">
-    <h2 id="search-preferences-title" className="source-heading">Ce que je recherche</h2>
-    <p className="mt-2 text-sm text-[#535768]">Ces critères classent les offres de votre radar. Une information absente dans une annonce reste à vérifier. Vos alertes sur les plateformes externes ne changent pas.</p>
-    <form className="mt-5 space-y-5" onSubmit={async event => { event.preventDefault(); if (roleSaveInFlight.current) return; setSaving(true); setMessage(""); try { setMessage(await onSave({ ...profile, searchPreferences: { ...draft, roles } }) ? "Recherche enregistrée. Les matchs utilisent vos critères." : "Enregistrement non confirmé. Réessayez."); } finally { setSaving(false); } }}>
-      <div>
-        <label htmlFor="searched-role" className="block text-sm font-semibold">Postes recherchés</label>
-        <input id="searched-role" className="mt-2 block w-full rounded-lg border border-[#d0d4e4] bg-white px-3 py-2 font-normal" type="text" maxLength={80} value={roleInput} disabled={savingRole || saving} onChange={event => { setRoleInput(event.target.value); setRoleMessage(""); }} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addRole(); } }} placeholder="Écrivez un poste, puis appuyez sur Entrée" />
-        <p className="mt-2 text-xs text-[#535768]">Chaque poste est enregistré avec Entrée et devient prioritaire dans les matchs.</p>
-        <ul className="mt-3 flex flex-wrap gap-2" aria-label="Postes enregistrés">{roles.map(role => <li key={role} className="inline-flex items-center gap-2 rounded-full border border-[#d0d4e4] bg-white px-3 py-1 text-sm">{role}<button type="button" className="text-[#535768] hover:text-[#243c4a]" aria-label={`Retirer ${role}`} disabled={savingRole || saving} onClick={() => removeRole(role)}>×</button></li>)}</ul>
-        <p role="status" className="mt-2 text-sm">{roleMessage}</p>
-      </div>
-      <fieldset><legend className="text-sm font-semibold">Contrats</legend><div className="mt-2 flex flex-wrap gap-4 text-sm">{([["cdi", "CDI"], ["cdd", "CDD"], ["freelance", "Freelance"]] as const).map(([value, label]) => <label key={value} className="flex items-center gap-2"><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} />{label}</label>)}</div></fieldset>
-      <div className="search-preferences-presence"><ChoiceSelect label="Présence acceptable" value={draft.remote} onChange={remote => { setDraft(current => ({ ...current, remote })); setMessage(""); }} options={[{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Hybride avec présence exceptionnelle" }, { value: "full_remote", label: "Full remote" }]} disabled={saving} /></div>
-      <div className="search-pay-grid grid gap-x-4 gap-y-5 pt-2 sm:grid-cols-2">
-        <label className="search-pay-field"><span className="search-pay-label">Salaire annuel min souhaité<span className="sr-only">, en euros bruts par an</span></span><input className="search-pay-input" type="number" min="0" max="1000000" step="1000" placeholder="Ex. 55000" value={draft.minimumSalary} onChange={event => amount("minimumSalary", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ brut/an</span></label>
-        <label className="search-pay-field"><span className="search-pay-label">TJM min souhaité<span className="sr-only">, en euros hors taxes par jour</span></span><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></label>
-      </div>
-      <p className="text-xs text-[#535768]">Une rémunération légèrement inférieure est signalée comme exception ; une rémunération non indiquée reste à vérifier.</p>
-      <div className="signal-source-actions flex-wrap items-center gap-3"><span role="status" className="mr-auto text-sm">{message}</span><button type="submit" className="radar-add-button" disabled={saving || savingRole}>{saving ? "Enregistrement…" : "Enregistrer"}</button></div>
+  return <section className="search-preferences-form" aria-labelledby="search-preferences-title" data-radar-guide="search-preferences-form">
+    <header className="search-criteria-intro">
+      <h2 id="search-preferences-title" className="source-heading">Ce que je recherche</h2>
+      <p>Ces critères classent vos offres dans Radar. Ils ne modifient pas les alertes créées sur les sites externes.</p>
+    </header>
+    <form className="search-criteria-form" onSubmit={async event => { event.preventDefault(); if (roleSaveInFlight.current) return; setSaving(true); setMessage(""); try { setMessage(await onSave({ ...profile, searchPreferences: { ...draft, roles } }) ? "Recherche enregistrée. Les matchs utilisent vos critères." : "Enregistrement non confirmé. Réessayez."); } finally { setSaving(false); } }}>
+      <section className="search-criteria-group" aria-labelledby="search-roles-title">
+        <div className="search-criteria-group-heading"><h3 id="search-roles-title">Postes visés</h3><p>Ces intitulés ont le plus de poids dans le classement des offres.</p></div>
+        <label htmlFor="searched-role" className="search-field-label">Ajouter un poste</label>
+        <div className="search-role-entry"><input id="searched-role" type="text" maxLength={80} value={roleInput} disabled={savingRole || saving} onChange={event => { setRoleInput(event.target.value); setRoleMessage(""); }} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addRole(); } }} placeholder="Ex. Product Owner" /><button type="button" className="secondary-button" disabled={savingRole || saving || !roleInput.trim()} onClick={addRole}>Ajouter</button></div>
+        <ul className="search-role-list" aria-label="Postes enregistrés">{roles.map(role => <li key={role}>{role}<button type="button" aria-label={`Retirer ${role}`} disabled={savingRole || saving} onClick={() => removeRole(role)}>×</button></li>)}</ul>
+        {roleMessage ? <p role="status" className="search-form-status">{roleMessage}</p> : null}
+        <p className="search-criteria-help">Les postes s’enregistrent dès l’ajout. Vous pouvez aussi appuyer sur Entrée.</p>
+      </section>
+      <section className="search-criteria-group" aria-labelledby="search-conditions-title">
+        <div className="search-criteria-group-heading"><h3 id="search-conditions-title">Conditions de travail</h3><p>Choisissez les contrats et la présence que vous accepteriez.</p></div>
+        <div className="search-criteria-fields">
+          <fieldset className="search-contracts"><legend className="search-field-label">Contrats</legend><div className="search-contract-options">{([["cdi", "CDI"], ["cdd", "CDD"], ["freelance", "Freelance"]] as const).map(([value, label]) => <label key={value}><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} />{label}</label>)}</div></fieldset>
+          <div className="search-preferences-presence"><ChoiceSelect label="Présence acceptable" value={draft.remote} onChange={remote => { setDraft(current => ({ ...current, remote })); setMessage(""); }} options={[{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Hybride avec présence exceptionnelle" }, { value: "full_remote", label: "Full remote" }]} disabled={saving} /></div>
+        </div>
+      </section>
+      <section className="search-criteria-group" aria-labelledby="search-pay-title">
+        <div className="search-criteria-group-heading"><h3 id="search-pay-title">Rémunération souhaitée</h3><p>Renseignez le seuil correspondant à chaque type de contrat recherché.</p></div>
+        <div className="search-pay-grid">
+          <label className="search-pay-field"><span className="search-pay-label">Salaire annuel minimum<span className="sr-only">, en euros bruts par an</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="1000" placeholder="Ex. 55000" value={draft.minimumSalary} onChange={event => amount("minimumSalary", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ brut/an</span></span></label>
+          <label className="search-pay-field"><span className="search-pay-label">TJM minimum<span className="sr-only">, en euros hors taxes par jour</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></span></label>
+        </div>
+        <p className="search-criteria-help">Une offre un peu sous votre seuil reste visible comme exception. Si le montant manque, il est signalé « à vérifier ».</p>
+      </section>
+      <footer className="search-criteria-actions"><span role="status" className="search-form-status">{message}</span><button type="submit" className="radar-add-button" disabled={saving || savingRole}>{saving ? "Enregistrement…" : "Enregistrer mes critères"}</button></footer>
     </form>
   </section>;
 }

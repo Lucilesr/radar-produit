@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Ma recherche plus lisible
+
+- Le formulaire « Ce que je recherche » regroupe les postes, conditions de travail et rémunérations dans des sections ouvertes. Un bouton permet d’ajouter un poste sans clavier. Les panneaux de Ma recherche et les listes de jobboards utilisent des séparateurs discrets au lieu de cartes blanches empilées.
+
 ## 1er novembre 2026 — Ouverture plus rapide de Mon profil
 
 - Mes expériences réutilise l’extraction enregistrée du document courant. Le chargement du carnet s’affiche dès sa réponse, sans attendre l’historique des fichiers ; l’indicateur d’analyse apparaît seulement pour un nouveau document. Les deux sous-onglets du profil chargent leurs données à la première ouverture, puis conservent leur état.
