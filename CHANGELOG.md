@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Mes documents alignés sur Mes expériences
+
+- Le panneau Mes documents est centré sur la même largeur maximale de 960 px que Mes expériences, tout en restant fluide sur écran étroit.
+
 ## 1er novembre 2026 — Écartement sans chargement visible
 
 - Écarter retire immédiatement l’offre de la liste sans bandeau de chargement. Un toast apparaît après confirmation ; en cas d’échec, l’offre revient dans la liste avec un message d’erreur.
