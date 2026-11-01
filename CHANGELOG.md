@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Menu de tri intégré
+
+- Toute la commande de tri ouvre directement le choix chronologique. Le menu et ses options utilisent le style de Radar sur ordinateur et mobile.
+
 ## 1er novembre 2026 — Largeur de Ma recherche
 
 - Tous les blocs de Ma recherche sont alignés sur les 960 px de la section principale de Mon profil, avec une largeur fluide sur écran étroit.

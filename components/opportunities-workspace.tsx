@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowLeft, ExternalLink, Check, Bookmark, ChevronDown, LoaderCircle, Trash2, Undo2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ExternalLink, Check, Bookmark, LoaderCircle, Trash2, Undo2, ShieldCheck } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ApplicationTrackingAction, OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/components/offer-workspace";
 import { WorkspaceState } from "@/components/workspace-ui";
 import { HelpTooltip } from "@/components/help-tooltip";
@@ -75,7 +76,7 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
     <nav className="workspace-tabs" aria-label="Vues des opportunités">{views.map(([id,label])=><button type="button" key={id} aria-pressed={filter===id} onClick={()=>changeView(id)}>{label}<span>{counts[id]}</span></button>)}</nav>
     <div className="opportunities-toolbar">
       <div className="review-view-summary">
-        <label className="opportunity-date-order" htmlFor="opportunity-date-order"><span>Trier :</span><select id="opportunity-date-order" aria-label={filter==="trash"?"Trier par date d’écartement":"Trier par date de mapping"} value={dateOrder} onChange={event=>{setDateOrder(event.target.value as "newest"|"oldest");setRetained(null);}}><option value="newest">Du plus récent au plus ancien</option><option value="oldest">Du plus ancien au plus récent</option></select><ChevronDown size={14} aria-hidden /></label>
+        <Select value={dateOrder} onValueChange={value=>{setDateOrder(value as "newest"|"oldest");setRetained(null);}}><SelectTrigger className="opportunity-date-order" aria-label={filter==="trash"?"Trier par date d’écartement":"Trier par date de mapping"}><span className="opportunity-date-order-label">Trier :</span><SelectValue /></SelectTrigger><SelectContent position="popper" side="bottom" sideOffset={6} align="start" className="opportunity-date-order-menu"><SelectItem value="newest">Du plus récent au plus ancien</SelectItem><SelectItem value="oldest">Du plus ancien au plus récent</SelectItem></SelectContent></Select>
         <HelpTooltip label="Vue des opportunités">{viewHelp}</HelpTooltip>
       </div>
       <div className="review-toolbar-actions"><button type="button" className="review-radar-filter" aria-pressed={filter==="good_matches"} onClick={()=>changeView(filter==="good_matches"?"to_review":"good_matches")}>Correspondances Radar <span>{counts.good_matches}</span></button>{jobs.length>0&&filter!=="trash"?<button type="button" className="secondary-button" aria-pressed={selecting} onClick={()=>{setRetained(null);setSelecting(!selecting);setSelection([]);}}>{selecting?"Terminer les actions groupées":"Actions groupées"}</button>:null}</div>
