@@ -19,7 +19,7 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
   onStatus:(id:string,status:JobStatus)=>Promise<boolean>;onNote:(id:string,note:string)=>Promise<boolean>;onChange:(job:JobRecord)=>void;onApplication:(job:JobRecord)=>void;
   onViewChange:(job:JobRecord,view:WorkspaceView)=>void;trashBusy:boolean;
 }) {
-  const [selection,setSelection]=useState<string[]>([]),[selecting,setSelecting]=useState(false),[reviewing,setReviewing]=useState(false),[error,setError]=useState("");
+  const [selection,setSelection]=useState<string[]>([]),[selecting,setSelecting]=useState(false),[reviewingIds,setReviewingIds]=useState<string[]>([]),[error,setError]=useState("");
   const [dateOrder,setDateOrder]=useState<"newest"|"oldest">("newest");
   const orderedJobs=sortOpportunitiesByDate(jobs,filter,dateOrder);
   const [retained,setRetained]=useState<{job:JobRecord;filter:OpportunityView;query:string;index:number}|null>(null);
@@ -58,19 +58,17 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
   const announcementUrl=active?.sourceUrl||active?.applicationUrl;
   const title=useRef<HTMLHeadingElement>(null);
   const opener=useRef<HTMLButtonElement|null>(null);
-  const locked=useRef(false);
+  const pendingReviews=useRef(new Set<string>());
+  const reviewing=!!active&&reviewingIds.includes(active.id);
   useEffect(()=>{if(activeId){title.current?.focus({preventScroll:true});if(window.matchMedia("(max-width:760px)").matches)title.current?.closest(".opportunity-detail")?.scrollIntoView({block:"start"});}},[activeId]);
   function close(){onClose();requestAnimationFrame(()=>{const button=opener.current;(button?.isConnected && button.getClientRects().length?button:document.getElementById("workspace-title"))?.focus({preventScroll:true});});}
   async function review(){
-    if(!active||locked.current)return;
-    const current=active,next=reviewState(current)==="selected"?"to_review":"selected",index=displayJobs.findIndex(job=>job.id===current.id);
-    locked.current=true;setReviewing(true);setError("");
-    try{if(await onReview(current.id,next)){
-      if(!viewIsCurrent())return;
-      const updated={...current,reviewState:next} as JobRecord;
-      if((filter==="to_review"&&next==="selected")||(filter==="selected"&&next==="to_review"))setRetained({job:updated,filter,query,index});else setRetained(null);
-      onOpen(updated);
-    }else setError("Votre choix n’a pas été enregistré. Réessayez ; le dernier choix confirmé est conservé.");}finally{locked.current=false;setReviewing(false);}
+    if(!active||pendingReviews.current.has(active.id))return;
+    const current=active,next=reviewState(current)==="selected"?"to_review":"selected";
+    pendingReviews.current.add(current.id);setReviewingIds(ids=>[...ids,current.id]);setError("");
+    setRetained(null);onClose();
+    requestAnimationFrame(()=>{(document.querySelector<HTMLElement>(".opportunity-list .opportunity-open")||document.getElementById("workspace-title"))?.focus({preventScroll:true});});
+    try{if(!await onReview(current.id,next) && viewIsCurrent())setError("Votre choix n’a pas été enregistré. L’offre est revenue dans sa liste.");}finally{pendingReviews.current.delete(current.id);setReviewingIds(ids=>ids.filter(id=>id!==current.id));}
   }
   const emptyAction: ReactNode=query?<button className="secondary-button" onClick={onClearSearch}>Effacer la recherche</button>:filter!=="to_review"?<button className="secondary-button" onClick={()=>{changeView("to_review");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Voir les offres à examiner</button>:null;
   return <div className={"opportunities-workspace "+(activeId?"has-open-offer":"")}>

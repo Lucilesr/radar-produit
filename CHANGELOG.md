@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Déplacement immédiat entre les listes
+
+- Sélectionner une offre la retire aussitôt de « À examiner » et l’affiche dans « Ma sélection ». Retirer une offre de la sélection effectue le déplacement inverse. En cas d’échec de l’enregistrement, elle revient dans sa liste initiale.
+
 ## 1er novembre 2026 — Écartement direct et tri des offres
 
 - Écarter une offre, seule ou avec une sélection, la place directement dans la corbeille sans motif ni confirmation. Elle reste restaurable.
