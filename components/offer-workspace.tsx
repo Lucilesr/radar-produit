@@ -10,7 +10,7 @@ import { useWorkspaceFeedback } from "@/components/workspace-feedback";
 import { NoteEditor, NoteText } from "@/components/note-editor";
 import { WorkspaceButton, WorkspaceFormError, WorkspaceFormSection, WorkspaceSaveActions, useWorkspaceEditorFocus } from "@/components/workspace-form";
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, CalendarPlus, CheckCircle2, CircleHelp, Copy, ExternalLink, LoaderCircle, Pencil } from "lucide-react";
+import { CalendarDays, CalendarPlus, CheckCircle2, CircleHelp, Copy, ExternalLink, LoaderCircle, Pencil, Undo2 } from "lucide-react";
 import { ChoiceSelect, type ChoiceOption } from "@/components/choice-select";
 import { SourceLogo } from "@/components/source-logo";
 import { ApplicationQuestions } from "@/components/application-questions";
@@ -54,12 +54,12 @@ export function ApplicationTrackingAction({job,onStatus,onOpenApplication}:{job:
   return <button type="button" className="secondary-button reading-application-action" disabled={starting} aria-busy={starting} onClick={async()=>{if(hasApplication(job)){onOpenApplication();return;}setStarting(true);try{await onStatus(job.id,"applied");}finally{setStarting(false);}}}>{starting?<LoaderCircle size={14} className="animate-spin" aria-hidden/>:null}{hasApplication(job)?"Voir dans Candidatures":"J’ai postulé"}</button>;
 }
 
-export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onViewChange, showApplicationAction = true, showAnnouncement = true }: {
+export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onCancelApplication, onViewChange, showApplicationAction = true, showAnnouncement = true }: {
   showApplicationAction?: boolean;
   showAnnouncement?: boolean;
   onViewChange?: (view: WorkspaceView) => void;
   job: JobRecord; profile: CandidateProfile; initialView: WorkspaceView; context: "opportunity" | "application"; onChange: (job: JobRecord, message?: string) => void;
-  onStatus: (id: string, status: JobStatus) => Promise<boolean>; onNote: (id: string, note: string) => Promise<boolean>; onOpenApplication: () => void;
+  onStatus: (id: string, status: JobStatus) => Promise<boolean>; onNote: (id: string, note: string) => Promise<boolean>; onOpenApplication: () => void; onCancelApplication?: () => Promise<boolean>;
 }) {
   const editTrigger=useRef<HTMLButtonElement>(null);
   const finishEditing=()=>{setEditing(false);requestAnimationFrame(()=>{editTrigger.current?.focus({preventScroll:true});editTrigger.current?.scrollIntoView({block:"nearest"});});};
@@ -107,7 +107,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
     {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); }} onCancel={finishEditing} /> : null}
     {context === "application" && activeView === "application" ? <div className="signal-application-form">
       <WorkspaceFormSection title="Suivi de candidature" actions={<WorkspaceButton disabled={statusBusy} onClick={() => setView("interviews")}><CalendarDays size={15} aria-hidden />Voir les entretiens</WorkspaceButton>}>
-        <div className="signal-status-field" aria-busy={statusBusy}><StatusSelect value={job.status} disabled={statusBusy} onChange={async status => { setStatusBusy(true); try { await onStatus(job.id, status); } finally { setStatusBusy(false); } }} /></div>
+        <div className="signal-status-field" aria-busy={statusBusy}><StatusSelect value={job.status} disabled={statusBusy} onChange={async status => { setStatusBusy(true); try { await onStatus(job.id, status); } finally { setStatusBusy(false); } }} />{job.status === "applied" && !job.interviews?.length && onCancelApplication ? <button type="button" className="signal-quiet-button" disabled={statusBusy} onClick={async()=>{setStatusBusy(true);try{await onCancelApplication();}finally{setStatusBusy(false);}}}><Undo2 size={14} aria-hidden />Annuler « J’ai postulé »</button> : null}</div>
       </WorkspaceFormSection>
       <WorkspaceFormSection title="Notes privées de candidature">
         <NoteEditor inputRef={noteEditorRef} label="Notes privées de candidature" rows={4} disabled={!noteSave.ready} maxLength={2000} value={note} onChange={setNote} placeholder="Vos échanges, vos conditions proposées, les points encore à confirmer…" />

@@ -49,9 +49,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       .limit(1);
     if (!row) return Response.json({ error: "Offre introuvable." }, { status: 404 });
     const current = rowToJob(row);
+    if (body.expectedStatus && body.expectedStatus !== current.status) return Response.json({ error: "La candidature a changé. Actualisez avant de réessayer." }, { status: 409 });
     if (row.deletedAt && !hasApplication(current)) return Response.json({ error: "Restaurez l’offre avant de la modifier." }, { status: 404 });
     if (row.deletedAt && Object.hasOwn(body, "reviewState")) return Response.json({ error: "Restaurez l’offre avant de la sélectionner." }, { status: 400 });
     const status = body.reviewState && current.status === "closed" ? "new" : isStatus(body.status) ? body.status : current.status;
+    const cancellingApplication = current.status === "applied" && (status === "new" || status === "shortlist");
+    if (cancellingApplication && current.interviews?.length) return Response.json({ error: "Un entretien est lié à cette candidature. Supprimez-le avant d’annuler l’envoi." }, { status: 409 });
     let boardColumnId: string | null | undefined;
     if (Object.hasOwn(body, "boardColumnId")) {
       if (typeof body.boardColumnId !== "string" || !isStatus(body.status) || body.expectedStatus !== current.status) return Response.json({ error: "La candidature a changé. Actualisez avant de déplacer la carte." }, { status: 409 });
@@ -70,7 +73,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       const saved=await saveWorkspaceWrite(user.userId,key,body.candidateNote,before.version,before.value);
       return saved ? Response.json({job:await getOffer(user.userId,id,true)}) : Response.json({error:"La note a changé dans un autre onglet."},{status:409});
     }
-    const update = db.update(jobs).set({ boardColumnId, status: Object.hasOwn(body, "status") || body.reviewState ? status : undefined, appliedAt: status === "applied" && !hasApplication(current) && !row.appliedAt ? now : undefined,
+    const update = db.update(jobs).set({ boardColumnId, status: Object.hasOwn(body, "status") || body.reviewState ? status : undefined, appliedAt: cancellingApplication ? null : status === "applied" && !hasApplication(current) && !row.appliedAt ? now : undefined,
       reviewState: typeof body.reviewState === "string" ? body.reviewState : undefined, matchScore: assessment.score, matchTier: assessment.tier,
       reasons: JSON.stringify(assessment.reasons), flags: JSON.stringify(assessment.flags), updatedAt: now })
       .where(and(eq(jobs.id, id), eq(jobs.userId, user.userId), body.boardColumnId ? eq(jobs.status, current.status) : undefined, body.boardColumnId && Object.hasOwn(body,"expectedBoardColumnId") ? current.boardColumnId ? eq(jobs.boardColumnId,current.boardColumnId) : isNull(jobs.boardColumnId) : undefined)).returning();

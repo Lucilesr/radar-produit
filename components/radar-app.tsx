@@ -8,7 +8,7 @@ import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, use
 import { CircleHelp, RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, LoaderCircle, Mail, Plus, Search, Trash2, Undo2, UserRound, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
-import { hasApplication, inOpportunityView, type OpportunityView } from "@/lib/opportunity-views";
+import { hasApplication, inOpportunityView, reviewState, type OpportunityView } from "@/lib/opportunity-views";
 import { PageHeader, PrivateLabel, WorkspaceBrand, WorkspaceBoundary, WorkspaceLoading, WorkspaceState, useRadarNavigation } from "@/components/workspace-ui";
 import { TodayWorkspace, ApplicationsWorkspace } from "@/components/today-workspace";
 import { OpportunitiesWorkspace } from "@/components/opportunities-workspace";
@@ -104,7 +104,8 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
   }), [jobs, allJobs]);
 
   async function updateJob(id: string, changes: { status?: JobStatus; candidateNote?: string; reviewState?: "to_review" | "selected"; boardColumnId?: string; expectedStatus?: JobStatus; expectedBoardColumnId?: string|null }) {
-    const previousReviewState = allJobs.find(job => job.id === id)?.reviewState;
+    const previousJob = allJobs.find(job => job.id === id);
+    const previousReviewState = previousJob?.reviewState;
     if (changes.reviewState) setJobs(current => current.map(job => job.id === id ? { ...job, reviewState: changes.reviewState } : job));
     try {
       const response = await fetch(`/api/jobs/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) });
@@ -114,7 +115,7 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
       if (changes.candidateNote !== undefined) setProfile(current => ({ ...current, applicationNotes: { ...current.applicationNotes, [id]: job.candidateNote ?? "" } }));
       if (changes.candidateNote !== undefined) setToast("Note enregistrée dans votre espace privé.");
       else if (changes.reviewState) setToast(changes.reviewState === "selected" ? "Offre ajoutée à ma sélection." : "Offre remise à examiner.", false, {label: changes.reviewState === "selected" ? "Voir ma sélection" : "Voir les offres à examiner", onClick: () => navigate({tab:"offers",filter:changes.reviewState === "selected" ? "selected" : "to_review",offer:undefined})});
-      else if (changes.status === "applied") setToast("Cette opportunité fait maintenant partie de vos candidatures.", false, {label:"Voir ma candidature",onClick:()=>navigate({tab:"pipeline",offer:id,view:"application"})});
+      else if (changes.status === "applied") setToast("Cette opportunité fait maintenant partie de vos candidatures.", false, {label:"Annuler",onClick:()=>void cancelApplication(id,previousJob&&reviewState(previousJob)==="selected"?"selected":"to_review")});
       else setToast("Statut enregistré.");
       return true;
     } catch {
@@ -123,6 +124,14 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
     }
   }
   async function changeStatus(id: string, status: JobStatus, columnId?: string) { return updateJob(id, { status, ...(columnId ? {boardColumnId: columnId, expectedStatus: allJobs.find(job=>job.id===id)?.status,expectedBoardColumnId:allJobs.find(job=>job.id===id)?.boardColumnId??null} : {}) }); }
+  async function cancelApplication(id: string, fromToast?: "selected"|"to_review") {
+    const job=allJobs.find(item=>item.id===id);
+    if (!fromToast && (!job || job.status!=="applied" || job.interviews?.length)) return false;
+    const destination=fromToast??(job&&reviewState(job)==="selected"?"selected":"to_review");
+    const saved=await updateJob(id,{status:destination==="selected"?"shortlist":"new",expectedStatus:"applied"});
+    if(saved){navigate({tab:"offers",filter:destination,offer:undefined,view:"offer"});setToast("Candidature annulée. L’offre est revenue dans sa liste.");}
+    return saved;
+  }
   function requestDelete(job: JobRecord) { requestDeleteMany([job]); }
   function requestDeleteMany(selection: JobRecord[]) { if (trashLock.current || refreshing) return; closeJob(); void changeTrash(selection, true); }
   async function changeTrash(selection: JobRecord[], deleted: boolean) {
@@ -220,7 +229,7 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
     </div>
     {profileLoaded ? <OnboardingTour ownerId={ownerId ?? ""} profile={profile} activeTab={tab} onNavigate={selectTab} /> : null}
     {jobDialogOpen ? <JobDialog onClose={() => setJobDialogOpen(false)} onCreated={onJobCreated} /> : null}
-    {selectedJob && tab !== "offers" ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} headerActions={<>{(selectedJob.sourceUrl || selectedJob.applicationUrl) ? <a href={selectedJob.sourceUrl || selectedJob.applicationUrl} target="_blank" rel="noopener noreferrer" className="signal-quiet-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : null}{selectedJob.deletedAt ? <button type="button" className="signal-quiet-button" disabled={!!trashBusy || refreshing} onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={15} aria-hidden />Restaurer</button> : null}</>} meta={<OfferSourceBadge job={selectedJob} />} onClose={closeJob}><OfferWorkspace key={selectedJob.id + ":" + tab} onViewChange={view => navigate({ view })} job={selectedJob} profile={profile} initialView={workspaceView} showAnnouncement={false} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => navigate({ tab: "pipeline", offer: selectedJob.id, view: "application" })} onChange={(updated, message) => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setToast(message ?? "Dossier enregistré."); }} /></Modal> : null}
+    {selectedJob && tab !== "offers" ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} headerActions={<>{(selectedJob.sourceUrl || selectedJob.applicationUrl) ? <a href={selectedJob.sourceUrl || selectedJob.applicationUrl} target="_blank" rel="noopener noreferrer" className="signal-quiet-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : null}{selectedJob.deletedAt ? <button type="button" className="signal-quiet-button" disabled={!!trashBusy || refreshing} onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={15} aria-hidden />Restaurer</button> : null}</>} meta={<OfferSourceBadge job={selectedJob} />} onClose={closeJob}><OfferWorkspace key={selectedJob.id + ":" + tab} onViewChange={view => navigate({ view })} job={selectedJob} profile={profile} initialView={workspaceView} showAnnouncement={false} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => navigate({ tab: "pipeline", offer: selectedJob.id, view: "application" })} onCancelApplication={() => cancelApplication(selectedJob.id)} onChange={(updated, message) => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setToast(message ?? "Dossier enregistré."); }} /></Modal> : null}
   </main>;
 }
 
