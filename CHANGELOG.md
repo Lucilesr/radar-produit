@@ -1,3 +1,8 @@
+## 1er novembre 2026 — Écartement direct et tri des offres
+
+- Écarter une offre, seule ou avec une sélection, la place directement dans la corbeille sans motif ni confirmation. Elle reste restaurable.
+- Les opportunités se trient par date de mapping et la corbeille par date d’écartement, dans les deux sens.
+
 ## 30 octobre 2026 — Centrage des blocs de recherche et d’expériences
 
 - Les blocs de Ma recherche sont centrés dans la page. Dans Mon profil, la section commençant par « Mes expériences » est centrée, titre compris ; la navigation du profil reste à sa place.

@@ -3,7 +3,6 @@
 import { AutosaveOwner } from "@/components/autosave";
 import { WorkspaceFeedbackProvider, useWorkspaceFeedback, type WorkspaceFeedback } from "@/components/workspace-feedback";
 import { OfferForm } from "@/components/offer-form";
-import { Textarea } from "@/components/ui/textarea";
 
 import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CircleHelp, RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, LoaderCircle, Mail, Plus, Search, Trash2, Undo2, UserRound, X } from "lucide-react";
@@ -13,7 +12,6 @@ import { hasApplication, inOpportunityView, type OpportunityView } from "@/lib/o
 import { PageHeader, PrivateLabel, WorkspaceBrand, WorkspaceBoundary, WorkspaceLoading, WorkspaceState, useRadarNavigation } from "@/components/workspace-ui";
 import { TodayWorkspace, ApplicationsWorkspace } from "@/components/today-workspace";
 import { OpportunitiesWorkspace } from "@/components/opportunities-workspace";
-import { ChoiceSelect } from "@/components/choice-select";
 import { OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/components/offer-workspace";
 import { activeStatuses, terminalStatuses } from "@/lib/application-workflow";
 import { profileTemplate } from "@/lib/profile-template";
@@ -37,7 +35,6 @@ const tabs: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof La
   { id: "profile", label: "Mon profil", mobileLabel: "Profil", icon: UserRound },
   { id: "sources", label: "Ma recherche", mobileLabel: "Recherche", icon: Mail },
 ];
-const dismissalLabels: Record<DismissalReason, string> = { filled: "Poste pourvu", applications_closed: "Candidatures fermées", not_interested: "Je ne souhaite pas postuler", other: "Autre raison" };
 
 
 type RadarAppProps = { ownerId?: string; userName: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection };
@@ -63,9 +60,6 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
   const [allJobs, setJobs] = useState<JobRecord[]>(initialState?.jobs ?? []);
   useEffect(()=>{const saved=(event:Event)=>{const detail=(event as CustomEvent).detail;if(detail?.owner===ownerId&&typeof detail.id==="string"&&typeof detail.value==="string")setJobs(current=>current.map(job=>job.id===detail.id?{...job,candidateNote:detail.value}:job));};window.addEventListener("radar-note-saved",saved);return()=>window.removeEventListener("radar-note-saved",saved);},[ownerId]);
   const jobs = useMemo(() => allJobs.filter(job => !job.deletedAt), [allJobs]);
-  const [deleteTarget, setDeleteTarget] = useState<JobRecord[]>([]);
-  const [deleteReason, setDeleteReason] = useState<DismissalReason | "">("");
-  const [deleteNote, setDeleteNote] = useState("");
   const [trashBusy, setTrashBusy] = useState<string | null>(null);
   const trashLock = useRef(false);
   const [trashError, setTrashError] = useState<string | null>(null);
@@ -125,14 +119,14 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
   }
   async function changeStatus(id: string, status: JobStatus, columnId?: string) { return updateJob(id, { status, ...(columnId ? {boardColumnId: columnId, expectedStatus: allJobs.find(job=>job.id===id)?.status,expectedBoardColumnId:allJobs.find(job=>job.id===id)?.boardColumnId??null} : {}) }); }
   function requestDelete(job: JobRecord) { requestDeleteMany([job]); }
-  function requestDeleteMany(selection: JobRecord[]) { if (trashLock.current || refreshing) return; setTrashError(null); setDeleteReason(""); setDeleteNote(""); closeJob(); setDeleteTarget(selection); }
-  async function changeTrash(selection: JobRecord[], deleted: boolean, reason?: DismissalReason, note?: string) {
+  function requestDeleteMany(selection: JobRecord[]) { if (trashLock.current || refreshing) return; closeJob(); void changeTrash(selection, true); }
+  async function changeTrash(selection: JobRecord[], deleted: boolean) {
     if (trashLock.current || refreshing || !selection.length) return;
-    trashLock.current = true; setTrashBusy(selection[0].id); setTrashError(null); setDeleteTarget([]);
+    trashLock.current = true; setTrashBusy(selection[0].id); setTrashError(null);
     const optimistic = selection.map(job => ({ id: job.id, deletedAt: deleted ? new Date().toISOString() : undefined }));
     setJobs(current => applyTrashState(current, optimistic));
     try {
-      const response = await fetch("/api/jobs/trash", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: selection.map(job => job.id), deleted, reason, note }), signal: AbortSignal.timeout(20000) });
+      const response = await fetch("/api/jobs/trash", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: selection.map(job => job.id), deleted }), signal: AbortSignal.timeout(20000) });
       if (!response.ok) throw new Error("Enregistrement non confirmé");
       const { results } = await response.json() as { results: { id: string; deletedAt: string | null; dismissalReason?: DismissalReason; dismissalNote?: string }[] };
       const confirmed = new Set(results.map(item => item.id));
@@ -185,8 +179,8 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
 
   const loadNotice = !loading && (loadErrors.jobs || loadErrors.profile) ? <WorkspaceState error title={loadErrors.jobs ? "Les offres n’ont pas pu être chargées" : "Votre profil n’a pas pu être chargé"} action={<button type="button" className="secondary-button" onClick={() => {setLoadAttempt(n => n+1);requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Réessayer</button>}>Vérifiez votre connexion puis réessayez. Vos données sont conservées.</WorkspaceState> : null;
 
-  return <main className="radar-app text-foreground"><a inert={jobDialogOpen || deleteTarget.length>0 || (!!selectedJob && tab!=="offers")} href="#workspace-title" className="workspace-skip">Aller au contenu</a>
-    <div className="radar-shell" inert={jobDialogOpen || deleteTarget.length>0 || (!!selectedJob && tab!=="offers")}>
+  return <main className="radar-app text-foreground"><a inert={jobDialogOpen || (!!selectedJob && tab!=="offers")} href="#workspace-title" className="workspace-skip">Aller au contenu</a>
+    <div className="radar-shell" inert={jobDialogOpen || (!!selectedJob && tab!=="offers")}>
       <aside className="radar-sidebar">
         <div className="flex items-center justify-between gap-4 lg:block">
           <button type="button" className="radar-home-link" aria-label="Radar — revenir à Aujourd’hui" onClick={() => selectTab("dashboard")}><WorkspaceBrand /></button>
@@ -222,7 +216,6 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
     {profileLoaded ? <OnboardingTour ownerId={ownerId ?? ""} profile={profile} activeTab={tab} onNavigate={selectTab} /> : null}
     {jobDialogOpen ? <JobDialog onClose={() => setJobDialogOpen(false)} onCreated={onJobCreated} /> : null}
     {selectedJob && tab !== "offers" ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} headerActions={<>{(selectedJob.sourceUrl || selectedJob.applicationUrl) ? <a href={selectedJob.sourceUrl || selectedJob.applicationUrl} target="_blank" rel="noopener noreferrer" className="signal-quiet-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : null}{selectedJob.deletedAt ? <button type="button" className="signal-quiet-button" disabled={!!trashBusy || refreshing} onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={15} aria-hidden />Restaurer</button> : null}</>} meta={<OfferSourceBadge job={selectedJob} />} onClose={closeJob}><OfferWorkspace key={selectedJob.id + ":" + tab} onViewChange={view => navigate({ view })} job={selectedJob} profile={profile} initialView={workspaceView} showAnnouncement={false} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => navigate({ tab: "pipeline", offer: selectedJob.id, view: "application" })} onChange={(updated, message) => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setToast(message ?? "Dossier enregistré."); }} /></Modal> : null}
-    {deleteTarget.length ? <Modal title={`Mettre ${deleteTarget.length === 1 ? "cette offre" : `ces ${deleteTarget.length} offres`} à la corbeille ?`} description={deleteTarget.length > 1 ? "Choisissez une raison commune à toute la sélection." : "Choisissez pourquoi vous écartez cette offre."} onClose={() => setDeleteTarget([])}><div className="trash-dialog-content"><ul className="max-h-48 space-y-2 overflow-y-auto rounded-xl bg-background p-4 text-sm">{deleteTarget.map(job => <li key={job.id}><strong>{job.title}</strong> · {job.company}</li>)}</ul><div className="trash-dialog-fields"><ChoiceSelect label="Pourquoi ?" value={deleteReason} onChange={value => setDeleteReason(value as DismissalReason | "")} options={[{ value: "", label: "Choisir un motif" }, ...Object.entries(dismissalLabels).map(([value, label]) => ({ value, label }))]} /><label className="trash-dialog-note"><span>Précision <em>facultative</em></span><Textarea rows={2} maxLength={500} value={deleteNote} onChange={event => setDeleteNote(event.target.value)} placeholder="Une courte précision, si utile" /></label></div><p className="trash-dialog-help">L’offre reste restaurable. Si une candidature est déjà engagée, elle et ses rappels restent visibles dans Candidatures.</p><div className="trash-dialog-actions"><button className="secondary-button" onClick={() => setDeleteTarget([])}>Annuler</button><button disabled={!deleteReason || !!trashBusy || refreshing} className="signal-danger-button disabled:opacity-50" onClick={() => void changeTrash(deleteTarget, true, deleteReason as DismissalReason, deleteNote)}><Trash2 size={16} /> Mettre à la corbeille{deleteTarget.length > 1 ? ` (${deleteTarget.length})` : ""}</button></div></div></Modal> : null}
   </main>;
 }
 

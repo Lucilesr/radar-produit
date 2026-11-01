@@ -104,12 +104,12 @@ export async function setOfferDeleted(userId: string, id: string, deleted: boole
 
 export async function setOffersDeleted(userId: string, ids: string[], deleted: boolean, reason?: string, note?: string) {
   if (!ids.length || ids.length > 50 || ids.some(id => typeof id !== "string" || !id || id.length > 100)) throw new Error("Sélection invalide : 1 à 50 offres.");
-  if (deleted && !["filled", "applications_closed", "not_interested", "other"].includes(reason ?? "")) throw new Error("Choisissez un motif de corbeille.");
+  if (reason !== undefined && !["filled", "applications_closed", "not_interested", "other"].includes(reason)) throw new Error("Motif de corbeille invalide.");
   if (note && note.length > 500) throw new Error("Commentaire trop long.");
   // One bounded atomic write + returning, instead of SELECT / UPDATE / SELECT per offer.
   // COALESCE preserves the original timestamp on retries; owner scope stays server-side.
   return getDb().update(jobs).set({ deletedAt: deleted ? sql`coalesce(${jobs.deletedAt}, ${new Date().toISOString()})` : null,
-    dismissalReason: deleted ? sql`coalesce(${jobs.dismissalReason}, ${reason})` : null,
+    dismissalReason: deleted ? sql`coalesce(${jobs.dismissalReason}, ${reason ?? null})` : null,
     dismissalNote: deleted ? sql`coalesce(${jobs.dismissalNote}, ${note?.trim() || null})` : null })
     .where(and(eq(jobs.userId, userId), inArray(jobs.id, [...new Set(ids)])))
     .returning({ id: jobs.id, deletedAt: jobs.deletedAt, dismissalReason: jobs.dismissalReason, dismissalNote: jobs.dismissalNote });
