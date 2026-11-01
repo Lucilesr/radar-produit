@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Largeur de Ma recherche
+
+- Tous les blocs de Ma recherche sont alignés sur les 960 px de la section principale de Mon profil, avec une largeur fluide sur écran étroit.
+
 ## 1er novembre 2026 — Tri compact des opportunités
 
 - Le compteur redondant quitte la barre des opportunités. Un filtre discret « Trier : » prend sa place avec les deux ordres chronologiques ; les compteurs restent dans les onglets.
