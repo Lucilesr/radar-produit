@@ -104,18 +104,23 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
   }), [jobs, allJobs]);
 
   async function updateJob(id: string, changes: { status?: JobStatus; candidateNote?: string; reviewState?: "to_review" | "selected"; boardColumnId?: string; expectedStatus?: JobStatus; expectedBoardColumnId?: string|null }) {
+    const previousReviewState = allJobs.find(job => job.id === id)?.reviewState;
+    if (changes.reviewState) setJobs(current => current.map(job => job.id === id ? { ...job, reviewState: changes.reviewState } : job));
     try {
       const response = await fetch(`/api/jobs/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) });
       if (!response.ok) throw new Error("Mise à jour impossible");
       const { job } = (await response.json()) as { job: JobRecord };
-      setJobs(current => current.map(item => item.id === id ? { ...job, candidateNote: changes.candidateNote === undefined ? item.candidateNote : job.candidateNote } : item));
+      setJobs(current => current.map(item => item.id === id ? changes.reviewState ? { ...item, reviewState: job.reviewState } : { ...job, candidateNote: changes.candidateNote === undefined ? item.candidateNote : job.candidateNote } : item));
       if (changes.candidateNote !== undefined) setProfile(current => ({ ...current, applicationNotes: { ...current.applicationNotes, [id]: job.candidateNote ?? "" } }));
       if (changes.candidateNote !== undefined) setToast("Note enregistrée dans votre espace privé.");
       else if (changes.reviewState) setToast(changes.reviewState === "selected" ? "Offre ajoutée à ma sélection." : "Offre remise à examiner.", false, {label: changes.reviewState === "selected" ? "Voir ma sélection" : "Voir les offres à examiner", onClick: () => navigate({tab:"offers",filter:changes.reviewState === "selected" ? "selected" : "to_review",offer:undefined})});
       else if (changes.status === "applied") setToast("Cette opportunité fait maintenant partie de vos candidatures.", false, {label:"Voir ma candidature",onClick:()=>navigate({tab:"pipeline",offer:id,view:"application"})});
       else setToast("Statut enregistré.");
       return true;
-    } catch { setToast("La mise à jour n’a pas été enregistrée. Vos données restent inchangées.", true); return false; }
+    } catch {
+      if (changes.reviewState) setJobs(current => current.map(job => job.id === id && job.reviewState === changes.reviewState ? { ...job, reviewState: previousReviewState } : job));
+      setToast("La mise à jour n’a pas été enregistrée. Vos données restent inchangées.", true); return false;
+    }
   }
   async function changeStatus(id: string, status: JobStatus, columnId?: string) { return updateJob(id, { status, ...(columnId ? {boardColumnId: columnId, expectedStatus: allJobs.find(job=>job.id===id)?.status,expectedBoardColumnId:allJobs.find(job=>job.id===id)?.boardColumnId??null} : {}) }); }
   function requestDelete(job: JobRecord) { requestDeleteMany([job]); }
