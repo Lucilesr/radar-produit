@@ -1,7 +1,6 @@
 /* Signal opportunities: readable columns, shared controls and progressive detail. */
 .opportunities-toolbar { margin-block: 0 16px; flex-wrap: wrap; }
 .review-view-summary { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.review-view-summary .workspace-caption { font-size: 12px; }
 .review-view-summary .help-tooltip-trigger { width: 28px; height: 28px; min-height: 28px; }
 .review-toolbar-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .review-toolbar-actions > button { min-height: 36px; padding: 7px 10px; font: 500 12px/1.5 var(--font-sans); }

@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Tri compact des opportunités
+
+- Le compteur redondant quitte la barre des opportunités. Un filtre discret « Trier : » prend sa place avec les deux ordres chronologiques ; les compteurs restent dans les onglets.
+
 ## 1er novembre 2026 — Déplacement immédiat entre les listes
 
 - Sélectionner une offre la retire aussitôt de « À examiner » et l’affiche dans « Ma sélection ». Retirer une offre de la sélection effectue le déplacement inverse. En cas d’échec de l’enregistrement, elle revient dans sa liste initiale.
