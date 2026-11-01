@@ -70,7 +70,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
     ? <div className="signal-source-panel">{loadError?<WorkspaceButton disabled={loading} busy={loading} onClick={()=>void load()}>Réessayer de charger les sources</WorkspaceButton>:<LoadingSkeleton label="Chargement des configurations…" rows={2}/>}</div>
     : <div className="source-settings-grid">{sourceCatalog.filter(source=>modes.includes(source.mode)).map(source=><SourceCard key={source.name} source={source} setting={settings.find(item=>item.source===source.name)} count={jobs.filter(job=>job.source===source.name).length} onSaved={onSourceSaved}/>)}</div>;
   return <div className="source-workspace signal-sources-workspace">
-    <nav className="workspace-tabs source-main-tabs" aria-label="Sections de Ma recherche">{sections.map(([id,label])=><button type="button" key={id} aria-pressed={section===id} aria-controls={"source-panel-"+id} onClick={()=>selectSection(id)}>{label}</button>)}</nav>
+    <nav className="workspace-tabs" aria-label="Sections de Ma recherche">{sections.map(([id,label])=><button type="button" key={id} aria-pressed={section===id} aria-controls={"source-panel-"+id} onClick={()=>selectSection(id)}>{label}</button>)}</nav>
     <div id="source-panel-criteria" className="source-subpanel" hidden={section!=="criteria"}>
       <SearchPreferencesForm profile={profile} onSave={onSave}/>
       <div className="market-boundary-note"><span className="market-boundary-dot"/><p><strong>Recherche sans filtre de pays.</strong> La langue de l’annonce et les pays autorisés pour le télétravail restent à vérifier sur la page employeur.</p></div>

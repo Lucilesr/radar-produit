@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Alignement des sous-onglets de Ma recherche
+
+- Les sous-onglets de Ma recherche utilisent la même largeur et la même disposition que ceux de Mon profil. Le contenu des panneaux reste centré sur 960 px.
+
 ## 1er novembre 2026 — Ma recherche en sous-onglets
 
 - « Ma recherche » distingue Mes critères, Jobboards & alertes et Autres pistes. Les jobboards ouvrent des recherches à consulter ; les alertes et flux apportent des notifications ou des résultats synchronisés. Chaque type a ses réglages et explications dans son propre panneau.
