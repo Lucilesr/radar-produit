@@ -1,3 +1,7 @@
+## 1er novembre 2026 — Annuler une candidature déclarée
+
+- Une candidature marquée « J’ai postulé » peut être annulée depuis le toast ou son dossier avant l’ajout d’un entretien. L’offre revient dans sa liste précédente et la date de candidature est effacée.
+
 ## 1er novembre 2026 — Menu de tri intégré
 
 - Toute la commande de tri ouvre directement le choix chronologique. Le menu et ses options utilisent le style de Radar sur ordinateur et mobile.

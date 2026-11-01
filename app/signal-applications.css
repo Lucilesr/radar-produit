@@ -27,6 +27,7 @@
 .signal-dialog-close:hover { background: var(--muted); }
 .signal-dialog-tools > .signal-quiet-button { min-height: 36px; font-size: 12px; }
 .signal-status-field { max-width: 390px; }
+.signal-status-field > .signal-quiet-button { margin-top: 12px; }
 .workspace-dialog:has(.signal-offer-workspace) { width: 100%; max-width: 870px; }
 .workspace-dialog .signal-offer-workspace { min-width: 0; }
 @media(max-width:1250px) {
