@@ -99,8 +99,9 @@
 .source-kind-picker span{font-size:12px}
 .source-workspace .source-kind-panel{gap:28px}
 
-.search-preferences-form{min-width:0}
-.search-criteria-intro{max-width:72ch}
+.search-preferences-form{--criteria-grid-gap:24px;--criteria-half-gap:12px;--criteria-control-width:270px;min-width:0}
+/* Keep the introduction level with the end of the controls in column two. */
+.search-criteria-intro{max-width:min(100%,calc(50% + var(--criteria-half-gap) + var(--criteria-control-width)))}
 .search-criteria-intro h2{margin:0}
 .search-criteria-intro p{margin-top:8px;color:var(--muted-foreground);font-size:14px;line-height:1.6}
 .search-criteria-form{margin-top:22px}
@@ -118,20 +119,20 @@
 .search-role-list button{width:24px;height:24px;border-radius:50%;color:var(--muted-foreground);font-size:18px;line-height:1}
 .search-role-list button:hover{background:var(--card);color:var(--foreground)}
 .search-form-status{font-size:13px;line-height:1.5}
-.search-criteria-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start}
+.search-criteria-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--criteria-grid-gap);align-items:start}
 .search-contract-options{display:flex;flex-wrap:wrap;gap:8px}
 .search-contract-options label{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 12px;border:1px solid var(--border);border-radius:5px;background:transparent;font-size:14px;cursor:pointer}
 .search-contract-options label:has(input:checked){border-color:var(--primary);background:var(--accent)}
 .search-contract-options input{accent-color:var(--primary)}
 .source-workspace .search-criteria-form .search-preferences-presence,.source-workspace .search-criteria-form .search-pay-grid{width:100%}
-.source-workspace .search-criteria-form .search-preferences-presence{max-width:270px}
-.search-criteria-form .search-pay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;max-width:none}
-.search-criteria-form .search-pay-field{max-width:270px}
+.source-workspace .search-criteria-form .search-preferences-presence{max-width:var(--criteria-control-width)}
+.search-criteria-form .search-pay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--criteria-grid-gap);max-width:none}
+.search-criteria-form .search-pay-field{max-width:var(--criteria-control-width)}
 .search-criteria-form .search-pay-label{position:static;display:block;margin-bottom:8px;padding:0;background:transparent;font-size:13px;line-height:1.4}
 .search-pay-control{position:relative;display:block}
 .radar-app .source-workspace .search-criteria-form .search-pay-input{height:46px}
 .search-criteria-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px;padding-top:20px;border-top:1px solid var(--border)}
 .search-criteria-actions .search-form-status{margin-right:auto}
-@media(max-width:640px){.search-role-entry,.source-workspace .search-criteria-form .search-preferences-presence,.search-criteria-form .search-pay-field{max-width:none}.search-role-entry{flex-wrap:wrap}.search-role-entry input{flex-basis:100%}.search-criteria-fields,.search-criteria-form .search-pay-grid{grid-template-columns:1fr}.search-criteria-actions{align-items:stretch;flex-direction:column}.search-criteria-actions button{align-self:flex-end}.source-kind-picker button{padding:12px 0}}
+@media(max-width:640px){.search-criteria-intro,.search-role-entry,.source-workspace .search-criteria-form .search-preferences-presence,.search-criteria-form .search-pay-field{max-width:none}.search-role-entry{flex-wrap:wrap}.search-role-entry input{flex-basis:100%}.search-criteria-fields,.search-criteria-form .search-pay-grid{grid-template-columns:1fr}.search-criteria-actions{align-items:stretch;flex-direction:column}.search-criteria-actions button{align-self:flex-end}.source-kind-picker button{padding:12px 0}}
 
 .source-workspace .signal-source-card:not(:has(.signal-source-config .radar-collapsible-content:not([hidden]))){min-height:0}
