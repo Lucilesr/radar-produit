@@ -29,9 +29,9 @@
 .page-tools { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
 .page-refresh-action { min-height: 36px; padding: 7px 12px; font-size: 12px; white-space: nowrap; }
 .page-header-privacy { display: none; }
-/* Profile and search share one fluid measure for the header, tabs and panels. */
+/* Profile and search share 80% of the page, capped for wide displays. */
 .radar-app :is(.profile-workspace,.source-workspace.signal-sources-workspace),
-.radar-page:has(:is(.profile-workspace,.source-workspace.signal-sources-workspace)) > .workspace-page-header { width: 100%; max-width: clamp(60rem, 80vw, 72rem); }
+.radar-page:has(:is(.profile-workspace,.source-workspace.signal-sources-workspace)) > .workspace-page-header { width: 80%; max-width: 72rem; margin-inline: auto; }
 .workspace-tabs { margin-bottom: 24px; border-top: 1px solid #bbccd5; border-bottom-color: #bbccd5; gap: 4px 22px; }
 .workspace-tabs button { min-height: 46px; padding: 12px 2px; font: 500 14px/1.5 var(--font-sans); }
 .workspace-tabs button[aria-pressed=true] { color: var(--primary); font-weight: 600; }
@@ -39,6 +39,8 @@
 .radar-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 20px; margin-top: 28px; padding-top: 16px; color: var(--muted-foreground); font-size: 11px; }
 .radar-footer > span:last-child { margin-left: auto; text-align: right; }
 @media(max-width:1023px) {
+  .radar-app :is(.profile-workspace,.source-workspace.signal-sources-workspace),
+  .radar-page:has(:is(.profile-workspace,.source-workspace.signal-sources-workspace)) > .workspace-page-header { width: 100%; }
   .radar-shell { display: block; }
   .radar-sidebar { height: auto; min-height: 0; padding: 20px 24px; }
   .radar-sidebar .radar-add-button { margin-top: 0; }
