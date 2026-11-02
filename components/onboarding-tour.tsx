@@ -27,12 +27,12 @@ const tour = (demo: boolean): Step[] => [
 const mobileTourLabels: Record<string,string> = {"nav-dashboard":"Accueil","nav-offers":"Offres","nav-pipeline":"Suivi","nav-profile":"Profil","nav-sources":"Recherche"};
 const complete = (p: CandidateProfile) => Boolean(p.searchPreferences);
 
-export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ownerId: string; profile: CandidateProfile; activeTab: RadarTab; onNavigate: (tab: RadarTab) => void }) {
+export function OnboardingTour({ ownerId, profile, activeTab, onNavigate, initialHasFact }: { ownerId: string; profile: CandidateProfile; activeTab: RadarTab; onNavigate: (tab: RadarTab) => void; initialHasFact?: boolean }) {
   const [state, setState] = useState<State | null>(null);
   const [guideHost, setGuideHost] = useState<HTMLElement | null>(null);
   const [mobile, setMobile] = useState(false);
   useEffect(() => { const query = window.matchMedia("(max-width:640px)"); const update = () => setMobile(query.matches); update(); query.addEventListener("change", update); return () => query.removeEventListener("change", update); }, []);
-  const [hasFact, setHasFact] = useState(false);
+  const [hasFact, setHasFact] = useState(initialHasFact ?? false);
   const [checking, setChecking] = useState(false);
   const key = "radar:onboarding:v4:" + ownerId;
   const demo = ownerId.startsWith("demo:");
@@ -61,7 +61,7 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate }: { ow
   useEffect(() => {
     if (!ownerId) return;
     let live = true;
-    void checkFacts().then(found => {
+    void (initialHasFact === undefined ? checkFacts() : Promise.resolve(initialHasFact)).then(found => {
       if (!live) return;
       try {
         const raw = localStorage.getItem(key);
