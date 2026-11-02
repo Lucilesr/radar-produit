@@ -48,6 +48,6 @@
  .profile-document-picker .choice-select-trigger { font-size:16px; min-height:44px; }
 }
 
-.profile-workspace #profile-panel-documents{width:100%;max-width:960px;margin-inline:auto}
+.profile-workspace #profile-panel-documents{width:100%}
 .profile-workspace #profile-panel-documents>.profile-documents{width:100%;max-width:none}
 .profile-documents .profile-document-intro,.profile-documents-heading p,.profile-documents .profile-document-formats{font-size:14px;line-height:1.6}

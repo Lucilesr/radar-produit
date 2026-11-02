@@ -1,3 +1,7 @@
+## 2 novembre 2026 — Largeur harmonisée de Mon profil et Ma recherche
+
+- Les deux pages utilisent une largeur fluide commune pour l’en-tête, les sous-onglets et les panneaux. La largeur suit la fenêtre avec une limite en `rem` pour préserver la lisibilité sur grand écran.
+
 ## 2 novembre 2026 — Introduction des critères alignée
 
 - Le texte d’introduction de « Mes critères » s’étend jusqu’au bord droit des champs de la deuxième colonne. La grille et les champs partagent les mêmes dimensions CSS ; sur mobile, le texte occupe toute la largeur disponible.
