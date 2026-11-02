@@ -1,3 +1,7 @@
+## 2 novembre 2026 — Recherches web plus directes
+
+- Le sous-titre qui répétait les noms des plateformes et « tous pays » est retiré. La consigne d’ouverture des recherches reste visible au-dessus des liens.
+
 ## 2 novembre 2026 — Champs de critères affinés
 
 - Les champs de poste, présence, salaire et TJM sont légèrement resserrés sur ordinateur. « Hybride avec présence exceptionnelle » devient « Présence exceptionnelle » dans le choix de recherche, comme sur les fiches d’offres. Le bouton du formulaire est nommé « Enregistrer ».
