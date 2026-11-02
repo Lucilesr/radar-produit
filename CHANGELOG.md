@@ -1,3 +1,7 @@
+## 2 novembre 2026 — Alignement des critères en colonnes
+
+- Les conditions de travail et la rémunération utilisent la même grille à deux colonnes : « Présence acceptable » s’aligne avec « TJM minimum ». Les champs gardent une largeur compacte ; sur mobile, les colonnes se superposent.
+
 ## 2 novembre 2026 — Ouverture directe de Mes expériences
 
 - Lorsqu’on arrive directement sur Mes expériences, le carnet est lu en parallèle du profil et des offres, puis affiché dès le premier rendu. Le guide réutilise cette lecture, sans requête supplémentaire. La liste des documents continue de se charger en arrière-plan.
