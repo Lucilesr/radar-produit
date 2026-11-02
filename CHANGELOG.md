@@ -1,3 +1,7 @@
+## 2 novembre 2026 — Ouverture directe de Mes expériences
+
+- Lorsqu’on arrive directement sur Mes expériences, le carnet est lu en parallèle du profil et des offres, puis affiché dès le premier rendu. Le guide réutilise cette lecture, sans requête supplémentaire. La liste des documents continue de se charger en arrière-plan.
+
 ## 2 novembre 2026 — Critères de recherche plus compacts
 
 - Le champ d’ajout d’un poste et le choix de présence prennent moins de largeur sur ordinateur. Les cinq libellés du formulaire partagent la même typographie et le même espacement ; les champs restent fluides sur mobile.

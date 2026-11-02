@@ -16,7 +16,7 @@ import {exampleValues} from "@/lib/experience-fields";
 import { ChoiceSelect } from "@/components/choice-select";
 
 type Document = { id: string; originalName: string; createdAt?: string };
-type Library = { items: ExperienceItem[]; conflicts: ExperienceConflict[]; extractions: { id: string; documentId: string; status: string; issue: string }[]; reference?: { documentId: string; name: string; createdAt: string } | null };
+export type Library = { items: ExperienceItem[]; conflicts: ExperienceConflict[]; extractions: { id: string; documentId: string; status: string; issue: string }[]; reference?: { documentId: string; name: string; createdAt: string } | null };
 type Revision = { version: number; snapshot: ExperienceItem; action: string; createdAt: string };
 type Fields = Pick<ItemData, "title" | "organization" | "role" | "period" | "context" | "contribution" | "result" | "claimKey">;
 type EditFields = Fields & Pick<ItemData, "reviewModel" | "reviewPoints">;
@@ -39,10 +39,11 @@ async function read<T = Library>(path: string, body?: unknown): Promise<T> {
   } finally { clearTimeout(timeout); }
 }
 
-export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?: string; onOpenDocuments?: () => void }) {
+export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary }: { documentId?: string; onOpenDocuments?: () => void; initialLibrary?: Library }) {
   const documentHistory = useRef<HTMLDivElement>(null);
-  const [state, setState] = useState<Library>({ items: [], conflicts: [], extractions: [] });
-  const [docs, setDocs] = useState<Document[]>([]), [loading, setLoading] = useState(true), [busy, setBusy] = useState(false);
+  const [state, setState] = useState<Library>(initialLibrary ?? { items: [], conflicts: [], extractions: [] });
+  const [docs, setDocs] = useState<Document[]>([]), [loading, setLoading] = useState(!initialLibrary), [busy, setBusy] = useState(false);
+  const initialLibraryRef = useRef(initialLibrary ? { key: documentId ?? "", library: initialLibrary } : null);
   const [analyzing, setAnalyzing] = useState(false);
   const extractionInFlight = useRef(new Map<string, Promise<{ state: Library; status: "extracted" | "needs_conversion"; issue: string }>>());
   const readsInFlight = useRef<{ key: string; experiences: Promise<Library>; documents: Promise<{ documents: Document[] }> } | null>(null);
@@ -82,10 +83,12 @@ export function ExperienceLibrary({ documentId, onOpenDocuments }: { documentId?
 
   useEffect(() => {
     let live = true;
-    setLoading(true); setAnalyzing(false); setNotice(""); setSelected([]); setConfirm(null);
     const key = documentId ?? "";
+    const preloaded = initialLibraryRef.current?.key === key ? initialLibraryRef.current.library : undefined;
+    if (initialLibraryRef.current?.key !== key) initialLibraryRef.current = null;
+    setLoading(!preloaded); setAnalyzing(false); setNotice(""); setSelected([]); setConfirm(null);
     const requests = readsInFlight.current?.key === key ? readsInFlight.current : {
-      key, experiences: read("/api/experiences"), documents: read<{ documents: Document[] }>("/api/documents"),
+      key, experiences: preloaded ? Promise.resolve(preloaded) : read("/api/experiences"), documents: read<{ documents: Document[] }>("/api/documents"),
     };
     readsInFlight.current = requests;
     const experiences = requests.experiences.then(s => {
