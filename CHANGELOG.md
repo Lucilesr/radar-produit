@@ -1,3 +1,7 @@
+## 2 novembre 2026 — Introduction des critères alignée
+
+- Le texte d’introduction de « Mes critères » s’étend jusqu’au bord droit des champs de la deuxième colonne. La grille et les champs partagent les mêmes dimensions CSS ; sur mobile, le texte occupe toute la largeur disponible.
+
 ## 2 novembre 2026 — Recherches web plus directes
 
 - Le sous-titre qui répétait les noms des plateformes et « tous pays » est retiré. La consigne d’ouverture des recherches reste visible au-dessus des liens.
