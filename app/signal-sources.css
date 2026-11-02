@@ -110,7 +110,7 @@
 .search-criteria-group-heading p,.search-criteria-help{margin-top:5px;color:var(--muted-foreground);font-size:13px;line-height:1.6}
 .search-field-label{display:block;margin-bottom:8px;font-size:13px;font-weight:600}
 .source-workspace .search-criteria-form :is(.search-field-label,.search-preferences-presence .choice-select>p,.search-pay-label){margin:0 0 8px;padding:0;color:var(--foreground);font:600 13px/1.4 var(--font-sans)}
-.search-role-entry{display:flex;gap:10px;max-width:440px}
+.search-role-entry{display:flex;gap:10px;max-width:400px}
 .source-workspace .search-role-entry input{flex:1;min-width:0;min-height:46px;padding:10px 12px;border:1px solid var(--border);border-radius:5px;background:var(--card)}
 .search-role-entry button{min-height:46px}
 .search-role-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
@@ -124,9 +124,9 @@
 .search-contract-options label:has(input:checked){border-color:var(--primary);background:var(--accent)}
 .search-contract-options input{accent-color:var(--primary)}
 .source-workspace .search-criteria-form .search-preferences-presence,.source-workspace .search-criteria-form .search-pay-grid{width:100%}
-.source-workspace .search-criteria-form .search-preferences-presence{max-width:300px}
+.source-workspace .search-criteria-form .search-preferences-presence{max-width:270px}
 .search-criteria-form .search-pay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;max-width:none}
-.search-criteria-form .search-pay-field{max-width:300px}
+.search-criteria-form .search-pay-field{max-width:270px}
 .search-criteria-form .search-pay-label{position:static;display:block;margin-bottom:8px;padding:0;background:transparent;font-size:13px;line-height:1.4}
 .search-pay-control{position:relative;display:block}
 .radar-app .source-workspace .search-criteria-form .search-pay-input{height:46px}

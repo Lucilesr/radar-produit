@@ -1,3 +1,7 @@
+## 2 novembre 2026 — Champs de critères affinés
+
+- Les champs de poste, présence, salaire et TJM sont légèrement resserrés sur ordinateur. « Hybride avec présence exceptionnelle » devient « Présence exceptionnelle » dans le choix de recherche, comme sur les fiches d’offres. Le bouton du formulaire est nommé « Enregistrer ».
+
 ## 2 novembre 2026 — Alignement des critères en colonnes
 
 - Les conditions de travail et la rémunération utilisent la même grille à deux colonnes : « Présence acceptable » s’aligne avec « TJM minimum ». Les champs gardent une largeur compacte ; sur mobile, les colonnes se superposent.

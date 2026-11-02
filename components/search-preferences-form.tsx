@@ -96,7 +96,7 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
         <div className="search-criteria-group-heading"><h3 id="search-conditions-title">Conditions de travail</h3><p>Choisissez les contrats et la présence que vous accepteriez.</p></div>
         <div className="search-criteria-fields">
           <fieldset className="search-contracts"><legend className="search-field-label">Contrats</legend><div className="search-contract-options">{([["cdi", "CDI"], ["cdd", "CDD"], ["freelance", "Freelance"]] as const).map(([value, label]) => <label key={value}><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} />{label}</label>)}</div></fieldset>
-          <div className="search-preferences-presence"><ChoiceSelect label="Présence acceptable" value={draft.remote} onChange={remote => { setDraft(current => ({ ...current, remote })); setMessage(""); }} options={[{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Hybride avec présence exceptionnelle" }, { value: "full_remote", label: "Full remote" }]} disabled={saving} /></div>
+          <div className="search-preferences-presence"><ChoiceSelect label="Présence acceptable" value={draft.remote} onChange={remote => { setDraft(current => ({ ...current, remote })); setMessage(""); }} options={[{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Présence exceptionnelle" }, { value: "full_remote", label: "Full remote" }]} disabled={saving} /></div>
         </div>
       </section>
       <section className="search-criteria-group" aria-labelledby="search-pay-title">
@@ -107,7 +107,7 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
         </div>
         <p className="search-criteria-help">Une offre un peu sous votre seuil reste visible comme exception. Si le montant manque, il est signalé « à vérifier ».</p>
       </section>
-      <footer className="search-criteria-actions"><span role="status" className="search-form-status">{message}</span><button type="submit" className="radar-add-button" disabled={saving || savingRole}>{saving ? "Enregistrement…" : "Enregistrer mes critères"}</button></footer>
+      <footer className="search-criteria-actions"><span role="status" className="search-form-status">{message}</span><button type="submit" className="radar-add-button" disabled={saving || savingRole}>{saving ? "Enregistrement…" : "Enregistrer"}</button></footer>
     </form>
   </section>;
 }
