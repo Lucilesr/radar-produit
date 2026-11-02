@@ -125,12 +125,13 @@
 .search-contract-options input{accent-color:var(--primary)}
 .source-workspace .search-criteria-form .search-preferences-presence,.source-workspace .search-criteria-form .search-pay-grid{width:100%}
 .source-workspace .search-criteria-form .search-preferences-presence{max-width:300px}
-.search-criteria-form .search-pay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:700px}
+.search-criteria-form .search-pay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;max-width:none}
+.search-criteria-form .search-pay-field{max-width:300px}
 .search-criteria-form .search-pay-label{position:static;display:block;margin-bottom:8px;padding:0;background:transparent;font-size:13px;line-height:1.4}
 .search-pay-control{position:relative;display:block}
 .radar-app .source-workspace .search-criteria-form .search-pay-input{height:46px}
 .search-criteria-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px;padding-top:20px;border-top:1px solid var(--border)}
 .search-criteria-actions .search-form-status{margin-right:auto}
-@media(max-width:640px){.search-role-entry,.source-workspace .search-criteria-form .search-preferences-presence{max-width:none}.search-role-entry{flex-wrap:wrap}.search-role-entry input{flex-basis:100%}.search-criteria-fields,.search-criteria-form .search-pay-grid{grid-template-columns:1fr}.search-criteria-actions{align-items:stretch;flex-direction:column}.search-criteria-actions button{align-self:flex-end}.source-kind-picker button{padding:12px 0}}
+@media(max-width:640px){.search-role-entry,.source-workspace .search-criteria-form .search-preferences-presence,.search-criteria-form .search-pay-field{max-width:none}.search-role-entry{flex-wrap:wrap}.search-role-entry input{flex-basis:100%}.search-criteria-fields,.search-criteria-form .search-pay-grid{grid-template-columns:1fr}.search-criteria-actions{align-items:stretch;flex-direction:column}.search-criteria-actions button{align-self:flex-end}.source-kind-picker button{padding:12px 0}}
 
 .source-workspace .signal-source-card:not(:has(.signal-source-config .radar-collapsible-content:not([hidden]))){min-height:0}
