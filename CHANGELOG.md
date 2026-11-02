@@ -1,3 +1,7 @@
+## 2 novembre 2026 — Critères de recherche plus compacts
+
+- Le champ d’ajout d’un poste et le choix de présence prennent moins de largeur sur ordinateur. Les cinq libellés du formulaire partagent la même typographie et le même espacement ; les champs restent fluides sur mobile.
+
 ## 1er novembre 2026 — Ma recherche plus lisible
 
 - Le formulaire « Ce que je recherche » regroupe les postes, conditions de travail et rémunérations dans des sections ouvertes. Un bouton permet d’ajouter un poste sans clavier. Les panneaux de Ma recherche et les listes de jobboards utilisent des séparateurs discrets au lieu de cartes blanches empilées.

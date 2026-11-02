@@ -109,7 +109,8 @@
 .search-criteria-group-heading h3{font-size:16px;font-weight:600;line-height:1.4}
 .search-criteria-group-heading p,.search-criteria-help{margin-top:5px;color:var(--muted-foreground);font-size:13px;line-height:1.6}
 .search-field-label{display:block;margin-bottom:8px;font-size:13px;font-weight:600}
-.search-role-entry{display:flex;gap:10px;max-width:700px}
+.source-workspace .search-criteria-form :is(.search-field-label,.search-preferences-presence .choice-select>p,.search-pay-label){margin:0 0 8px;padding:0;color:var(--foreground);font:600 13px/1.4 var(--font-sans)}
+.search-role-entry{display:flex;gap:10px;max-width:440px}
 .source-workspace .search-role-entry input{flex:1;min-width:0;min-height:46px;padding:10px 12px;border:1px solid var(--border);border-radius:5px;background:var(--card)}
 .search-role-entry button{min-height:46px}
 .search-role-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
@@ -123,12 +124,13 @@
 .search-contract-options label:has(input:checked){border-color:var(--primary);background:var(--accent)}
 .search-contract-options input{accent-color:var(--primary)}
 .source-workspace .search-criteria-form .search-preferences-presence,.source-workspace .search-criteria-form .search-pay-grid{width:100%}
+.source-workspace .search-criteria-form .search-preferences-presence{max-width:300px}
 .search-criteria-form .search-pay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:700px}
 .search-criteria-form .search-pay-label{position:static;display:block;margin-bottom:8px;padding:0;background:transparent;font-size:13px;line-height:1.4}
 .search-pay-control{position:relative;display:block}
 .radar-app .source-workspace .search-criteria-form .search-pay-input{height:46px}
 .search-criteria-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px;padding-top:20px;border-top:1px solid var(--border)}
 .search-criteria-actions .search-form-status{margin-right:auto}
-@media(max-width:640px){.search-role-entry{flex-wrap:wrap}.search-role-entry input{flex-basis:100%}.search-criteria-fields,.search-criteria-form .search-pay-grid{grid-template-columns:1fr}.search-criteria-actions{align-items:stretch;flex-direction:column}.search-criteria-actions button{align-self:flex-end}.source-kind-picker button{padding:12px 0}}
+@media(max-width:640px){.search-role-entry,.source-workspace .search-criteria-form .search-preferences-presence{max-width:none}.search-role-entry{flex-wrap:wrap}.search-role-entry input{flex-basis:100%}.search-criteria-fields,.search-criteria-form .search-pay-grid{grid-template-columns:1fr}.search-criteria-actions{align-items:stretch;flex-direction:column}.search-criteria-actions button{align-self:flex-end}.source-kind-picker button{padding:12px 0}}
 
 .source-workspace .signal-source-card:not(:has(.signal-source-config .radar-collapsible-content:not([hidden]))){min-height:0}
