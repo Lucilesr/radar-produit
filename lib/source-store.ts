@@ -16,8 +16,9 @@ export async function saveSourceSetting(userId: string, source: string, data: Re
   return { source, ...merged, updatedAt: record.updatedAt };
 }
 export async function userSourceSetting(userId: string, value: unknown) {
-  const input = z.object({ source: z.string().refine(name => sourceCatalog.some(source => source.name === name)), state: z.enum(["not_configured", "action_needed", "configured", "paused"]), notes: z.string().max(1500).default("") }).strict().parse(value);
-  return saveSourceSetting(userId, input.source, { state: input.state, notes: input.notes, verification: "Déclarée dans le Radar" });
+  const input = z.object({ source: z.string().refine(name => sourceCatalog.some(source => source.name === name)), state: z.enum(["not_configured", "action_needed", "configured", "paused"]), notes: z.string().max(1500).default(""), linkUrl: z.string().trim().max(2048).optional(), selected: z.boolean().optional() }).strict().parse(value);
+  if (input.linkUrl && !validSearchLink(input.linkUrl)) throw new Error("Lien invalide");
+  return saveSourceSetting(userId, input.source, { state: input.state, notes: input.notes, ...(input.linkUrl !== undefined ? { linkUrl: input.linkUrl } : {}), ...(input.selected !== undefined ? { selected: input.selected } : {}), verification: "Déclarée dans le Radar" });
 }
 export async function userSearchLinks(userId: string, value: unknown) {
   const input = z.object({

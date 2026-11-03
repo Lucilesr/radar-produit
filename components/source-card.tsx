@@ -12,20 +12,20 @@ import { sourceCatalog } from "@/lib/source-catalog";
 import { SourceLogo } from "@/components/source-logo";
 import { sourceGuidance } from "@/lib/source-guidance";
 
-export type SourceSetting = { source: string; state?: string; notes?: string; verification?: string; lastSyncedAt?: string; error?: string; updatedAt?: string; searchLinks?: Record<string, import("@/lib/web-discovery").SearchLinks>; latestAlert?: { url: string; notificationAt: string; label: string } };
+export type SourceSetting = { source: string; state?: string; notes?: string; linkUrl?: string; selected?: boolean; verification?: string; lastSyncedAt?: string; error?: string; updatedAt?: string; searchLinks?: Record<string, import("@/lib/web-discovery").SearchLinks>; latestAlert?: { url: string; notificationAt: string; label: string } };
 const states=(mode:typeof sourceCatalog[number]["mode"])=>[{value:"not_configured",label:"Pas encore commencé"},{value:"action_needed",label:"Étapes en cours"},{value:"configured",label:mode==="rss"?"Flux actif":mode==="email"?"Alerte activée":"Recherche configurée"},{value:"paused",label:"En pause"}];
 const stateLabels:Record<string,string>={not_configured:"À configurer",action_needed:"Action requise",configured:"Recherche configurée",paused:"En pause"};
 
 export function SourceCard({ source, setting, count, hidden, onSaved }: { source: typeof sourceCatalog[number]; setting?: SourceSetting; count: number; hidden?: boolean; onSaved: (setting: SourceSetting) => void }) {
   const title=useId();
   const notify=useWorkspaceFeedback();
-  const [draft,setDraft]=useState<{state:string;notes:string}|null>(null);
-  const current=draft??{state:setting?.state??"not_configured",notes:setting?.notes??""};
+  const [draft,setDraft]=useState<{state:string;notes:string;linkUrl:string}|null>(null);
+  const current=draft??{state:setting?.state??"not_configured",notes:setting?.notes??"",linkUrl:setting?.linkUrl??""};
   const savedState=setting?.state??"not_configured";
   const [busy,setBusy]=useState(false),[error,setError]=useState("");
   const locked=useRef(false);
   const configRef=useRef<HTMLDivElement>(null);
-  const dirty=draft!==null&&(draft.state!==(setting?.state??"not_configured")||draft.notes!==(setting?.notes??""));
+  const dirty=draft!==null&&(draft.state!==(setting?.state??"not_configured")||draft.notes!==(setting?.notes??"")||draft.linkUrl!==(setting?.linkUrl??""));
   async function save(){
     if(locked.current)return;
     locked.current=true;setBusy(true);setError("");
@@ -41,7 +41,7 @@ export function SourceCard({ source, setting, count, hidden, onSaved }: { source
     <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span></div>
     <span className="signal-source-status" data-state={savedState}>{savedState==="configured"?states(source.mode)[2].label:stateLabels[savedState]??"À configurer"}</span>
     <p className="signal-source-description">{source.note}</p>
-    <a href={source.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a>
+    <a href={setting?.linkUrl||source.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a>
     {setting?.lastSyncedAt?<p className="signal-help">Flux vérifié le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
     {setting?.verification?<p className="signal-help">{setting.verification}</p>:null}
     <WorkspaceFormError message={setting?.error??""}/>
@@ -49,6 +49,7 @@ export function SourceCard({ source, setting, count, hidden, onSaved }: { source
     <ExpandableSection ref={configRef} className="source-research signal-source-config" title="Configurer cette source" status={dirty?<span className="quiet-tag">Non enregistré</span>:null}>
       <div className="rounded-xl bg-[#f7f8fc] p-4 text-xs leading-6"><p className="font-semibold">Que faire pour {source.name} ?</p><ol className="mt-2 list-decimal space-y-1 pl-5">{sourceGuidance[source.name].steps.map((step,index)=><li key={index}>{step}</li>)}</ol>{source.mode!=="rss"?<a href={source.url} target="_blank" rel="noopener noreferrer" className="secondary-button mt-3"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a>:null}<p className="mt-3 text-[#535768]"><strong>Dans Radar :</strong> {sourceGuidance[source.name].result}</p></div><form onSubmit={event=>{event.preventDefault();void save();}} className="signal-source-form">
         <ChoiceSelect label={`Mon suivi de ${source.name} dans Radar`} value={current.state} disabled={busy} onChange={state=>setDraft({...current,state})} options={states(source.mode)}/>
+        <label className="workspace-field">Lien de recherche, d’alerte ou de flux · {source.name}<input type="url" className="mt-1 w-full rounded-lg border border-[#d0d4e4] px-3 py-2 text-sm" maxLength={2048} disabled={busy} value={current.linkUrl} onChange={event=>setDraft({...current,linkUrl:event.target.value})} placeholder={source.url}/><span className="signal-help">URL https à ouvrir. Vide = page générale. Ce lien ne change pas la synchronisation du flux.</span></label>
         <label className="workspace-field">Ma recherche et mes notes · {source.name}<Textarea rows={3} maxLength={1500} disabled={busy} value={current.notes} onChange={event=>setDraft({...current,notes:event.target.value})} placeholder="Recherche, filtres, fréquence ou prochaine action…"/></label>
         <WorkspaceFormError message={error}/>
         <div className="signal-source-actions"><WorkspaceButton type="submit" variant="primary" busy={busy}>{!busy?<Save size={14} aria-hidden/>:null}Enregistrer mon suivi</WorkspaceButton></div>
