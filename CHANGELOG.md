@@ -1,3 +1,8 @@
+## 3 novembre 2026 — Sources d’alertes personnalisables
+
+- Chaque source d’alerte ou de flux peut conserver une URL https à ouvrir, distincte de ses notes et de son état. Le lien personnalisé ne modifie pas la synchronisation du flux.
+- Quatre sources sont proposées au départ ; les autres apparaissent quand elles sont suivies ou ajoutées via « Ajouter des sources ».
+
 ## 3 novembre 2026 — Liens de veille regroupés
 
 - Les recherches LinkedIn et Welcome to the Jungle affichent chacune un seul accès par site et une recherche Google combinant les postes choisis. Les anciens liens personnalisés restent consultables.
