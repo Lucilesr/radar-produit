@@ -1,3 +1,7 @@
+## 3 novembre 2026 — Sources en cartes
+
+- Jobboards et Alertes & flux affichent deux cartes par ligne sur ordinateur et une sur mobile. Le bouton « Ajouter des sources » est placé en haut des deux onglets ; les sources supplémentaires restent cachées tant qu’elles ne sont pas choisies.
+
 ## 3 novembre 2026 — Sources d’alertes personnalisables
 
 - Chaque source d’alerte ou de flux peut conserver une URL https à ouvrir, distincte de ses notes et de son état. Le lien personnalisé ne modifie pas la synchronisation du flux.
