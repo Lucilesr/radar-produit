@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useRef, useState } from "react";
-import { ExternalLink, Save } from "lucide-react";
+import { ExternalLink, Save, Trash2 } from "lucide-react";
 import { ExpandableSection } from "@/components/experience-section";
 import { ChoiceSelect } from "@/components/choice-select";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +16,7 @@ export type SourceSetting = { source: string; state?: string; notes?: string; li
 const states=(mode:typeof sourceCatalog[number]["mode"])=>[{value:"not_configured",label:"Pas encore commencé"},{value:"action_needed",label:"Étapes en cours"},{value:"configured",label:mode==="rss"?"Flux actif":mode==="email"?"Alerte activée":"Recherche configurée"},{value:"paused",label:"En pause"}];
 const stateLabels:Record<string,string>={not_configured:"À configurer",action_needed:"Action requise",configured:"Recherche configurée",paused:"En pause"};
 
-export function SourceCard({ source, setting, count, hidden, onSaved }: { source: typeof sourceCatalog[number]; setting?: SourceSetting; count: number; hidden?: boolean; onSaved: (setting: SourceSetting) => void }) {
+export function SourceCard({ source, setting, count, hidden, onSaved, onRemove }: { source: typeof sourceCatalog[number]; setting?: SourceSetting; count: number; hidden?: boolean; onSaved: (setting: SourceSetting) => void; onRemove?: () => void }) {
   const title=useId();
   const notify=useWorkspaceFeedback();
   const [draft,setDraft]=useState<{state:string;notes:string;linkUrl:string}|null>(null);
@@ -38,7 +38,7 @@ export function SourceCard({ source, setting, count, hidden, onSaved }: { source
     finally{locked.current=false;setBusy(false);}
   }
   return <section hidden={hidden} className="signal-source-card" aria-labelledby={title}>
-    <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span></div>
+    <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><div className="signal-source-tools"><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span>{onRemove?<WorkspaceButton variant="quiet" disabled={busy} aria-label={`Supprimer ${source.name}`} title={`Supprimer ${source.name}`} onClick={onRemove}><Trash2 size={16} aria-hidden/></WorkspaceButton>:null}</div></div>
     <span className="signal-source-status" data-state={savedState}>{savedState==="configured"?states(source.mode)[2].label:stateLabels[savedState]??"À configurer"}</span>
     <p className="signal-source-description">{source.note}</p>
     <a href={setting?.linkUrl||source.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a>

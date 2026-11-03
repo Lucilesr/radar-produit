@@ -7,6 +7,8 @@ import { HelpTooltip } from "@/components/help-tooltip";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { WorkspaceButton, WorkspaceFormError, WorkspacePanelHeader } from "@/components/workspace-form";
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
+import { SourceRemovalDialog } from "@/components/source-removal-dialog";
+import { isSourceVisible } from "@/lib/source-visibility";
 import { SourceCard, type SourceSetting } from "@/components/source-card";
 import { WebDiscoveryPanel } from "@/components/web-discovery-panel";
 import { sourceCatalog, searchTracks } from "@/lib/source-catalog";
@@ -34,6 +36,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
   const [syncError,setSyncError]=useState(""),[alertError,setAlertError]=useState("");
   const [collectiveUrl,setCollectiveUrl]=useState("");
   const [addingSource,setAddingSource]=useState<string|null>(null),[addSourceError,setAddSourceError]=useState("");
+  const [removingSource,setRemovingSource]=useState<typeof sourceCatalog[number]|null>(null);
   const locked=useRef(false);
   const busy=operation!==null;
   async function load(){
@@ -67,11 +70,11 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
     }catch(problem){setAlertError(problem instanceof Error?problem.message:"Alerte non enregistrée.");}
     finally{locked.current=false;setOperation(null);}
   }
-  const collectiveAlert=settings?.find(item=>item.source==="Collective")?.latestAlert;
+  const collectiveAlert=settings?.find(item=>item.source==="Collective"&&item.selected!==false)?.latestAlert;
   const onSourceSaved=(updated:SourceSetting)=>setSettings(current=>[updated,...(current??[]).filter(item=>item.source!==updated.source)]);
   const alertCatalog=sourceCatalog.filter(source=>source.mode==="email"||source.mode==="rss");
   const jobboardCatalog=sourceCatalog.filter(source=>source.mode==="web"||source.mode==="research");
-  const sourceVisible=(name:string,defaults:Set<string>)=>{const setting=settings?.find(item=>item.source===name);return defaults.has(name)||!!(setting&&(setting.selected||setting.state&&setting.state!=="not_configured"||setting.notes||setting.linkUrl));};
+  const sourceVisible=(name:string,defaults:Set<string>)=>isSourceVisible(name,settings??[],defaults);
   async function addSource(name:string){
     const existing=settings?.find(item=>item.source===name);
     setAddingSource(name);setAddSourceError("");
@@ -97,14 +100,14 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
         {settings?<SourceAddPanel sources={jobboardCatalog} visible={name=>sourceVisible(name,initialJobboardSources)} adding={addingSource} error={addSourceError} onAdd={addSource}/>:null}
         <WebDiscoveryPanel roles={searchPreferences(profile.searchPreferences).roles} settings={settings??[]} onSaved={onSourceSaved}/>
         <section className="signal-source-panel" aria-labelledby="jobboard-settings-title"><WorkspacePanelHeader id="jobboard-settings-title" title="Suivi des jobboards"/><p className="signal-help">Les liens ci-dessus ouvrent les recherches. Les fiches ci-dessous vous servent à noter l’état de chaque site et les réglages à faire.</p><ExpandableSection className="source-research signal-source-research" title="Recherches couvertes"><div className="signal-source-tracks">{searchTracks.map(track=><section key={track.label}><h3>{track.label}</h3><p>{track.query}</p><p className="signal-help">{track.detail}</p></section>)}</div></ExpandableSection></section>
-        {settings===null?cards(["web","research"]):<div className="source-settings-grid">{jobboardCatalog.filter(source=>sourceVisible(source.name,initialJobboardSources)).map(source=><SourceCard key={source.name} source={source} setting={settings.find(item=>item.source===source.name)} count={jobs.filter(job=>job.source===source.name).length} onSaved={onSourceSaved}/>)}</div>}
+        {settings===null?cards(["web","research"]):<div className="source-settings-grid">{jobboardCatalog.filter(source=>sourceVisible(source.name,initialJobboardSources)).map(source=><SourceCard key={source.name} source={source} setting={settings.find(item=>item.source===source.name)} count={jobs.filter(job=>job.source===source.name).length} onSaved={onSourceSaved} onRemove={()=>setRemovingSource(source)}/>)}</div>}
       </div>
       <div id="source-kind-alerts" className="source-kind-panel" hidden={kind!=="alerts"}>
         {settings?<SourceAddPanel sources={alertCatalog} visible={name=>sourceVisible(name,initialAlertSources)} adding={addingSource} error={addSourceError} onAdd={addSource}/>:null}
         {collectiveAlert?<section className="signal-source-panel" aria-labelledby="collective-latest-title"><WorkspacePanelHeader id="collective-latest-title" title="Alerte Collective à consulter"/><p className="signal-source-description">{collectiveAlert.label}</p><p className="signal-help">Signalée le {formatDate(collectiveAlert.notificationAt,"Indian/Mauritius",true)}. Ce lien mène à une liste de résultats ; chaque annonce doit être vérifiée avant de devenir une fiche Radar.</p><a href={collectiveAlert.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Voir les annonces sur Collective</a></section>:null}
         {!demo?<section className="signal-source-panel" aria-labelledby="collective-add-title"><WorkspacePanelHeader id="collective-add-title" title="Ajouter une alerte Collective"/><p className="signal-help">Copiez le lien « See jobs » de l’email. La recherche sera visible ici, sans créer d’offres fictives.</p><form className="signal-collective-form" onSubmit={event=>{event.preventDefault();void saveCollectiveAlert();}}><input type="url" required disabled={busy} aria-label="Lien See jobs de Collective" value={collectiveUrl} onChange={event=>setCollectiveUrl(event.target.value)} placeholder="https://app.collective.work/my-personal-space/jobs?..."/><WorkspaceButton type="submit" variant="primary" busy={operation==="alert"} disabled={busy||!collectiveUrl.trim()}><Save size={14} aria-hidden/>Enregistrer l’alerte</WorkspaceButton></form><WorkspaceFormError message={alertError}/></section>:null}
         <section className="signal-source-panel" aria-labelledby="source-settings-title"><WorkspacePanelHeader id="source-settings-title" title="Alertes et flux suivis" actions={!demo?<WorkspaceButton variant="primary" busy={operation==="sync"} disabled={busy} onClick={()=>void sync()}>{operation!=="sync"?<RefreshCw size={14} aria-hidden/>:null}Actualiser le flux autorisé</WorkspaceButton>:null}/><p className="signal-help">Les alertes email se créent sur chaque jobboard. Ici, « Modifier mon suivi » permet d’enregistrer leur état et vos notes. Radar ne lit pas vos comptes de jobboards.</p>{demo?<p className="signal-help">Dans la démo, vous pouvez modifier ce suivi et les liens web. L’ajout d’une alerte Collective et l’actualisation du flux externe sont désactivés.</p>:null}<WorkspaceFormError message={syncError}/><WorkspaceFormError message={loadError}/></section>
-        {settings===null?cards(["email","rss"]):<div className="source-settings-grid">{alertCatalog.filter(source=>sourceVisible(source.name,initialAlertSources)).map(source=><SourceCard key={source.name} source={source} setting={settings.find(item=>item.source===source.name)} count={jobs.filter(job=>job.source===source.name).length} onSaved={onSourceSaved}/>)}</div>}
+        {settings===null?cards(["email","rss"]):<div className="source-settings-grid">{alertCatalog.filter(source=>sourceVisible(source.name,initialAlertSources)).map(source=><SourceCard key={source.name} source={source} setting={settings.find(item=>item.source===source.name)} count={jobs.filter(job=>job.source===source.name).length} onSaved={onSourceSaved} onRemove={()=>setRemovingSource(source)}/>)}</div>}
       </div>
     </div>
     <div id="source-panel-outreach" className="source-subpanel" hidden={section!=="outreach"}>
@@ -112,6 +115,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
       <section className="source-manual-heading" aria-labelledby="source-manual-title"><h2 id="source-manual-title">Ajouts volontaires</h2><p>Pour les annonces ou posts que vous choisissez d’ajouter vous-même.</p></section>
       {cards(["manual"])}
     </div>
+    <SourceRemovalDialog source={removingSource} onClose={()=>setRemovingSource(null)} onRemoved={updated=>{onSourceSaved(updated);setRemovingSource(null);notify({message:`${updated.source} supprimé des sources suivies.`});}} focusAfterRemoval={()=>document.getElementById(`source-kind-${kind}`)?.querySelector<HTMLElement>(".source-add-panel summary")?.focus()}/>
   </div>;
 }
 function Strategy({title,text}:{title:string;text:string}){return <section><h3>{title}</h3><p className="signal-help">{text}</p></section>;}

@@ -20,6 +20,14 @@ export async function userSourceSetting(userId: string, value: unknown) {
   if (input.linkUrl && !validSearchLink(input.linkUrl)) throw new Error("Lien invalide");
   return saveSourceSetting(userId, input.source, { state: input.state, notes: input.notes, ...(input.linkUrl !== undefined ? { linkUrl: input.linkUrl } : {}), ...(input.selected !== undefined ? { selected: input.selected } : {}), verification: "Déclarée dans le Radar" });
 }
+/** Retire la carte du suivi sans effacer ses réglages ni les offres associées. */
+export async function removeUserSource(userId: string, value: unknown) {
+  const input = z.object({
+    source: z.string().refine(name => sourceCatalog.some(source => source.name === name && source.mode !== "manual")),
+    confirmed: z.literal(true),
+  }).strict().parse(value);
+  return saveSourceSetting(userId, input.source, { selected: false });
+}
 export async function userSearchLinks(userId: string, value: unknown) {
   const input = z.object({
     source: z.enum(["LinkedIn Jobs", "Welcome to the Jungle"]),
@@ -46,7 +54,7 @@ export async function recordCollectiveAlert(userId: string, value: unknown) {
 }
 export async function syncAuthorizedFeed(userId: string) {
   const previous = (await listSourceSettings(userId)).find(source => source.source === "We Work Remotely");
-  if (previous?.state === "paused") return { paused: true, imported: 0, deduplicated: 0 };
+  if (previous?.selected === false || previous?.state === "paused") return { paused: true, imported: 0, deduplicated: 0 };
   if (previous?.lastSyncedAt && Date.now() - Date.parse(previous.lastSyncedAt) < 15 * 60 * 1000) return { cached: true, imported: 0, deduplicated: 0, lastSyncedAt: previous.lastSyncedAt };
   try {
     const response = await fetch("https://weworkremotely.com/categories/remote-product-jobs.rss", { signal: AbortSignal.timeout(15000), headers: { Accept: "application/rss+xml, application/xml" } });

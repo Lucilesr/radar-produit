@@ -159,3 +159,9 @@
 .source-add-options button:disabled{opacity:.55;cursor:wait}
 @media(max-width:840px){.source-workspace.signal-sources-workspace .source-settings-grid,.source-workspace .signal-source-web-grid{grid-template-columns:1fr}}
 @media(max-width:640px){.source-workspace .signal-source-card,.source-workspace .signal-source-web-grid>li{padding:18px}.source-add-panel>summary,.source-add-trigger{width:100%;justify-content:center}}
+
+.signal-source-tools { display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:8px; }
+.signal-source-tools .signal-form-button { min-width:44px; min-height:44px; padding:10px; }
+.signal-source-remove-dialog { width:calc(100% - 32px); max-width:520px; padding:24px; }
+.signal-source-remove-dialog .signal-help { margin-top:12px; }
+.signal-source-remove-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin-top:24px; }
