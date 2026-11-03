@@ -1,3 +1,8 @@
+## 3 novembre 2026 — Liens de veille regroupés
+
+- Les recherches LinkedIn et Welcome to the Jungle affichent chacune un seul accès par site et une recherche Google combinant les postes choisis. Les anciens liens personnalisés restent consultables.
+- Les commandes pour modifier les liens et le suivi des alertes sont plus visibles. La démo explique quelles actions externes sont désactivées.
+
 ## 2 novembre 2026 — Profil et recherche à 80 % de la page
 
 - Sur ordinateur, les en-têtes, sous-onglets et contenus de Mon profil et Ma recherche partagent une largeur de 80 % de la zone disponible. Sur tablette et mobile, ils reprennent toute la largeur pour garder des champs lisibles.

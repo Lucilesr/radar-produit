@@ -24,6 +24,7 @@ export function SourceCard({ source, setting, count, hidden, onSaved }: { source
   const savedState=setting?.state??"not_configured";
   const [busy,setBusy]=useState(false),[error,setError]=useState("");
   const locked=useRef(false);
+  const configRef=useRef<HTMLDivElement>(null);
   const dirty=draft!==null&&(draft.state!==(setting?.state??"not_configured")||draft.notes!==(setting?.notes??""));
   async function save(){
     if(locked.current)return;
@@ -44,7 +45,8 @@ export function SourceCard({ source, setting, count, hidden, onSaved }: { source
     {setting?.lastSyncedAt?<p className="signal-help">Flux vérifié le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
     {setting?.verification?<p className="signal-help">{setting.verification}</p>:null}
     <WorkspaceFormError message={setting?.error??""}/>
-    <ExpandableSection className="source-research signal-source-config" title="Configurer cette source" status={dirty?<span className="quiet-tag">Non enregistré</span>:null}>
+    <button type="button" className="secondary-button signal-source-link" onClick={()=>{configRef.current?.dispatchEvent(new Event("radar:reveal-collapsible"));configRef.current?.scrollIntoView({behavior:"smooth",block:"nearest"});}}>Modifier mon suivi</button>
+    <ExpandableSection ref={configRef} className="source-research signal-source-config" title="Configurer cette source" status={dirty?<span className="quiet-tag">Non enregistré</span>:null}>
       <div className="rounded-xl bg-[#f7f8fc] p-4 text-xs leading-6"><p className="font-semibold">Que faire pour {source.name} ?</p><ol className="mt-2 list-decimal space-y-1 pl-5">{sourceGuidance[source.name].steps.map((step,index)=><li key={index}>{step}</li>)}</ol>{source.mode!=="rss"?<a href={source.url} target="_blank" rel="noopener noreferrer" className="secondary-button mt-3"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a>:null}<p className="mt-3 text-[#535768]"><strong>Dans Radar :</strong> {sourceGuidance[source.name].result}</p></div><form onSubmit={event=>{event.preventDefault();void save();}} className="signal-source-form">
         <ChoiceSelect label={`Mon suivi de ${source.name} dans Radar`} value={current.state} disabled={busy} onChange={state=>setDraft({...current,state})} options={states(source.mode)}/>
         <label className="workspace-field">Ma recherche et mes notes · {source.name}<Textarea rows={3} maxLength={1500} disabled={busy} value={current.notes} onChange={event=>setDraft({...current,notes:event.target.value})} placeholder="Recherche, filtres, fréquence ou prochaine action…"/></label>
