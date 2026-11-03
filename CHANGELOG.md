@@ -1,3 +1,8 @@
+## 3 novembre 2026 — Suppression des sources suivies
+
+- Les cartes de jobboards, d’alertes et de flux peuvent être supprimées après confirmation dans une modale du design system. Annuler conserve la carte ; un échec affiche une erreur dans la modale et permet de réessayer.
+- Le retrait est conservé après rechargement et les sources restent disponibles dans « Ajouter des sources ». Les offres, notes et liens enregistrés sont conservés. Les recherches web associées sont masquées et un flux retiré n’est plus actualisé ; les emails externes se désactivent sur le site d’origine.
+
 ## 3 novembre 2026 — Sources en cartes
 
 - Jobboards et Alertes & flux affichent deux cartes par ligne sur ordinateur et une sur mobile. Le bouton « Ajouter des sources » est placé en haut des deux onglets ; les sources supplémentaires restent cachées tant qu’elles ne sont pas choisies.
