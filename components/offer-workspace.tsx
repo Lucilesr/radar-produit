@@ -90,6 +90,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
           <ConditionRow label="Contrat" value={job.contractType === "cdi" ? "CDI" : job.contractType === "cdd" ? "CDD" : job.contractType === "freelance" ? "Freelance" : "À confirmer"}/>
           <ConditionRow label="Rémunération" value={job.dailyRate ? `${formatEuro(job.dailyRate)} HT/jour` : job.annualSalary ? `${formatEuro(job.annualSalary)} brut/an` : "Non communiquée"}/>
           <ConditionRow label="Mode de travail" value={{ full_remote: "Full remote", exceptional: "Présence exceptionnelle", hybrid: "Hybride", onsite: "Sur site", unknown: "À confirmer" }[job.remoteMode]}/>
+          <ConditionRow label="Lieu annoncé" value={job.announcedLocation || "À confirmer"}/>
           <ConditionRow label="Présence sur site" value={[job.onsiteDaysPerWeek!=null?`${job.onsiteDaysPerWeek} j/semaine sur site`:"",job.onsiteDaysPerMonth!=null?`${job.onsiteDaysPerMonth} j/mois sur site`:"",job.onsiteCadence].filter(Boolean).join(" · ")||"À confirmer"}/>
           <ConditionRow label="Pays autorisé en télétravail" value={countryLabel(job.remoteCountry)}/>
           <ConditionRow label="Langue" value={{fr:"Français",en:"Anglais",professional_en:"Anglais professionnel",advanced_en:"Anglais avancé",unknown:"À confirmer"}[job.language]}/>

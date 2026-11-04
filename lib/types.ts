@@ -16,6 +16,7 @@ export type JobInput = {
   onsiteDaysPerWeek?: number | null;
   onsiteDaysPerMonth?: number | null;
   remoteCountry?: string;
+  announcedLocation?: string;
   language: OfferLanguage;
   source: string;
   sourceUrl?: string;
@@ -82,6 +83,8 @@ export type Assessment = {
 
 export type SearchPreferences = {
   roles: string[];
+  includedLocations?: string[];
+  excludedLocations?: string[];
   contracts: Array<"cdi" | "cdd" | "freelance">;
   remote: "onsite" | "hybrid" | "exceptional" | "full_remote";
   minimumSalary: number;

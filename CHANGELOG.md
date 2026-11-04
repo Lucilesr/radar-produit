@@ -1,3 +1,8 @@
+## 4 novembre 2026 — Pays et régions dans les critères de recherche
+
+- Chaque compte peut inclure ou exclure des pays et régions depuis « Ma recherche », en saisissant par exemple « Europe ». Les lieux annoncés sont conservés séparément des pays autorisés pour le télétravail.
+- Les offres existantes et futures sont reclassées avec ces critères. Une offre ouverte dans plusieurs lieux reste visible si au moins un convient ; un lieu absent ou trop large est signalé à vérifier.
+
 ## 4 novembre 2026 — Veille Jobgether par compte
 
 - Chaque utilisateur peut activer Jobgether sans compte ni clé depuis « Alertes & flux ». Radar réutilise ses postes et contrats enregistrés, interroge l’API officielle de façon bornée et conserve des fiches sommaires liées à la source.

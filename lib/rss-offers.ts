@@ -17,9 +17,9 @@ export function parseWwrFeed(xml: string): JobInput[] {
     const separator = fullTitle.indexOf(":"); const company = separator > 0 ? fullTitle.slice(0, separator).trim() : undefined;
     const title = (separator > 0 ? fullTitle.slice(separator + 1) : fullTitle).trim();
     const description = plainFeedText(tag(item, "content:encoded") || tag(item, "description")).slice(0, 12000);
-    if (isNorthAmericaRestricted({ title, description })) continue;
+    const announcedLocation = isNorthAmericaRestricted({ title, description }) ? /north america/i.test(`${title} ${description}`) ? "Amérique du Nord" : "États-Unis" : undefined;
     const date = new Date(plainFeedText(tag(item, "pubDate")));
-    offers.push({ title, company, source: "We Work Remotely", sourceUrl, applicationUrl: sourceUrl, description,
+    offers.push({ title, company, source: "We Work Remotely", sourceUrl, applicationUrl: sourceUrl, description, announcedLocation,
       contractType: /freelance|contractor|contract role/i.test(description) ? "freelance" : /full[- ]time|permanent/i.test(description) ? "cdi" : "other",
       remoteMode: "full_remote", language: "en", annualSalary: null, dailyRate: null,
       onsiteCadence: "Pays autorisés et fuseau de travail à vérifier dans la description",

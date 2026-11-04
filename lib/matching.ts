@@ -3,6 +3,7 @@ import { searchPreferences } from "./search-preferences";
 import { detectWorkArrangement } from "./work-arrangement";
 import { activeStatuses } from "./application-workflow";
 import { isNorthAmericaRestricted } from "./market-scope";
+import { announcedLocationFor, assessLocation } from "./location-criteria";
 
 const ownerRoles = [/\bproduct owner\b/i, /\bpo\b/i];
 const managerRoles = [/\bproduct manager\b/i, /\bpm\b/i, /chef de produit (?:digital|numerique|numérique)\b/i];
@@ -24,9 +25,23 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   let exception = false;
   let excluded = false;
 
-  if (isNorthAmericaRestricted(job)) {
+  const northAmericaRequested = !!search.includedLocations?.length && ["États-Unis", "Canada"].some(place => {
+    const result = assessLocation(place, search.includedLocations ?? [], []);
+    return !result.excluded && !result.uncertain;
+  });
+  if (!northAmericaRequested && isNorthAmericaRestricted(job)) {
     excluded = true;
     flags.push("Marché limité aux États-Unis / Amérique du Nord : hors de votre recherche.");
+  }
+
+  const location = announcedLocationFor(job);
+  const locationAssessment = assessLocation(location, search.includedLocations ?? [], search.excludedLocations ?? []);
+  if (locationAssessment.excluded) {
+    excluded = true;
+    flags.push(`Lieu annoncé hors de votre recherche${location ? ` : ${location}` : ""}.`);
+  } else if (locationAssessment.uncertain) {
+    exception = true;
+    flags.push("Lieu annoncé à vérifier selon vos critères géographiques.");
   }
 
   const matchedRole = search.roles.find(role => matchesSearchedRole(job.title, role));

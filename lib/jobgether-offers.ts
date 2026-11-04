@@ -20,6 +20,7 @@ export function parseJobgetherPage(value: unknown): { offers: JobInput[]; hasMor
     offers.push({
       title: job.title, company: job.company?.trim() || undefined, source: "Jobgether",
       sourceUrl: url.toString(), applicationUrl: url.toString(),
+      announcedLocation: job.location?.trim() || undefined,
       description: [job.location ? `Lieu annoncé : ${job.location}` : "", job.remote ? `Organisation annoncée : ${job.remote}` : ""].filter(Boolean).join(". "),
       contractType: /freelance|contract/i.test(job.contractType ?? "") ? "freelance" : "other",
       remoteMode: /full remote/i.test(job.remote ?? "") ? "full_remote" : /hybrid/i.test(job.remote ?? "") ? "hybrid" : "unknown",
