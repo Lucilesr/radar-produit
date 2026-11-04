@@ -9,6 +9,7 @@ import { offerPatchSchema } from "./import-contract";
 import { rowToInterview } from "./interview-store";
 import { workspaceNoteValue, workspaceNoteValues } from "./workspace-write-store";
 import { z } from "zod";
+import { showJobgetherOffer } from "./jobgether-match";
 
 // Browser and agent imports share the same per-user, retry-safe write path.
 export async function saveOffer(userId: string, value: unknown) {
@@ -75,7 +76,7 @@ export async function listOffers(userId: string, limit?: number, includeDeleted 
       reasons: assessment.reasons, flags: assessment.flags,
       candidateNote: typeof notes[job.id] === "string" ? notes[job.id] : undefined,
       interviews: interviewsByJob.get(job.id) ?? [] };
-  });
+  }).filter(job => !!job.deletedAt || showJobgetherOffer(job.source, job.matchScore, job.status, job.reviewState));
 }
 
 export async function getOffer(userId: string, id: string, includeDeleted = false) {
