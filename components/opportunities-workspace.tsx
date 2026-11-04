@@ -31,7 +31,7 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
   const selected=selectionInView(orderedJobs,selection);
   const active=displayJobs.find(job=>job.id===activeId)||kept?.job||displayJobs[0];
   const heldOutside=!!kept&&!jobs.some(job=>job.id===kept.job.id);
-  const viewHelp=filter==="selected"?"Votre choix : les offres que vous avez sélectionnées, avant de candidater.":filter==="good_matches"?"Filtre automatique : les offres proches de vos critères selon Radar, sélectionnées ou non.":filter==="trash"?"Les offres écartées restent restaurables.":"Les offres qu’il vous reste à examiner.";
+  const viewHelp=filter==="selected"?"Votre choix : les offres que vous avez sélectionnées, avant de candidater.":filter==="good_matches"?"Filtre automatique : les offres proches de vos critères selon Radar, sélectionnées ou non.":filter==="trash"?"Les offres restent restaurables pendant 10 jours. Après ce délai, elles sont supprimées définitivement à la prochaine ouverture du radar.":"Les offres qu’il vous reste à examiner.";
   const currentScope=useRef({filter,query});
   useEffect(()=>{currentScope.current={filter,query};},[filter,query]);
   const viewIsCurrent=()=>currentScope.current.filter===filter&&currentScope.current.query===query;
@@ -73,11 +73,11 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
   }
   const emptyAction: ReactNode=query?<button className="secondary-button" onClick={onClearSearch}>Effacer la recherche</button>:filter!=="to_review"?<button className="secondary-button" onClick={()=>{changeView("to_review");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Voir les offres à examiner</button>:null;
   return <div className={"opportunities-workspace "+(activeId?"has-open-offer":"")}>
-    <nav className="workspace-tabs" aria-label="Vues des opportunités">{views.map(([id,label])=><button type="button" key={id} aria-pressed={filter===id} onClick={()=>changeView(id)}>{label}<span>{counts[id]}</span></button>)}</nav>
+    <nav className="workspace-tabs" aria-label="Vues des opportunités">{views.map(([id,label])=><span className="opportunity-tab" key={id}><button type="button" aria-pressed={filter===id} onClick={()=>changeView(id)}>{label}<span>{counts[id]}</span></button>{id==="trash"?<HelpTooltip label="Corbeille">Les offres restent restaurables pendant 10 jours. Après ce délai, elles sont supprimées définitivement à la prochaine ouverture du radar.</HelpTooltip>:null}</span>)}</nav>
     <div className="opportunities-toolbar">
       <div className="review-view-summary">
         <Select value={dateOrder} onValueChange={value=>{setDateOrder(value as "newest"|"oldest");setRetained(null);}}><SelectTrigger className="opportunity-date-order" aria-label={filter==="trash"?"Trier par date d’écartement":"Trier par date de mapping"}><span className="opportunity-date-order-label">Trier :</span><SelectValue /></SelectTrigger><SelectContent position="popper" side="bottom" sideOffset={6} align="start" className="opportunity-date-order-menu"><SelectItem value="newest">Du plus récent au plus ancien</SelectItem><SelectItem value="oldest">Du plus ancien au plus récent</SelectItem></SelectContent></Select>
-        <HelpTooltip label="Vue des opportunités">{viewHelp}</HelpTooltip>
+        {filter!=="trash"?<HelpTooltip label="Vue des opportunités">{viewHelp}</HelpTooltip>:null}
       </div>
       <div className="review-toolbar-actions"><button type="button" className="review-radar-filter" aria-pressed={filter==="good_matches"} onClick={()=>changeView(filter==="good_matches"?"to_review":"good_matches")}>Correspondances Radar <span>{counts.good_matches}</span></button>{jobs.length>0&&filter!=="trash"?<button type="button" className="secondary-button" aria-pressed={selecting} onClick={()=>{setRetained(null);setSelecting(!selecting);setSelection([]);}}>{selecting?"Terminer les actions groupées":"Actions groupées"}</button>:null}</div>
     </div>

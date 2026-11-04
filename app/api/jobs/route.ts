@@ -1,12 +1,13 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { ensureSameOrigin } from "@/lib/server";
-import { listOffers, saveOffer } from "@/lib/job-store";
+import { listOffers, purgeExpiredTrash, saveOffer } from "@/lib/job-store";
 
 export async function GET(request: Request) {
   const user = await getChatGPTUser();
   if (!user) return Response.json({ error: "Authentification requise" }, { status: 401 });
 
   try {
+    await purgeExpiredTrash(user.userId);
     return Response.json({ jobs: await listOffers(user.userId, undefined, new URL(request.url).searchParams.get("includeDeleted") === "true") });
   } catch (error) {
     return Response.json({ error: messageFor(error) }, { status: 500 });
