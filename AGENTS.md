@@ -1,5 +1,11 @@
 # Workflow Radar Produit
 
+## Règle de production : design system
+
+Pour chaque changement visible, réutiliser les composants, styles et variables du design system Signal. Examiner les composants existants et `audits/signal-design-system.md` avant de créer un contrôle ; éviter les sélecteurs natifs ou les styles isolés lorsqu’un composant du système couvre le besoin.
+
+Avant toute PR ou tout déploiement d’interface, vérifier visuellement le rendu sur ordinateur et mobile, les états utiles (repos, ouverture, sélection, erreur et désactivation selon le cas), le clavier et le focus. Corriger les écarts avec les autres écrans avant publication et indiquer dans la PR les composants réutilisés et les vérifications effectuées. Cette vérification s’applique à chaque itération, sans rappel de l’utilisateur.
+
 Ce dépôt est public et présente des données fictives. Le site personnel privé et ses données ne doivent jamais être copiés ici.
 
 Pour chaque évolution, y compris les corrections, la documentation et les règles du projet :
