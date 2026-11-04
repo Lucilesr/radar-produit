@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CandidateProfile, SearchPreferences } from "@/lib/types";
 import { normalizeRoleTitles, searchPreferences } from "@/lib/search-preferences";
 import { ChoiceSelect } from "@/components/choice-select";
 import { locationRegionOptions, normalizeLocationRules } from "@/lib/location-criteria";
 import { countryOptions } from "@/lib/countries";
+import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
+
+const locationOptions = [...locationRegionOptions, ...countryOptions.filter(option => option.value).map(option => option.label)];
 
 export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean> }) {
   const [draft, setDraft] = useState<SearchPreferences>(() => searchPreferences(profile.searchPreferences));
@@ -14,7 +17,6 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
   const [excludedLocations, setExcludedLocations] = useState(() => searchPreferences(profile.searchPreferences).excludedLocations ?? []);
   const [includedInput, setIncludedInput] = useState("");
   const [excludedInput, setExcludedInput] = useState("");
-  const locationListId = useId();
   const locationSaveInFlight = useRef(false);
   const [savingLocation, setSavingLocation] = useState(false);
   const [locationMessage, setLocationMessage] = useState("");
@@ -40,9 +42,9 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
     } catch { update(previous); if (restoreInput) (kind === "includedLocations" ? setIncludedInput : setExcludedInput)(restoreInput); setLocationMessage("Enregistrement non confirmé. Réessayez."); }
     finally { locationSaveInFlight.current = false; setSavingLocation(false); }
   }
-  function addLocation(kind: "includedLocations" | "excludedLocations") {
+  function addLocation(kind: "includedLocations" | "excludedLocations", selected?: string) {
     if (savingLocation || savingRole || saving) return;
-    const entry = kind === "includedLocations" ? includedInput : excludedInput;
+    const entry = selected ?? (kind === "includedLocations" ? includedInput : excludedInput);
     const current = kind === "includedLocations" ? includedLocations : excludedLocations;
     const label = normalizeLocationRules([entry])[0];
     if (!label) { setLocationMessage("Saisissez un pays ou une région."); return; }
@@ -142,11 +144,10 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
       </section>
       <section className="search-criteria-group" aria-labelledby="search-location-title">
         <div className="search-criteria-group-heading"><h3 id="search-location-title">Pays et régions des offres</h3><p>Utilisez le lieu annoncé dans l’offre, distinct des pays autorisés pour télétravailler.</p></div>
-        <datalist id={locationListId}>{locationRegionOptions.map(label => <option key={label} value={label}/>)}{countryOptions.filter(option => option.value).map(option => <option key={option.value} value={option.label}/>)}</datalist>
         <div className="search-pay-grid">
-          {(["includedLocations", "excludedLocations"] as const).map(kind => { const include = kind === "includedLocations"; const value = include ? includedInput : excludedInput; const setValue = include ? setIncludedInput : setExcludedInput; const items = include ? includedLocations : excludedLocations; return <div key={kind} className="search-pay-field"><label className="search-pay-label" htmlFor={kind}>{include ? "Inclure" : "Exclure"}</label><div className="search-role-entry"><input id={kind} type="text" list={locationListId} maxLength={80} value={value} onChange={event => { setValue(event.target.value); setLocationMessage(""); }} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addLocation(kind); } }} placeholder={include ? "Ex. Europe" : "Ex. Roumanie"} aria-describedby="search-location-help" disabled={savingLocation || savingRole || saving}/><button type="button" className="secondary-button" onClick={() => addLocation(kind)} disabled={savingLocation || savingRole || saving || !value.trim()}>Ajouter</button></div><ul className="search-role-list" aria-label={include ? "Lieux inclus" : "Lieux exclus"}>{items.map(label => <li key={label}>{label}<button type="button" aria-label={`Retirer ${label} des lieux ${include ? "inclus" : "exclus"}`} disabled={savingLocation || savingRole || saving} onClick={() => removeLocation(kind, label)}>×</button></li>)}</ul></div>; })}
+          {(["includedLocations", "excludedLocations"] as const).map(kind => { const include = kind === "includedLocations"; const value = include ? includedInput : excludedInput; const setValue = include ? setIncludedInput : setExcludedInput; const items = include ? includedLocations : excludedLocations; const disabled = savingLocation || savingRole || saving; return <div key={kind} className="search-pay-field"><label className="search-pay-label" htmlFor={kind}>{include ? "Inclure" : "Exclure"}</label><div className="search-role-entry search-location-entry"><Combobox items={locationOptions} value={null} inputValue={value} onInputValueChange={next => { setValue(next); setLocationMessage(""); }} onValueChange={selected => { if (selected) addLocation(kind, selected); }} disabled={disabled}><ComboboxInput id={kind} className="search-location-combobox" placeholder={include ? "Ex. Europe" : "Ex. Roumanie"} aria-describedby="search-location-help" maxLength={80} disabled={disabled} /><ComboboxContent className="search-location-menu"><ComboboxEmpty>Aucun pays ni région trouvé. Vous pouvez ajouter le lieu saisi.</ComboboxEmpty><ComboboxList>{(option: string) => <ComboboxItem key={option} value={option}>{option}</ComboboxItem>}</ComboboxList></ComboboxContent></Combobox><button type="button" className="secondary-button" onClick={() => addLocation(kind)} disabled={disabled || !value.trim()}>Ajouter</button></div><ul className="search-role-list" aria-label={include ? "Lieux inclus" : "Lieux exclus"}>{items.map(label => <li key={label}>{label}<button type="button" aria-label={`Retirer ${label} des lieux ${include ? "inclus" : "exclus"}`} disabled={disabled} onClick={() => removeLocation(kind, label)}>×</button></li>)}</ul></div>; })}
         </div>
-        <p id="search-location-help" className="search-criteria-help">Choisissez une suggestion ou écrivez un lieu, puis appuyez sur Entrée. L’enregistrement est immédiat. Les exclusions priment : « Europe » incluse et « Roumanie » exclue signifie Europe sauf Roumanie. Un lieu trop vague reste à vérifier.</p>
+        <p id="search-location-help" className="search-criteria-help">Choisissez une suggestion, ou écrivez un autre lieu et cliquez sur Ajouter. L’enregistrement est immédiat. Les exclusions priment : « Europe » incluse et « Roumanie » exclue signifie Europe sauf Roumanie. Un lieu trop vague reste à vérifier.</p>
         <p role="status" className="search-form-status">{locationMessage}</p>
       </section>
       <section className="search-criteria-group" aria-labelledby="search-pay-title">

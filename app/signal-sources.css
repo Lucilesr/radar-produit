@@ -114,6 +114,14 @@
 .search-role-entry{display:flex;gap:10px;max-width:400px}
 .source-workspace .search-role-entry input{flex:1;min-width:0;min-height:46px;padding:10px 12px;border:1px solid var(--border);border-radius:5px;background:var(--card)}
 .search-role-entry button{min-height:46px}
+.search-location-entry [data-slot=input-group]{flex:1;min-width:0;min-height:46px;border:1px solid var(--input);border-radius:5px;background:var(--card);box-shadow:none}
+.search-location-entry [data-slot=input-group]:focus-within{border-color:var(--ring);outline:3px solid var(--ring);outline-offset:3px}
+.source-workspace .search-location-entry [data-slot=input-group] input{min-height:44px;border:0;outline:0;box-shadow:none}
+.search-location-entry [data-slot=input-group-button]{min-height:32px;min-width:32px;border:0;background:transparent;color:var(--muted-foreground)}
+.search-location-menu[data-slot=combobox-content]{z-index:80;max-width:calc(100vw - 24px);border:1px solid var(--input);border-radius:7px;background:var(--card);color:var(--foreground);box-shadow:0 12px 36px #15354421}
+.search-location-menu [data-slot=combobox-item]{min-height:40px;padding:10px 35px 10px 12px;border-radius:4px;white-space:normal;overflow-wrap:anywhere;font:400 13px/1.45 var(--font-sans)}
+.search-location-menu [data-slot=combobox-item][data-highlighted]{background:var(--accent);color:var(--foreground)}
+.search-location-menu [data-slot=combobox-empty]{padding:12px;color:var(--muted-foreground);font:400 13px/1.5 var(--font-sans)}
 .search-role-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .search-role-list li{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:3px 7px 3px 11px;border:1px solid var(--border);border-radius:99px;background:var(--signal-soft);font-size:13px}
 .search-role-list button{width:24px;height:24px;border-radius:50%;color:var(--muted-foreground);font-size:18px;line-height:1}
@@ -133,7 +141,7 @@
 .radar-app .source-workspace .search-criteria-form .search-pay-input{height:46px}
 .search-criteria-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px;padding-top:20px;border-top:1px solid var(--border)}
 .search-criteria-actions .search-form-status{margin-right:auto}
-@media(max-width:640px){.search-criteria-intro,.search-role-entry,.source-workspace .search-criteria-form .search-preferences-presence,.search-criteria-form .search-pay-field{max-width:none}.search-role-entry{flex-wrap:wrap}.search-role-entry input{flex-basis:100%}.search-criteria-fields,.search-criteria-form .search-pay-grid{grid-template-columns:1fr}.search-criteria-actions{align-items:stretch;flex-direction:column}.search-criteria-actions button{align-self:flex-end}.source-kind-picker button{padding:12px 0}}
+@media(max-width:640px){.search-criteria-intro,.search-role-entry,.source-workspace .search-criteria-form .search-preferences-presence,.search-criteria-form .search-pay-field{max-width:none}.search-role-entry{flex-wrap:wrap}.search-role-entry input{flex-basis:100%}.search-location-entry [data-slot=input-group]{flex-basis:100%}.search-criteria-fields,.search-criteria-form .search-pay-grid{grid-template-columns:1fr}.search-criteria-actions{align-items:stretch;flex-direction:column}.search-criteria-actions button{align-self:flex-end}.source-kind-picker button{padding:12px 0}}
 
 .source-workspace .signal-source-card:not(:has(.signal-source-config .radar-collapsible-content:not([hidden]))){min-height:0}
 

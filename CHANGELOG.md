@@ -1,3 +1,7 @@
+## 4 novembre 2026 — Sélection des pays et régions
+
+- Les champs Inclure et Exclure utilisent le Combobox du design system Signal. La recherche de pays et régions est intégrée au champ, et un lieu libre reste possible avec Ajouter.
+
 ## 4 novembre 2026 — Seuil Jobgether réglable dans Ma recherche
 
 - Chaque compte peut choisir son score minimal Jobgether de 0 à 100 dans « Ma recherche » ; 55 reste la valeur initiale. Le seuil s’applique aux prochaines collectes et aux offres non suivies déjà présentes.
