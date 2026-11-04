@@ -17,7 +17,7 @@ const locations = moduleUrl("location-criteria", { "./countries": countries, "./
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations });
 const { searchPreferences } = await import(preferences);
 const { assessJob } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations }));
-const { assessLocation } = await import(locations);
+const { assessLocation, normalizeLocationRules } = await import(locations);
 const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement }));
 const { createCandidateBrief, briefOffer } = await import(moduleUrl("candidate-brief"));
 const opportunityViews = moduleUrl("opportunity-views");
@@ -27,6 +27,20 @@ const baseline = { title: "Product Owner", company: "Fixture", contractType: "cd
 test("Europe inclut les offres situées dans un pays européen", () => {
   assert.deepEqual(assessLocation("Paris, France", ["Europe"], []), { excluded: false, uncertain: false });
   assert.equal(assessJob({ ...baseline, announcedLocation: "Berlin, Germany" }, { ...searchPreferences(undefined), includedLocations: ["Europe"] }).tier, "priority");
+});
+test("Europe sauf Roumanie accepte les autres pays et garde une zone vague à vérifier", () => {
+  assert.deepEqual(assessLocation("Bucharest, Romania", ["Europe"], ["Roumanie"]), { excluded: true, uncertain: false });
+  assert.deepEqual(assessLocation("Paris, France", ["Europe"], ["Roumanie"]), { excluded: false, uncertain: false });
+  assert.deepEqual(assessLocation("Europe", ["Europe"], ["Roumanie"]), { excluded: false, uncertain: true });
+  assert.deepEqual(assessLocation("Romania / France", ["Europe"], ["Roumanie"]), { excluded: false, uncertain: false });
+  assert.deepEqual(assessLocation("Moscow, Russia", ["Europe"], ["Roumanie"]), { excluded: false, uncertain: false });
+  assert.deepEqual(assessLocation("EU", ["Europe"], ["Roumanie"]), { excluded: false, uncertain: true });
+});
+test("un seul choix États-Unis couvre US, USA et United States", () => {
+  const [rule] = normalizeLocationRules(["USA"]);
+  assert.equal(rule, "États-Unis");
+  for (const location of ["US", "USA", "United States", "États-Unis"]) assert.equal(assessLocation(location, [], [rule]).excluded, true);
+  assert.deepEqual(normalizeLocationRules(["Romania", "Roumanie"]), ["Roumanie"]);
 });
 
 test("une exclusion ne masque pas une offre ouverte dans un autre lieu", () => {

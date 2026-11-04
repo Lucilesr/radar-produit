@@ -1,3 +1,8 @@
+## 4 novembre 2026 — Choix guidé des pays et régions
+
+- Les lieux à inclure et à exclure se choisissent avec des suggestions recherchables et s’enregistrent dès l’ajout ou le retrait. Les variantes comme US, USA et États-Unis sont ramenées au même pays.
+- « Europe » couvre les pays européens, dont la Roumanie. Une exclusion de Roumanie l’emporte sur l’inclusion d’Europe ; une annonce indiquant seulement « Europe » reste à vérifier.
+
 ## 4 novembre 2026 — Seuil de pertinence Jobgether
 
 - Pour tous les comptes, seules les nouvelles offres Jobgether atteignant au moins 55 points de match sont importées. Les anciennes offres sous ce seuil sont masquées de la liste si elles n'ont pas été suivies ; les choix, candidatures et offres en corbeille restent accessibles.

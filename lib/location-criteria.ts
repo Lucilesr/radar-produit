@@ -1,8 +1,9 @@
-import { countryCodes } from "./countries";
+import { countryCodes, countryLabel } from "./countries";
 import { isNorthAmericaRestricted } from "./market-scope";
 
 const fold = (value: string) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("fr").replace(/[’']/g, " ").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
-const europe = new Set("AD AL AT AX BA BE BG BY CH CY CZ DE DK EE ES FI FO FR GB GG GI GR HR HU IE IM IS IT JE LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SJ SK SM UA VA".split(" "));
+// UN M49 Europe, with Cyprus included for the common European job-market meaning.
+const europe = new Set("AD AL AT AX BA BE BG BY CH CY CZ DE DK EE ES FI FO FR GB GG GI GR HR HU IE IM IS IT JE LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS RU SE SI SJ SK SM UA VA".split(" "));
 const northAmerica = new Set(["CA", "US", "MX"]);
 const southAmerica = new Set("AR BO BR CL CO EC GF GY PE PY SR UY VE".split(" "));
 const africa = new Set("AO BF BI BJ BW CD CF CG CI CM CV DJ DZ EG EH ER ET GA GH GM GN GQ GW KE KM LR LS LY MA MG ML MR MU MW MZ NA NE NG RE RW SC SD SH SL SN SO SS ST SZ TD TG TN TZ UG YT ZA ZM ZW".split(" "));
@@ -14,6 +15,10 @@ const regionNames: Record<string, Set<string>> = {
   "amerique du sud": southAmerica, "south america": southAmerica,
   afrique: africa, africa, asie: asia, asia, oceanie: oceania, oceania,
 };
+regionNames.eu = regionNames["union europeenne"];
+regionNames.ue = regionNames["union europeenne"];
+regionNames["european union"] = regionNames["union europeenne"];
+export const locationRegionOptions = ["Europe", "Union européenne", "Amérique du Nord", "Amérique du Sud", "Afrique", "Asie", "Océanie"];
 const aliases: Record<string, string> = { usa: "US", us: "US", "united states": "US", "united states of america": "US", "etats unis": "US", uk: "GB", "united kingdom": "GB", "royaume uni": "GB", uae: "AE" };
 const displayFr = new Intl.DisplayNames(["fr"], { type: "region" });
 const displayEn = new Intl.DisplayNames(["en"], { type: "region" });
@@ -41,7 +46,8 @@ function ruleMatches(rule: string, option: ReturnType<typeof optionParts>[number
   const name = fold(rule);
   if (!name) return false;
   const region = regionNames[name];
-  if (region) return hasPhrase(option.text, name) || [...option.countries].some(code => region.has(code));
+  if (region) return hasPhrase(option.text, name) || [...option.countries].some(code => region.has(code))
+    || Object.entries(regionNames).some(([announced, members]) => hasPhrase(option.text, announced) && [...members].every(code => region.has(code)));
   const ruleCountries = countriesIn(name);
   if (ruleCountries.size) return [...ruleCountries].some(code => option.countries.has(code));
   return hasPhrase(option.text, name);
@@ -50,7 +56,13 @@ export function normalizeLocationRules(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return [...new Map(value.filter((item): item is string => typeof item === "string")
     .map(item => item.trim().replace(/\s+/g, " ")).filter(item => item.length >= 2 && item.length <= 80)
-    .map(item => [fold(item), item])).values()].slice(0, 20);
+    .map(item => {
+      const name = fold(item);
+      const region = locationRegionOptions.find(label => fold(label) === name || (name === "eu" && label === "Union européenne"));
+      const exactCountry = countryNames.find(entry => entry.name === name)?.code ?? aliases[name] ?? (countryCodes.includes(item.toUpperCase()) ? item.toUpperCase() : undefined);
+      const canonical = region ?? (exactCountry ? countryLabel(exactCountry) : item);
+      return [fold(canonical), canonical];
+    })).values()].slice(0, 20);
 }
 export function announcedLocationFor(job: { announcedLocation?: string; source?: string; description?: string }) {
   if (job.announcedLocation?.trim()) return job.announcedLocation.trim();
@@ -65,8 +77,13 @@ export function assessLocation(location: string | undefined, included: string[],
   if (!options.length) return { excluded: false, uncertain: true };
   const permitted = options.filter(option => !excluded.some(rule => ruleMatches(rule, option)));
   if (!permitted.length) return { excluded: true, uncertain: false };
-  if (!included.length) return { excluded: false, uncertain: false };
-  if (permitted.some(option => included.some(rule => ruleMatches(rule, option)))) return { excluded: false, uncertain: false };
+  const broadExclusion = permitted.some(option => option.countries.size === 0 && Object.entries(regionNames).some(([announced, members]) => hasPhrase(option.text, announced) && excluded.some(rule => {
+    const country = countriesIn(fold(rule));
+    const region = regionNames[fold(rule)];
+    return [...country].some(code => members.has(code)) || !!region && [...region].some(code => members.has(code));
+  })));
+  if (!included.length) return { excluded: false, uncertain: broadExclusion };
+  if (permitted.some(option => included.some(rule => ruleMatches(rule, option)))) return { excluded: false, uncertain: broadExclusion };
   // A broad announced zone may contain a requested country. Keep it for review.
   const broad = permitted.some(option => /\b(?:worldwide|global|anywhere|monde entier)\b/.test(option.text) || Object.entries(regionNames).some(([name, members]) => hasPhrase(option.text, name) && included.some(rule => [...countriesIn(fold(rule))].some(code => members.has(code)))));
   return { excluded: !broad, uncertain: broad };
