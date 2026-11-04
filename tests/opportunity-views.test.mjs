@@ -18,6 +18,9 @@ test("vues distinctes : score, choix et candidature ne se substituent pas", () =
   assert(inOpportunityView({ ...job, status: "prepare" }, "selected"));
   assert(!inOpportunityView({ ...job, status: "closed" }, "to_review"));
   assert(inOpportunityView({ ...job, matchTier: "excluded", matchScore: 90 }, "to_review"));
+  assert(!inOpportunityView({ ...job, matchTier: "excluded", flags: ["Lieu annoncé hors de votre recherche : France."] }, "to_review"));
+  assert(!inOpportunityView({ ...job, matchTier: "excluded", flags: ["Marché limité aux États-Unis / Amérique du Nord : hors de votre recherche."] }, "to_review"));
+  assert(inOpportunityView({ ...job, reviewState: "selected", matchTier: "excluded", flags: ["Lieu annoncé hors de votre recherche : France."] }, "selected"));
   assert(!inOpportunityView({ ...job, matchTier: "excluded", matchScore: 90 }, "good_matches"));
   assert(!inOpportunityView({ ...job, matchScore: 74 }, "good_matches"));
   assert(!inOpportunityView({ ...job, status: "applied" }, "to_review"));

@@ -2,6 +2,7 @@
 
 - Chaque compte peut inclure ou exclure des pays et régions depuis « Ma recherche », en saisissant par exemple « Europe ». Les lieux annoncés sont conservés séparément des pays autorisés pour le télétravail.
 - Les offres existantes et futures sont reclassées avec ces critères. Une offre ouverte dans plusieurs lieux reste visible si au moins un convient ; un lieu absent ou trop large est signalé à vérifier.
+- Les offres écartées pour leur lieu annoncé ne figurent plus dans « À examiner » ni dans les actions du jour. Une offre déjà sélectionnée ou suivie comme candidature reste accessible.
 
 ## 4 novembre 2026 — Veille Jobgether par compte
 
