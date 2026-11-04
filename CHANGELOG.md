@@ -1,3 +1,8 @@
+## 4 novembre 2026 — Seuil de pertinence Jobgether
+
+- Pour tous les comptes, seules les nouvelles offres Jobgether atteignant au moins 55 points de match sont importées. Les anciennes offres sous ce seuil sont masquées de la liste si elles n'ont pas été suivies ; les choix, candidatures et offres en corbeille restent accessibles.
+- Le score est calculé avec les critères du compte. Le compteur de la source indique les offres qui ont passé ce filtre.
+
 ## 4 novembre 2026 — Pays et régions dans les critères de recherche
 
 - Chaque compte peut inclure ou exclure des pays et régions depuis « Ma recherche », en saisissant par exemple « Europe ». Les lieux annoncés sont conservés séparément des pays autorisés pour le télétravail.

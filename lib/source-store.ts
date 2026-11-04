@@ -9,6 +9,8 @@ import { validSearchLink } from "./web-discovery";
 import { parseJobgetherPage } from "./jobgether-offers";
 import { readCandidateProfile } from "./profile-store";
 import { searchPreferences } from "./search-preferences";
+import { assessJob } from "./matching";
+import { showJobgetherOffer } from "./jobgether-match";
 
 export async function listSourceSettings(userId: string) { const rows = await getDb().select().from(sourceSettings).where(eq(sourceSettings.userId, userId)); return rows.map(row => ({ source: row.source, ...JSON.parse(row.data), updatedAt: row.updatedAt })); }
 export async function saveSourceSetting(userId: string, source: string, data: Record<string, unknown>) {
@@ -107,8 +109,9 @@ export async function syncJobgetherFeed(userId: string) {
         const body = await response.text();
         if (body.length > 600_000) throw new Error("Réponse Jobgether trop volumineuse");
         const result = parseJobgetherPage(JSON.parse(body));
-        total += result.offers.length;
         for (const offer of result.offers) {
+          if (!showJobgetherOffer(offer.source, assessJob(offer, search).score)) continue;
+          total++;
           const saved = await saveOffer(userId, offer);
           saved.deduplicated ? deduplicated++ : imported++;
         }
