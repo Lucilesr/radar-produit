@@ -77,7 +77,7 @@ export async function syncJobgetherFeed(userId: string) {
   const previous = (await listSourceSettings(userId)).find(source => source.source === "Jobgether");
   if (!previous || previous.selected !== true || previous.state === "paused") return { paused: true, imported: 0, deduplicated: 0 };
   const search = searchPreferences((await readCandidateProfile(userId))?.searchPreferences);
-  const criteria = JSON.stringify({ roles: search.roles, contracts: search.contracts, remote: search.remote });
+  const criteria = JSON.stringify({ roles: search.roles, contracts: search.contracts, remote: search.remote, minimumMatchScore: search.minimumMatchScore });
   if (previous.nextRetryAt && Date.now() < Date.parse(previous.nextRetryAt))
     return { cached: true, imported: 0, deduplicated: 0, nextRetryAt: previous.nextRetryAt };
   if (previous.lastSyncedAt && previous.criteria === criteria && Date.now() - Date.parse(previous.lastSyncedAt) < 20 * 60 * 60 * 1000)
@@ -110,7 +110,7 @@ export async function syncJobgetherFeed(userId: string) {
         if (body.length > 600_000) throw new Error("Réponse Jobgether trop volumineuse");
         const result = parseJobgetherPage(JSON.parse(body));
         for (const offer of result.offers) {
-          if (!showJobgetherOffer(offer.source, assessJob(offer, search).score)) continue;
+          if (!showJobgetherOffer(offer.source, assessJob(offer, search).score, search.minimumMatchScore)) continue;
           total++;
           const saved = await saveOffer(userId, offer);
           saved.deduplicated ? deduplicated++ : imported++;

@@ -9,6 +9,7 @@ export const defaultSearchPreferences: SearchPreferences = {
   remote: "hybrid",
   minimumSalary: 55000,
   minimumDailyRate: 500,
+  minimumMatchScore: 55,
 };
 
 export function normalizeRoleTitles(value: unknown): string[] {
@@ -36,5 +37,6 @@ export function searchPreferences(value: unknown): SearchPreferences {
     remote: remote === "light_hybrid" ? "hybrid" : remote === "occasional" ? "exceptional" : remote === "onsite" || remote === "hybrid" || remote === "exceptional" || remote === "full_remote" ? remote : defaultSearchPreferences.remote,
     minimumSalary: amount(raw.minimumSalary, defaultSearchPreferences.minimumSalary),
     minimumDailyRate: amount(raw.minimumDailyRate, defaultSearchPreferences.minimumDailyRate),
+    minimumMatchScore: typeof raw.minimumMatchScore === "number" && Number.isInteger(raw.minimumMatchScore) && raw.minimumMatchScore >= 0 && raw.minimumMatchScore <= 100 ? raw.minimumMatchScore : defaultSearchPreferences.minimumMatchScore,
   };
 }

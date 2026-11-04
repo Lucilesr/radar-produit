@@ -89,4 +89,5 @@ export type SearchPreferences = {
   remote: "onsite" | "hybrid" | "exceptional" | "full_remote";
   minimumSalary: number;
   minimumDailyRate: number;
+  minimumMatchScore: number;
 };

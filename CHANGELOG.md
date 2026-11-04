@@ -1,3 +1,8 @@
+## 4 novembre 2026 — Seuil Jobgether réglable dans Ma recherche
+
+- Chaque compte peut choisir son score minimal Jobgether de 0 à 100 dans « Ma recherche » ; 55 reste la valeur initiale. Le seuil s’applique aux prochaines collectes et aux offres non suivies déjà présentes.
+- Changer ce score déclenche une nouvelle collecte Jobgether lors de la prochaine actualisation. Les offres sélectionnées, les candidatures et la corbeille restent accessibles.
+
 ## 4 novembre 2026 — Choix guidé des pays et régions
 
 - Les lieux à inclure et à exclure se choisissent avec des suggestions recherchables et s’enregistrent dès l’ajout ou le retrait. Les variantes comme US, USA et États-Unis sont ramenées au même pays.

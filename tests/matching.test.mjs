@@ -24,6 +24,14 @@ const opportunityViews = moduleUrl("opportunity-views");
 const { selectTriageActions, sortOffersForTriage } = await import(moduleUrl("triage", { "./application-workflow": workflow, "./opportunity-views": opportunityViews }));
 const baseline = { title: "Product Owner", company: "Fixture", contractType: "cdi", annualSalary: 55000, remoteMode: "full_remote", language: "fr", source: "Autre" };
 
+test("le seuil Jobgether est normalisé par compte", () => {
+  assert.equal(searchPreferences(undefined).minimumMatchScore, 55);
+  assert.equal(searchPreferences({ minimumMatchScore: 70 }).minimumMatchScore, 70);
+  assert.equal(searchPreferences({ minimumMatchScore: 0 }).minimumMatchScore, 0);
+  assert.equal(searchPreferences({ minimumMatchScore: 101 }).minimumMatchScore, 55);
+  assert.equal(searchPreferences({ minimumMatchScore: 54.5 }).minimumMatchScore, 55);
+});
+
 test("Europe inclut les offres situées dans un pays européen", () => {
   assert.deepEqual(assessLocation("Paris, France", ["Europe"], []), { excluded: false, uncertain: false });
   assert.equal(assessJob({ ...baseline, announcedLocation: "Berlin, Germany" }, { ...searchPreferences(undefined), includedLocations: ["Europe"] }).tier, "priority");

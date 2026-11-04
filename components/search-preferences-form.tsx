@@ -157,6 +157,11 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
         </div>
         <p className="search-criteria-help">Une offre un peu sous votre seuil reste visible comme exception. Si le montant manque, il est signalé « à vérifier ».</p>
       </section>
+      <section className="search-criteria-group" aria-labelledby="search-score-title">
+        <div className="search-criteria-group-heading"><h3 id="search-score-title">Pertinence Jobgether</h3><p>Écartez les offres Jobgether dont le score est trop faible pour votre recherche.</p></div>
+        <label className="search-pay-field"><span className="search-pay-label">Score minimal de match</span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="100" step="1" value={draft.minimumMatchScore} onChange={event => { setDraft(current => ({ ...current, minimumMatchScore: Math.max(0, Math.min(100, Math.round(Number(event.target.value) || 0))) })); setMessage(""); }} /><span className="search-pay-unit" aria-hidden="true">/ 100</span></span></label>
+        <p className="search-criteria-help">55 par défaut. À 0, toutes les offres Jobgether peuvent entrer dans Radar. Les offres déjà suivies restent accessibles si vous augmentez ce seuil.</p>
+      </section>
       <footer className="search-criteria-actions"><span role="status" className="search-form-status">{message}</span><button type="submit" className="radar-add-button" disabled={saving || savingRole || savingLocation}>{saving ? "Enregistrement…" : "Enregistrer"}</button></footer>
     </form>
   </section>;
