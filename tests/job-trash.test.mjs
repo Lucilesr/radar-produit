@@ -37,7 +37,11 @@ test("corbeille SQLite : isolation A/B, relance, réimport, rappels et restaurat
     async raw() { queryCount++; const stmt = sqlite.prepare(sql); stmt.setReturnArrays(true); return stmt.all(...args); },
     async run() { return sqlite.prepare(sql).run(...args); },
   }; }
-  globalThis.__trashEnv = { DB: { prepare } };
+  globalThis.__trashEnv = { DB: { prepare, async batch(statements) {
+    sqlite.exec("BEGIN");
+    try { const results = []; for (const statement of statements) results.push(await statement.all()); sqlite.exec("COMMIT"); return results; }
+    catch (error) { sqlite.exec("ROLLBACK"); throw error; }
+  } } };
   const store = await import(moduleUrl("lib/job-store.ts"));
   const interviews = await import(moduleUrl("lib/interview-store.ts"));
   const route = await import(moduleUrl("app/api/jobs/[id]/route.ts"));
@@ -153,6 +157,36 @@ test("corbeille SQLite : isolation A/B, relance, réimport, rappels et restaurat
   const incomplete=(await store.saveOffer("alice",{title:"Product Owner test",source:"Free-Work",contractType:"other",remoteMode:"unknown",language:"unknown"})).job;
   const completed=await store.updateOffer("alice",incomplete.id,{description:"Contrat : CDI\nSalaire annuel brut : 68 000 €\nAnglais professionnel requis"});
   assert.equal(completed.contractType,"cdi");assert.equal(completed.annualSalary,68000);assert.equal(completed.language,"professional_en");
+  const now = new Date("2026-11-04T12:00:00.000Z");
+  const old = (await store.saveOffer("alice", { ...input, company: "Ancienne corbeille" })).job;
+  const edge = (await store.saveOffer("alice", { ...input, company: "Corbeille dix jours" })).job;
+  const recent = (await store.saveOffer("alice", { ...input, company: "Corbeille récente" })).job;
+  await store.setOffersDeleted("alice", [old.id, edge.id, recent.id], true);
+  await store.setOfferDeleted("bob", b.id, true);
+  for (const [id, at] of [[old.id,"2026-10-24T11:59:59.000Z"],[edge.id,"2026-10-25T12:00:00.000Z"],[recent.id,"2026-10-26T12:00:00.000Z"],[b.id,"2026-10-01T00:00:00.000Z"]]) sqlite.prepare("UPDATE jobs SET deleted_at=? WHERE id=?").run(at,id);
+  sqlite.prepare("INSERT INTO interviews(id,user_id,job_id,label,start_at,end_at,time_zone) VALUES(?,?,?,?,?,?,?)").run("old-interview","alice",old.id,"Échange fictif","2026-01-01T09:00:00Z","2026-01-01T10:00:00Z","Europe/Paris");
+  sqlite.prepare("INSERT INTO application_questions(id,user_id,job_id,question,created_at,updated_at) VALUES(?,?,?,?,?,?)").run("old-question","alice",old.id,"Question fictive",now.toISOString(),now.toISOString());
+  sqlite.prepare("INSERT INTO application_answer_revisions(id,user_id,question_id,version,question,answer,created_at) VALUES(?,?,?,?,?,?,?)").run("old-revision","alice","old-question",1,"Question fictive","Réponse fictive",now.toISOString());
+  sqlite.prepare("INSERT INTO application_answer_proposals(id,user_id,job_id,question_id,question_text,answer,language,context_digest,created_at) VALUES(?,?,?,?,?,?,?,?,?)").run("old-proposal","alice",old.id,"old-question","Question fictive","Proposition fictive","fr","digest",now.toISOString());
+  sqlite.prepare("INSERT INTO workspace_writes(user_id,key,version,value,created_at) VALUES(?,?,?,?,?)").run("alice",`note:${old.id}`,1,"À effacer",now.toISOString());
+  sqlite.prepare("INSERT INTO workspace_writes(user_id,key,version,value,created_at) VALUES(?,?,?,?,?)").run("alice",`note:${recent.id}`,1,"À conserver",now.toISOString());
+  const profile = JSON.parse(sqlite.prepare("SELECT data FROM profiles WHERE user_id='alice'").get().data);
+  profile.applicationNotes = { ...profile.applicationNotes, [old.id]: "À effacer", [recent.id]: "À conserver" };
+  sqlite.prepare("UPDATE profiles SET data=? WHERE user_id='alice'").run(JSON.stringify(profile));
+  assert.equal(await store.purgeExpiredTrash("alice", now), 1);
+  assert.equal(await store.purgeExpiredTrash("alice", now), 0, "purge répétée sans effet");
+  assert.equal(await store.getOffer("alice", old.id, true), undefined);
+  assert(await store.getOffer("alice", edge.id, true), "à exactement 10 jours, restauration possible");
+  assert(await store.getOffer("alice", recent.id, true));
+  assert(await store.getOffer("bob", b.id, true), "isolation des comptes");
+  for (const table of ["interviews", "application_questions", "application_answer_revisions", "application_answer_proposals"]) {
+    assert.equal(sqlite.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE id LIKE 'old-%'`).get().n, 0, table);
+  }
+  const remainingNotes = JSON.parse(sqlite.prepare("SELECT data FROM profiles WHERE user_id='alice'").get().data).applicationNotes;
+  assert.equal(remainingNotes[old.id], undefined);
+  assert.equal(remainingNotes[recent.id], "À conserver");
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM workspace_writes WHERE user_id='alice' AND key=?").get(`note:${old.id}`).n, 0);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM workspace_writes WHERE user_id='alice' AND key=?").get(`note:${recent.id}`).n, 1);
   sqlite.close();
 });
 

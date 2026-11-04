@@ -41,3 +41,5 @@
   .opportunity-detail-header h2 { font-size: 22px; }.opportunity-decision button { flex: 1; }.opportunity-open { padding: 19px 16px; }
   .offer-facts-secondary { grid-template-columns: 1fr; }.offer-key-fact { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }.opportunities-toolbar { align-items: flex-start; }.opportunities-toolbar .secondary-button { font-size: 13px; }
 }
+.workspace-tabs .opportunity-tab { display: inline-flex; align-items: center; gap: 2px; }
+.workspace-tabs .opportunity-tab .help-tooltip-trigger { min-height: 32px; padding: 0; border: 0; }

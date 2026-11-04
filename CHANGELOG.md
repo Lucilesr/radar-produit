@@ -8,6 +8,10 @@
 - Les lieux à inclure et à exclure se choisissent avec des suggestions recherchables et s’enregistrent dès l’ajout ou le retrait. Les variantes comme US, USA et États-Unis sont ramenées au même pays.
 - « Europe » couvre les pays européens, dont la Roumanie. Une exclusion de Roumanie l’emporte sur l’inclusion d’Europe ; une annonce indiquant seulement « Europe » reste à vérifier.
 
+## 4 novembre 2026 — Conservation de la corbeille
+
+- Les offres mises à la corbeille depuis plus de 10 jours sont supprimées définitivement à la prochaine ouverture du radar, avec leurs données de suivi liées. Le tooltip de la corbeille précise le délai de restauration.
+
 ## 4 novembre 2026 — Seuil de pertinence Jobgether
 
 - Pour tous les comptes, seules les nouvelles offres Jobgether atteignant au moins 55 points de match sont importées. Les anciennes offres sous ce seuil sont masquées de la liste si elles n'ont pas été suivies ; les choix, candidatures et offres en corbeille restent accessibles.

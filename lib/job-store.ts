@@ -1,6 +1,6 @@
-import { and, desc, eq, isNull, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, inArray, isNotNull, like, lt, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { jobs, profiles, interviews } from "@/db/schema";
+import { jobs, profiles, interviews, applicationQuestions, applicationAnswerRevisions, applicationAnswerProposals, workspaceWrites } from "@/db/schema";
 import { assessJob, createFingerprint } from "./matching";
 import { searchPreferences } from "./search-preferences";
 import { readCandidateProfile } from "./profile-store";
@@ -114,6 +114,53 @@ export async function setOffersDeleted(userId: string, ids: string[], deleted: b
     dismissalNote: deleted ? sql`coalesce(${jobs.dismissalNote}, ${note?.trim() || null})` : null })
     .where(and(eq(jobs.userId, userId), inArray(jobs.id, [...new Set(ids)])))
     .returning({ id: jobs.id, deletedAt: jobs.deletedAt, dismissalReason: jobs.dismissalReason, dismissalNote: jobs.dismissalNote });
+}
+
+// Run when an account loads opportunities. A bounded batch keeps the request short.
+async function purgeExpiredTrashBatch(userId: string, now: Date) {
+  const db = getDb();
+  const cutoff = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString();
+  const expired = await db.select({ id: jobs.id }).from(jobs)
+    .where(and(eq(jobs.userId, userId), isNotNull(jobs.deletedAt), lt(jobs.deletedAt, cutoff))).limit(50);
+  const ids = expired.map(row => row.id);
+  if (!ids.length) return 0;
+  const eligible = db.select({ id: jobs.id }).from(jobs)
+    .where(and(eq(jobs.userId, userId), inArray(jobs.id, ids), isNotNull(jobs.deletedAt), lt(jobs.deletedAt, cutoff)));
+  const questions = db.select({ id: applicationQuestions.id }).from(applicationQuestions)
+    .where(and(eq(applicationQuestions.userId, userId), inArray(applicationQuestions.jobId, eligible)));
+  const relatedInterviews = db.select({ id: interviews.id }).from(interviews)
+    .where(and(eq(interviews.userId, userId), inArray(interviews.jobId, eligible)));
+  const results = await db.batch([
+    db.delete(workspaceWrites).where(and(eq(workspaceWrites.userId, userId), or(
+      and(or(like(workspaceWrites.key, "note:%"), like(workspaceWrites.key, "offer:%")), inArray(sql<string>`substr(${workspaceWrites.key}, instr(${workspaceWrites.key}, ':') + 1)`, eligible)),
+      and(or(like(workspaceWrites.key, "review:%"), like(workspaceWrites.key, "schedule:%")), inArray(sql<string>`substr(${workspaceWrites.key}, instr(${workspaceWrites.key}, ':') + 1)`, relatedInterviews)),
+      and(like(workspaceWrites.key, "answer:%"), inArray(sql<string>`substr(${workspaceWrites.key}, 8)`, questions)),
+    ))),
+    db.delete(applicationAnswerRevisions).where(and(eq(applicationAnswerRevisions.userId, userId), inArray(applicationAnswerRevisions.questionId, questions))),
+    db.delete(applicationAnswerProposals).where(and(eq(applicationAnswerProposals.userId, userId), inArray(applicationAnswerProposals.jobId, eligible))),
+    db.delete(applicationQuestions).where(and(eq(applicationQuestions.userId, userId), inArray(applicationQuestions.jobId, eligible))),
+    db.delete(interviews).where(and(eq(interviews.userId, userId), inArray(interviews.jobId, eligible))),
+    db.delete(jobs).where(and(eq(jobs.userId, userId), inArray(jobs.id, ids), isNotNull(jobs.deletedAt), lt(jobs.deletedAt, cutoff))).returning({ id: jobs.id }),
+  ]);
+  const removed = results[5].map(row => row.id);
+  if (removed.length) {
+    const [profile] = await db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
+    if (profile) {
+      const data = JSON.parse(profile.data);
+      const notes = { ...data.applicationNotes };
+      for (const id of removed) delete notes[id];
+      await db.update(profiles).set({ data: JSON.stringify({ ...data, applicationNotes: notes }), updatedAt: now.toISOString() })
+        .where(and(eq(profiles.userId, userId), eq(profiles.data, profile.data)));
+    }
+  }
+  return removed.length;
+}
+
+export async function purgeExpiredTrash(userId: string, now = new Date()) {
+  let total = 0;
+  let removed: number;
+  do { removed = await purgeExpiredTrashBatch(userId, now); total += removed; } while (removed === 50);
+  return total;
 }
 
 export async function setOfferReviewState(userId: string, id: string, reviewState: "to_review" | "selected") {
