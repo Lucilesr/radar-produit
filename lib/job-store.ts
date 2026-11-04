@@ -76,7 +76,7 @@ export async function listOffers(userId: string, limit?: number, includeDeleted 
       reasons: assessment.reasons, flags: assessment.flags,
       candidateNote: typeof notes[job.id] === "string" ? notes[job.id] : undefined,
       interviews: interviewsByJob.get(job.id) ?? [] };
-  }).filter(job => !!job.deletedAt || showJobgetherOffer(job.source, job.matchScore, job.status, job.reviewState));
+  }).filter(job => !!job.deletedAt || showJobgetherOffer(job.source, job.matchScore, preferences.minimumMatchScore, job.status, job.reviewState));
 }
 
 export async function getOffer(userId: string, id: string, includeDeleted = false) {
