@@ -39,6 +39,10 @@ export const sourceGuidance: Record<SourceName, { steps: [string, ...string[]]; 
     steps: ["Cliquez sur « Actualiser le flux remote autorisé » en haut de cette page.", "Consultez les fiches ajoutées et vérifiez pour chacune les pays autorisés et les conditions de travail."],
     result: "Radar lit ce flux public. « En pause » empêche les prochaines actualisations manuelles du flux.",
   },
+  Jobgether: {
+    steps: ["Ajoutez Jobgether dans « Alertes & flux » : aucun compte ni clé n'est demandé.", "Radar recherche vos postes enregistrés dans « Mes critères » à chaque actualisation des flux."],
+    result: "Radar conserve des fiches sommaires avec un lien Jobgether. Le pays où le travail est autorisé reste à vérifier sur l'annonce.",
+  },
   Wellfound: { steps: ["Ouvrez Wellfound et vérifiez si les rôles produit et la zone géographique correspondent à votre recherche.", "Notez ici les critères utiles et les points encore à vérifier avant d'en faire une source suivie."], result: "Aucune connexion ni import automatique n'est activé dans Radar." },
   Himalayas: { steps: ["Ouvrez Himalayas et vérifiez les filtres de rôle et de pays autorisés.", "Notez ici les recherches utiles et les restrictions à vérifier sur chaque annonce."], result: "Aucune connexion ni import automatique n'est activé dans Radar." },
   "Remote OK": { steps: ["Ouvrez Remote OK et vérifiez les rôles produit qui vous intéressent.", "Notez ici les restrictions géographiques et les points à qualifier avant un suivi régulier."], result: "Aucune connexion ni import automatique n'est activé dans Radar." },

@@ -6,6 +6,9 @@ import { sourceCatalog } from "./source-catalog";
 import { parseWwrFeed } from "./rss-offers";
 import { saveOffer } from "./job-store";
 import { validSearchLink } from "./web-discovery";
+import { parseJobgetherPage } from "./jobgether-offers";
+import { readCandidateProfile } from "./profile-store";
+import { searchPreferences } from "./search-preferences";
 
 export async function listSourceSettings(userId: string) { const rows = await getDb().select().from(sourceSettings).where(eq(sourceSettings.userId, userId)); return rows.map(row => ({ source: row.source, ...JSON.parse(row.data), updatedAt: row.updatedAt })); }
 export async function saveSourceSetting(userId: string, source: string, data: Record<string, unknown>) {
@@ -62,7 +65,76 @@ export async function syncAuthorizedFeed(userId: string) {
     const text = await response.text(); if (text.length > 2_000_000) throw new Error("Flux trop volumineux");
     const offers = parseWwrFeed(text).slice(0, 40); let imported = 0; let deduplicated = 0;
     for (const offer of offers) { const result = await saveOffer(userId, offer); result.deduplicated ? deduplicated++ : imported++; }
-    const lastSyncedAt = new Date().toISOString(); await saveSourceSetting(userId, "We Work Remotely", { state: "configured", verification: "Flux public autorisé", lastSyncedAt, error: null, lastCount: offers.length });
+    const lastSyncedAt = new Date().toISOString(); await saveSourceSetting(userId, "We Work Remotely", { state: "configured", verification: "Flux public autorisé", lastAttemptAt: lastSyncedAt, lastSyncedAt, health: "active", failureCount: 0, error: null, lastCount: offers.length });
     return { imported, deduplicated, total: offers.length, lastSyncedAt };
-  } catch { await saveSourceSetting(userId, "We Work Remotely", { error: "Lecture du flux non confirmée. Vos offres existantes restent conservées." }); throw new Error("Flux non disponible. Réessayez plus tard."); }
+  } catch { const failureCount = (typeof previous?.failureCount === "number" ? previous.failureCount : 0) + 1; await saveSourceSetting(userId, "We Work Remotely", { lastAttemptAt: new Date().toISOString(), failureCount, health: failureCount >= 2 ? "degraded" : "retrying", error: failureCount >= 2 ? "Flux indisponible depuis plusieurs tentatives. Radar réessaiera ; vos offres restent conservées." : "Lecture du flux non confirmée. Nouvel essai prévu." }); throw new Error("Flux non disponible. Réessayez plus tard."); }
+}
+
+/** One bounded search per saved role, two pages at most. Jobgether asks API clients to cache and avoid bulk crawling. */
+export async function syncJobgetherFeed(userId: string) {
+  const previous = (await listSourceSettings(userId)).find(source => source.source === "Jobgether");
+  if (!previous || previous.selected !== true || previous.state === "paused") return { paused: true, imported: 0, deduplicated: 0 };
+  const search = searchPreferences((await readCandidateProfile(userId))?.searchPreferences);
+  const criteria = JSON.stringify({ roles: search.roles, contracts: search.contracts, remote: search.remote });
+  if (previous.nextRetryAt && Date.now() < Date.parse(previous.nextRetryAt))
+    return { cached: true, imported: 0, deduplicated: 0, nextRetryAt: previous.nextRetryAt };
+  if (previous.lastSyncedAt && previous.criteria === criteria && Date.now() - Date.parse(previous.lastSyncedAt) < 20 * 60 * 60 * 1000)
+    return { cached: true, imported: 0, deduplicated: 0, lastSyncedAt: previous.lastSyncedAt };
+  const now = new Date().toISOString();
+  let imported = 0, deduplicated = 0, total = 0, nextRetryAt: string | null = null;
+  try {
+    const pagesPerRole = Math.min(2, Math.max(1, Math.floor(12 / search.roles.length)));
+    for (const role of search.roles) {
+      for (let page = 1; page <= pagesPerRole; page++) {
+        const url = new URL("https://jobgether.com/api/v1/jobs");
+        url.searchParams.set("keyword", role); url.searchParams.set("sort", "date");
+        url.searchParams.set("limit", "25"); url.searchParams.set("page", String(page));
+        if (search.contracts.every(contract => contract !== "cdd"))
+          url.searchParams.set("contractType", search.contracts.map(contract => contract === "freelance" ? "freelance" : "full-time").join(","));
+        if (search.remote === "full_remote") url.searchParams.set("remoteType", "full-remote");
+        else url.searchParams.set("includeHybrid", "true");
+        const response = await fetch(url, { signal: AbortSignal.timeout(15000), headers: { Accept: "application/json" } });
+        if (!response.ok) {
+          if (response.status === 429) {
+            const retry = response.headers.get("Retry-After");
+            const seconds = retry && /^\d+$/.test(retry) ? Number(retry) : null;
+            const until = seconds !== null ? Date.now() + seconds * 1000 : retry ? Date.parse(retry) : NaN;
+            const safeUntil = Number.isFinite(until) && until > Date.now() ? Math.min(until, Date.now() + 7 * 24 * 60 * 60 * 1000) : Date.now() + 60 * 60 * 1000;
+            nextRetryAt = new Date(safeUntil).toISOString();
+          }
+          throw new Error(response.status === 429 ? "Limite temporaire atteinte" : response.status === 404 || response.status === 410 ? "API Jobgether indisponible ou modifiée" : `API Jobgether : erreur ${response.status}`);
+        }
+        const body = await response.text();
+        if (body.length > 600_000) throw new Error("Réponse Jobgether trop volumineuse");
+        const result = parseJobgetherPage(JSON.parse(body));
+        total += result.offers.length;
+        for (const offer of result.offers) {
+          const saved = await saveOffer(userId, offer);
+          saved.deduplicated ? deduplicated++ : imported++;
+        }
+        if (!result.hasMore) break;
+      }
+    }
+    await saveSourceSetting(userId, "Jobgether", { state: "configured", lastAttemptAt: now, lastSyncedAt: now, criteria, error: null, failureCount: 0, health: "active", nextRetryAt: null, lastCount: total });
+    return { imported, deduplicated, total, lastSyncedAt: now };
+  } catch (problem) {
+    const failureCount = (typeof previous.failureCount === "number" ? previous.failureCount : 0) + 1;
+    const formatChanged = problem instanceof z.ZodError || problem instanceof SyntaxError;
+    const reason = formatChanged ? "Format de réponse Jobgether modifié" : problem instanceof Error ? problem.message : "Réponse non reconnue";
+    const incompatible = formatChanged || /API Jobgether indisponible ou modifiée|Réponse non reconnue/.test(reason);
+    const alert = incompatible || failureCount >= 2;
+    await saveSourceSetting(userId, "Jobgether", { lastAttemptAt: now, failureCount, health: alert ? "degraded" : "retrying", nextRetryAt, error: alert ? `Collecte interrompue : ${reason}. Aucune action requise pour le moment ; Radar réessaiera.` : "Collecte temporairement indisponible ; nouvel essai automatique prévu." });
+    throw new Error(reason);
+  }
+}
+
+export async function syncAuthorizedFeeds(userId: string) {
+  const results = await Promise.allSettled([syncAuthorizedFeed(userId), syncJobgetherFeed(userId)]);
+  let imported = 0, deduplicated = 0, succeeded = 0;
+  for (const result of results) if (result.status === "fulfilled") {
+    succeeded++; imported += result.value.imported; deduplicated += result.value.deduplicated;
+  }
+  if (!succeeded) throw new Error("Aucun flux n’a pu être actualisé.");
+  return { imported, deduplicated,
+    partialFailure: results.some(result => result.status === "rejected"), sources: results.map((result, index) => ({ source: index === 0 ? "We Work Remotely" : "Jobgether", ok: result.status === "fulfilled" })) };
 }

@@ -1,3 +1,8 @@
+## 4 novembre 2026 — Veille Jobgether par compte
+
+- Chaque utilisateur peut activer Jobgether sans compte ni clé depuis « Alertes & flux ». Radar réutilise ses postes et contrats enregistrés, interroge l’API officielle de façon bornée et conserve des fiches sommaires liées à la source.
+- L’actualisation des flux suit la dernière réussite, respecte les délais indiqués après une limite atteinte et signale les réponses incompatibles ou les échecs répétés sans effacer les offres existantes. La planification automatique dépend d’une tâche de veille reliée au compte.
+
 ## 3 novembre 2026 — Suppression des sources suivies
 
 - Les cartes de jobboards, d’alertes et de flux peuvent être supprimées après confirmation dans une modale du design system. Annuler conserve la carte ; un échec affiche une erreur dans la modale et permet de réessayer.
