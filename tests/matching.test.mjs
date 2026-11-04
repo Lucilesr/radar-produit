@@ -12,14 +12,37 @@ function moduleUrl(name, imports = {}) {
 const arrangement = moduleUrl("work-arrangement");
 const workflow = moduleUrl("application-workflow");
 const marketScope = moduleUrl("market-scope");
-const preferences = moduleUrl("search-preferences");
+const countries = moduleUrl("countries");
+const locations = moduleUrl("location-criteria", { "./countries": countries, "./market-scope": marketScope });
+const preferences = moduleUrl("search-preferences", { "./location-criteria": locations });
 const { searchPreferences } = await import(preferences);
-const { assessJob } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences }));
+const { assessJob } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations }));
+const { assessLocation } = await import(locations);
 const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement }));
 const { createCandidateBrief, briefOffer } = await import(moduleUrl("candidate-brief"));
 const opportunityViews = moduleUrl("opportunity-views");
 const { selectTriageActions, sortOffersForTriage } = await import(moduleUrl("triage", { "./application-workflow": workflow, "./opportunity-views": opportunityViews }));
 const baseline = { title: "Product Owner", company: "Fixture", contractType: "cdi", annualSalary: 55000, remoteMode: "full_remote", language: "fr", source: "Autre" };
+
+test("Europe inclut les offres situées dans un pays européen", () => {
+  assert.deepEqual(assessLocation("Paris, France", ["Europe"], []), { excluded: false, uncertain: false });
+  assert.equal(assessJob({ ...baseline, announcedLocation: "Berlin, Germany" }, { ...searchPreferences(undefined), includedLocations: ["Europe"] }).tier, "priority");
+});
+
+test("une exclusion ne masque pas une offre ouverte dans un autre lieu", () => {
+  assert.deepEqual(assessLocation("Europe, USA", [], ["États-Unis"]), { excluded: false, uncertain: false });
+  assert.deepEqual(assessLocation("France / Germany", [], ["Europe"]), { excluded: true, uncertain: false });
+  assert.deepEqual(assessLocation("Europe", ["France"], []), { excluded: false, uncertain: true });
+  assert.deepEqual(assessLocation(undefined, ["Europe"], []), { excluded: false, uncertain: true });
+});
+test("une inclusion explicite peut ouvrir le marché américain auparavant écarté", () => {
+  const preferences = { ...searchPreferences(undefined), includedLocations: ["États-Unis"] };
+  assert.notEqual(assessJob({ ...baseline, description: "Remote - United States", announcedLocation: "États-Unis" }, preferences).tier, "excluded");
+});
+test("exclure un autre pays ne désactive pas la restriction américaine existante", () => {
+  const preferences = { ...searchPreferences(undefined), excludedLocations: ["France"] };
+  assert.equal(assessJob({ ...baseline, description: "Remote - United States" }, preferences).tier, "excluded");
+});
 
 test("les anciens choix PO/PM deviennent des intitulés éditables", () => {
   assert.deepEqual(searchPreferences({ roles: ["po", "pm"] }).roles, ["Product Owner", "Product Manager"]);

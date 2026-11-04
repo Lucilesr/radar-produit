@@ -1,7 +1,10 @@
 import type { SearchPreferences } from "./types";
+import { normalizeLocationRules } from "./location-criteria";
 
 export const defaultSearchPreferences: SearchPreferences = {
   roles: ["Product Owner", "Product Manager"],
+  includedLocations: [],
+  excludedLocations: [],
   contracts: ["cdi", "freelance"],
   remote: "hybrid",
   minimumSalary: 55000,
@@ -27,6 +30,8 @@ export function searchPreferences(value: unknown): SearchPreferences {
   const amount = (number: unknown, fallback: number) => typeof number === "number" && Number.isInteger(number) && number >= 0 && number <= 1000000 ? number : fallback;
   return {
     roles,
+    includedLocations: normalizeLocationRules(raw.includedLocations),
+    excludedLocations: normalizeLocationRules(raw.excludedLocations ?? defaultSearchPreferences.excludedLocations),
     contracts: contracts.length ? [...new Set(contracts)] : defaultSearchPreferences.contracts,
     remote: remote === "light_hybrid" ? "hybrid" : remote === "occasional" ? "exceptional" : remote === "onsite" || remote === "hybrid" || remote === "exceptional" || remote === "full_remote" ? remote : defaultSearchPreferences.remote,
     minimumSalary: amount(raw.minimumSalary, defaultSearchPreferences.minimumSalary),

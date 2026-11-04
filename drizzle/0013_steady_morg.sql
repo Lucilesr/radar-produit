@@ -1,0 +1,1 @@
+ALTER TABLE `jobs` ADD `announced_location` text;

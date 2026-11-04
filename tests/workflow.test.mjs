@@ -60,9 +60,10 @@ test("RSS produit attribué, dates réelles et inconnues", () => {
   assert.equal(offers[0].source,"We Work Remotely"); assert.equal(offers[0].contentCoverage,"summary");
   assert.match(offers[0].onsiteCadence,/Pays autorisés/);
 });
-test("RSS exclut le marché US explicite sans exclure les annonces monde ou Europe", () => {
+test("RSS conserve le lieu US explicite pour une qualification selon le compte", () => {
   const offers=parseWwrFeed(`<rss>${item("Acme: Product Manager","https://weworkremotely.com/remote-jobs/us","Remote - United States")}${item("Beta: Product Owner","https://weworkremotely.com/remote-jobs/eu","Remote Europe. Core EU collaboration hours")}${item("Gamma: Product Manager","https://weworkremotely.com/remote-jobs/global","Anywhere in the World. Country eligibility to confirm")}</rss>`);
-  assert.deepEqual(offers.map(offer=>offer.company),["Beta","Gamma"]);
+  assert.deepEqual(offers.map(offer=>offer.company),["Acme","Beta","Gamma"]);
+  assert.equal(offers[0].announcedLocation,"États-Unis");
 });
 test("résumé Radar reste fidèle au texte transmis et signale les descriptions vides", () => {
   const offer = { title: "Product Manager — application mobile", company: "Newell Brands", contractType: "freelance", remoteMode: "full_remote", dailyRate: null, description: "CONTEXTE\nCorentin recherche un Product Manager pour piloter une application mobile et structurer sa feuille de route stratégique.\n\nEXIGENCES\n5 ans d'expérience." };

@@ -18,6 +18,7 @@ test("Jobgether garde le lien d'origine et ne confond pas lieu et pays autorisé
   assert.equal(result.offers[0].annualSalary, 60000);
   assert.equal(result.offers[0].contractType, "other");
   assert.equal(result.offers[0].remoteCountry, undefined);
+  assert.equal(result.offers[0].announcedLocation, "France");
   assert.equal(result.offers[0].applicationUrl, "https://jobgether.com/offer/abc");
 });
 

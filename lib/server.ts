@@ -39,6 +39,7 @@ export function normalizeJobInput(value: unknown): JobInput {
     onsiteDaysPerWeek: dayCount(raw.onsiteDaysPerWeek,5),
     onsiteDaysPerMonth: dayCount(raw.onsiteDaysPerMonth,31),
     remoteCountry: country(raw.remoteCountry),
+    announcedLocation: asText(raw.announcedLocation, 240),
     language: languages.has(raw.language as string)
       ? (raw.language as JobInput["language"])
       : "unknown",
@@ -79,6 +80,7 @@ export function rowToJob(row: Record<string, unknown>): JobRecord {
     onsiteDaysPerWeek: numberOrNull(row.onsiteDaysPerWeek),
     onsiteDaysPerMonth: numberOrNull(row.onsiteDaysPerMonth),
     remoteCountry: isCountryCode(row.remoteCountry)?row.remoteCountry:undefined,
+    announcedLocation: stringOrUndefined(row.announcedLocation),
     language: (row.language as JobInput["language"]) ?? "unknown",
     source: String(row.source ?? "Ajout manuel"),
     sourceUrl: stringOrUndefined(row.sourceUrl),

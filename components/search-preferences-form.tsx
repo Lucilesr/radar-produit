@@ -4,10 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import type { CandidateProfile, SearchPreferences } from "@/lib/types";
 import { normalizeRoleTitles, searchPreferences } from "@/lib/search-preferences";
 import { ChoiceSelect } from "@/components/choice-select";
+import { normalizeLocationRules } from "@/lib/location-criteria";
 
 export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean> }) {
   const [draft, setDraft] = useState<SearchPreferences>(() => searchPreferences(profile.searchPreferences));
   const [roles, setRoles] = useState(() => searchPreferences(profile.searchPreferences).roles);
+  const [includedInput, setIncludedInput] = useState(() => (searchPreferences(profile.searchPreferences).includedLocations ?? []).join(", "));
+  const [excludedInput, setExcludedInput] = useState(() => (searchPreferences(profile.searchPreferences).excludedLocations ?? []).join(", "));
   const [roleInput, setRoleInput] = useState("");
   const [savingRole, setSavingRole] = useState(false);
   const roleSaveInFlight = useRef(false);
@@ -83,7 +86,7 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
       <h2 id="search-preferences-title" className="source-heading">Ce que je recherche</h2>
       <p>Ces critères classent vos offres dans Radar. Ils ne modifient pas les alertes créées sur les sites externes.</p>
     </header>
-    <form className="search-criteria-form" onSubmit={async event => { event.preventDefault(); if (roleSaveInFlight.current) return; setSaving(true); setMessage(""); try { setMessage(await onSave({ ...profile, searchPreferences: { ...draft, roles } }) ? "Recherche enregistrée. Les matchs utilisent vos critères." : "Enregistrement non confirmé. Réessayez."); } finally { setSaving(false); } }}>
+    <form className="search-criteria-form" onSubmit={async event => { event.preventDefault(); if (roleSaveInFlight.current) return; setSaving(true); setMessage(""); try { setMessage(await onSave({ ...profile, searchPreferences: { ...draft, roles, includedLocations: normalizeLocationRules(includedInput.split(/[,;\n]/)), excludedLocations: normalizeLocationRules(excludedInput.split(/[,;\n]/)) } }) ? "Recherche enregistrée. Les matchs utilisent vos critères." : "Enregistrement non confirmé. Réessayez."); } finally { setSaving(false); } }}>
       <section className="search-criteria-group" aria-labelledby="search-roles-title">
         <div className="search-criteria-group-heading"><h3 id="search-roles-title">Postes visés</h3><p>Ces intitulés ont le plus de poids dans le classement des offres.</p></div>
         <label htmlFor="searched-role" className="search-field-label">Ajouter un poste</label>
@@ -98,6 +101,14 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
           <fieldset className="search-contracts"><legend className="search-field-label">Contrats</legend><div className="search-contract-options">{([["cdi", "CDI"], ["cdd", "CDD"], ["freelance", "Freelance"]] as const).map(([value, label]) => <label key={value}><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} />{label}</label>)}</div></fieldset>
           <div className="search-preferences-presence"><ChoiceSelect label="Présence acceptable" value={draft.remote} onChange={remote => { setDraft(current => ({ ...current, remote })); setMessage(""); }} options={[{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Présence exceptionnelle" }, { value: "full_remote", label: "Full remote" }]} disabled={saving} /></div>
         </div>
+      </section>
+      <section className="search-criteria-group" aria-labelledby="search-location-title">
+        <div className="search-criteria-group-heading"><h3 id="search-location-title">Pays et régions des offres</h3><p>Utilisez le lieu annoncé dans l’offre, distinct des pays autorisés pour télétravailler.</p></div>
+        <div className="search-pay-grid">
+          <label className="search-pay-field"><span className="search-pay-label">Inclure</span><input type="text" value={includedInput} onChange={event => { setIncludedInput(event.target.value); setMessage(""); }} placeholder="Ex. Europe, France" aria-describedby="search-location-help" /></label>
+          <label className="search-pay-field"><span className="search-pay-label">Exclure</span><input type="text" value={excludedInput} onChange={event => { setExcludedInput(event.target.value); setMessage(""); }} placeholder="Ex. États-Unis, Amérique du Nord" aria-describedby="search-location-help" /></label>
+        </div>
+        <p id="search-location-help" className="search-criteria-help">Séparez plusieurs lieux par une virgule. Une offre sans lieu précis reste visible avec un point à vérifier. Si plusieurs lieux sont proposés, elle reste visible lorsqu’au moins un convient.</p>
       </section>
       <section className="search-criteria-group" aria-labelledby="search-pay-title">
         <div className="search-criteria-group-heading"><h3 id="search-pay-title">Rémunération souhaitée</h3><p>Renseignez le seuil correspondant à chaque type de contrat recherché.</p></div>

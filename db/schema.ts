@@ -23,6 +23,7 @@ export const jobs = sqliteTable(
     onsiteDaysPerWeek: integer("onsite_days_per_week"),
     onsiteDaysPerMonth: integer("onsite_days_per_month"),
     remoteCountry: text("remote_country"),
+    announcedLocation: text("announced_location"),
     language: text("language").notNull().default("unknown"),
     source: text("source").notNull().default("manual"),
     sourceUrl: text("source_url"),
