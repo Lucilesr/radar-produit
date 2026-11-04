@@ -2,7 +2,7 @@ import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { ensureSameOrigin } from "@/lib/server";
 import { listOffers, saveOffer, updateOffer, markOfferClosedFromSource } from "@/lib/job-store";
 import { dueInterviews, markInterviewsReminded } from "@/lib/interview-store";
-import { recordCollectiveAlert, syncAuthorizedFeed } from "@/lib/source-store";
+import { recordCollectiveAlert, syncAuthorizedFeeds } from "@/lib/source-store";
 import { batchSchema, importRules, importTools, listSchema } from "@/lib/import-contract";
 import { approvedFacts } from "@/lib/experience-store";
 import { getQuestionGenerationContext, listAnswerProposals, saveAnswerProposal } from "@/lib/application-proposal-store";
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
       if (name === "radar_mark_offer_closed") return reply(id, toolResult(await markOfferClosedFromSource(user.userId, args)));
       if (["radar_due_interviews", "radar_sync_authorized_feed"].includes(name)) {
         if (!args || typeof args !== "object" || Array.isArray(args) || Object.keys(args).length) return failure(id, -32602, "Arguments invalides");
-        return reply(id, toolResult(name === "radar_due_interviews" ? { due: await dueInterviews(user.userId) } : await syncAuthorizedFeed(user.userId)));
+        return reply(id, toolResult(name === "radar_due_interviews" ? { due: await dueInterviews(user.userId) } : await syncAuthorizedFeeds(user.userId)));
       }
       if (name === "radar_mark_interview_reminded") return reply(id, toolResult(await markInterviewsReminded(user.userId, args)));
       if (name === "radar_import_offers") {

@@ -12,8 +12,8 @@ import { sourceCatalog } from "@/lib/source-catalog";
 import { SourceLogo } from "@/components/source-logo";
 import { sourceGuidance } from "@/lib/source-guidance";
 
-export type SourceSetting = { source: string; state?: string; notes?: string; linkUrl?: string; selected?: boolean; verification?: string; lastSyncedAt?: string; error?: string; updatedAt?: string; searchLinks?: Record<string, import("@/lib/web-discovery").SearchLinks>; latestAlert?: { url: string; notificationAt: string; label: string } };
-const states=(mode:typeof sourceCatalog[number]["mode"])=>[{value:"not_configured",label:"Pas encore commencé"},{value:"action_needed",label:"Étapes en cours"},{value:"configured",label:mode==="rss"?"Flux actif":mode==="email"?"Alerte activée":"Recherche configurée"},{value:"paused",label:"En pause"}];
+export type SourceSetting = { source: string; state?: string; notes?: string; linkUrl?: string; selected?: boolean; verification?: string; lastSyncedAt?: string; lastAttemptAt?: string; health?: string; error?: string; updatedAt?: string; searchLinks?: Record<string, import("@/lib/web-discovery").SearchLinks>; latestAlert?: { url: string; notificationAt: string; label: string } };
+const states=(mode:typeof sourceCatalog[number]["mode"])=>[{value:"not_configured",label:"Pas encore commencé"},{value:"action_needed",label:"Étapes en cours"},{value:"configured",label:mode==="rss"?"Flux actif":mode==="api"?"Collecte active":mode==="email"?"Alerte activée":"Recherche configurée"},{value:"paused",label:"En pause"}];
 const stateLabels:Record<string,string>={not_configured:"À configurer",action_needed:"Action requise",configured:"Recherche configurée",paused:"En pause"};
 
 export function SourceCard({ source, setting, count, hidden, onSaved, onRemove }: { source: typeof sourceCatalog[number]; setting?: SourceSetting; count: number; hidden?: boolean; onSaved: (setting: SourceSetting) => void; onRemove?: () => void }) {
@@ -37,12 +37,33 @@ export function SourceCard({ source, setting, count, hidden, onSaved, onRemove }
     }catch(problem){setError(problem instanceof Error?problem.message:"Configuration non enregistrée.");}
     finally{locked.current=false;setBusy(false);}
   }
+  async function toggleApi(){
+    if(locked.current)return;
+    locked.current=true;setBusy(true);setError("");
+    try{
+      const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,state:savedState==="paused"?"configured":"paused",notes:setting?.notes??"",linkUrl:setting?.linkUrl??"",selected:true})});
+      const data=await response.json() as {error?:string;source?:SourceSetting};
+      if(!response.ok||!data.source)throw new Error(data.error??"État non enregistré.");
+      onSaved(data.source);notify({message:`${source.name} ${savedState==="paused"?"repris":"mis en pause"}.`});
+    }catch(problem){setError(problem instanceof Error?problem.message:"État non enregistré.");}
+    finally{locked.current=false;setBusy(false);}
+  }
+  if(source.mode==="api")return <section hidden={hidden} className="signal-source-card" aria-labelledby={title}>
+    <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><div className="signal-source-tools"><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span>{onRemove?<WorkspaceButton variant="quiet" disabled={busy} aria-label={`Supprimer ${source.name}`} title={`Supprimer ${source.name}`} onClick={onRemove}><Trash2 size={16} aria-hidden/></WorkspaceButton>:null}</div></div>
+    <span className="signal-source-status" data-state={setting?.health==="degraded"?"action_needed":savedState}>{savedState==="paused"?"En pause":setting?.health==="degraded"?"Collecte interrompue":setting?.health==="retrying"?"Nouvel essai prévu":setting?.lastSyncedAt?"Collecte active":"Première collecte en attente"}</span>
+    <p className="signal-source-description">{source.note}</p>
+    <a href={source.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a>
+    {setting?.lastSyncedAt?<p className="signal-help">Dernière collecte réussie le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
+    {setting?.health==="degraded"&&setting.lastAttemptAt?<p className="signal-help">Dernière tentative le {formatDate(setting.lastAttemptAt,"Indian/Mauritius",true)}</p>:null}
+    <WorkspaceFormError message={setting?.error??""}/><WorkspaceFormError message={error}/>
+    <WorkspaceButton disabled={busy} busy={busy} onClick={()=>void toggleApi()}>{savedState==="paused"?"Reprendre la collecte":"Mettre en pause"}</WorkspaceButton>
+  </section>;
   return <section hidden={hidden} className="signal-source-card" aria-labelledby={title}>
     <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><div className="signal-source-tools"><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span>{onRemove?<WorkspaceButton variant="quiet" disabled={busy} aria-label={`Supprimer ${source.name}`} title={`Supprimer ${source.name}`} onClick={onRemove}><Trash2 size={16} aria-hidden/></WorkspaceButton>:null}</div></div>
     <span className="signal-source-status" data-state={savedState}>{savedState==="configured"?states(source.mode)[2].label:stateLabels[savedState]??"À configurer"}</span>
     <p className="signal-source-description">{source.note}</p>
     <a href={setting?.linkUrl||source.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a>
-    {setting?.lastSyncedAt?<p className="signal-help">Flux vérifié le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
+    {setting?.lastSyncedAt?<p className="signal-help">Dernière collecte réussie le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
     {setting?.verification?<p className="signal-help">{setting.verification}</p>:null}
     <WorkspaceFormError message={setting?.error??""}/>
     <button type="button" className="secondary-button signal-source-link" onClick={()=>{configRef.current?.dispatchEvent(new Event("radar:reveal-collapsible"));configRef.current?.scrollIntoView({behavior:"smooth",block:"nearest"});}}>Modifier mon suivi</button>
