@@ -1,5 +1,5 @@
 import type { Assessment, JobInput, JobStatus, SearchPreferences } from "./types";
-import { searchPreferences } from "./search-preferences";
+import { payFloor, searchPreferences } from "./search-preferences";
 import { detectWorkArrangement } from "./work-arrangement";
 import { activeStatuses } from "./application-workflow";
 import { isNorthAmericaRestricted } from "./market-scope";
@@ -92,6 +92,7 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     flags.push("Type de contrat non recherché.");
   }
 
+  const tolerance = search.payTolerancePercent ?? 0;
   if (job.annualSalary != null || job.contractType === "cdi" || job.contractType === "cdd") {
     if (job.annualSalary == null) {
       exception = true;
@@ -99,6 +100,9 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     } else if (job.annualSalary >= search.minimumSalary) {
       score += 20;
       reasons.push(`Rémunération annoncée à ${formatEuro(job.annualSalary)} brut/an.`);
+    } else if (tolerance && job.annualSalary >= payFloor(search.minimumSalary, tolerance)) {
+      exception = true;
+      flags.push(`Sous votre minimum de ${formatEuro(search.minimumSalary)} brut/an (dans votre tolérance de ${tolerance} %).`);
     } else {
       excluded = true;
       flags.push(`Salaire sous votre seuil de ${formatEuro(search.minimumSalary)}.`);
@@ -112,6 +116,9 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     } else if (job.dailyRate >= search.minimumDailyRate) {
       score += 20;
       reasons.push(`TJM annoncé à ${formatEuro(job.dailyRate)} HT/jour.`);
+    } else if (tolerance && job.dailyRate >= payFloor(search.minimumDailyRate, tolerance)) {
+      exception = true;
+      flags.push(`Sous votre minimum de ${formatEuro(search.minimumDailyRate)} HT/jour (dans votre tolérance de ${tolerance} %).`);
     } else {
       excluded = true;
       flags.push(`TJM sous votre seuil de ${formatEuro(search.minimumDailyRate)}.`);

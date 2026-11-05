@@ -249,3 +249,9 @@
 .search-criteria-row-editor .search-criteria-group-heading h3{display:none}
 .search-criteria-row-editor .search-criteria-group-heading p{margin-top:0}
 .search-criteria-inline-editor{padding:16px;border:1px solid var(--primary);border-radius:5px;background:var(--card)}
+
+/* Ma recherche · tolérance sous le minimum (lot 11). */
+.search-pay-tolerance{display:grid;gap:10px;max-width:calc(2 * var(--criteria-control-width, 270px) + 24px);margin-top:18px}
+.search-pay-tolerance-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.search-pay-tolerance-heading strong{font-size:14px;font-variant-numeric:tabular-nums}
+.search-pay-tolerance-slider{min-height:32px}

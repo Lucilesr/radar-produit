@@ -90,4 +90,6 @@ export type SearchPreferences = {
   minimumSalary: number;
   minimumDailyRate: number;
   minimumMatchScore: number;
+  /** 0 to 20: a known pay up to this % under the minimum stays visible as an exception. */
+  payTolerancePercent?: number;
 };

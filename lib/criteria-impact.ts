@@ -37,6 +37,7 @@ export function describeCriteriaChanges(before: SearchPreferences, after: Search
   if (before.remote !== after.remote) changes.push(`Présence ${remoteLabels[before.remote]} → ${remoteLabels[after.remote]}`);
   if (before.minimumSalary !== after.minimumSalary) changes.push(`Salaire ${euro(before.minimumSalary)} → ${euro(after.minimumSalary)}/an`);
   if (before.minimumDailyRate !== after.minimumDailyRate) changes.push(`TJM ${euro(before.minimumDailyRate)} → ${euro(after.minimumDailyRate)}/jour`);
+  if ((before.payTolerancePercent ?? 0) !== (after.payTolerancePercent ?? 0)) changes.push(`Tolérance ${before.payTolerancePercent ?? 0} % → ${after.payTolerancePercent ?? 0} %`);
   if (before.minimumMatchScore !== after.minimumMatchScore) changes.push(`Score Jobgether ${before.minimumMatchScore} → ${after.minimumMatchScore}`);
   return changes;
 }

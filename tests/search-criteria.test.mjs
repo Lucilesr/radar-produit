@@ -57,3 +57,10 @@ test("la vue dépliée range chaque critère dans son thème", () => {
   assert.deepEqual(groups.find(group => group.id === "geography").rows.map(row => row.label), ["Lieux inclus", "Sauf"]);
   assert.equal(groups.find(group => group.id === "pay").rows.find(row => row.id === "matchScore").target, "jobgether");
 });
+
+test("la tolérance n'apparaît que si elle est réglée", () => {
+  assert.ok(!criteriaTokens(searchPreferences({})).some(token => token.id === "payTolerance"));
+  const token = criteriaTokens(searchPreferences({ payTolerancePercent: 5 })).find(item => item.id === "payTolerance");
+  assert.equal(token.label, "Tolérance");
+  assert.equal(token.value, "−5 %");
+});

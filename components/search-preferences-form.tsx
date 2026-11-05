@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CandidateProfile, SearchPreferences } from "@/lib/types";
-import { normalizeRoleTitles, searchPreferences } from "@/lib/search-preferences";
+import { normalizeRoleTitles, payFloor, searchPreferences } from "@/lib/search-preferences";
+import { Slider } from "@/components/ui/slider";
+
+const euro = (amount: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(amount) + " €";
 import { ChoiceSelect } from "@/components/choice-select";
 import { locationRegionOptions, normalizeLocationRules } from "@/lib/location-criteria";
 import { countryOptions } from "@/lib/countries";
@@ -17,6 +20,7 @@ const partTitles: Record<CriteriaFormPart, string> = { roles: "search-roles-titl
 export function SearchPreferencesForm({ profile, onSave, showIntro = true, only }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; showIntro?: boolean; only?: CriteriaFormPart }) {
   const show = (part: CriteriaFormPart) => !only || only === part;
   const [draft, setDraft] = useState<SearchPreferences>(() => searchPreferences(profile.searchPreferences));
+  const tolerance = draft.payTolerancePercent ?? 0;
   const [roles, setRoles] = useState(() => searchPreferences(profile.searchPreferences).roles);
   const [includedLocations, setIncludedLocations] = useState(() => searchPreferences(profile.searchPreferences).includedLocations ?? []);
   const [excludedLocations, setExcludedLocations] = useState(() => searchPreferences(profile.searchPreferences).excludedLocations ?? []);
@@ -187,7 +191,13 @@ export function SearchPreferencesForm({ profile, onSave, showIntro = true, only 
           <label className="search-pay-field"><span className="search-pay-label">Salaire annuel minimum<span className="sr-only">, en euros bruts par an</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="1000" placeholder="Ex. 55000" value={draft.minimumSalary || ""} onChange={event => amount("minimumSalary", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ brut/an</span></span></label>
           <label className="search-pay-field"><span className="search-pay-label">TJM minimum<span className="sr-only">, en euros hors taxes par jour</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate || ""} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></span></label>
         </div>
-        <p className="search-criteria-help">Toute rémunération connue sous votre minimum est masquée dans « À examiner », même si le contrat est à confirmer. Si le montant manque, il reste « à vérifier ».</p>
+        <div className="search-pay-tolerance">
+          <div className="search-pay-tolerance-heading"><span id="search-pay-tolerance-label" className="search-pay-label">Tolérance sous le minimum</span><strong aria-hidden="true">{tolerance} %</strong></div>
+          <Slider min={0} max={20} step={1} value={[tolerance]} onValueChange={([value]) => scheduleSave({ ...latestDraft.current, payTolerancePercent: value })} thumbLabel="Tolérance sous le minimum" thumbValueText={`${tolerance} %`} className="search-pay-tolerance-slider" />
+        </div>
+        <p className="search-criteria-help">{tolerance
+          ? `Les offres jusqu’à ${tolerance} % sous votre minimum restent visibles avec la mention « Sous votre minimum » : dès ${euro(payFloor(draft.minimumSalary, tolerance))} brut/an ou ${euro(payFloor(draft.minimumDailyRate, tolerance))} HT/jour. En dessous, elles sont masquées dans « À examiner ».`
+          : "Toute rémunération connue sous votre minimum est masquée dans « À examiner », même si le contrat est à confirmer."} Si le montant manque, il reste « à vérifier ».</p>
       </section> : null}
       {show("conditions") || show("pay") ? <footer className="search-criteria-actions"><span role="status" className="search-form-status" data-state={saveState}>{statusText}</span>{saveState === "error" ? <button type="button" className="secondary-button" disabled={saving} onClick={() => void persistDraft()}>Réessayer</button> : null}</footer> : null}
     </form>

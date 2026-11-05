@@ -15,7 +15,8 @@ const marketScope = moduleUrl("market-scope");
 const countries = moduleUrl("countries");
 const locations = moduleUrl("location-criteria", { "./countries": countries, "./market-scope": marketScope });
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations });
-const { searchPreferences } = await import(preferences);
+const searchPreferencesModule = await import(preferences);
+const { searchPreferences } = searchPreferencesModule;
 const { assessJob } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations }));
 const { assessLocation, normalizeLocationRules } = await import(locations);
 const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement }));
@@ -258,4 +259,31 @@ test("le recalcul des critères masque les offres sous les minimums dans À exam
     const lower = assessJob(offer, { ...preferences, minimumSalary: 0, minimumDailyRate: 0 });
     assert(inOpportunityView({ ...offer, matchTier: lower.tier, flags: lower.flags }, "to_review"));
   }
+});
+
+test("la tolérance sous le minimum garde les offres proches comme exceptions", () => {
+  const { payFloor } = searchPreferencesModule;
+  assert.equal(payFloor(55000, 5), 52250);
+  assert.equal(payFloor(500, 5), 475);
+  const strict = { minimumSalary: 55000, minimumDailyRate: 500 };
+  const tolerant = { ...strict, payTolerancePercent: 5 };
+  // Strict by default: PR #156 behaviour is unchanged.
+  assert.equal(searchPreferences(strict).payTolerancePercent, 0);
+  assert.equal(assessJob({ ...baseline, annualSalary: 54999 }, strict).tier, "excluded");
+  // At the limit: kept, flagged.
+  const atFloor = assessJob({ ...baseline, annualSalary: 52250 }, tolerant);
+  assert.notEqual(atFloor.tier, "excluded");
+  assert.equal(atFloor.tier, "exception");
+  assert.ok(atFloor.flags.some(flag => flag.startsWith("Sous votre minimum")));
+  // One euro below the limit: excluded as before.
+  assert.equal(assessJob({ ...baseline, annualSalary: 52249 }, tolerant).tier, "excluded");
+  // At the minimum: a normal match, no tolerance flag.
+  assert.ok(!assessJob({ ...baseline, annualSalary: 55000 }, tolerant).flags.some(flag => flag.startsWith("Sous votre minimum")));
+  // Same rule for the daily rate.
+  const freelance = { ...baseline, contractType: "freelance", annualSalary: null };
+  assert.equal(assessJob({ ...freelance, dailyRate: 475 }, tolerant).tier, "exception");
+  assert.equal(assessJob({ ...freelance, dailyRate: 474 }, tolerant).tier, "excluded");
+  // Out-of-range values fall back to strict.
+  assert.equal(searchPreferences({ payTolerancePercent: 35 }).payTolerancePercent, 0);
+  assert.equal(searchPreferences({ payTolerancePercent: 2.5 }).payTolerancePercent, 0);
 });
