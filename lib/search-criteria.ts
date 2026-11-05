@@ -5,7 +5,7 @@ export type CriteriaTarget = "roles" | "conditions" | "locations" | "pay" | "job
 export type CriteriaTone = "include" | "exclude";
 
 export type CriteriaRow = {
-  id: "roles" | "contracts" | "remote" | "salary" | "dailyRate" | "matchScore" | "includedLocations" | "excludedLocations";
+  id: "roles" | "contracts" | "remote" | "salary" | "dailyRate" | "payTolerance" | "matchScore" | "includedLocations" | "excludedLocations";
   label: string;
   values: string[];
   tone: CriteriaTone;
@@ -32,6 +32,7 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
   const pay: CriteriaRow[] = [];
   if (salaried) pay.push({ id: "salary", label: "Salaire minimum", values: [`${euro(preferences.minimumSalary)} brut/an`], tone: "include", target: "pay" });
   if (contracts.includes("freelance")) pay.push({ id: "dailyRate", label: "TJM minimum", values: [`${euro(preferences.minimumDailyRate)} HT/jour`], tone: "include", target: "pay" });
+  if ((preferences.payTolerancePercent ?? 0) > 0 && (salaried || contracts.includes("freelance"))) pay.push({ id: "payTolerance", label: "Tolérance sous le minimum", values: [`${preferences.payTolerancePercent} %`], tone: "include", target: "pay" });
   pay.push({ id: "matchScore", label: "Score Jobgether minimum", values: [`${preferences.minimumMatchScore} / 100`], tone: "include", target: "jobgether" });
   const geography: CriteriaRow[] = [{ id: "includedLocations", label: "Lieux inclus", values: included.length ? included : ["Tous les lieux"], tone: "include", target: "locations" }];
   if (excluded.length) geography.push({ id: "excludedLocations", label: "Sauf", values: excluded, tone: "exclude", target: "locations" });
@@ -50,7 +51,7 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
 
 const shortLabels: Partial<Record<CriteriaRow["id"], string>> = {
   roles: "Poste", contracts: "Contrat", remote: "Présence", salary: "Salaire", dailyRate: "TJM",
-  matchScore: "Score Jobgether", includedLocations: "Lieux",
+  matchScore: "Score Jobgether", includedLocations: "Lieux", payTolerance: "Tolérance",
 };
 
 /** One compact tag per criterion for the collapsed bar. Long lists keep three values, then « +n ». */
@@ -58,7 +59,7 @@ export function criteriaTokens(preferences: SearchPreferences, visible = 3): Cri
   return criteriaGroups(preferences).flatMap(group => group.rows).map(row => {
     const shown = row.values.slice(0, visible).join(", ");
     const hidden = row.values.length - visible;
-    const prefix = row.id === "salary" || row.id === "dailyRate" || row.id === "matchScore" ? "≥ " : "";
+    const prefix = row.id === "salary" || row.id === "dailyRate" || row.id === "matchScore" ? "≥ " : row.id === "payTolerance" ? "−" : "";
     return {
       id: row.id,
       label: shortLabels[row.id] ?? row.label,
