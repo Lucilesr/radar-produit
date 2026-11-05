@@ -8,6 +8,11 @@
 - Le seuil de score Jobgether est visible en haut de « Mes critères » et accessible directement depuis « Alertes & flux ».
 - La valeur enregistrée est affichée dans le raccourci vers le réglage.
 
+## 5 novembre 2026 — Titres des cartes Candidatures
+
+- Dans le Kanban, le titre ouvre toujours le dossier. La flèche superflue est retirée et les titres occupent au plus deux lignes, avec des points de suspension si nécessaire.
+- Les cartes se déplacent par glissement ou avec la poignée au clavier ; le bouton « Déplacer » et son choix de colonne redondants sont retirés.
+
 ## 5 novembre 2026 — Tags des candidatures
 
 - Un dossier de candidature permet de créer des tags sans nom prérempli, de choisir une couleur, de les appliquer ou retirer de la carte, puis de les renommer ou supprimer après confirmation.

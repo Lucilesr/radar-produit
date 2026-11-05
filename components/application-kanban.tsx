@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, CalendarDays, Pencil, Plus } from "lucide-react";
+import { CalendarDays, Pencil, Plus } from "lucide-react";
 import { ApplicationDrag, ApplicationDropColumn, DraggableApplicationCard } from "@/components/application-drag";
 import { TagBadge, useApplicationTags } from "@/components/application-tags";
 import { ChoiceSelect } from "@/components/choice-select";
@@ -29,7 +29,7 @@ export function ApplicationKanban({ jobs, now, busy, onStatus, onOpen, board = d
           const step = applicationInterviewStep(job, now);
           const interview = column.stage === "interviews";
           const due = !terminalStatuses.includes(job.status) && job.interviews?.some(event => reviewDue(event, now));
-          return <DraggableApplicationCard key={job.id} job={job} column={column.id} busy={!!busy} title={<h3><button type="button" aria-label={`Ouvrir la candidature : ${job.title} · ${job.company || "Entreprise à confirmer"}`} onClick={() => onOpen(job, applicationDestination(job, now))}>{job.title}<ArrowUpRight size={15} aria-hidden/></button></h3>}>
+          return <DraggableApplicationCard key={job.id} job={job} column={column.id} busy={!!busy} title={<h3><button type="button" aria-label={`Ouvrir la candidature : ${job.title} · ${job.company || "Entreprise à confirmer"}`} onClick={() => onOpen(job, applicationDestination(job, now))}><span className="application-card-title-text">{job.title}</span></button></h3>}>
             <p className="application-card-company">{job.company || "Entreprise à confirmer"}</p>
             {tagsForJob(tagStore.tags, job.id).length ? <div className="application-card-tags">{tagsForJob(tagStore.tags, job.id).map(tag => <TagBadge key={tag.id} tag={tag} selected={tagFilter === tag.id} onClick={() => setTagFilter(current => current === tag.id ? "" : tag.id)}/>)}</div> : null}
             {job.deletedAt ? <p className="signal-help">Offre en corbeille · suivi conservé</p> : null}
