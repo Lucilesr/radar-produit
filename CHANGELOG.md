@@ -1,3 +1,9 @@
+## 5 novembre 2026 — Ma recherche : icône et logos des sources
+
+- L’onglet Ma recherche utilise une icône de réglages au lieu d’une enveloppe.
+- Les logos des sources gardent une largeur de texte fixe et restent entiers dans leur cadre, quelle que soit la police disponible ; le logo Remote OK n’est plus coupé.
+- La mention « Radar ne collecte pas le contenu de ces sites et n’utilise aucun de vos comptes » apparaît une seule fois dans le suivi des jobboards au lieu d’être répétée sur chaque carte.
+
 ## 5 novembre 2026 — Explication des minimums stricts
 
 Ma recherche décrit le masquage des rémunérations connues sous les minimums, y compris avec un contrat inconnu.
