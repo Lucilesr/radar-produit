@@ -19,9 +19,9 @@
 .application-card { min-width:0; padding:16px 14px; border:1px solid var(--border); border-radius:5px; background:var(--card); }
 .application-card:focus-within { border-color:var(--primary); }
 .application-card h3 { margin:0; font:600 14px/1.5 var(--font-sans); }
-.application-card h3 button { display:flex; align-items:flex-start; justify-content:space-between; width:100%; gap:8px; text-align:left; overflow-wrap:anywhere; border-radius:2px; }
+.application-card h3 button { display:block; width:100%; text-align:left; border-radius:2px; }
+.application-card-title-text { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; }
 .application-card h3 button:hover { color:var(--primary); text-decoration:underline; text-underline-offset:3px; }
-.application-card h3 svg { flex:none; margin-top:3px; color:var(--primary); }
 .application-card-company { margin-top:5px; color:var(--muted-foreground); font:400 12px/1.6 var(--font-sans); overflow-wrap:anywhere; }
 .application-card-tags,.application-tags-current { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
 .application-tag { display:inline-flex; align-items:center; min-height:26px; padding:4px 8px; border:1px solid #20374330; border-radius:4px; font:600 12px/16px var(--font-sans); text-align:left; overflow-wrap:anywhere; }
@@ -92,10 +92,6 @@ button.application-tag:hover,button.application-tag[aria-pressed=true] { outline
 .application-move-dialog input[type=radio] { accent-color:var(--primary); }
 .application-move-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; margin-top:20px; }
 .application-move-dialog .signal-form-error { margin-top:16px; color:var(--danger); }
-.application-move-button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;width:100%;margin-top:12px;border-top:1px solid var(--border);color:var(--primary);font:500 12px/1.5 var(--font-sans)}
-.application-move-button:hover,.application-move-button:focus-visible{background:var(--signal-soft)}
-.application-move-destinations{display:grid;gap:8px;margin-top:20px}
-.application-move-destinations button{min-height:44px;justify-content:flex-start;white-space:normal;overflow-wrap:anywhere;text-align:left}
 @media(max-width:640px) {
  .applications-toolbar { gap:12px; }
  .application-display-toggle { margin-left:auto; }
