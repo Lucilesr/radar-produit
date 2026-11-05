@@ -1,3 +1,9 @@
+## 5 novembre 2026 — Ma recherche : enregistrement automatique et annulation
+
+- Contrats, présence, salaire et TJM s'enregistrent seuls 600 ms après la dernière modification ; le bouton « Enregistrer » disparaît. Un état indique « en attente », « enregistrement » ou « enregistré », avec « Réessayer » en cas d'échec. Quitter le formulaire enregistre la dernière modification.
+- Chaque enregistrement affiche ce qui a changé et le nombre d'offres à examiner qui en résulte (« TJM 500 € → 450 €/jour. 22 offres à examiner (+8). »), avec « Annuler » pour revenir aux critères précédents.
+- Un champ de rémunération vidé reste vide au lieu d'afficher 0 devant la saisie suivante.
+
 ## 5 novembre 2026 — Ma recherche : critères lisibles d'un coup d'œil
 
 - « Ce que je recherche » s'affiche d'abord comme une ligne d'étiquettes : postes, contrats, présence, minimums de rémunération, score Jobgether et lieux ; les lieux exclus sont signalés à part.
