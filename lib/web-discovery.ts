@@ -15,11 +15,14 @@ export function discoveryQueriesForRoles(roles: string[]) {
   });
 }
 
+/** Key of the single search that covers every role at once; not a job title. */
+export const allRolesLabel = "Tous les postes";
+
 export function groupedDiscoveryQueries(roles: string[]) {
   const terms = roles.map(role => `"${role.replace(/["\\\r\n]+/g, " ").trim()}"`);
   return [
-    { source: "LinkedIn Jobs", role: "Tous les postes", expression: `site:linkedin.com/jobs/view/ (${terms.join(" OR ")})` },
-    { source: "Welcome to the Jungle", role: "Tous les postes", expression: `site:welcometothejungle.com (${terms.join(" OR ")})` },
+    { source: "LinkedIn Jobs", role: allRolesLabel, expression: `site:linkedin.com/jobs/view/ (${terms.join(" OR ")})` },
+    { source: "Welcome to the Jungle", role: allRolesLabel, expression: `site:welcometothejungle.com (${terms.join(" OR ")})` },
   ];
 }
 

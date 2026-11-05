@@ -279,7 +279,7 @@ Les notes libres de `source-card.tsx` passent dans ce panneau, sous un `Expandab
 | `source-catalog.ts` → `searchTracks` | 3 pistes PO/PM, avec « CDI ≥ 55 k€ » dans le texte | `SearchPreferences.searchTracks` |
 | `web-discovery.ts` → `discoveryQueries` | Requêtes PO/PM constantes | Généré depuis les postes et les pistes du compte (`discoveryQueriesForRoles` existe déjà) |
 | `source-catalog.ts` → `note` | Conseils PO/PM (« Quatre alertes PO/PM… ») | Note générique sur la source ; les conseils personnels vont dans `notes` du compte |
-| `search-preferences.ts` → `defaultSearchPreferences.roles` | PO, PM | À choisir pendant l'onboarding ; plus de poste imposé à un nouveau compte |
+| `search-preferences.ts` → `defaultSearchPreferences.roles` | PO, PM | À choisir pendant l'onboarding ; plus de poste imposé à un nouveau compte. **Reporté au lot 10**, avec l'état vide et le premier réglage : la valeur par défaut reste le filet de sécurité d'un profil illisible. |
 
 **Données.**
 
@@ -289,7 +289,7 @@ type SearchTrack = { id: string; label: string; terms: string[]; kind: "core" | 
 ```
 
 - Sans `searchTracks`, une seule piste « core » est déduite des `roles`.
-- Reprise des comptes existants : une seule fois, à la lecture, les 3 pistes actuelles sont copiées dans le compte si elles n'y sont pas. Les comptes existants ne perdent ainsi pas « Product Builder ».
+- Reprise des comptes existants : à la lecture, les 3 pistes d'avant sont copiées dans le compte **seulement si ses postes sont exactement les anciens postes par défaut** (Product Owner + Product Manager). Un compte « Data Analyst » ne reçoit donc aucun terme PO/PM, et un compte qui cherchait bien PO/PM ne perd pas « Product Builder ». Dès qu'il enregistre ses pistes, elles sont les siennes.
 
 **Alertes d'écart.** Nouveau module pur `lib/search-drift.ts` :
 
@@ -300,10 +300,11 @@ export function searchDrift(search: { terms: string[]; contracts?: string[]; loc
 
 - `term` : un terme de recherche absent des `roles` **et** de toutes les `searchTracks` du compte. Comparaison sans accents ni casse, avec les alias de `normalizeRoleTitles`.
 - `contract` et `location` : à brancher quand une recherche enregistrée porte ces filtres (liens collés par l'utilisateur, alertes email). Commencer par `term`.
+- Les recherches enregistrées d'une source sont les clés de `searchLinks`, une par intitulé. La clé « Tous les postes » est la recherche groupée d'aujourd'hui, pas un intitulé : elle n'est jamais un écart (`allRolesLabel` dans `web-discovery.ts`).
 - Affichage dans le panneau de la source (lot 9) : bandeau ambre « « X » n'est pas dans vos critères », avec « L'ajouter à mes pistes » et « Retirer de cette recherche ».
 - Le filtre « Action requise » de la liste des sources (lot 8) inclut les sources qui ont au moins un écart.
 
-**Interface.** Ajouter une ligne « Pistes de recherche » au groupe *Le poste* : chaque piste a un nom, ses termes en tags et son type (Principale, Élargie, Alternative).
+**Interface.** Ajouter une ligne « Pistes de recherche » au groupe *Le poste* : chaque piste a un nom, ses termes en tags et son type (Principale, Élargie, Alternative). La ligne n'apparaît que si le compte a ses propres pistes ; sinon elle répéterait les postes. L'édition vit sous « Postes visés », dans le même groupe du formulaire.
 
 **Tests.** Isolation entre deux comptes fictifs (un compte « Data Analyst » ne reçoit aucun terme PO/PM). Reprise des pistes. Écart détecté, ou non, selon les pistes.
 

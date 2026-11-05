@@ -1,3 +1,11 @@
+## 5 novembre 2026 — Pistes de recherche propres à chaque compte, et alertes d'écart
+
+- Les trois pistes de recherche (« Cœur de cible », « Filet large », « Alternatives pertinentes ») ne sont plus les mêmes pour tout le monde : chaque compte a les siennes, modifiables sous « Postes visés ».
+- Un compte sans piste enregistrée cherche ses propres postes. Un compte qui cherchait les anciens postes par défaut garde les trois pistes d'avant.
+- « Recherches couvertes » affiche les pistes du compte, et non plus un texte figé.
+- Quand une recherche enregistrée sur une source cherche encore un intitulé absent de vos critères, la source l'indique : « X n'est pas dans vos critères », avec « L'ajouter à mes pistes » ou « Retirer de cette recherche ». Ces sources rejoignent le filtre « Action requise ».
+- Les conseils propres à un profil disparaissent des notes de sources.
+
 ## 5 novembre 2026 — Ma recherche : une seule liste de sources, avec leur état
 
 - Les sous-onglets « Jobboards » et « Alertes & flux » laissent place à une liste unique, groupée en « Automatiques » et « À consulter ».

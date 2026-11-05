@@ -1,11 +1,11 @@
 export const sourceCatalog = [
-  { name: "Collective", group: "France · CDI & freelance", url: "https://app.collective.work/talent/jobs", mode: "email", note: "Conserver PO/PM en français et anglais. Ajouter une recherche hybride légère à négocier, sans exclure les rémunérations absentes." },
+  { name: "Collective", group: "France · CDI & freelance", url: "https://app.collective.work/talent/jobs", mode: "email", note: "Alertes email par poste, en français et en anglais. Les offres sans rémunération annoncée y restent fréquentes." },
   { name: "Malt", group: "France · freelance", url: "https://www.malt.fr/", mode: "email", note: "Propositions de mission et notifications. Ne pas modifier la visibilité ou le profil public sans validation." },
   { name: "LinkedIn Jobs", group: "Annonces en français · tous pays", url: "https://www.linkedin.com/jobs/", mode: "web", note: "Recherche ouverte manuellement via un index public." },
-  { name: "Apec", group: "France · CDI", url: "https://www.apec.fr/candidat/recherche-emploi.html/emploi", mode: "email", note: "CDI, PO/PM, télétravail total et partiel. Garder une recherche sans filtre salaire pour ne pas perdre les offres non chiffrées." },
+  { name: "Apec", group: "France · CDI", url: "https://www.apec.fr/candidat/recherche-emploi.html/emploi", mode: "email", note: "CDI, télétravail total et partiel. Une recherche sans filtre salaire évite de perdre les offres non chiffrées." },
   { name: "Welcome to the Jungle", group: "Annonces en français · tous pays", url: "https://www.welcometothejungle.com/fr", mode: "web", note: "Recherche ouverte manuellement via un index public." },
-  { name: "Free-Work", group: "France · freelance & CDI", url: "https://www.free-work.com/fr/tech-it/jobs", mode: "email", note: "Quatre alertes PO/PM, CDI et freelance ; remote total + hybride à négocier. Vérifier salaire, TJM HT/jour et intermédiaire." },
-  { name: "Indeed", group: "France · couverture large", url: "https://fr.indeed.com/", mode: "email", note: "PO/PM, télétravail et CDI / contract. Les doublons et les intitulés approximatifs sont filtrés dans Radar." },
+  { name: "Free-Work", group: "France · freelance & CDI", url: "https://www.free-work.com/fr/tech-it/jobs", mode: "email", note: "CDI et freelance, remote total ou hybride. Vérifier le salaire, le TJM HT/jour et la présence d’un intermédiaire." },
+  { name: "Indeed", group: "France · couverture large", url: "https://fr.indeed.com/", mode: "email", note: "Télétravail, CDI et contract. Les doublons et les intitulés approximatifs sont filtrés dans Radar." },
   { name: "HelloWork", group: "France · CDI", url: "https://www.hellowork.com/fr-fr/", mode: "email", note: "Source complémentaire française ; éviter d'imposer un salaire si cela retire les annonces non chiffrées." },
   { name: "We Work Remotely", group: "International · remote hors US", url: "https://weworkremotely.com/categories/remote-product-jobs", mode: "rss", note: "Les annonces limitées aux États-Unis / à l'Amérique du Nord sont écartées. Les offres mondiales restent à vérifier : pays de résidence autorisés, fuseaux horaires et niveau d'anglais." },
   { name: "Jobgether", group: "International · remote", url: "https://jobgether.com/", mode: "api", note: "API publique sans compte ni clé. Radar recherche vos postes lors de l'actualisation ; les pays autorisés restent à confirmer sur l'annonce." },
@@ -19,8 +19,3 @@ export const sourceCatalog = [
 ] as const;
 export const sourceNames: [string, ...string[]] = ["Autre", "Ajout manuel", ...sourceCatalog.map(source => source.name)];
 export const broadMailQuery = 'newer_than:14d -in:spam -in:trash {from:linkedin.com from:apec.fr from:welcometothejungle.com from:free-work.com from:indeed.com from:indeed.fr from:hellowork.com}';
-export const searchTracks = [
-  { label: "Cœur de cible", query: '"Product Owner" OR "Product Manager"', detail: "CDI ≥ 55 k€/an ou freelance ≥ 500 €/jour ; FR/EN ; remote prioritaire." },
-  { label: "Filet large", query: '"chef de produit digital" OR "chef de projet produit" OR "Proxy Product Owner" OR "Digital Product Owner"', detail: "Sans salaire annoncé et hybride léger conservés comme exceptions ; pas d'anglais natif exigé par défaut." },
-  { label: "Alternatives pertinentes", query: '"Product Builder" OR "Product Ops" OR "Product Lead" OR "AI Product Manager"', detail: "Contexte produit, delivery, secteur public, fintech/SaaS ou IA. Les variantes ne remplacent pas le cœur PO/PM." },
-];

@@ -315,3 +315,18 @@
   .signal-source-row-actions{margin-left:0;flex-basis:100%;order:6}
   .signal-source-row-actions>*{flex:1}
 }
+
+/* Ma recherche · pistes de recherche du compte et écarts (lot 12) */
+.search-tracks{display:grid;gap:14px;margin-top:18px;padding-top:16px;border-top:1px solid var(--signal-rule)}
+.search-tracks-head h4{margin:0;font-size:.95rem;font-weight:650;color:var(--signal-ink)}
+.search-tracks-head p{margin:4px 0 0}
+.search-tracks>ul{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.search-track{display:grid;gap:10px;padding:12px 0 14px 14px;border-left:2px solid #D7DEE3}
+.search-track:focus-within{border-left-color:var(--signal-petrol,#24566B)}
+.search-track-head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+.search-track-head>input{flex:0 1 300px;min-width:0}
+.search-track-head .choice-select{flex:0 0 auto}
+.signal-source-drift{display:grid;gap:10px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--signal-warning-border,#D8B24A);border-radius:5px;background:var(--signal-warning-soft,#FBF4DF)}
+.signal-source-drift p{margin:0;font-size:.9rem;color:var(--signal-ink)}
+.signal-source-drift-actions{display:flex;flex-wrap:wrap;gap:8px}
+@media (max-width:640px){.search-track-head>button{margin-left:0}.signal-source-drift-actions>*{flex:1 1 100%}}

@@ -1,5 +1,6 @@
 import type { SearchPreferences } from "./types";
 import { normalizeLocationRules } from "./location-criteria";
+import { foldTerm, inheritedSearchTracks, normalizeSearchTracks } from "./search-tracks";
 
 export const defaultSearchPreferences: SearchPreferences = {
   roles: ["Product Owner", "Product Manager"],
@@ -53,7 +54,7 @@ export function normalizeKeywords(value: unknown): string[] {
     .filter(word => word.length >= 2 && word.length <= 40);
   return [...new Map(words.map(word => [foldKeyword(word), word])).values()].slice(0, 12);
 }
-export const foldKeyword = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("fr");
+export const foldKeyword = foldTerm;
 
 export function searchPreferences(value: unknown): SearchPreferences {
   if (!value || typeof value !== "object") return defaultSearchPreferences;
@@ -65,6 +66,7 @@ export function searchPreferences(value: unknown): SearchPreferences {
   const amount = (number: unknown, fallback: number) => typeof number === "number" && Number.isInteger(number) && number >= 0 && number <= 1000000 ? number : fallback;
   return {
     roles,
+    searchTracks: normalizeSearchTracks(raw.searchTracks) ?? inheritedSearchTracks(roles),
     includedLocations: normalizeLocationRules(raw.includedLocations),
     excludedLocations: normalizeLocationRules(raw.excludedLocations ?? defaultSearchPreferences.excludedLocations),
     contracts: contracts.length ? [...new Set(contracts)] : defaultSearchPreferences.contracts,
