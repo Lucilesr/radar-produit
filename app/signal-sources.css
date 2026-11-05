@@ -44,6 +44,16 @@
 .radar-app .signal-source-heading h2 { font:600 18px/1.4 var(--font-sans); letter-spacing:-.015em; margin:0; }
 .signal-source-description { flex:1 1 auto; font:400 13px/1.75 var(--font-sans); color:var(--muted-foreground); margin:14px 0; overflow-wrap:anywhere; }
 .signal-source-link { width:fit-content; max-width:100%; }
+.jobgether-score-setting{display:grid;gap:8px;margin:0 0 16px}
+.jobgether-score-label{font:600 13px/1.4 var(--font-sans)}
+.jobgether-score-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.jobgether-score-control{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 9px;border:1px solid var(--input);border-radius:5px;background:var(--card);color:var(--muted-foreground);font:400 13px/1.4 var(--font-sans)}
+.jobgether-score-control:focus-within{outline:3px solid var(--ring);outline-offset:3px}
+.jobgether-score-control input{width:3.5ch;min-width:3.5ch;height:42px;padding:0;border:0;background:transparent;color:var(--foreground);font:600 16px/1.4 var(--font-sans);text-align:right;appearance:textfield}
+.jobgether-score-control input:focus-visible{outline:0}
+.jobgether-score-control input::-webkit-inner-spin-button,.jobgether-score-control input::-webkit-outer-spin-button{appearance:none;margin:0}
+.jobgether-score-setting .signal-help{margin:0}
+.jobgether-score-setting .signal-form-error{margin:0}
 .source-workspace .source-research { margin-top:18px; border-radius:4px; background:transparent; }
 .source-workspace .signal-source-config>.radar-collapsible-content { padding:16px 0 0; border:0; }
 .source-workspace .signal-source-config .library-section-title { font:500 13px/1.5 var(--font-sans); }

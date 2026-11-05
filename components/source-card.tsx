@@ -10,13 +10,15 @@ import { useWorkspaceFeedback } from "@/components/workspace-feedback";
 import { formatDate } from "@/lib/application-workflow";
 import { sourceCatalog } from "@/lib/source-catalog";
 import { SourceLogo } from "@/components/source-logo";
+import { searchPreferences } from "@/lib/search-preferences";
+import type { CandidateProfile } from "@/lib/types";
 import { sourceGuidance } from "@/lib/source-guidance";
 
 export type SourceSetting = { source: string; state?: string; notes?: string; linkUrl?: string; selected?: boolean; verification?: string; lastSyncedAt?: string; lastAttemptAt?: string; health?: string; error?: string; updatedAt?: string; searchLinks?: Record<string, import("@/lib/web-discovery").SearchLinks>; latestAlert?: { url: string; notificationAt: string; label: string } };
 const states=(mode:typeof sourceCatalog[number]["mode"])=>[{value:"not_configured",label:"Pas encore commencé"},{value:"action_needed",label:"Étapes en cours"},{value:"configured",label:mode==="rss"?"Flux actif":mode==="api"?"Collecte active":mode==="email"?"Alerte activée":"Recherche configurée"},{value:"paused",label:"En pause"}];
 const stateLabels:Record<string,string>={not_configured:"À configurer",action_needed:"Action requise",configured:"Recherche configurée",paused:"En pause"};
 
-export function SourceCard({ source, setting, count, hidden, onSaved, onRemove }: { source: typeof sourceCatalog[number]; setting?: SourceSetting; count: number; hidden?: boolean; onSaved: (setting: SourceSetting) => void; onRemove?: () => void }) {
+export function SourceCard({ source, setting, count, hidden, profile, onSaveSearch, onSaved, onRemove }: { source: typeof sourceCatalog[number]; setting?: SourceSetting; count: number; hidden?: boolean; profile: CandidateProfile; onSaveSearch: (profile: CandidateProfile) => Promise<boolean>; onSaved: (setting: SourceSetting) => void; onRemove?: () => void }) {
   const title=useId();
   const notify=useWorkspaceFeedback();
   const [draft,setDraft]=useState<{state:string;notes:string;linkUrl:string}|null>(null);
@@ -52,6 +54,7 @@ export function SourceCard({ source, setting, count, hidden, onSaved, onRemove }
     <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><div className="signal-source-tools"><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span>{onRemove?<WorkspaceButton variant="quiet" disabled={busy} aria-label={`Supprimer ${source.name}`} title={`Supprimer ${source.name}`} onClick={onRemove}><Trash2 size={16} aria-hidden/></WorkspaceButton>:null}</div></div>
     <span className="signal-source-status" data-state={setting?.health==="degraded"?"action_needed":savedState}>{savedState==="paused"?"En pause":setting?.health==="degraded"?"Collecte interrompue":setting?.health==="retrying"?"Nouvel essai prévu":setting?.lastSyncedAt?"Collecte active":"Première collecte en attente"}</span>
     <p className="signal-source-description">{source.note}</p>
+    <JobgetherScoreSetting profile={profile} onSave={onSaveSearch}/>
     <a href={source.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a>
     {setting?.lastSyncedAt?<p className="signal-help">Dernière collecte réussie le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
     {setting?.health==="degraded"&&setting.lastAttemptAt?<p className="signal-help">Dernière tentative le {formatDate(setting.lastAttemptAt,"Indian/Mauritius",true)}</p>:null}
@@ -77,4 +80,34 @@ export function SourceCard({ source, setting, count, hidden, onSaved, onRemove }
       </form>
     </ExpandableSection>
   </section>;
+}
+
+function JobgetherScoreSetting({profile,onSave}:{profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>}) {
+  const saved=searchPreferences(profile.searchPreferences).minimumMatchScore;
+  const [draft,setDraft]=useState<string|null>(null);
+  const [saving,setSaving]=useState(false);
+  const [error,setError]=useState("");
+  const [success,setSuccess]=useState("");
+  const locked=useRef(false);
+  const value=draft??String(saved);
+  const valid=/^\d{1,3}$/.test(value)&&Number(value)<=100;
+  const changed=valid&&Number(value)!==saved;
+  async function saveScore(){
+    if(locked.current||!changed)return;
+    locked.current=true;setSaving(true);setError("");setSuccess("");
+    try {
+      const preferences=searchPreferences(profile.searchPreferences);
+      const confirmed=await onSave({...profile,searchPreferences:{...preferences,minimumMatchScore:Number(value)}});
+      if(!confirmed)throw new Error("Enregistrement non confirmé. Réessayez.");
+      setDraft(null);setSuccess(`Seuil enregistré : ${value}/100.`);
+    } catch(problem){setError(problem instanceof Error?problem.message:"Enregistrement non confirmé. Réessayez.");}
+    finally{locked.current=false;setSaving(false);}
+  }
+  return <form className="jobgether-score-setting" onSubmit={event=>{event.preventDefault();void saveScore();}}>
+    <label htmlFor="jobgether-minimum-score" className="jobgether-score-label">Score minimal des nouvelles offres</label>
+    <div className="jobgether-score-row"><span className="jobgether-score-control"><input id="jobgether-minimum-score" type="number" min="0" max="100" step="1" inputMode="numeric" value={value} disabled={saving} aria-invalid={draft!==null&&!valid} aria-describedby="jobgether-score-help" onChange={event=>{setDraft(event.target.value);setError("");setSuccess("");}}/><span aria-hidden="true">/ 100</span></span><WorkspaceButton type="submit" variant="primary" busy={saving} disabled={!changed}>Enregistrer</WorkspaceButton></div>
+    <p id="jobgether-score-help" className="signal-help">De 0 à 100 · 55 par défaut. Les offres déjà suivies restent accessibles.</p>
+    {draft!==null&&!valid?<p role="alert" className="signal-form-error">Saisissez un entier entre 0 et 100.</p>:null}
+    <WorkspaceFormError message={error}/>{success?<p role="status" className="signal-help">{success}</p>:null}
+  </form>;
 }
