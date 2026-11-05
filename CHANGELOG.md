@@ -1,3 +1,7 @@
+## 5 novembre 2026 — Bornes du score Jobgether
+
+- La saisie du score reste entre 0 et 100, y compris lors d’une frappe ou d’un collage hors plage.
+
 ## 5 novembre 2026 — Présentation de la carte Jobgether
 
 - La carte Jobgether aligne son titre, son état et ses actions sur mobile et ordinateur. Le réglage du score utilise un champ compact avec un seul contour de focus visible.
