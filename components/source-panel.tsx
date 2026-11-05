@@ -15,7 +15,7 @@ import { sourceCatalog, searchTracks } from "@/lib/source-catalog";
 import { formatDate } from "@/lib/application-workflow";
 import type { JobRecord } from "@/lib/types";
 import type { CandidateProfile } from "@/lib/types";
-import { SearchPreferencesForm } from "@/components/search-preferences-form";
+import { SearchCriteriaPanel } from "@/components/search-criteria-panel";
 import { searchPreferences } from "@/lib/search-preferences";
 import { useDemoMode } from "@/components/demo-mode";
 import { readSearchSection, type SearchSection } from "@/lib/radar-navigation";
@@ -31,6 +31,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
   const [section,setSection]=useState<SearchSection>("criteria"),[kind,setKind]=useState<"jobboards"|"alerts">("jobboards");
   useEffect(()=>{const restore=()=>{if(active)setSection(readSearchSection(new URLSearchParams(window.location.search).get("sources")));};restore();window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);},[active]);
   function selectSection(next:SearchSection){setSection(next);const url=new URL(window.location.href);url.searchParams.set("sources",next);window.history.pushState(null,"",url.pathname+url.search+url.hash);}
+  function openJobgether(){selectSection("channels");setKind("alerts");requestAnimationFrame(()=>document.querySelector<HTMLElement>(".signal-source-api-card")?.scrollIntoView({block:"start"}));}
   const [loading,setLoading]=useState(true),[loadError,setLoadError]=useState("");
   const [operation,setOperation]=useState<"sync"|"alert"|null>(null);
   const [syncError,setSyncError]=useState(""),[alertError,setAlertError]=useState("");
@@ -88,7 +89,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
   return <div className="source-workspace signal-sources-workspace">
     <nav className="workspace-tabs" aria-label="Sections de Ma recherche">{sections.map(([id,label])=><button type="button" key={id} aria-pressed={section===id} aria-controls={"source-panel-"+id} onClick={()=>selectSection(id)}>{label}</button>)}</nav>
     <div id="source-panel-criteria" className="source-subpanel" hidden={section!=="criteria"}>
-      <SearchPreferencesForm profile={profile} onSave={onSave}/>
+      <SearchCriteriaPanel profile={profile} onSave={onSave} onOpenJobgether={openJobgether}/>
       <div className="market-boundary-note"><span className="market-boundary-dot"/><p><strong>Les lieux annoncés servent au classement.</strong> La langue de l’annonce et les pays autorisés pour le télétravail restent à vérifier sur la page employeur.</p></div>
     </div>
     <div id="source-panel-channels" className="source-subpanel" hidden={section!=="channels"}>

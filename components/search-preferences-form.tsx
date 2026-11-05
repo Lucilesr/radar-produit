@@ -10,7 +10,7 @@ import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, 
 
 const locationOptions = [...locationRegionOptions, ...countryOptions.filter(option => option.value).map(option => option.label)];
 
-export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean> }) {
+export function SearchPreferencesForm({ profile, onSave, showIntro = true }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; showIntro?: boolean }) {
   const [draft, setDraft] = useState<SearchPreferences>(() => searchPreferences(profile.searchPreferences));
   const [roles, setRoles] = useState(() => searchPreferences(profile.searchPreferences).roles);
   const [includedLocations, setIncludedLocations] = useState(() => searchPreferences(profile.searchPreferences).includedLocations ?? []);
@@ -121,11 +121,11 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
     setDraft(current => ({ ...current, [key]: Math.max(0, Math.min(1000000, Number(value) || 0)) }));
     setMessage("");
   };
-  return <section className="search-preferences-form" aria-labelledby="search-preferences-title" data-radar-guide="search-preferences-form">
-    <header className="search-criteria-intro">
+  return <section className="search-preferences-form" aria-labelledby={showIntro ? "search-preferences-title" : "search-criteria-title"} data-radar-guide="search-preferences-form">
+    {showIntro ? <header className="search-criteria-intro">
       <h2 id="search-preferences-title" className="source-heading">Ce que je recherche</h2>
       <p>Ces critères classent vos offres dans Radar. Ils ne modifient pas les alertes créées sur les sites externes.</p>
-    </header>
+    </header> : null}
     <form className="search-criteria-form" onSubmit={async event => { event.preventDefault(); if (roleSaveInFlight.current || locationSaveInFlight.current) return; setSaving(true); setMessage(""); try { setMessage(await onSave({ ...profile, searchPreferences: { ...draft, minimumMatchScore: searchPreferences(profile.searchPreferences).minimumMatchScore, roles, includedLocations, excludedLocations } }) ? "Recherche enregistrée. Les matchs utilisent vos critères." : "Enregistrement non confirmé. Réessayez."); } finally { setSaving(false); } }}>
       <section className="search-criteria-group" aria-labelledby="search-roles-title">
         <div className="search-criteria-group-heading"><h3 id="search-roles-title">Postes visés</h3><p>Ces intitulés ont le plus de poids dans le classement des offres.</p></div>

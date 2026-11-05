@@ -1,3 +1,10 @@
+## 5 novembre 2026 — Ma recherche : critères lisibles d'un coup d'œil
+
+- « Ce que je recherche » s'affiche d'abord comme une ligne d'étiquettes : postes, contrats, présence, minimums de rémunération, score Jobgether et lieux ; les lieux exclus sont signalés à part.
+- « Tout voir » déplie un tableau rangé par thème (le poste, la présence, la rémunération, la géographie). Le choix replié ou déplié est mémorisé sur l'appareil.
+- Une étiquette ou le bouton « Modifier » d'une ligne ouvre le formulaire sur le bon champ ; « Terminé » revient à la vue précédente. Le score Jobgether s'ouvre sur sa carte dans « Alertes & flux ».
+- Un compte sans critères enregistrés voit toujours le formulaire ouvert, pour la première configuration.
+
 ## 5 novembre 2026 — Ma recherche : icône et logos des sources
 
 - L’onglet Ma recherche utilise une icône de réglages au lieu d’une enveloppe.
