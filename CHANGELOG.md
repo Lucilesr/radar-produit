@@ -1,3 +1,9 @@
+## 5 novembre 2026 — Ma recherche : tolérance sous le minimum
+
+- Un curseur de 0 à 20 % règle la tolérance sous les minimums de salaire et de TJM. À 0 %, valeur par défaut, le comportement strict est inchangé.
+- Une offre dont la rémunération connue se situe dans la tolérance reste dans « À examiner », comme exception, avec le point à vérifier « Sous votre minimum… » et un badge sur sa carte. En dessous de la tolérance, elle reste masquée.
+- Le texte d'aide donne les seuils calculés (« dès 52 250 € brut/an ou 475 € HT/jour ») ; l'étiquette « Tolérance » n'apparaît dans la barre de critères que si elle est réglée.
+
 ## 5 novembre 2026 — Ma recherche : édition en place
 
 - Une étiquette de critère ouvre un panneau avec ce seul réglage (postes, contrats et présence, rémunération, lieux) ; sur téléphone, le réglage s'ouvre dans la page, sous les étiquettes. Échap ou « Terminé » ferme et rend le focus à l'étiquette.

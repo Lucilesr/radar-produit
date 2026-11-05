@@ -10,6 +10,7 @@ export const defaultSearchPreferences: SearchPreferences = {
   minimumSalary: 55000,
   minimumDailyRate: 500,
   minimumMatchScore: 55,
+  payTolerancePercent: 0,
 };
 
 export function normalizeRoleTitles(value: unknown): string[] {
@@ -20,6 +21,11 @@ export function normalizeRoleTitles(value: unknown): string[] {
     .filter(role => role.length >= 2 && role.length <= 80 && /[\p{L}\p{N}]/u.test(role));
   const unique = [...new Map(roles.map(role => [role.toLocaleLowerCase("fr"), role])).values()];
   return unique.length ? unique.slice(0, 12) : defaultSearchPreferences.roles;
+}
+
+/** Lowest pay kept with a tolerance, rounded to the euro: 55 000 at 5 % gives 52 250. */
+export function payFloor(minimum: number, tolerancePercent = 0) {
+  return Math.round(minimum * (100 - tolerancePercent) / 100);
 }
 
 export function searchPreferences(value: unknown): SearchPreferences {
@@ -37,6 +43,7 @@ export function searchPreferences(value: unknown): SearchPreferences {
     remote: remote === "light_hybrid" ? "hybrid" : remote === "occasional" ? "exceptional" : remote === "onsite" || remote === "hybrid" || remote === "exceptional" || remote === "full_remote" ? remote : defaultSearchPreferences.remote,
     minimumSalary: amount(raw.minimumSalary, defaultSearchPreferences.minimumSalary),
     minimumDailyRate: amount(raw.minimumDailyRate, defaultSearchPreferences.minimumDailyRate),
+    payTolerancePercent: typeof raw.payTolerancePercent === "number" && Number.isInteger(raw.payTolerancePercent) && raw.payTolerancePercent >= 0 && raw.payTolerancePercent <= 20 ? raw.payTolerancePercent : 0,
     minimumMatchScore: typeof raw.minimumMatchScore === "number" && Number.isInteger(raw.minimumMatchScore) && raw.minimumMatchScore >= 0 && raw.minimumMatchScore <= 100 ? raw.minimumMatchScore : defaultSearchPreferences.minimumMatchScore,
   };
 }
