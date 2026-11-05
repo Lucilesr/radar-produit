@@ -1,3 +1,8 @@
+## 5 novembre 2026 — Ma recherche : finitions du champ de lieux
+
+- Le champ de recherche de lieu n'affiche plus qu'un seul contour net quand il est sélectionné, au lieu de deux cadres arrondis superposés.
+- Les boutons « Inclure » et « Exclure » restent dans le panneau et passent à la ligne quand la place manque, au lieu de dépasser sur le côté.
+
 ## 5 novembre 2026 — Ma recherche : un seul champ pour les pays et régions
 
 - Les deux champs « Inclure » et « Exclure » sont remplacés par une recherche unique : tapez un lieu, puis Inclure (Entrée) ou Exclure (Maj+Entrée).

@@ -119,13 +119,13 @@
 .search-criteria-group-heading h3{font-size:16px;font-weight:600;line-height:1.4}
 .search-criteria-group-heading p,.search-criteria-help{margin-top:5px;color:var(--muted-foreground);font-size:13px;line-height:1.6}
 .search-field-label{display:block;margin-bottom:8px;font-size:13px;font-weight:600}
-.source-workspace .search-criteria-form :is(.search-field-label,.search-preferences-presence .choice-select>p,.search-pay-label){margin:0 0 8px;padding:0;color:var(--foreground);font:600 13px/1.4 var(--font-sans)}
+:is(.source-workspace,.search-criteria-popover,.search-criteria-inline-editor,.search-criteria-row-editor) .search-criteria-form :is(.search-field-label,.search-preferences-presence .choice-select>p,.search-pay-label){margin:0 0 8px;padding:0;color:var(--foreground);font:600 13px/1.4 var(--font-sans)}
 .search-role-entry{display:flex;gap:10px;max-width:400px}
-.source-workspace .search-role-entry input{flex:1;min-width:0;min-height:46px;padding:10px 12px;border:1px solid var(--border);border-radius:5px;background:var(--card)}
+:is(.source-workspace,.search-criteria-popover,.search-criteria-inline-editor,.search-criteria-row-editor) .search-role-entry input{flex:1;min-width:0;min-height:46px;padding:10px 12px;border:1px solid var(--border);border-radius:5px;background:var(--card)}
 .search-role-entry button{min-height:46px}
 .search-location-entry [data-slot=input-group]{flex:1;min-width:0;min-height:46px;border:1px solid var(--input);border-radius:5px;background:var(--card);box-shadow:none}
-.search-location-entry [data-slot=input-group]:focus-within{border-color:var(--ring);outline:3px solid var(--ring);outline-offset:3px}
-.source-workspace .search-location-entry [data-slot=input-group] input{min-height:44px;border:0;outline:0;box-shadow:none}
+.search-location-entry [data-slot=input-group]:focus-within{border-color:var(--ring);outline:2px solid var(--ring);outline-offset:0}
+:is(.source-workspace,.search-criteria-popover,.search-criteria-inline-editor,.search-criteria-row-editor) .search-location-entry [data-slot=input-group] input{min-height:44px;border:0;outline:0;box-shadow:none}
 .search-location-entry [data-slot=input-group-button]{min-height:32px;min-width:32px;border:0;background:transparent;color:var(--muted-foreground)}
 .search-location-menu[data-slot=combobox-content]{z-index:80;max-width:calc(100vw - 24px);border:1px solid var(--input);border-radius:7px;background:var(--card);color:var(--foreground);box-shadow:0 12px 36px #15354421}
 .search-location-menu [data-slot=combobox-item]{min-height:40px;padding:10px 35px 10px 12px;border-radius:4px;white-space:normal;overflow-wrap:anywhere;font:400 13px/1.45 var(--font-sans)}
@@ -141,8 +141,8 @@
 .search-contract-options label{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 12px;border:1px solid var(--border);border-radius:5px;background:transparent;font-size:14px;cursor:pointer}
 .search-contract-options label:has(input:checked){border-color:var(--primary);background:var(--accent)}
 .search-contract-options input{accent-color:var(--primary)}
-.source-workspace .search-criteria-form .search-preferences-presence,.source-workspace .search-criteria-form .search-pay-grid{width:100%}
-.source-workspace .search-criteria-form .search-preferences-presence{max-width:var(--criteria-control-width)}
+:is(.source-workspace,.search-criteria-popover,.search-criteria-inline-editor,.search-criteria-row-editor) .search-criteria-form .search-preferences-presence,:is(.source-workspace,.search-criteria-popover,.search-criteria-inline-editor,.search-criteria-row-editor) .search-criteria-form .search-pay-grid{width:100%}
+:is(.source-workspace,.search-criteria-popover,.search-criteria-inline-editor,.search-criteria-row-editor) .search-criteria-form .search-preferences-presence{max-width:var(--criteria-control-width)}
 .search-criteria-form .search-pay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--criteria-grid-gap);max-width:none}
 .search-criteria-form .search-pay-field{max-width:var(--criteria-control-width)}
 .search-criteria-form .search-pay-label{position:static;display:block;margin-bottom:8px;padding:0;background:transparent;font-size:13px;line-height:1.4}
@@ -257,8 +257,9 @@
 .search-pay-tolerance-slider{min-height:32px}
 
 /* Ma recherche · zones en un seul champ (lot 4). */
-.search-place-entry{max-width:560px}
-.search-place-entry [data-slot=input-group]{flex:1 1 220px}
+.search-place-entry{flex-wrap:wrap;max-width:560px}
+.search-place-entry [data-slot=input-group]{flex:1 1 200px}
+.search-place-entry>button{flex:0 0 auto;min-height:46px}
 .search-place-shortcuts{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;color:var(--muted-foreground);font-size:13px}
 .search-place-shortcuts button{min-height:30px;padding:3px 10px;border:1px dashed var(--input);border-radius:4px;background:transparent;color:var(--foreground);font:500 12px/1.4 var(--font-sans)}
 .search-place-shortcuts button:hover{border-style:solid;background:var(--card)}
@@ -273,4 +274,4 @@
 .search-place-list li[data-kind=excludedLocations] .search-place-toggle button[aria-pressed=true]{color:var(--danger)}
 .search-place-remove{width:32px;height:32px;border-radius:50%;color:var(--muted-foreground);font-size:18px;line-height:1}
 .search-place-remove:hover{background:var(--muted);color:var(--foreground)}
-@media(max-width:640px){.search-place-entry{flex-wrap:wrap}.search-place-entry [data-slot=input-group]{flex-basis:100%}.search-place-entry>button{flex:1}}
+@media(max-width:640px){.search-place-entry [data-slot=input-group]{flex-basis:100%}.search-place-entry>button{flex:1}}
