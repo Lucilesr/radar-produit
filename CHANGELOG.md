@@ -5,6 +5,10 @@
 - Fermer la fenêtre des tags avec Échap ou le bouton de fermeture rend le focus au bouton « Tag » du dossier.
 - Saisir un nom dans la recherche des tags puis appuyer sur Entrée ouvre la création avec ce nom repris. Le bouton Tag est dans l’en-tête du dossier ; les tags appliqués apparaissent sous ses onglets, sans section vide.
 
+## 5 novembre 2026 — Lisibilité des infobulles
+
+- Les infobulles des opportunités et des autres écrans répartissent mieux le texte sur plusieurs lignes. Dans l’aide de la corbeille, « 10 jours » reste sur une même ligne.
+
 ## 5 novembre 2026 — Purge de la corbeille sur D1
 
 - Le nettoyage des offres expirées traite des lots de 20 pour rester sous la limite de 100 paramètres par requête de Cloudflare D1. Une corbeille volumineuse est vidée en plusieurs lots sans bloquer le chargement du radar.
