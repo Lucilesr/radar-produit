@@ -4,8 +4,12 @@ type SourceName = (typeof sourceCatalog)[number]["name"];
 
 export const sourceGuidance: Record<SourceName, { steps: [string, ...string[]]; result: string }> = {
   Collective: {
-    steps: ["Ouvrez Collective et créez ou vérifiez votre recherche PO/PM et ses notifications sur le site.", "Quand un email arrive, copiez son lien « See jobs » dans « Ajouter une alerte Collective », en haut de cette page."],
+    steps: ["Ouvrez Collective et créez ou vérifiez votre recherche et ses notifications sur le site.", "Quand un email arrive, copiez son lien « See jobs » dans « Ajouter une alerte Collective », en haut de cette page."],
     result: "Radar conserve le lien vers les résultats. Il n'ajoute aucune annonce à partir de cette seule alerte.",
+  },
+  "Mon site": {
+    steps: ["Préparez votre recherche sur le site, avec vos filtres.", "Collez son URL ici : Radar la gardera comme source à consulter et vous rappellera d’y revenir."],
+    result: "Radar conserve le lien et le rythme de visite. Il n’ouvre pas le site à votre place et n’y collecte rien.",
   },
   Malt: {
     steps: ["Ouvrez Malt et vérifiez les notifications de missions dans votre compte.", "Notez ici les critères suivis et la fréquence de vérification. Revenez sur les propositions reçues pour examiner chaque mission."],

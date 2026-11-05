@@ -1,3 +1,10 @@
+## 5 novembre 2026 — Choisir où Radar cherche
+
+- « Ajouter une source » ouvre un panneau : une recherche, trois filtres, et le catalogue trié selon vos critères — les sources proches de vos contrats, de votre présence et de vos pays d'abord.
+- Chaque entrée affiche son logo, son nom et deux ou trois étiquettes ; celles déjà suivies sont marquées « Ajoutée ».
+- « Votre site n'est pas dans la liste ? » : collez l'URL de votre recherche, elle devient une source à consulter, avec son rythme de visite.
+- Quand aucune source n'est suivie, la page demande « Où Radar doit-il chercher ? » et propose les deux familles, automatiques ou à consulter.
+
 ## 5 novembre 2026 — Le détail d'une source, et le rythme auquel la revisiter
 
 - Cliquer sur le nom d'une source ouvre un panneau latéral : ce qu'il faut ouvrir, les recherches préparées depuis vos critères, ce que la source a rapporté, ses réglages et ses notes.

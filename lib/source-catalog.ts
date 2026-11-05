@@ -15,6 +15,7 @@ export const sourceCatalog = [
   { name: "Remotive", group: "International · remote", url: "https://remotive.com/", mode: "research", note: "Complément à examiner ; accès/API et conditions de republication à vérifier. Ne pas activer d'offre payante." },
   { name: "FreelanceRepublik", group: "France · freelance", url: "https://www.freelancerepublik.com/", mode: "research", note: "Canal de mise en relation ciblé ; vérifier sélection des profils, TJM et règles remote avant inscription." },
   { name: "Mindquest", group: "France / Europe · freelance", url: "https://mindquest.io/", mode: "research", note: "Missions produit/IT avec interlocuteur recruteur ; qualifier durée, TJM et flexibilité réelle." },
+  { name: "Mon site", group: "Ajout volontaire", url: "", mode: "web", note: "Un site que vous suivez vous-même. Collez l’URL de votre recherche ; Radar n’y collecte rien et n’utilise aucun compte." },
   { name: "Post LinkedIn", group: "Ajout volontaire", url: "https://www.linkedin.com/", mode: "manual", note: "Pas d'activation automatique : ajouter uniquement un lien et un texte fourni volontairement." },
 ] as const;
 export const sourceNames: [string, ...string[]] = ["Autre", "Ajout manuel", ...sourceCatalog.map(source => source.name)];

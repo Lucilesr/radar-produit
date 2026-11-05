@@ -242,7 +242,7 @@ Les notes libres de `source-card.tsx` passent dans ce panneau, sous un `Expandab
 ### Lot 10 — Ajouter une source et état vide
 
 - « Ajouter une source » ouvre un panneau latéral avec une recherche, des onglets *Automatiques* / *À consulter*, et le catalogue trié par pertinence pour les critères (contrats, remote, international). Chaque entrée affiche logo, nom, mode et 2 ou 3 tags, plus « Ajouter » ou « Ajoutée ». Cela reprend la logique de `SourceAddPanel`.
-- En bas du panneau : « Votre site n'est pas dans la liste ? » avec un champ URL. Pour l'instant, l'URL est enregistrée comme recherche manuelle (`linkUrl`, validée par `validSearchLink`) ; aucune analyse automatique.
+- En bas du panneau : « Votre site n'est pas dans la liste ? » avec un champ URL. L'URL est enregistrée comme recherche manuelle (`linkUrl`, validée par `validSearchLink`) sur l'entrée de catalogue « Mon site » ; aucune analyse automatique. Un seul site personnel pour l'instant : en ajouter plusieurs demandera des sources hors catalogue, donc une clé propre au compte.
 - **État vide**, quand aucune source n'est suivie : une carte « Où Radar doit-il chercher ? » qui propose deux choix, « Automatiques » et « À consulter », avec des exemples.
 
 ---
