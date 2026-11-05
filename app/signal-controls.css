@@ -95,7 +95,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--primary); }
 .help-tooltip-content {
   width: max-content; max-width: min(360px,calc(100vw - 32px));
   padding: 12px 14px; border-radius: 5px; background: var(--signal-petrol-dark); color: #fff;
-  font: 400 13px/1.6 var(--font-sans); white-space: normal; word-break: normal; overflow-wrap: normal;
+  font: 400 13px/1.6 var(--font-sans); white-space: normal; word-break: normal; overflow-wrap: break-word; text-wrap: pretty;
 }
 .workspace-toast.signal-toast {
   position: fixed; top: 20px; right: 20px; bottom: auto; left: auto;
