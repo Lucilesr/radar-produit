@@ -116,12 +116,16 @@ export async function setOffersDeleted(userId: string, ids: string[], deleted: b
     .returning({ id: jobs.id, deletedAt: jobs.deletedAt, dismissalReason: jobs.dismissalReason, dismissalNote: jobs.dismissalNote });
 }
 
+// D1 accepts at most 100 bound parameters per statement. Nested cleanup
+// subqueries repeat the eligible IDs, so keep each batch well below the limit.
+const TRASH_PURGE_BATCH_SIZE = 20;
+
 // Run when an account loads opportunities. A bounded batch keeps the request short.
 async function purgeExpiredTrashBatch(userId: string, now: Date) {
   const db = getDb();
   const cutoff = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString();
   const expired = await db.select({ id: jobs.id }).from(jobs)
-    .where(and(eq(jobs.userId, userId), isNotNull(jobs.deletedAt), lt(jobs.deletedAt, cutoff))).limit(50);
+    .where(and(eq(jobs.userId, userId), isNotNull(jobs.deletedAt), lt(jobs.deletedAt, cutoff))).limit(TRASH_PURGE_BATCH_SIZE);
   const ids = expired.map(row => row.id);
   if (!ids.length) return 0;
   const eligible = db.select({ id: jobs.id }).from(jobs)
@@ -159,7 +163,7 @@ async function purgeExpiredTrashBatch(userId: string, now: Date) {
 export async function purgeExpiredTrash(userId: string, now = new Date()) {
   let total = 0;
   let removed: number;
-  do { removed = await purgeExpiredTrashBatch(userId, now); total += removed; } while (removed === 50);
+  do { removed = await purgeExpiredTrashBatch(userId, now); total += removed; } while (removed === TRASH_PURGE_BATCH_SIZE);
   return total;
 }
 

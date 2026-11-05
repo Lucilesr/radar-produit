@@ -1,3 +1,7 @@
+## 5 novembre 2026 — Purge de la corbeille sur D1
+
+- Le nettoyage des offres expirées traite des lots de 20 pour rester sous la limite de 100 paramètres par requête de Cloudflare D1. Une corbeille volumineuse est vidée en plusieurs lots sans bloquer le chargement du radar.
+
 ## 5 novembre 2026 — Chargement du radar
 
 - Une erreur lors du nettoyage automatique de la corbeille n’empêche plus l’ouverture du radar ni la lecture des offres. Le nettoyage est retenté à la prochaine ouverture et l’erreur est conservée dans les journaux techniques.

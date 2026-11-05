@@ -8,7 +8,7 @@ export async function GET(request: Request) {
 
   try {
     // Keep offer reads available if the maintenance query fails.
-    await purgeExpiredTrash(user.userId).catch(error => console.error("Trash cleanup failed", error));
+    await purgeExpiredTrash(user.userId).catch(error => console.error("Trash cleanup failed:", String(error)));
     return Response.json({ jobs: await listOffers(user.userId, undefined, new URL(request.url).searchParams.get("includeDeleted") === "true") });
   } catch (error) {
     return Response.json({ error: messageFor(error) }, { status: 500 });

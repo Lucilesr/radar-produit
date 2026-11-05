@@ -32,7 +32,7 @@ test("corbeille SQLite : isolation A/B, relance, réimport, rappels et restaurat
   let queryCount = 0;
   for (const file of readdirSync(resolve(root, "drizzle")).filter(name => name.endsWith(".sql")).sort()) sqlite.exec(readFileSync(resolve(root, "drizzle", file), "utf8"));
   function prepare(sql) { let args = []; return {
-    bind(...values) { args = values; return this; },
+    bind(...values) { assert(values.length <= 100, "limite de 100 paramètres D1 dépassée"); args = values; return this; },
     async all() { return { results: sqlite.prepare(sql).all(...args) }; },
     async raw() { queryCount++; const stmt = sqlite.prepare(sql); stmt.setReturnArrays(true); return stmt.all(...args); },
     async run() { return sqlite.prepare(sql).run(...args); },
@@ -179,6 +179,12 @@ test("corbeille SQLite : isolation A/B, relance, réimport, rappels et restaurat
   assert(await store.getOffer("alice", edge.id, true), "à exactement 10 jours, restauration possible");
   assert(await store.getOffer("alice", recent.id, true));
   assert(await store.getOffer("bob", b.id, true), "isolation des comptes");
+  const manyExpired = [];
+  for (let i = 0; i < 45; i++) manyExpired.push((await store.saveOffer("alice", { ...input, company: `Ancienne corbeille ${i}` })).job.id);
+  await store.setOffersDeleted("alice", manyExpired, true);
+  for (const id of manyExpired) sqlite.prepare("UPDATE jobs SET deleted_at=? WHERE id=?").run("2026-10-01T00:00:00.000Z", id);
+  assert.equal(await store.purgeExpiredTrash("alice", now), 45, "plusieurs lots respectent la limite D1");
+  assert.equal(await store.purgeExpiredTrash("alice", now), 0);
   for (const table of ["interviews", "application_questions", "application_answer_revisions", "application_answer_proposals"]) {
     assert.equal(sqlite.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE id LIKE 'old-%'`).get().n, 0, table);
   }
