@@ -92,32 +92,26 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     flags.push("Type de contrat non recherché.");
   }
 
-  if (job.contractType === "cdi" || job.contractType === "cdd") {
+  if (job.annualSalary != null || job.contractType === "cdi" || job.contractType === "cdd") {
     if (job.annualSalary == null) {
       exception = true;
       flags.push("Salaire non communiqué");
     } else if (job.annualSalary >= search.minimumSalary) {
       score += 20;
       reasons.push(`Rémunération annoncée à ${formatEuro(job.annualSalary)} brut/an.`);
-    } else if (job.annualSalary >= search.minimumSalary - 5000) {
-      exception = true;
-      flags.push(`Salaire légèrement sous votre seuil de ${formatEuro(search.minimumSalary)}.`);
     } else {
       excluded = true;
       flags.push(`Salaire sous votre seuil de ${formatEuro(search.minimumSalary)}.`);
     }
   }
 
-  if (job.contractType === "freelance") {
+  if (job.dailyRate != null || job.contractType === "freelance") {
     if (job.dailyRate == null) {
       exception = true;
       flags.push("TJM non communiqué");
     } else if (job.dailyRate >= search.minimumDailyRate) {
       score += 20;
       reasons.push(`TJM annoncé à ${formatEuro(job.dailyRate)} HT/jour.`);
-    } else if (job.dailyRate >= search.minimumDailyRate - 50) {
-      exception = true;
-      flags.push(`TJM légèrement sous votre seuil de ${formatEuro(search.minimumDailyRate)}.`);
     } else {
       excluded = true;
       flags.push(`TJM sous votre seuil de ${formatEuro(search.minimumDailyRate)}.`);

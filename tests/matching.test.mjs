@@ -134,11 +134,11 @@ test("choix manuel d'entretien conservé, pas de dérogation présumée", () => 
   assert.equal(assessJob({ ...offer, status: "interview", annualSalary: 40000 }, { ...searchPreferences(), remote: "exceptional" }).tier, "excluded");
 });
 
-test("seuils et rémunérations absentes inchangés", () => {
-  for (const [salary, tier] of [[55000, "priority"], [50000, "exception"], [49999, "excluded"], [null, "exception"]]) {
+test("minimums stricts et rémunérations absentes à confirmer", () => {
+  for (const [salary, tier] of [[55000, "priority"], [54999, "excluded"], [50000, "excluded"], [49999, "excluded"], [null, "exception"]]) {
     assert.equal(assessJob({ ...baseline, annualSalary: salary }).tier, tier);
   }
-  for (const [rate, tier] of [[500, "priority"], [450, "exception"], [449, "excluded"], [null, "exception"]]) {
+  for (const [rate, tier] of [[500, "priority"], [499, "excluded"], [450, "excluded"], [449, "excluded"], [null, "exception"]]) {
     assert.equal(assessJob({ ...baseline, contractType: "freelance", dailyRate: rate }).tier, tier);
   }
 });
@@ -228,4 +228,34 @@ test("CDD est conservé et filtré comme contrat salarié", () => {
   assert.equal(assessJob(cdd, { ...searchPreferences(), contracts: ["cdi"] }).tier, "excluded");
   assert.equal(assessJob(cdd, { ...searchPreferences(), contracts: ["cdd"] }).tier, "priority");
   assert.equal(parseOfferText("Product Owner\nCDD\nSalaire 65k€", "Autre").contractType, "cdd");
+});
+
+for (const contractType of ["cdi", "cdd", "freelance", "other"]) {
+  test(`tout montant connu respecte les minimums personnalisés : ${contractType}`, () => {
+    const preferences = { ...searchPreferences(), minimumSalary: 58000, minimumDailyRate: 570, contracts: ["cdi", "cdd", "freelance"] };
+    const offer = { ...baseline, contractType, annualSalary: null, dailyRate: null };
+    for (const [field, threshold, flag] of [["annualSalary", 58000, "Salaire"], ["dailyRate", 570, "TJM"]]) {
+      for (const value of [0, threshold - 1, threshold - 5000]) {
+        const result = assessJob({ ...offer, [field]: value }, preferences);
+        assert.equal(result.tier, "excluded");
+        assert(result.flags.some(text => text.startsWith(`${flag} sous votre seuil`)));
+      }
+      assert.notEqual(assessJob({ ...offer, [field]: threshold }, preferences).tier, "excluded");
+      assert.notEqual(assessJob({ ...offer, [field]: threshold + 1 }, preferences).tier, "excluded");
+    }
+    assert.notEqual(assessJob(offer, preferences).tier, "excluded");
+    assert.equal(assessJob({ ...offer, annualSalary: 58000, dailyRate: 569 }, preferences).tier, "excluded");
+  });
+}
+
+test("le recalcul des critères masque les offres sous les minimums dans À examiner", async () => {
+  const { inOpportunityView } = await import(opportunityViews);
+  const preferences = { ...searchPreferences(), minimumSalary: 58000, minimumDailyRate: 570 };
+  for (const amounts of [{ annualSalary: 57999 }, { annualSalary: 25000 }, { annualSalary: null, dailyRate: 569 }]) {
+    const offer = { ...baseline, ...amounts, contractType: "other", status: "new", reviewState: "to_review" };
+    const assessment = assessJob(offer, preferences);
+    assert(!inOpportunityView({ ...offer, matchTier: assessment.tier, flags: assessment.flags }, "to_review"));
+    const lower = assessJob(offer, { ...preferences, minimumSalary: 0, minimumDailyRate: 0 });
+    assert(inOpportunityView({ ...offer, matchTier: lower.tier, flags: lower.flags }, "to_review"));
+  }
 });
