@@ -15,7 +15,8 @@ export default async function Home({searchParams}: {searchParams: Promise<Record
   const user = await requireChatGPTUser("/");
   if (user.userId.startsWith("demo:")) await ensureRecruiterDemo(user.userId, (await cookies()).get("radar_demo_mode")?.value === "onboarding");
   else await ensureOnboardingDemo(user.userId).catch(() => undefined);
-  await purgeExpiredTrash(user.userId);
+  // Cleanup is maintenance: a failure must not take down the entire workspace.
+  await purgeExpiredTrash(user.userId).catch(error => console.error("Trash cleanup failed", error));
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(await searchParams ?? {})) {
     for (const item of Array.isArray(value) ? value : value === undefined ? [] : [value]) search.append(key, item);

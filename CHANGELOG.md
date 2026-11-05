@@ -1,3 +1,7 @@
+## 5 novembre 2026 — Chargement du radar
+
+- Une erreur lors du nettoyage automatique de la corbeille n’empêche plus l’ouverture du radar ni la lecture des offres. Le nettoyage est retenté à la prochaine ouverture et l’erreur est conservée dans les journaux techniques.
+
 ## 4 novembre 2026 — Sélection des pays et régions
 
 - Les champs Inclure et Exclure utilisent le Combobox du design system Signal. La recherche de pays et régions est intégrée au champ, et un lieu libre reste possible avec Ajouter.
