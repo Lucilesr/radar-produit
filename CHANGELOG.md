@@ -1,3 +1,8 @@
+## 5 novembre 2026 — Score Jobgether dans sa carte
+
+- Le score minimal des nouvelles offres se règle directement sur la carte Jobgether dans « Jobboards & alertes → Alertes & flux ».
+- Le champ compact accepte un entier de 0 à 100 et enregistre la valeur indépendamment des autres critères.
+
 ## 5 novembre 2026 — Seuil Jobgether dans Ma recherche
 
 - Le seuil de score Jobgether est visible en haut de « Mes critères » et accessible directement depuis « Alertes & flux ».
