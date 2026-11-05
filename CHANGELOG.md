@@ -1,3 +1,9 @@
+## 5 novembre 2026 — Ma recherche : édition en place
+
+- Une étiquette de critère ouvre un panneau avec ce seul réglage (postes, contrats et présence, rémunération, lieux) ; sur téléphone, le réglage s'ouvre dans la page, sous les étiquettes. Échap ou « Terminé » ferme et rend le focus à l'étiquette.
+- Dans « Tout voir », « Modifier » ouvre le réglage sous la ligne concernée, sans quitter le tableau.
+- « Tout modifier » ouvre toujours le formulaire complet. Les listes de pays et menus ouverts depuis un panneau ne le referment plus.
+
 ## 5 novembre 2026 — Ma recherche : enregistrement automatique et annulation
 
 - Contrats, présence, salaire et TJM s'enregistrent seuls 600 ms après la dernière modification ; le bouton « Enregistrer » disparaît. Un état indique « en attente », « enregistrement » ou « enregistré », avec « Réessayer » en cas d'échec. Quitter le formulaire enregistre la dernière modification.

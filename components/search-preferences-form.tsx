@@ -10,7 +10,12 @@ import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, 
 
 const locationOptions = [...locationRegionOptions, ...countryOptions.filter(option => option.value).map(option => option.label)];
 
-export function SearchPreferencesForm({ profile, onSave, showIntro = true }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; showIntro?: boolean }) {
+export type CriteriaFormPart = "roles" | "conditions" | "locations" | "pay";
+const partTitles: Record<CriteriaFormPart, string> = { roles: "search-roles-title", conditions: "search-conditions-title", locations: "search-location-title", pay: "search-pay-title" };
+
+/** The whole criteria form, or with `only` a single group of it (popover or table row). */
+export function SearchPreferencesForm({ profile, onSave, showIntro = true, only }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; showIntro?: boolean; only?: CriteriaFormPart }) {
+  const show = (part: CriteriaFormPart) => !only || only === part;
   const [draft, setDraft] = useState<SearchPreferences>(() => searchPreferences(profile.searchPreferences));
   const [roles, setRoles] = useState(() => searchPreferences(profile.searchPreferences).roles);
   const [includedLocations, setIncludedLocations] = useState(() => searchPreferences(profile.searchPreferences).includedLocations ?? []);
@@ -147,44 +152,44 @@ export function SearchPreferencesForm({ profile, onSave, showIntro = true }: { p
     scheduleSave({ ...latestDraft.current, [key]: Math.max(0, Math.min(1000000, Number(value) || 0)) });
   };
   const statusText = { idle: "", pending: "Modification en attente d’enregistrement…", saving: "Enregistrement…", saved: "Enregistré. Les matchs utilisent vos critères.", error: "Enregistrement non confirmé." }[saveState];
-  return <section className="search-preferences-form" aria-labelledby={showIntro ? "search-preferences-title" : "search-criteria-title"} data-radar-guide="search-preferences-form">
+  return <section className={only ? "search-preferences-form search-preferences-form-single" : "search-preferences-form"} aria-labelledby={only ? partTitles[only] : showIntro ? "search-preferences-title" : "search-criteria-title"} data-radar-guide={only ? undefined : "search-preferences-form"}>
     {showIntro ? <header className="search-criteria-intro">
       <h2 id="search-preferences-title" className="source-heading">Ce que je recherche</h2>
       <p>Ces critères classent vos offres dans Radar. Ils ne modifient pas les alertes créées sur les sites externes.</p>
     </header> : null}
     <form className="search-criteria-form" onSubmit={event => { event.preventDefault(); if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; void persistDraft(); } }}>
-      <section className="search-criteria-group" aria-labelledby="search-roles-title">
+      {show("roles") ? <section className="search-criteria-group" aria-labelledby="search-roles-title">
         <div className="search-criteria-group-heading"><h3 id="search-roles-title">Postes visés</h3><p>Ces intitulés ont le plus de poids dans le classement des offres.</p></div>
         <label htmlFor="searched-role" className="search-field-label">Ajouter un poste</label>
         <div className="search-role-entry"><input id="searched-role" type="text" maxLength={80} value={roleInput} disabled={savingRole || saving} onChange={event => { setRoleInput(event.target.value); setRoleMessage(""); }} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addRole(); } }} placeholder="Ex. Product Owner" /><button type="button" className="secondary-button" disabled={savingRole || saving || !roleInput.trim()} onClick={addRole}>Ajouter</button></div>
         <ul className="search-role-list" aria-label="Postes enregistrés">{roles.map(role => <li key={role}>{role}<button type="button" aria-label={`Retirer ${role}`} disabled={savingRole || saving} onClick={() => removeRole(role)}>×</button></li>)}</ul>
         {roleMessage ? <p role="status" className="search-form-status">{roleMessage}</p> : null}
         <p className="search-criteria-help">Les postes s’enregistrent dès l’ajout. Vous pouvez aussi appuyer sur Entrée.</p>
-      </section>
-      <section className="search-criteria-group" aria-labelledby="search-conditions-title">
+      </section> : null}
+      {show("conditions") ? <section className="search-criteria-group" aria-labelledby="search-conditions-title">
         <div className="search-criteria-group-heading"><h3 id="search-conditions-title">Conditions de travail</h3><p>Choisissez les contrats et la présence que vous accepteriez.</p></div>
         <div className="search-criteria-fields">
           <fieldset className="search-contracts"><legend className="search-field-label">Contrats</legend><div className="search-contract-options">{([["cdi", "CDI"], ["cdd", "CDD"], ["freelance", "Freelance"]] as const).map(([value, label]) => <label key={value}><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} />{label}</label>)}</div></fieldset>
           <div className="search-preferences-presence"><ChoiceSelect label="Présence acceptable" value={draft.remote} onChange={remote => scheduleSave({ ...latestDraft.current, remote })} options={[{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Présence exceptionnelle" }, { value: "full_remote", label: "Full remote" }]} disabled={saving} /></div>
         </div>
-      </section>
-      <section className="search-criteria-group" aria-labelledby="search-location-title">
+      </section> : null}
+      {show("locations") ? <section className="search-criteria-group" aria-labelledby="search-location-title">
         <div className="search-criteria-group-heading"><h3 id="search-location-title">Pays et régions des offres</h3><p>Utilisez le lieu annoncé dans l’offre, distinct des pays autorisés pour télétravailler.</p></div>
         <div className="search-pay-grid">
           {(["includedLocations", "excludedLocations"] as const).map(kind => { const include = kind === "includedLocations"; const value = include ? includedInput : excludedInput; const setValue = include ? setIncludedInput : setExcludedInput; const items = include ? includedLocations : excludedLocations; const disabled = savingLocation || savingRole || saving; return <div key={kind} className="search-pay-field"><label className="search-pay-label" htmlFor={kind}>{include ? "Inclure" : "Exclure"}</label><div className="search-role-entry search-location-entry"><Combobox items={locationOptions} value={null} inputValue={value} onInputValueChange={next => { setValue(next); setLocationMessage(""); }} onValueChange={selected => { if (selected) addLocation(kind, selected); }} disabled={disabled}><ComboboxInput id={kind} className="search-location-combobox" placeholder={include ? "Ex. Europe" : "Ex. Roumanie"} aria-describedby="search-location-help" maxLength={80} disabled={disabled} /><ComboboxContent className="search-location-menu"><ComboboxEmpty>Aucun pays ni région trouvé. Vous pouvez ajouter le lieu saisi.</ComboboxEmpty><ComboboxList>{(option: string) => <ComboboxItem key={option} value={option}>{option}</ComboboxItem>}</ComboboxList></ComboboxContent></Combobox><button type="button" className="secondary-button" onClick={() => addLocation(kind)} disabled={disabled || !value.trim()}>Ajouter</button></div><ul className="search-role-list" aria-label={include ? "Lieux inclus" : "Lieux exclus"}>{items.map(label => <li key={label}>{label}<button type="button" aria-label={`Retirer ${label} des lieux ${include ? "inclus" : "exclus"}`} disabled={disabled} onClick={() => removeLocation(kind, label)}>×</button></li>)}</ul></div>; })}
         </div>
         <p id="search-location-help" className="search-criteria-help">Choisissez une suggestion, ou écrivez un autre lieu et cliquez sur Ajouter. L’enregistrement est immédiat. Les exclusions priment : « Europe » incluse et « Roumanie » exclue signifie Europe sauf Roumanie. Un lieu trop vague reste à vérifier.</p>
         <p role="status" className="search-form-status">{locationMessage}</p>
-      </section>
-      <section className="search-criteria-group" aria-labelledby="search-pay-title">
+      </section> : null}
+      {show("pay") ? <section className="search-criteria-group" aria-labelledby="search-pay-title">
         <div className="search-criteria-group-heading"><h3 id="search-pay-title">Rémunération souhaitée</h3><p>Renseignez le seuil correspondant à chaque type de contrat recherché.</p></div>
         <div className="search-pay-grid">
           <label className="search-pay-field"><span className="search-pay-label">Salaire annuel minimum<span className="sr-only">, en euros bruts par an</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="1000" placeholder="Ex. 55000" value={draft.minimumSalary || ""} onChange={event => amount("minimumSalary", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ brut/an</span></span></label>
           <label className="search-pay-field"><span className="search-pay-label">TJM minimum<span className="sr-only">, en euros hors taxes par jour</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate || ""} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></span></label>
         </div>
         <p className="search-criteria-help">Toute rémunération connue sous votre minimum est masquée dans « À examiner », même si le contrat est à confirmer. Si le montant manque, il reste « à vérifier ».</p>
-      </section>
-      <footer className="search-criteria-actions"><span role="status" className="search-form-status" data-state={saveState}>{statusText}</span>{saveState === "error" ? <button type="button" className="secondary-button" disabled={saving} onClick={() => void persistDraft()}>Réessayer</button> : null}</footer>
+      </section> : null}
+      {show("conditions") || show("pay") ? <footer className="search-criteria-actions"><span role="status" className="search-form-status" data-state={saveState}>{statusText}</span>{saveState === "error" ? <button type="button" className="secondary-button" disabled={saving} onClick={() => void persistDraft()}>Réessayer</button> : null}</footer> : null}
     </form>
   </section>;
 }
