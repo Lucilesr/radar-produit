@@ -29,9 +29,6 @@ button.application-tag:hover,button.application-tag[aria-pressed=true] { outline
 .application-tags-filter { display:flex; align-items:end; flex-wrap:wrap; gap:8px 12px; margin:0 0 14px; }
 .application-tags-filter .choice-select { width:min(270px,100%); }
 .application-tags-filter .signal-form-error { align-self:center; }
-.application-tags-section { padding:16px; border:1px solid var(--border); border-radius:5px; background:var(--card); }
-.application-tags-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
-.application-tags-heading h3 { font:600 14px/1.5 var(--font-sans); }
 .application-tags-current { margin-top:8px; }
 .application-tags-dialog { width:min(480px,calc(100vw - 24px)); }
 .application-tags-dialog-heading { display:grid; grid-template-columns:42px 1fr 42px; align-items:center; gap:8px; margin-bottom:18px; }

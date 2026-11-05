@@ -3,6 +3,7 @@
 - Un dossier de candidature permet de créer des tags sans nom prérempli, de choisir une couleur, de les appliquer ou retirer de la carte, puis de les renommer ou supprimer après confirmation.
 - Les tags sont visibles sur les cartes du Kanban. Cliquer sur un tag filtre les candidatures ; un contrôle Signal permet aussi de choisir le filtre.
 - Fermer la fenêtre des tags avec Échap ou le bouton de fermeture rend le focus au bouton « Tag » du dossier.
+- Saisir un nom dans la recherche des tags puis appuyer sur Entrée ouvre la création avec ce nom repris. Le bouton Tag est dans l’en-tête du dossier ; les tags appliqués apparaissent sous ses onglets, sans section vide.
 
 ## 5 novembre 2026 — Purge de la corbeille sur D1
 
