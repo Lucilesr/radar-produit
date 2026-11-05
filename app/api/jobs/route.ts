@@ -7,7 +7,8 @@ export async function GET(request: Request) {
   if (!user) return Response.json({ error: "Authentification requise" }, { status: 401 });
 
   try {
-    await purgeExpiredTrash(user.userId);
+    // Keep offer reads available if the maintenance query fails.
+    await purgeExpiredTrash(user.userId).catch(error => console.error("Trash cleanup failed", error));
     return Response.json({ jobs: await listOffers(user.userId, undefined, new URL(request.url).searchParams.get("includeDeleted") === "true") });
   } catch (error) {
     return Response.json({ error: messageFor(error) }, { status: 500 });
