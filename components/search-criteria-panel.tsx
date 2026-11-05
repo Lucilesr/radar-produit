@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Pencil } from "lucide-react";
-import { SearchPreferencesForm } from "@/components/search-preferences-form";
+import { SearchPreferencesForm, type CriteriaFormPart } from "@/components/search-preferences-form";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { WorkspaceButton } from "@/components/workspace-form";
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
 import { countToReview, describeCriteriaChanges, impactMessage } from "@/lib/criteria-impact";
-import { criteriaGroups, criteriaTokens, type CriteriaTarget } from "@/lib/search-criteria";
+import { criteriaGroups, criteriaTokens, type CriteriaRow, type CriteriaTarget } from "@/lib/search-criteria";
 import { searchPreferences } from "@/lib/search-preferences";
 import type { CandidateProfile, JobRecord } from "@/lib/types";
 
@@ -19,6 +21,13 @@ const editTargets: Record<Exclude<CriteriaTarget, "jobgether">, string> = {
   locations: "#includedLocations",
   pay: "section[aria-labelledby=search-pay-title] input",
 };
+
+// Menus opened from inside a popover (country list, select, mobile drawer) render elsewhere in
+// the page; a click in them must not close the popover that owns them.
+const nestedLayers = "[data-slot=combobox-content],[data-slot=select-content],[data-vaul-drawer],[data-slot=drawer-content]";
+function keepOpenForNestedMenus(event: { target: EventTarget | null; preventDefault: () => void }) {
+  if (event.target instanceof Element && event.target.closest(nestedLayers)) event.preventDefault();
+}
 
 function readView(): Exclude<View, "edit"> {
   if (typeof window === "undefined") return "summary";
@@ -41,6 +50,23 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
   const notify = useWorkspaceFeedback();
   // Remounts the form after an undo so its fields show the restored values.
   const [formRevision, setFormRevision] = useState(0);
+  const [openToken, setOpenToken] = useState<CriteriaRow["id"] | null>(null);
+  const [editingRow, setEditingRow] = useState<CriteriaRow["id"] | null>(null);
+  const formPart = (target: CriteriaTarget) => target as CriteriaFormPart;
+  // On a phone a floating panel has no room: the setting opens in the page, under the tags.
+  const mobile = useIsMobile();
+  const inlineToken = mobile ? criteriaTokens(preferences).find(token => token.id === openToken) : undefined;
+  const inlineEditor = useRef<HTMLDivElement>(null);
+  const tokenButtons = useRef(new Map<string, HTMLButtonElement>());
+  useEffect(() => {
+    if (!inlineToken) return;
+    inlineEditor.current?.scrollIntoView({ block: "nearest" });
+    inlineEditor.current?.querySelector<HTMLElement>("input,button,[role=combobox]")?.focus({ preventScroll: true });
+  }, [inlineToken?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  function closeInline() {
+    const id = openToken; setOpenToken(null);
+    if (id) requestAnimationFrame(() => tokenButtons.current.get(id)?.focus());
+  }
 
   /** Every save says what changed and how many offers it leaves to review, with one-step undo. */
   async function saveWithImpact(next: CandidateProfile) {
@@ -97,26 +123,46 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
             <WorkspaceButton variant="quiet" aria-expanded={view === "details"} aria-controls="search-criteria-details" onClick={toggle}>
               {view === "details" ? "Replier" : "Tout voir"}{view === "details" ? <ChevronUp size={15} aria-hidden /> : <ChevronDown size={15} aria-hidden />}
             </WorkspaceButton>
-            <WorkspaceButton ref={editButton} onClick={() => edit(null)}><Pencil size={14} aria-hidden />Modifier</WorkspaceButton>
+            <WorkspaceButton ref={editButton} onClick={() => edit(null)}><Pencil size={14} aria-hidden />Tout modifier</WorkspaceButton>
           </>}
       </div>
     </header>
 
     {view === "summary" ? <ul className="search-criteria-tokens" aria-label="Critères enregistrés">
-      {criteriaTokens(preferences).map(token => <li key={token.id}>
-        <button type="button" className="search-criteria-token" data-tone={token.tone} title={token.fullValue} aria-label={`${token.label} : ${token.fullValue}. Modifier`} onClick={() => edit(token.target)}>
-          <span>{token.label}</span><strong>{token.value}</strong>
-        </button>
-      </li>)}
+      {criteriaTokens(preferences).map(token => {
+        const label = `${token.label} : ${token.fullValue}. Modifier`;
+        const content = <><span>{token.label}</span><strong>{token.value}</strong></>;
+        if (token.target === "jobgether") return <li key={token.id}><button type="button" className="search-criteria-token" data-tone={token.tone} title={token.fullValue} aria-label={label} onClick={onOpenJobgether}>{content}</button></li>;
+        if (mobile) return <li key={token.id}><button type="button" ref={node => { if (node) tokenButtons.current.set(token.id, node); }} className="search-criteria-token" data-tone={token.tone} data-state={openToken === token.id ? "open" : "closed"} title={token.fullValue} aria-label={label} aria-expanded={openToken === token.id} aria-controls="search-criteria-inline" onClick={() => setOpenToken(openToken === token.id ? null : token.id)}>{content}</button></li>;
+        return <li key={token.id}>
+          <Popover open={openToken === token.id} onOpenChange={open => setOpenToken(open ? token.id : null)}>
+            <PopoverTrigger asChild>
+              <button type="button" className="search-criteria-token" data-tone={token.tone} title={token.fullValue} aria-label={label}>{content}</button>
+            </PopoverTrigger>
+            <PopoverContent align="start" collisionPadding={{ top: 12, right: 12, left: 12, bottom: 96 }} className="search-criteria-popover" onInteractOutside={keepOpenForNestedMenus} onFocusOutside={keepOpenForNestedMenus}>
+              <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(token.target)} />
+              <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={() => setOpenToken(null)}>Terminé</WorkspaceButton></div>
+            </PopoverContent>
+          </Popover>
+        </li>;
+      })}
     </ul> : null}
+    {view === "summary" && inlineToken ? <div id="search-criteria-inline" ref={inlineEditor} className="search-criteria-inline-editor">
+      <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(inlineToken.target)} />
+      <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={closeInline}>Terminé</WorkspaceButton></div>
+    </div> : null}
 
     {view === "details" ? <div id="search-criteria-details" className="search-criteria-details">
       {criteriaGroups(preferences).map(group => <section key={group.id} aria-labelledby={`search-criteria-${group.id}`}>
         <h3 id={`search-criteria-${group.id}`}>{group.title}</h3>
-        <dl>{group.rows.map(row => <div key={row.id} className="search-criteria-row">
+        <dl>{group.rows.map(row => <div key={row.id} className="search-criteria-row" data-editing={editingRow === row.id || undefined}>
           <dt>{row.label}</dt>
           <dd><ul className="search-criteria-values">{row.values.map(value => <li key={value} data-tone={row.tone}>{value}</li>)}</ul></dd>
-          <dd className="search-criteria-row-action"><WorkspaceButton variant="quiet" aria-label={`Modifier : ${row.label}`} onClick={() => edit(row.target)}>Modifier</WorkspaceButton></dd>
+          <dd className="search-criteria-row-action">{editingRow === row.id ? null : <WorkspaceButton variant="quiet" aria-label={`Modifier : ${row.label}`} aria-expanded={false} onClick={() => row.target === "jobgether" ? onOpenJobgether() : setEditingRow(row.id)}>Modifier</WorkspaceButton>}</dd>
+          {editingRow === row.id ? <dd className="search-criteria-row-editor">
+            <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(row.target)} />
+            <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={() => setEditingRow(null)}>Terminé</WorkspaceButton></div>
+          </dd> : null}
         </div>)}</dl>
       </section>)}
     </div> : null}
