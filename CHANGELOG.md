@@ -1,3 +1,9 @@
+## 6 novembre 2026 — « Aujourd'hui » rappelle les sources à consulter
+
+- Quand une source à consulter arrive à échéance, elle apparaît dans « Aujourd'hui » : « Welcome to the Jungle à visiter · vue il y a 3 jours ». Un clic ouvre son panneau dans « Ma recherche ».
+- Le rappel suit le rythme choisi pour chaque source et disparaît si vous l'avez coupé.
+- Dans le panneau d'une source, « Collez l'URL d'une offre vue sur ce site » ouvre le formulaire d'ajout avec le lien déjà rempli.
+
 ## 5 novembre 2026 — « + Critère »
 
 - À la suite de vos étiquettes, « + Critère » propose ce que vous n'avez pas encore réglé : mots-clés à mettre en avant, mots-clés à écarter, tolérance sous le minimum, pistes de recherche.

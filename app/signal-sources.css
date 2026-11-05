@@ -393,3 +393,6 @@
 .search-criteria-add-menu button{display:grid;gap:2px;width:100%;padding:10px 12px;border:1px solid var(--signal-line);border-radius:5px;background:var(--signal-paper);text-align:left;font:inherit;color:var(--signal-ink);cursor:pointer}
 .search-criteria-add-menu button:hover{border-color:var(--signal-petrol)}
 .search-criteria-add-menu span{font-size:.84rem;color:var(--signal-muted)}
+
+/* Aujourd'hui · sources à consulter (lot 9b) */
+.source-detail-offer{margin-top:10px}

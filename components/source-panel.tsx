@@ -31,12 +31,23 @@ const initialAlertSources = new Set(["Collective", "Apec", "Free-Work", "We Work
 const initialJobboardSources = new Set(["LinkedIn Jobs", "Welcome to the Jungle", "Wellfound", "Himalayas"]);
 const allInitialSources = new Set([...initialAlertSources, ...initialJobboardSources]);
 
-export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSynced:()=>Promise<boolean>;active?:boolean}) {
+export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true}:{jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSynced:()=>Promise<boolean>;onAddOffer?:(url:string)=>void;active?:boolean}) {
   const demo=useDemoMode();
   const notify=useWorkspaceFeedback();
   const [settings,setSettings]=useState<SourceSetting[]|null>(null);
   const [section,setSection]=useState<SearchSection>("criteria");
   useEffect(()=>{const restore=()=>{if(active)setSection(readSearchSection(new URLSearchParams(window.location.search).get("sources")));};restore();window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);},[active]);
+  // « Aujourd'hui » links to one source: open its panel, then drop the parameter.
+  useEffect(()=>{
+    if(!active||!settings)return;
+    const wanted=new URLSearchParams(window.location.search).get("source");
+    const source=wanted?sourceCatalog.find(item=>item.name===wanted):undefined;
+    if(!source)return;
+    setDetailSource(source);
+    const url=new URL(window.location.href);
+    url.searchParams.delete("source");
+    window.history.replaceState(null,"",url.pathname+url.search+url.hash);
+  },[active,settings]);
   function selectSection(next:SearchSection){setSection(next);const url=new URL(window.location.href);url.searchParams.set("sources",next);window.history.pushState(null,"",url.pathname+url.search+url.hash);}
   function openJobgether(){selectSection("channels");requestAnimationFrame(()=>document.querySelector<HTMLElement>(".signal-source-api-card")?.scrollIntoView({block:"start"}));}
   const [loading,setLoading]=useState(true),[loadError,setLoadError]=useState("");
@@ -163,7 +174,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
       {cards(["manual"])}
     </div>
     {settings?<SourceAddSheet open={addFilter!==null} initialFilter={addFilter??"all"} sources={[...jobboardCatalog,...alertCatalog]} followed={name=>sourceVisible(name,allInitialSources)} profile={profile} adding={addingSource} error={addSourceError} onAdd={async name=>{await addSource(name);}} onAddSite={addCustomSite} onClose={()=>{setAddFilter(null);setAddSourceError("");}}/>:null}
-    <SourceDetail source={detailSource} setting={detailSource?settings?.find(item=>item.source===detailSource.name):undefined} jobs={jobs} profile={profile} onClose={()=>setDetailSource(null)} onSaveSearch={onSave} onSaved={onSourceSaved} onRemove={source=>{setDetailSource(null);setRemovingSource(source);}} onVisit={visitSource}/>
+    <SourceDetail source={detailSource} setting={detailSource?settings?.find(item=>item.source===detailSource.name):undefined} jobs={jobs} profile={profile} onClose={()=>setDetailSource(null)} onSaveSearch={onSave} onSaved={onSourceSaved} onRemove={source=>{setDetailSource(null);setRemovingSource(source);}} onVisit={visitSource} onAddOffer={onAddOffer?url=>{setDetailSource(null);onAddOffer(url);}:undefined}/>
     <SourceRemovalDialog source={removingSource} onClose={()=>setRemovingSource(null)} onRemoved={updated=>{onSourceSaved(updated);setRemovingSource(null);notify({message:`${updated.source} supprimé des sources suivies.`});}} focusAfterRemoval={()=>document.querySelector<HTMLElement>("#source-panel-channels .source-add-panel summary")?.focus()}/>
   </div>;
 }

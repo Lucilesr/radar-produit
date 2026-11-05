@@ -15,7 +15,7 @@ import { searchPreferences } from "@/lib/search-preferences";
 import { maxTermsPerTrack, maxTracks, searchTracksFor, trackKindLabels, trackQuery } from "@/lib/search-tracks";
 import type { sourceCatalog } from "@/lib/source-catalog";
 import { remindsInToday, sourceKind, sourceStatus, statusLabels, statusTones, visitEvery, visitRhythms } from "@/lib/source-status";
-import { searchUrl } from "@/lib/web-discovery";
+import { searchUrl, validSearchLink } from "@/lib/web-discovery";
 import type { CandidateProfile, JobRecord } from "@/lib/types";
 
 type Source = typeof sourceCatalog[number];
@@ -37,13 +37,14 @@ function sourceSearches(source: Source, setting: SourceSetting | undefined, prof
 }
 
 /** Everything about one source: what to open, when to come back, and what it brought. */
-export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSearch, onSaved, onRemove, onVisit }: {
+export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSearch, onSaved, onRemove, onVisit, onAddOffer }: {
   source: Source | null; setting?: SourceSetting; jobs: JobRecord[]; profile: CandidateProfile;
   onClose: () => void; onSaveSearch: (profile: CandidateProfile) => Promise<boolean>; onSaved: (setting: SourceSetting) => void;
-  onRemove: (source: Source) => void; onVisit: (source: Source) => Promise<void>;
+  onRemove: (source: Source) => void; onVisit: (source: Source) => Promise<void>; onAddOffer?: (url: string) => void;
 }) {
   const notify = useWorkspaceFeedback();
   const [busy, setBusy] = useState(false);
+  const [offerUrl, setOfferUrl] = useState("");
   if (!source) return null;
   const preferences = searchPreferences(profile.searchPreferences);
   const kind = sourceKind(source.mode);
@@ -138,6 +139,11 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
         <section aria-labelledby="source-detail-found">
           <h3 id="source-detail-found">Offres trouvées ici</h3>
           <p className="signal-help">{found.length} offre{found.length > 1 ? "s" : ""} dans Radar · {applied} candidature{applied > 1 ? "s" : ""}.</p>
+          {onAddOffer ? <form className="search-role-entry source-detail-offer" onSubmit={event => { event.preventDefault(); const url = offerUrl.trim(); if (!validSearchLink(url)) { notify({ message: "Saisissez une URL https valide.", tone: "error" }); return; } setOfferUrl(""); onAddOffer(url); }}>
+            <input type="url" value={offerUrl} onChange={event => setOfferUrl(event.target.value)} placeholder="https://…" aria-label={`Coller l’URL d’une offre vue sur ${source.name}`} />
+            <WorkspaceButton type="submit" variant="secondary" disabled={!offerUrl.trim()}>Ajouter cette offre</WorkspaceButton>
+          </form> : null}
+          {onAddOffer ? <p className="signal-help">Collez l’URL d’une offre vue sur ce site : le formulaire d’ajout s’ouvre, prérempli.</p> : null}
         </section>
 
         <section aria-labelledby="source-detail-settings">
