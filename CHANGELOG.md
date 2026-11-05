@@ -1,3 +1,7 @@
+## 5 novembre 2026 — Minimums de rémunération stricts
+
+Les salaires et TJM connus inférieurs aux minimums du compte sont exclus sans tolérance, y compris lorsque le contrat est inconnu. Ces offres sont masquées dans « À examiner ». Les montants absents restent à vérifier ; les sélections et candidatures existantes sont conservées.
+
 ## 5 novembre 2026 — Profil accessible après une mise à jour
 
 - L'interface de Mon profil est chargée avec l'application pour qu'un onglet déjà ouvert puisse accéder aux expériences et documents même après le retrait des anciens fichiers du site.

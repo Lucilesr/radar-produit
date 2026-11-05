@@ -34,7 +34,7 @@ export function inOpportunityView(job: JobRecord, view: OpportunityView) {
   if (view === "trash") return !!job.deletedAt;
   if (job.deletedAt) return false;
   if (view === "to_review") return reviewState(job) === "to_review" && !hasApplication(job)
-    && !(job.matchTier === "excluded" && job.flags?.some(flag => flag.startsWith("Lieu annoncé hors de votre recherche") || flag.startsWith("Marché limité aux États-Unis")));
+    && !(job.matchTier === "excluded" && job.flags?.some(flag => flag.startsWith("Lieu annoncé hors de votre recherche") || flag.startsWith("Marché limité aux États-Unis") || flag.startsWith("Salaire sous votre seuil") || flag.startsWith("TJM sous votre seuil")));
   if (view === "selected") return reviewState(job) === "selected" && !hasApplication(job);
   return !hasApplication(job) && job.matchScore >= 75 && job.matchTier !== "excluded";
 }

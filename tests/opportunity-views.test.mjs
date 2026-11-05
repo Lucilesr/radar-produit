@@ -48,3 +48,15 @@ test("tri des opportunités par mapping et de la corbeille par date d’écartem
   assert.deepEqual(ids("trash", "oldest"), ["b", "c", "a"]);
   assert.deepEqual(offers.map(offer => offer.id), ["a", "b", "c"]);
 });
+
+test("les exclusions de rémunération sont masquées à examiner sans effacer les choix ni les candidatures", () => {
+  for (const flag of ["Salaire sous votre seuil de 58 000 €.", "TJM sous votre seuil de 570 €."]) {
+    const excluded = { ...job, matchTier: "excluded", flags: [flag] };
+    assert(!inOpportunityView(excluded, "to_review"));
+    assert(!inOpportunityView(excluded, "good_matches"));
+    assert(inOpportunityView({ ...excluded, reviewState: "selected" }, "selected"));
+    assert(inOpportunityView({ ...excluded, deletedAt: "2026-11-05" }, "trash"));
+    assert(!inOpportunityView({ ...excluded, status: "applied" }, "to_review"));
+  }
+  assert(inOpportunityView({ ...job, matchTier: "exception", flags: ["Salaire non communiqué"] }, "to_review"));
+});
