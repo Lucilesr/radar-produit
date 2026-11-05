@@ -316,6 +316,31 @@
   .signal-source-row-actions>*{flex:1}
 }
 
+/* Ma recherche · panneau de détail d'une source (lot 9) */
+.signal-source-row-open{padding:0;border:0;background:none;font:inherit;font-weight:650;color:var(--signal-ink);text-align:left;cursor:pointer}
+.signal-source-row-open:hover{text-decoration:underline}
+[data-slot=sheet-content].source-detail{display:flex;flex-direction:column;width:min(560px,100vw);max-width:none;gap:0;overflow-y:auto}
+.source-detail .source-detail-head{display:grid;grid-template-columns:44px minmax(0,1fr);gap:2px 12px;align-items:center;text-align:left;padding:20px 48px 16px 22px}
+.source-detail .source-detail-logo{grid-column:1;grid-row:1 / span 2;display:flex;width:44px}
+.source-detail .source-detail-head>[data-slot=sheet-title]{grid-column:2;grid-row:1;font-size:1.05rem}
+.source-detail .source-detail-head>[data-slot=sheet-description]{grid-column:2;grid-row:2}
+.source-detail .source-detail-head .signal-source-pill{grid-column:2;grid-row:3;justify-self:start;margin-top:8px}
+.source-detail-body{display:grid;gap:22px;padding:4px 22px 28px}
+.source-detail-body h3{margin:0 0 8px;font-size:.95rem;font-weight:650;color:var(--signal-ink)}
+.source-detail-body p{margin:0}
+.source-detail-buttons{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:8px}
+.source-detail-buttons>a{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.source-detail-searches{display:grid;gap:8px;margin:0 0 12px;padding:0;list-style:none}
+.source-detail-searches>li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--signal-rule);border-radius:5px}
+.source-detail-searches>li>a{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.source-detail-searches>li>span{display:grid;gap:2px;min-width:0}
+.source-detail-rhythm{display:flex;flex-wrap:nowrap;gap:0;margin-bottom:12px;border:1px solid var(--signal-rule);border-radius:5px;overflow:hidden;width:fit-content}
+.source-detail-rhythm>button{min-height:44px;padding:0 14px;white-space:nowrap;border:0;border-right:1px solid var(--signal-rule);background:var(--signal-surface);font:inherit;color:var(--signal-ink);cursor:pointer}
+.source-detail-rhythm>button:last-child{border-right:0}
+.source-detail-rhythm>button[aria-checked=true]{background:var(--signal-petrol,#24566B);color:#fff;font-weight:650}
+.source-detail-switch{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:.92rem}
+@media (max-width:640px){[data-slot=sheet-content].source-detail{width:100vw}.source-detail-searches>li{grid-template-columns:minmax(0,1fr)}.source-detail-searches>li>a{justify-content:center}}
+
 /* Ma recherche · pistes de recherche du compte et écarts (lot 12) */
 .search-tracks{display:grid;gap:14px;margin-top:18px;padding-top:16px;border-top:1px solid var(--signal-rule)}
 .search-tracks-head h4{margin:0;font-size:.95rem;font-weight:650;color:var(--signal-ink)}

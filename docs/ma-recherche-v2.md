@@ -231,7 +231,11 @@ Couleurs : `ok` et `up_to_date` → succès ; `to_configure` et `to_visit` → a
 
 Les notes libres de `source-card.tsx` passent dans ce panneau, sous un `ExpandableSection` « Notes ».
 
-**Aujourd'hui.** Dans `today-workspace.tsx` / `lib/workspace-agenda.ts`, ajouter une entrée par source `to_visit` dont `remindInToday` est vrai : « LinkedIn Jobs à visiter · vu il y a 3 jours » → ouvre le panneau.
+**Livraison en deux PR.**
+
+- **9a — le panneau et le rythme** (livré) : panneau latéral, recherches générées depuis les pistes du compte, écarts, rythme de visite (`visitEveryDays`, `remindInToday`, `POST /api/sources` avec `rhythm: true`), offres trouvées, réglages et notes repris de `SourceCard`.
+- **9b — le rappel dans « Aujourd'hui »** : dans `today-workspace.tsx` / `lib/workspace-agenda.ts`, une entrée par source `to_visit` dont `remindInToday` est vrai : « LinkedIn Jobs à visiter · vu il y a 3 jours » → ouvre le panneau. Demande de charger les sources dans `radar-app.tsx`, qui ne les connaît pas encore.
+- Reste ouvert dans 9a : le champ « Collez l'URL d'une offre vue sur ce site », qui doit ouvrir le dialogue d'ajout tenu par `radar-app.tsx` ; il rejoint 9b.
 
 ---
 

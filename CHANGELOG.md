@@ -1,3 +1,10 @@
+## 5 novembre 2026 — Le détail d'une source, et le rythme auquel la revisiter
+
+- Cliquer sur le nom d'une source ouvre un panneau latéral : ce qu'il faut ouvrir, les recherches préparées depuis vos critères, ce que la source a rapporté, ses réglages et ses notes.
+- « Rythme de visite » : chaque jour, tous les 2 jours ou chaque semaine, avec un rappel dans « Aujourd'hui » que vous pouvez couper. L'état « À visiter » suit le rythme choisi.
+- Les écarts d'une recherche (« X n'est pas dans vos critères ») s'affichent désormais dans ce panneau, à côté des recherches concernées.
+- La liste des sources garde ses lignes compactes : les réglages ne s'ouvrent plus dessous, mais dans le panneau.
+
 ## 5 novembre 2026 — Pistes de recherche propres à chaque compte, et alertes d'écart
 
 - Les trois pistes de recherche (« Cœur de cible », « Filet large », « Alternatives pertinentes ») ne sont plus les mêmes pour tout le monde : chaque compte a les siennes, modifiables sous « Postes visés ».

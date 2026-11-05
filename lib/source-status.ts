@@ -20,6 +20,12 @@ export function sourceKind(mode: SourceMode): SourceKind {
 }
 
 export const defaultVisitEveryDays = 2;
+/** How often a source to visit should be gone through, and how it is named. */
+export const visitRhythms: [number, string][] = [[1, "Chaque jour"], [2, "Tous les 2 jours"], [7, "Chaque semaine"]];
+export const visitEvery = (setting?: { visitEveryDays?: number }) =>
+  visitRhythms.some(([days]) => days === setting?.visitEveryDays) ? setting!.visitEveryDays! : defaultVisitEveryDays;
+/** « Aujourd'hui » reminds about a source to visit unless the account turned it off. */
+export const remindsInToday = (setting?: { remindInToday?: boolean }) => setting?.remindInToday !== false;
 
 export function sourceStatus(setting: SourceStatusInput, mode: SourceMode, now: Date = new Date()): SourceStatus {
   if (sourceKind(mode) === "automatic") {
