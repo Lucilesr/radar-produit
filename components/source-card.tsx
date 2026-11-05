@@ -50,8 +50,8 @@ export function SourceCard({ source, setting, count, hidden, profile, onSaveSear
     }catch(problem){setError(problem instanceof Error?problem.message:"État non enregistré.");}
     finally{locked.current=false;setBusy(false);}
   }
-  if(source.mode==="api")return <section hidden={hidden} className="signal-source-card" aria-labelledby={title}>
-    <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><div className="signal-source-tools"><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span>{onRemove?<WorkspaceButton variant="quiet" disabled={busy} aria-label={`Supprimer ${source.name}`} title={`Supprimer ${source.name}`} onClick={onRemove}><Trash2 size={16} aria-hidden/></WorkspaceButton>:null}</div></div>
+  if(source.mode==="api")return <section hidden={hidden} className="signal-source-card signal-source-api-card" aria-labelledby={title}>
+    <div className="signal-source-heading"><div className="signal-source-identity"><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><div className="signal-source-tools"><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span>{onRemove?<WorkspaceButton variant="quiet" disabled={busy} aria-label={`Supprimer ${source.name}`} title={`Supprimer ${source.name}`} onClick={onRemove}><Trash2 size={16} aria-hidden/></WorkspaceButton>:null}</div></div>
     <span className="signal-source-status" data-state={setting?.health==="degraded"?"action_needed":savedState}>{savedState==="paused"?"En pause":setting?.health==="degraded"?"Collecte interrompue":setting?.health==="retrying"?"Nouvel essai prévu":setting?.lastSyncedAt?"Collecte active":"Première collecte en attente"}</span>
     <p className="signal-source-description">{source.note}</p>
     <JobgetherScoreSetting profile={profile} onSave={onSaveSearch}/>
@@ -59,7 +59,7 @@ export function SourceCard({ source, setting, count, hidden, profile, onSaveSear
     {setting?.lastSyncedAt?<p className="signal-help">Dernière collecte réussie le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
     {setting?.health==="degraded"&&setting.lastAttemptAt?<p className="signal-help">Dernière tentative le {formatDate(setting.lastAttemptAt,"Indian/Mauritius",true)}</p>:null}
     <WorkspaceFormError message={setting?.error??""}/><WorkspaceFormError message={error}/>
-    <WorkspaceButton disabled={busy} busy={busy} onClick={()=>void toggleApi()}>{savedState==="paused"?"Reprendre la collecte":"Mettre en pause"}</WorkspaceButton>
+    <div className="signal-source-api-actions"><WorkspaceButton disabled={busy} busy={busy} onClick={()=>void toggleApi()}>{savedState==="paused"?"Reprendre la collecte":"Mettre en pause"}</WorkspaceButton></div>
   </section>;
   return <section hidden={hidden} className="signal-source-card" aria-labelledby={title}>
     <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><div className="signal-source-tools"><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span>{onRemove?<WorkspaceButton variant="quiet" disabled={busy} aria-label={`Supprimer ${source.name}`} title={`Supprimer ${source.name}`} onClick={onRemove}><Trash2 size={16} aria-hidden/></WorkspaceButton>:null}</div></div>
@@ -105,7 +105,7 @@ function JobgetherScoreSetting({profile,onSave}:{profile:CandidateProfile;onSave
   }
   return <form className="jobgether-score-setting" onSubmit={event=>{event.preventDefault();void saveScore();}}>
     <label htmlFor="jobgether-minimum-score" className="jobgether-score-label">Score minimal des nouvelles offres</label>
-    <div className="jobgether-score-row"><span className="jobgether-score-control"><input id="jobgether-minimum-score" type="number" min="0" max="100" step="1" inputMode="numeric" value={value} disabled={saving} aria-invalid={draft!==null&&!valid} aria-describedby="jobgether-score-help" onChange={event=>{setDraft(event.target.value);setError("");setSuccess("");}}/><span aria-hidden="true">/ 100</span></span><WorkspaceButton type="submit" variant="primary" busy={saving} disabled={!changed}>Enregistrer</WorkspaceButton></div>
+    <div className="jobgether-score-row"><div className="jobgether-score-control"><input id="jobgether-minimum-score" type="number" min="0" max="100" step="1" inputMode="numeric" value={value} disabled={saving} aria-invalid={draft!==null&&!valid} aria-describedby="jobgether-score-help" onChange={event=>{setDraft(event.target.value);setError("");setSuccess("");}}/><span aria-hidden="true">/ 100</span></div><WorkspaceButton type="submit" variant="primary" busy={saving} disabled={!changed}>Enregistrer</WorkspaceButton></div>
     <p id="jobgether-score-help" className="signal-help">De 0 à 100 · 55 par défaut. Les offres déjà suivies restent accessibles.</p>
     {draft!==null&&!valid?<p role="alert" className="signal-form-error">Saisissez un entier entre 0 et 100.</p>:null}
     <WorkspaceFormError message={error}/>{success?<p role="status" className="signal-help">{success}</p>:null}
