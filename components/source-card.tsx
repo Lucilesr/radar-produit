@@ -14,7 +14,7 @@ import { searchPreferences } from "@/lib/search-preferences";
 import type { CandidateProfile } from "@/lib/types";
 import { sourceGuidance } from "@/lib/source-guidance";
 
-export type SourceSetting = { source: string; state?: string; notes?: string; linkUrl?: string; selected?: boolean; verification?: string; lastSyncedAt?: string; lastAttemptAt?: string; health?: string; error?: string; updatedAt?: string; searchLinks?: Record<string, import("@/lib/web-discovery").SearchLinks>; latestAlert?: { url: string; notificationAt: string; label: string } };
+export type SourceSetting = { source: string; state?: string; notes?: string; linkUrl?: string; selected?: boolean; verification?: string; lastSyncedAt?: string; lastAttemptAt?: string; lastVisitedAt?: string; visitEveryDays?: number; health?: string; error?: string; updatedAt?: string; searchLinks?: Record<string, import("@/lib/web-discovery").SearchLinks>; latestAlert?: { url: string; notificationAt: string; label: string } };
 const states=(mode:typeof sourceCatalog[number]["mode"])=>[{value:"not_configured",label:"Pas encore commencé"},{value:"action_needed",label:"Étapes en cours"},{value:"configured",label:mode==="rss"?"Flux actif":mode==="api"?"Collecte active":mode==="email"?"Alerte activée":"Recherche configurée"},{value:"paused",label:"En pause"}];
 const stateLabels:Record<string,string>={not_configured:"À configurer",action_needed:"Action requise",configured:"Recherche configurée",paused:"En pause"};
 

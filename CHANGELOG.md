@@ -1,3 +1,11 @@
+## 5 novembre 2026 — Ma recherche : une seule liste de sources, avec leur état
+
+- Les sous-onglets « Jobboards » et « Alertes & flux » laissent place à une liste unique, groupée en « Automatiques » et « À consulter ».
+- Chaque source affiche son état : OK, Erreur, À configurer, En pause, Nouvelle, À visiter ou À jour, avec l'action correspondante et sa dernière activité.
+- Des filtres montrent toutes les sources, un seul type, ou celles qui demandent une action.
+- « J'ai fait le tour » marque une source à consulter comme visitée ; son état repasse à « À jour » puis à « À visiter » après le délai.
+- Les réglages d'une source s'ouvrent sous sa ligne, sans quitter la liste.
+
 ## 5 novembre 2026 — Ma recherche : mots-clés de l'annonce
 
 - Une section « L'annonce » permet de mettre en avant les offres qui parlent de certains sujets (fintech, paiement…) et d'écarter celles qui contiennent d'autres mots (stage, alternance…).
