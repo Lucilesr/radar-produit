@@ -3,13 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { ExternalLink, Plus, RefreshCw, Save } from "lucide-react";
 import { ExpandableSection } from "@/components/experience-section";
-import { HelpTooltip } from "@/components/help-tooltip";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { WorkspaceButton, WorkspaceFormError, WorkspacePanelHeader } from "@/components/workspace-form";
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
 import { SourceRemovalDialog } from "@/components/source-removal-dialog";
 import { isSourceVisible } from "@/lib/source-visibility";
 import { SourceCard, type SourceSetting } from "@/components/source-card";
+import { SourceList } from "@/components/source-list";
 import { WebDiscoveryPanel } from "@/components/web-discovery-panel";
 import { sourceCatalog, searchTracks } from "@/lib/source-catalog";
 import { formatDate } from "@/lib/application-workflow";
@@ -20,18 +20,19 @@ import { searchPreferences } from "@/lib/search-preferences";
 import { useDemoMode } from "@/components/demo-mode";
 import { readSearchSection, type SearchSection } from "@/lib/radar-navigation";
 
-const sections: [SearchSection,string][] = [["criteria","Mes critères"],["channels","Jobboards & alertes"],["outreach","Autres pistes"]];
+const sections: [SearchSection,string][] = [["criteria","Mes critères"],["channels","Sources"],["outreach","Autres pistes"]];
 const initialAlertSources = new Set(["Collective", "Apec", "Free-Work", "We Work Remotely"]);
 const initialJobboardSources = new Set(["LinkedIn Jobs", "Welcome to the Jungle", "Wellfound", "Himalayas"]);
+const allInitialSources = new Set([...initialAlertSources, ...initialJobboardSources]);
 
 export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSynced:()=>Promise<boolean>;active?:boolean}) {
   const demo=useDemoMode();
   const notify=useWorkspaceFeedback();
   const [settings,setSettings]=useState<SourceSetting[]|null>(null);
-  const [section,setSection]=useState<SearchSection>("criteria"),[kind,setKind]=useState<"jobboards"|"alerts">("jobboards");
+  const [section,setSection]=useState<SearchSection>("criteria");
   useEffect(()=>{const restore=()=>{if(active)setSection(readSearchSection(new URLSearchParams(window.location.search).get("sources")));};restore();window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);},[active]);
   function selectSection(next:SearchSection){setSection(next);const url=new URL(window.location.href);url.searchParams.set("sources",next);window.history.pushState(null,"",url.pathname+url.search+url.hash);}
-  function openJobgether(){selectSection("channels");setKind("alerts");requestAnimationFrame(()=>document.querySelector<HTMLElement>(".signal-source-api-card")?.scrollIntoView({block:"start"}));}
+  function openJobgether(){selectSection("channels");requestAnimationFrame(()=>document.querySelector<HTMLElement>(".signal-source-api-card")?.scrollIntoView({block:"start"}));}
   const [loading,setLoading]=useState(true),[loadError,setLoadError]=useState("");
   const [operation,setOperation]=useState<"sync"|"alert"|null>(null);
   const [syncError,setSyncError]=useState(""),[alertError,setAlertError]=useState("");
@@ -72,6 +73,14 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
     finally{locked.current=false;setOperation(null);}
   }
   const collectiveAlert=settings?.find(item=>item.source==="Collective"&&item.selected!==false)?.latestAlert;
+  async function visitSource(source:typeof sourceCatalog[number]){
+    try{
+      const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,visited:true})});
+      const data=await response.json() as {source?:SourceSetting;error?:string};
+      if(!response.ok||!data.source)throw new Error(data.error??"Visite non enregistrée.");
+      onSourceSaved(data.source);notify({message:`${source.name} marqué comme consulté.`});
+    }catch(problem){notify({message:problem instanceof Error?problem.message:"Visite non enregistrée.",tone:"error"});}
+  }
   const onSourceSaved=(updated:SourceSetting)=>setSettings(current=>[updated,...(current??[]).filter(item=>item.source!==updated.source)]);
   const alertCatalog=sourceCatalog.filter(source=>source.mode==="email"||source.mode==="rss"||source.mode==="api");
   const jobboardCatalog=sourceCatalog.filter(source=>source.mode==="web"||source.mode==="research");
@@ -93,31 +102,22 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
       <div className="market-boundary-note"><span className="market-boundary-dot"/><p><strong>Les lieux annoncés servent au classement.</strong> La langue de l’annonce et les pays autorisés pour le télétravail restent à vérifier sur la page employeur.</p></div>
     </div>
     <div id="source-panel-channels" className="source-subpanel" hidden={section!=="channels"}>
-      <div className="source-kind-picker" role="group" aria-label="Types de sources">
-        <button type="button" aria-pressed={kind==="jobboards"} aria-controls="source-kind-jobboards" onClick={()=>setKind("jobboards")}><strong>Jobboards</strong><span>J’ouvre une recherche sur un site, puis je consulte les annonces et règle les filtres moi-même.</span></button>
-        <button type="button" aria-pressed={kind==="alerts"} aria-controls="source-kind-alerts" onClick={()=>setKind("alerts")}><strong>Alertes & flux</strong><span>Je reçois une notification ou j’actualise un flux autorisé. Les offres sont ensuite vérifiées dans Radar.</span></button>
-      </div>
-      <div id="source-kind-jobboards" className="source-kind-panel" hidden={kind!=="jobboards"}>
-        {settings?<SourceAddPanel sources={jobboardCatalog} visible={name=>sourceVisible(name,initialJobboardSources)} adding={addingSource} error={addSourceError} onAdd={addSource}/>:null}
-        <WebDiscoveryPanel roles={searchPreferences(profile.searchPreferences).roles} settings={settings??[]} onSaved={onSourceSaved}/>
-        <section className="signal-source-panel" aria-labelledby="jobboard-settings-title"><WorkspacePanelHeader id="jobboard-settings-title" title="Suivi des jobboards"/><p className="signal-help">Les liens ci-dessus ouvrent les recherches. Les fiches ci-dessous vous servent à noter l’état de chaque site et les réglages à faire.</p><p className="signal-help">Radar ne collecte pas le contenu de ces sites et n’utilise aucun de vos comptes. Vérifiez chaque annonce auprès de l’employeur.</p><ExpandableSection className="source-research signal-source-research" title="Recherches couvertes"><div className="signal-source-tracks">{searchTracks.map(track=><section key={track.label}><h3>{track.label}</h3><p>{track.query}</p><p className="signal-help">{track.detail}</p></section>)}</div></ExpandableSection></section>
-        {settings===null?cards(["web","research"]):<div className="source-settings-grid">{jobboardCatalog.filter(source=>sourceVisible(source.name,initialJobboardSources)).map(source=><SourceCard key={source.name} source={source} setting={settings.find(item=>item.source===source.name)} count={jobs.filter(job=>job.source===source.name).length} profile={profile} onSaveSearch={onSave} onSaved={onSourceSaved} onRemove={()=>setRemovingSource(source)}/>)}</div>}
-      </div>
-      <div id="source-kind-alerts" className="source-kind-panel" hidden={kind!=="alerts"}>
-        {settings?<SourceAddPanel sources={alertCatalog} visible={name=>sourceVisible(name,initialAlertSources)} adding={addingSource} error={addSourceError} onAdd={addSource}/>:null}
-        {collectiveAlert?<section className="signal-source-panel" aria-labelledby="collective-latest-title"><WorkspacePanelHeader id="collective-latest-title" title="Alerte Collective à consulter"/><p className="signal-source-description">{collectiveAlert.label}</p><p className="signal-help">Signalée le {formatDate(collectiveAlert.notificationAt,"Indian/Mauritius",true)}. Ce lien mène à une liste de résultats ; chaque annonce doit être vérifiée avant de devenir une fiche Radar.</p><a href={collectiveAlert.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Voir les annonces sur Collective</a></section>:null}
-        {!demo?<section className="signal-source-panel" aria-labelledby="collective-add-title"><WorkspacePanelHeader id="collective-add-title" title="Ajouter une alerte Collective"/><p className="signal-help">Copiez le lien « See jobs » de l’email. La recherche sera visible ici, sans créer d’offres fictives.</p><form className="signal-collective-form" onSubmit={event=>{event.preventDefault();void saveCollectiveAlert();}}><input type="url" required disabled={busy} aria-label="Lien See jobs de Collective" value={collectiveUrl} onChange={event=>setCollectiveUrl(event.target.value)} placeholder="https://app.collective.work/my-personal-space/jobs?..."/><WorkspaceButton type="submit" variant="primary" busy={operation==="alert"} disabled={busy||!collectiveUrl.trim()}><Save size={14} aria-hidden/>Enregistrer l’alerte</WorkspaceButton></form><WorkspaceFormError message={alertError}/></section>:null}
-        <section className="signal-source-panel" aria-labelledby="source-settings-title"><WorkspacePanelHeader id="source-settings-title" title="Alertes et flux suivis" actions={!demo?<WorkspaceButton variant="primary" busy={operation==="sync"} disabled={busy} onClick={()=>void sync()}>{operation!=="sync"?<RefreshCw size={14} aria-hidden/>:null}Actualiser mes flux</WorkspaceButton>:null}/><p className="signal-help">Jobgether utilise les postes de « Mes critères » sans compte ni clé. Les alertes email se créent sur les autres sites. Radar ne lit pas vos comptes de jobboards.</p>{demo?<p className="signal-help">Dans la démo, vous pouvez modifier ce suivi et les liens web. L’ajout d’une alerte Collective et l’actualisation des flux externes sont désactivés.</p>:null}<WorkspaceFormError message={syncError}/><WorkspaceFormError message={loadError}/></section>
-        {settings?.filter(item=>item.selected!==false&&item.health==="degraded").map(item=><section className="signal-source-panel" role="alert" key={item.source}><h2>{item.source} · collecte interrompue</h2><p className="signal-help">{item.error}</p>{item.lastSyncedAt?<p className="signal-help">Dernière collecte réussie le {formatDate(item.lastSyncedAt,"Indian/Mauritius",true)}. Les fiches existantes restent disponibles.</p>:null}</section>)}
-        {settings===null?cards(["email","rss","api"]):<div className="source-settings-grid">{alertCatalog.filter(source=>sourceVisible(source.name,initialAlertSources)).map(source=><SourceCard key={source.name} source={source} setting={settings.find(item=>item.source===source.name)} count={jobs.filter(job=>job.source===source.name).length} profile={profile} onSaveSearch={onSave} onSaved={onSourceSaved} onRemove={()=>setRemovingSource(source)}/>)}</div>}
-      </div>
+      {settings?<SourceAddPanel sources={[...jobboardCatalog,...alertCatalog]} visible={name=>sourceVisible(name,allInitialSources)} adding={addingSource} error={addSourceError} onAdd={addSource}/>:null}
+      <section className="signal-source-panel" aria-labelledby="source-settings-title"><WorkspacePanelHeader id="source-settings-title" title="Collecte automatique" actions={!demo?<WorkspaceButton variant="primary" busy={operation==="sync"} disabled={busy} onClick={()=>void sync()}>{operation!=="sync"?<RefreshCw size={14} aria-hidden/>:null}Actualiser mes flux</WorkspaceButton>:null}/><p className="signal-help">Jobgether utilise les postes de « Mes critères » sans compte ni clé. Les alertes email se créent sur les autres sites. Radar ne lit pas vos comptes de jobboards et ne collecte pas le contenu des sites à consulter.</p>{demo?<p className="signal-help">Dans la démo, vous pouvez modifier ce suivi et les liens web. L’ajout d’une alerte Collective et l’actualisation des flux externes sont désactivés.</p>:null}<WorkspaceFormError message={syncError}/><WorkspaceFormError message={loadError}/></section>
+      {settings===null
+        ? <div className="signal-source-panel">{loadError?<WorkspaceButton disabled={loading} busy={loading} onClick={()=>void load()}>Réessayer de charger les sources</WorkspaceButton>:<LoadingSkeleton label="Chargement des configurations…" rows={3}/>}</div>
+        : <SourceList sources={[...jobboardCatalog,...alertCatalog].filter(source=>sourceVisible(source.name,allInitialSources))} settings={settings} jobs={jobs} profile={profile} onSaveSearch={onSave} onSaved={onSourceSaved} onRemove={source=>setRemovingSource(source)} onVisit={visitSource}/>}
+      <WebDiscoveryPanel roles={searchPreferences(profile.searchPreferences).roles} settings={settings??[]} onSaved={onSourceSaved}/>
+      {collectiveAlert?<section className="signal-source-panel" aria-labelledby="collective-latest-title"><WorkspacePanelHeader id="collective-latest-title" title="Alerte Collective à consulter"/><p className="signal-source-description">{collectiveAlert.label}</p><p className="signal-help">Signalée le {formatDate(collectiveAlert.notificationAt,"Indian/Mauritius",true)}. Ce lien mène à une liste de résultats ; chaque annonce doit être vérifiée avant de devenir une fiche Radar.</p><a href={collectiveAlert.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Voir les annonces sur Collective</a></section>:null}
+      {!demo?<section className="signal-source-panel" aria-labelledby="collective-add-title"><WorkspacePanelHeader id="collective-add-title" title="Ajouter une alerte Collective"/><p className="signal-help">Copiez le lien « See jobs » de l’email. La recherche sera visible ici, sans créer d’offres fictives.</p><form className="signal-collective-form" onSubmit={event=>{event.preventDefault();void saveCollectiveAlert();}}><input type="url" required disabled={busy} aria-label="Lien See jobs de Collective" value={collectiveUrl} onChange={event=>setCollectiveUrl(event.target.value)} placeholder="https://app.collective.work/my-personal-space/jobs?..."/><WorkspaceButton type="submit" variant="primary" busy={operation==="alert"} disabled={busy||!collectiveUrl.trim()}><Save size={14} aria-hidden/>Enregistrer l’alerte</WorkspaceButton></form><WorkspaceFormError message={alertError}/></section>:null}
+      <ExpandableSection className="source-research signal-source-research" title="Recherches couvertes"><div className="signal-source-tracks">{searchTracks.map(track=><section key={track.label}><h3>{track.label}</h3><p>{track.query}</p><p className="signal-help">{track.detail}</p></section>)}</div></ExpandableSection>
     </div>
     <div id="source-panel-outreach" className="source-subpanel" hidden={section!=="outreach"}>
       <section className="signal-source-panel" aria-labelledby="source-strategies-title"><WorkspacePanelHeader id="source-strategies-title" title="Pistes hors annonces"/><p className="signal-help">Pistes de travail, pas campagnes automatiques. Priorité aux organisations distribuées et aux recruteurs qui connaissent les missions produit. Toute prise de contact reste à relire et à envoyer volontairement.</p><div className="signal-source-strategies"><Strategy title="Entreprises ciblées" text="Constituer une liste de SaaS, fintech et acteurs publics/ESN compatibles avec votre expérience. Vérifier leurs pages carrières et pays autorisés, puis préparer une candidature spontanée centrée sur un problème concret de delivery."/><Strategy title="Réseau & communautés" text="Anciens collègues, agences, clients et communautés produit : demander une introduction à un Head of Product ou un recruteur, pas seulement “avez-vous une offre ?”. Repérer ateliers et rencontres où une conversation peut déboucher sur une recommandation."/><Strategy title="Recruteurs spécialisés" text="Présenter une disponibilité claire : PO/PM delivery, tarif à préciser selon la mission, remote prioritaire, présence exceptionnelle négociable. Demander quelles équipes acceptent déjà cette organisation, même sans annonce publiée."/></div><div className="signal-source-message"><h3>Message de mise en relation à adapter</h3><p>« Je cherche une mission PO/PM orientée delivery de produits métiers complexes. Dans cet exemple fictif, j’ai contribué au cadrage d’un produit SaaS. Connaissez-vous une équipe remote qui aurait besoin de structurer son backlog, sécuriser ses livraisons ou renforcer sa recette ? Je suis ouverte aux échanges, même si le besoin n’est pas encore publié. »</p></div></section>
       <section className="source-manual-heading" aria-labelledby="source-manual-title"><h2 id="source-manual-title">Ajouts volontaires</h2><p>Pour les annonces ou posts que vous choisissez d’ajouter vous-même.</p></section>
       {cards(["manual"])}
     </div>
-    <SourceRemovalDialog source={removingSource} onClose={()=>setRemovingSource(null)} onRemoved={updated=>{onSourceSaved(updated);setRemovingSource(null);notify({message:`${updated.source} supprimé des sources suivies.`});}} focusAfterRemoval={()=>document.getElementById(`source-kind-${kind}`)?.querySelector<HTMLElement>(".source-add-panel summary")?.focus()}/>
+    <SourceRemovalDialog source={removingSource} onClose={()=>setRemovingSource(null)} onRemoved={updated=>{onSourceSaved(updated);setRemovingSource(null);notify({message:`${updated.source} supprimé des sources suivies.`});}} focusAfterRemoval={()=>document.querySelector<HTMLElement>("#source-panel-channels .source-add-panel summary")?.focus()}/>
   </div>;
 }
 function Strategy({title,text}:{title:string;text:string}){return <section><h3>{title}</h3><p className="signal-help">{text}</p></section>;}
