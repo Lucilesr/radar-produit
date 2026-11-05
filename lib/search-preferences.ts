@@ -32,7 +32,8 @@ export function searchPreferences(value: unknown): SearchPreferences {
   if (!value || typeof value !== "object") return defaultSearchPreferences;
   const raw = value as Partial<SearchPreferences>;
   const roles = normalizeRoleTitles(raw.roles);
-  const contracts = Array.isArray(raw.contracts) ? raw.contracts.filter((contract): contract is "cdi" | "cdd" | "freelance" => contract === "cdi" || contract === "cdd" || contract === "freelance") : defaultSearchPreferences.contracts;
+  const known = ["cdi", "cdd", "freelance", "portage", "part_time"] as const;
+  const contracts = Array.isArray(raw.contracts) ? raw.contracts.filter((contract): contract is typeof known[number] => (known as readonly string[]).includes(contract as string)) : defaultSearchPreferences.contracts;
   const remote = (raw as { remote?: string }).remote;
   const amount = (number: unknown, fallback: number) => typeof number === "number" && Number.isInteger(number) && number >= 0 && number <= 1000000 ? number : fallback;
   return {

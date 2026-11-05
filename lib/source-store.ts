@@ -91,8 +91,8 @@ export async function syncJobgetherFeed(userId: string) {
         const url = new URL("https://jobgether.com/api/v1/jobs");
         url.searchParams.set("keyword", role); url.searchParams.set("sort", "date");
         url.searchParams.set("limit", "25"); url.searchParams.set("page", String(page));
-        if (search.contracts.every(contract => contract !== "cdd"))
-          url.searchParams.set("contractType", search.contracts.map(contract => contract === "freelance" ? "freelance" : "full-time").join(","));
+        if (search.contracts.every(contract => contract !== "cdd" && contract !== "part_time"))
+          url.searchParams.set("contractType", [...new Set(search.contracts.map(contract => contract === "freelance" || contract === "portage" ? "freelance" : "full-time"))].join(","));
         if (search.remote === "full_remote") url.searchParams.set("remoteType", "full-remote");
         else url.searchParams.set("includeHybrid", "true");
         const response = await fetch(url, { signal: AbortSignal.timeout(15000), headers: { Accept: "application/json" } });

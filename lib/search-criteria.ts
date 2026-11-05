@@ -14,7 +14,7 @@ export type CriteriaRow = {
 export type CriteriaGroup = { id: "role" | "presence" | "pay" | "geography"; title: string; rows: CriteriaRow[] };
 export type CriteriaToken = { id: CriteriaRow["id"]; label: string; value: string; fullValue: string; tone: CriteriaTone; target: CriteriaTarget };
 
-const contractLabels: Record<SearchPreferences["contracts"][number], string> = { cdi: "CDI", cdd: "CDD", freelance: "Freelance" };
+export const contractLabels: Record<SearchPreferences["contracts"][number], string> = { cdi: "CDI", cdd: "CDD", freelance: "Freelance", portage: "Portage salarial", part_time: "Temps partagé" };
 export const remoteLabels: Record<SearchPreferences["remote"], string> = {
   full_remote: "Full remote",
   exceptional: "Présence exceptionnelle",
@@ -31,7 +31,7 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
   const excluded = preferences.excludedLocations ?? [];
   const pay: CriteriaRow[] = [];
   if (salaried) pay.push({ id: "salary", label: "Salaire minimum", values: [`${euro(preferences.minimumSalary)} brut/an`], tone: "include", target: "pay" });
-  if (contracts.includes("freelance")) pay.push({ id: "dailyRate", label: "TJM minimum", values: [`${euro(preferences.minimumDailyRate)} HT/jour`], tone: "include", target: "pay" });
+  if (contracts.includes("freelance") || contracts.includes("portage")) pay.push({ id: "dailyRate", label: "TJM minimum", values: [`${euro(preferences.minimumDailyRate)} HT/jour`], tone: "include", target: "pay" });
   if ((preferences.payTolerancePercent ?? 0) > 0 && (salaried || contracts.includes("freelance"))) pay.push({ id: "payTolerance", label: "Tolérance sous le minimum", values: [`${preferences.payTolerancePercent} %`], tone: "include", target: "pay" });
   pay.push({ id: "matchScore", label: "Score Jobgether minimum", values: [`${preferences.minimumMatchScore} / 100`], tone: "include", target: "jobgether" });
   const geography: CriteriaRow[] = [{ id: "includedLocations", label: "Lieux inclus", values: included.length ? included : ["Tous les lieux"], tone: "include", target: "locations" }];

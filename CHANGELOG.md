@@ -1,3 +1,10 @@
+## 5 novembre 2026 — Deux contrats de plus : portage salarial et temps partagé
+
+- « Contrats » propose désormais le portage salarial et le temps partagé, en plus du CDI, du CDD et du freelance.
+- Le portage se compare au TJM minimum, comme le freelance.
+- Une rémunération de temps partagé n'est jamais comparée telle quelle à un minimum temps plein : l'offre reste visible avec le point à vérifier « Rémunération à temps partiel », à ramener à un temps plein avant de décider.
+- Les annonces mentionnant « portage salarial », « temps partagé », « mi-temps » ou un rythme de 2 à 4 jours par semaine sont reconnues à l'ajout d'une offre.
+
 ## 5 novembre 2026 — Ma recherche : finitions du champ de lieux
 
 - Le champ de recherche de lieu n'affiche plus qu'un seul contour net quand il est sélectionné, au lieu de deux cadres arrondis superposés.

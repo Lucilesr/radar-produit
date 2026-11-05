@@ -7,7 +7,11 @@ export function parseOfferText(text: string, source: string, sourceUrl?: string)
   const title = lines.find((line) => /product owner|product manager|product builder|product ops|product lead/i.test(line)) ?? "";
   const dailyRate = numberFrom(cleaned, /(?:tjm|daily rate|€\s*\/\s*jour|euros?\s*\/\s*jour)[^\d]{0,16}(\d{3,4})|(?<!\d)(\d{3,4})\s*(?:€|euros?)\s*(?:\/\s*jour|\/day)/i);
   const annualSalary = numberFrom(cleaned, /(?:salaire|salary|rémunération|compensation)[^\d]{0,24}(\d{2,3})\s*[kK]|(?<!\d)(\d{2,3})\s*[kK]\s*(?:€|euros?)/i, true);
-  const contractType = /freelance|tjm|contractor|contract\b/i.test(cleaned)
+  const contractType = /portage salarial|société de portage|en portage\b/i.test(cleaned)
+    ? "portage"
+    : /temps partag[ée]|temps partiel|part[- ]time|mi[- ]temps|\b[2-4]\s*jours?\s*(?:\/|par)\s*semaine\b/i.test(cleaned)
+    ? "part_time"
+    : /freelance|tjm|contractor|contract\b/i.test(cleaned)
     ? "freelance"
     : /\bcdi\b|permanent|full[- ]time employment/i.test(cleaned)
       ? "cdi"

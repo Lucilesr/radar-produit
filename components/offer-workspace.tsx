@@ -89,7 +89,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
       <section aria-label="Informations clés de l’offre" className="review-conditions">
         <h3>Conditions de l’offre</h3>
         <dl className="review-criteria-grid">
-          <ConditionRow label="Contrat" value={job.contractType === "cdi" ? "CDI" : job.contractType === "cdd" ? "CDD" : job.contractType === "freelance" ? "Freelance" : "À confirmer"}/>
+          <ConditionRow label="Contrat" value={job.contractType === "cdi" ? "CDI" : job.contractType === "cdd" ? "CDD" : job.contractType === "freelance" ? "Freelance" : job.contractType === "portage" ? "Portage salarial" : job.contractType === "part_time" ? "Temps partagé" : "À confirmer"}/>
           <ConditionRow label="Rémunération" value={job.dailyRate ? `${formatEuro(job.dailyRate)} HT/jour` : job.annualSalary ? `${formatEuro(job.annualSalary)} brut/an` : "Non communiquée"}/>
           <ConditionRow label="Mode de travail" value={{ full_remote: "Full remote", exceptional: "Présence exceptionnelle", hybrid: "Hybride", onsite: "Sur site", unknown: "À confirmer" }[job.remoteMode]}/>
           <ConditionRow label="Lieu annoncé" value={job.announcedLocation || "À confirmer"}/>
