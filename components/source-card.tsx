@@ -109,9 +109,8 @@ function JobgetherScoreSetting({profile,onSave}:{profile:CandidateProfile;onSave
     finally{locked.current=false;setSaving(false);}
   }
   return <form className="jobgether-score-setting" onSubmit={event=>{event.preventDefault();void saveScore();}}>
-    <label htmlFor="jobgether-minimum-score" className="jobgether-score-label">Score minimal des nouvelles offres</label>
-    <div className="jobgether-score-row"><div className="jobgether-score-control"><input id="jobgether-minimum-score" type="number" min="0" max="100" step="1" inputMode="numeric" value={value} disabled={saving} aria-invalid={draft!==null&&!valid} aria-describedby="jobgether-score-help" onChange={event=>updateScore(event.target.value)}/><span aria-hidden="true">/ 100</span></div><WorkspaceButton type="submit" variant="primary" busy={saving} disabled={!changed}>Enregistrer</WorkspaceButton></div>
-    <p id="jobgether-score-help" className="signal-help">De 0 à 100 · 55 par défaut. Les offres déjà suivies restent accessibles.</p>
+    <label htmlFor="jobgether-minimum-score" className="jobgether-score-label">Score de matching minimal entre votre CV et les offres</label>
+    <div className="jobgether-score-row"><div className="jobgether-score-control"><input id="jobgether-minimum-score" type="number" min="0" max="100" step="1" inputMode="numeric" value={value} disabled={saving} aria-invalid={draft!==null&&!valid} onChange={event=>updateScore(event.target.value)}/><span aria-hidden="true">/ 100</span></div><WorkspaceButton type="submit" variant="primary" busy={saving} disabled={!changed}>Enregistrer</WorkspaceButton></div>
     {draft!==null&&!valid?<p role="alert" className="signal-form-error">Saisissez un entier entre 0 et 100.</p>:null}
     <WorkspaceFormError message={error}/>{success?<p role="status" className="signal-help">{success}</p>:null}
   </form>;
