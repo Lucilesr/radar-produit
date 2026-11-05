@@ -18,7 +18,7 @@ export function explicitOfferFacts(description: string): Partial<JobInput> {
       if (amount && !/[–—-]\s*\d{3,4}\s*(?:€|EUR\b|euros?)/i.test(line)) facts.dailyRate = Number(amount[1] ?? amount[2]);
     }
     if (facts.contractType == null && /^(?:contrat|type de contrat|mission)\s*[:\-]/i.test(line)) {
-      const types = ["cdi", "cdd", "freelance"].filter(type => new RegExp(`\\b${type}\\b`, "i").test(line));
+      const types = ["cdi", "cdd", "freelance", "portage"].filter(type => new RegExp(`\\b${type}\\b`, "i").test(line));
       if (types.length === 1) facts.contractType = types[0] as JobInput["contractType"];
     }
     if (facts.language == null && !/\b(?:cours|formation|lessons?|facultatif|non requis|non exig[ée]|not required)\b/i.test(line)) {

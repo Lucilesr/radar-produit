@@ -3,7 +3,7 @@ import type { CandidateProfile, JobInput, JobRecord, JobStatus } from "./types";
 import { statusLabels } from "./application-workflow";
 import { explicitOfferFacts } from "./explicit-offer-facts";
 
-const contractTypes = new Set(["cdi", "cdd", "freelance", "other"]);
+const contractTypes = new Set(["cdi", "cdd", "freelance", "portage", "part_time", "other"]);
 const remoteModes = new Set(["full_remote", "exceptional", "hybrid", "onsite", "unknown"]);
 const languages = new Set(["fr", "en", "professional_en", "advanced_en", "unknown"]);
 const statuses = new Set(Object.keys(statusLabels));

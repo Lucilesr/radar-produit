@@ -1,6 +1,6 @@
 import { assessJob } from "./matching";
 import { inOpportunityView } from "./opportunity-views";
-import { remoteLabels } from "./search-criteria";
+import { contractLabels, remoteLabels } from "./search-criteria";
 import type { JobRecord, SearchPreferences } from "./types";
 
 /**
@@ -16,7 +16,7 @@ export function countToReview(jobs: JobRecord[], preferences: SearchPreferences)
 }
 
 const euro = (amount: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(amount) + " €";
-const contractLabel = (value: string) => value === "cdi" ? "CDI" : value === "cdd" ? "CDD" : "Freelance";
+const contractLabel = (value: string) => contractLabels[value as keyof typeof contractLabels] ?? value;
 function listChange(single: string, before: string[], after: string[], added: string, removed: string) {
   const plus = after.filter(item => !before.includes(item));
   const minus = before.filter(item => !after.includes(item));

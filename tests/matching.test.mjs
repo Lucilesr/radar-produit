@@ -287,3 +287,33 @@ test("la tolérance sous le minimum garde les offres proches comme exceptions", 
   assert.equal(searchPreferences({ payTolerancePercent: 35 }).payTolerancePercent, 0);
   assert.equal(searchPreferences({ payTolerancePercent: 2.5 }).payTolerancePercent, 0);
 });
+
+test("le portage salarial se compare au TJM, le temps partagé reste à vérifier", () => {
+  const search = { contracts: ["cdi", "freelance", "portage", "part_time"], minimumSalary: 55000, minimumDailyRate: 500 };
+  assert.deepEqual(searchPreferences(search).contracts, ["cdi", "freelance", "portage", "part_time"]);
+  // Portage: the daily rate decides, like freelance.
+  const portage = { ...baseline, contractType: "portage", annualSalary: null };
+  assert.equal(assessJob({ ...portage, dailyRate: 550 }, search).tier !== "excluded", true);
+  assert.equal(assessJob({ ...portage, dailyRate: 400 }, search).tier, "excluded");
+  assert.ok(assessJob({ ...portage, dailyRate: null }, search).flags.some(flag => flag.startsWith("TJM non communiqué")));
+  // Shared time: a part-time salary is never compared to a full-time minimum.
+  const shared = { ...baseline, contractType: "part_time" };
+  const lowSalary = assessJob({ ...shared, annualSalary: 30000, dailyRate: null }, search);
+  assert.notEqual(lowSalary.tier, "excluded");
+  assert.ok(lowSalary.flags.some(flag => flag.startsWith("Rémunération à temps partiel")));
+  assert.ok(assessJob({ ...shared, annualSalary: null, dailyRate: null }, search).flags.some(flag => flag.startsWith("Rémunération du temps partagé")));
+  // An announced daily rate is compared as usual.
+  assert.equal(assessJob({ ...shared, annualSalary: null, dailyRate: 300 }, search).tier, "excluded");
+  // A contract that is not searched still excludes the offer.
+  assert.equal(assessJob({ ...portage, dailyRate: 550 }, { ...search, contracts: ["cdi"] }).tier, "excluded");
+});
+
+test("le parseur reconnaît le portage et le temps partagé", () => {
+  const read = text => parseOfferText(text, "Autre").contractType;
+  assert.equal(read("Product Owner en portage salarial, TJM 600 €/jour"), "portage");
+  assert.equal(read("Mission via une société de portage, 550 € / jour"), "portage");
+  assert.equal(read("Product Manager à temps partagé, 3 jours par semaine"), "part_time");
+  assert.equal(read("Poste de Product Owner à mi-temps"), "part_time");
+  assert.equal(read("Mission freelance, TJM 600 €/jour"), "freelance");
+  assert.equal(read("Product Owner en CDI, 60 k€"), "cdi");
+});

@@ -145,7 +145,7 @@ L'état replié ou déplié est mémorisé dans `localStorage` (lecture et écri
 
 **Tests.** Parser (deux exemples par type) et matching (portage sous et au-dessus du TJM ; temps partagé sans montant).
 
-**À trancher avant de coder.** Le temps partagé a-t-il besoin d'un critère « jours par semaine » ? Par défaut, non.
+**Décidé le 5 novembre 2026.** Le portage se compare au TJM. Le temps partagé n'a pas de critère « jours par semaine » : une rémunération à temps partiel est signalée, jamais comparée telle quelle à un minimum temps plein.
 
 ---
 
@@ -333,8 +333,6 @@ En deux étapes, livrées dans deux PR.
 
 | Lot | Question | Proposition par défaut |
 | --- | --- | --- |
-| 5 | Portage comparé au TJM ou au salaire brut ? | TJM. |
-| 5 | Critère « jours par semaine » pour le temps partagé ? | Non, pour l'instant. |
 | 7 | Critère en langage naturel ? | Reporté ; dépend du connecteur ChatGPT. |
 | 11 | Tolérance maximale autorisée ? | 20 %. |
 | 13b | L'hébergement accepte-t-il une tâche planifiée ? | À vérifier avant de coder ; sinon s'en tenir à 13a. |

@@ -93,7 +93,7 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   }
 
   const tolerance = search.payTolerancePercent ?? 0;
-  if (job.annualSalary != null || job.contractType === "cdi" || job.contractType === "cdd") {
+  if (job.contractType !== "part_time" && (job.annualSalary != null || job.contractType === "cdi" || job.contractType === "cdd")) {
     if (job.annualSalary == null) {
       exception = true;
       flags.push("Salaire non communiqué");
@@ -109,7 +109,7 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     }
   }
 
-  if (job.dailyRate != null || job.contractType === "freelance") {
+  if (job.dailyRate != null || job.contractType === "freelance" || job.contractType === "portage") {
     if (job.dailyRate == null) {
       exception = true;
       flags.push("TJM non communiqué");
@@ -123,6 +123,13 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
       excluded = true;
       flags.push(`TJM sous votre seuil de ${formatEuro(search.minimumDailyRate)}.`);
     }
+  }
+
+  if (job.contractType === "part_time" && job.dailyRate == null) {
+    exception = true;
+    flags.push(job.annualSalary == null
+      ? "Rémunération du temps partagé à vérifier."
+      : `Rémunération à temps partiel : ${formatEuro(job.annualSalary)} annoncés, à ramener à un temps plein avant de comparer à votre minimum.`);
   }
 
   if (job.contractType === "other") {
