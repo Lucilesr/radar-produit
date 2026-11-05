@@ -1,3 +1,9 @@
+## 5 novembre 2026 — Radar s'actualise tout seul à l'ouverture
+
+- Si la dernière collecte date de plus de 12 heures, Radar actualise vos flux en arrière-plan quand vous ouvrez « Ma recherche », sans bloquer l'affichage et sans contourner les caches des sources.
+- L'en-tête de la collecte indique « Actualisé il y a 2 h », et le bouton devient « Actualiser maintenant ».
+- Un réglage « Actualisation » laisse choisir entre « Actualiser automatiquement à l'ouverture » et « Seulement quand je le demande ».
+
 ## 5 novembre 2026 — Choisir où Radar cherche
 
 - « Ajouter une source » ouvre un panneau : une recherche, trois filtres, et le catalogue trié selon vos critères — les sources proches de vos contrats, de votre présence et de vos pays d'abord.

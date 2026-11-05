@@ -72,6 +72,8 @@ export type CandidateProfile = {
   cvEnDocumentId?: string;
   detailedExperienceDocumentId?: string;
   applicationNotes?: Record<string, string>;
+  /** Refresh the automatic sources when Radar opens, or only on demand. */
+  refreshMode?: "on_open" | "manual";
 };
 
 export type Assessment = {
