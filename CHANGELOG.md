@@ -1,3 +1,7 @@
+## 5 novembre 2026 — Configuration des sources
+
+Suppression du bouton redondant « Modifier mon suivi » dans Ma recherche. Le chevron « Configurer cette source » reste le point d’accès aux réglages.
+
 ## 5 novembre 2026 — Profil accessible après une mise à jour
 
 - L'interface de Mon profil est chargée avec l'application pour qu'un onglet déjà ouvert puisse accéder aux expériences et documents même après le retrait des anciens fichiers du site.

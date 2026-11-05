@@ -26,7 +26,6 @@ export function SourceCard({ source, setting, count, hidden, profile, onSaveSear
   const savedState=setting?.state??"not_configured";
   const [busy,setBusy]=useState(false),[error,setError]=useState("");
   const locked=useRef(false);
-  const configRef=useRef<HTMLDivElement>(null);
   const dirty=draft!==null&&(draft.state!==(setting?.state??"not_configured")||draft.notes!==(setting?.notes??"")||draft.linkUrl!==(setting?.linkUrl??""));
   async function save(){
     if(locked.current)return;
@@ -69,8 +68,7 @@ export function SourceCard({ source, setting, count, hidden, profile, onSaveSear
     {setting?.lastSyncedAt?<p className="signal-help">Dernière collecte réussie le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
     {setting?.verification?<p className="signal-help">{setting.verification}</p>:null}
     <WorkspaceFormError message={setting?.error??""}/>
-    <button type="button" className="secondary-button signal-source-link" onClick={()=>{configRef.current?.dispatchEvent(new Event("radar:reveal-collapsible"));configRef.current?.scrollIntoView({behavior:"smooth",block:"nearest"});}}>Modifier mon suivi</button>
-    <ExpandableSection ref={configRef} className="source-research signal-source-config" title="Configurer cette source" status={dirty?<span className="quiet-tag">Non enregistré</span>:null}>
+    <ExpandableSection className="source-research signal-source-config" title="Configurer cette source" status={dirty?<span className="quiet-tag">Non enregistré</span>:null}>
       <div className="rounded-xl bg-[#f7f8fc] p-4 text-xs leading-6"><p className="font-semibold">Que faire pour {source.name} ?</p><ol className="mt-2 list-decimal space-y-1 pl-5">{sourceGuidance[source.name].steps.map((step,index)=><li key={index}>{step}</li>)}</ol>{source.mode!=="rss"?<a href={source.url} target="_blank" rel="noopener noreferrer" className="secondary-button mt-3"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a>:null}<p className="mt-3 text-[#535768]"><strong>Dans Radar :</strong> {sourceGuidance[source.name].result}</p></div><form onSubmit={event=>{event.preventDefault();void save();}} className="signal-source-form">
         <ChoiceSelect label={`Mon suivi de ${source.name} dans Radar`} value={current.state} disabled={busy} onChange={state=>setDraft({...current,state})} options={states(source.mode)}/>
         <label className="workspace-field">Lien de recherche, d’alerte ou de flux · {source.name}<input type="url" className="mt-1 w-full rounded-lg border border-[#d0d4e4] px-3 py-2 text-sm" maxLength={2048} disabled={busy} value={current.linkUrl} onChange={event=>setDraft({...current,linkUrl:event.target.value})} placeholder={source.url}/><span className="signal-help">URL https à ouvrir. Vide = page générale. Ce lien ne change pas la synchronisation du flux.</span></label>
