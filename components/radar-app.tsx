@@ -3,6 +3,9 @@
 import { AutosaveOwner } from "@/components/autosave";
 import { WorkspaceFeedbackProvider, useWorkspaceFeedback, type WorkspaceFeedback } from "@/components/workspace-feedback";
 import { OfferForm } from "@/components/offer-form";
+// Keep profile UI in the initial module graph: an already-open tab must not
+// request a removed, versioned profile chunk after a deployment.
+import { ProfileWorkspace } from "@/components/profile-workspace";
 
 import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CircleHelp, RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, Mail, Plus, Search, Trash2, Undo2, UserRound, X } from "lucide-react";
@@ -23,7 +26,6 @@ import type { RadarInitialState } from "@/lib/radar-bootstrap";
 import type { Library } from "@/components/experience-library";
 import type { RadarRoute, ProfileSection } from "@/lib/radar-navigation";
 
-const ProfileWorkspace = lazy(() => import("@/components/profile-workspace").then(module => ({default: module.ProfileWorkspace})));
 const SourcePanel = lazy(() => import("@/components/source-panel").then(module => ({default: module.SourcePanel})));
 
 type Tab = "dashboard" | "offers" | "pipeline" | "profile" | "sources";

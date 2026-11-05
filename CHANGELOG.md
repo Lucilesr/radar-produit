@@ -1,3 +1,8 @@
+## 5 novembre 2026 — Profil accessible après une mise à jour
+
+- L'interface de Mon profil est chargée avec l'application pour qu'un onglet déjà ouvert puisse accéder aux expériences et documents même après le retrait des anciens fichiers du site.
+- Aucun rechargement automatique n'interrompt les saisies.
+
 ## 5 novembre 2026 — Libellé du score Jobgether
 
 - Le réglage précise que le score minimal mesure le matching entre le CV et les offres ; la phrase d’aide redondante est retirée.
