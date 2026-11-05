@@ -12,8 +12,9 @@ function moduleUrl(name, imports = {}) {
 const countries = moduleUrl("countries");
 const marketScope = moduleUrl("market-scope");
 const locations = moduleUrl("location-criteria", { "./countries": countries, "./market-scope": marketScope });
-const { searchPreferences } = await import(moduleUrl("search-preferences", { "./location-criteria": locations }));
-const { criteriaGroups, criteriaTokens } = await import(moduleUrl("search-criteria"));
+const preferences = moduleUrl("search-preferences", { "./location-criteria": locations });
+const { searchPreferences } = await import(preferences);
+const { criteriaGroups, criteriaTokens } = await import(moduleUrl("search-criteria", { "./search-preferences": preferences }));
 const nbsp = text => text.replace(/[  ]/g, " ");
 
 test("les préférences par défaut donnent une étiquette par critère renseigné", () => {

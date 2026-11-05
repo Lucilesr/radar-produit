@@ -8,7 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { WorkspaceButton } from "@/components/workspace-form";
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
 import { countToReview, describeCriteriaChanges, impactMessage } from "@/lib/criteria-impact";
-import { criteriaGroups, criteriaTokens, type CriteriaRow, type CriteriaTarget } from "@/lib/search-criteria";
+import { criteriaGroups, criteriaTokens, type CriteriaTarget } from "@/lib/search-criteria";
 import { searchPreferences } from "@/lib/search-preferences";
 import type { CandidateProfile, JobRecord } from "@/lib/types";
 
@@ -50,19 +50,19 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
   const notify = useWorkspaceFeedback();
   // Remounts the form after an undo so its fields show the restored values.
   const [formRevision, setFormRevision] = useState(0);
-  const [openToken, setOpenToken] = useState<CriteriaRow["id"] | null>(null);
-  const [editingRow, setEditingRow] = useState<CriteriaRow["id"] | null>(null);
+  const [openToken, setOpenToken] = useState<string | null>(null);
+  const [editingRow, setEditingRow] = useState<string | null>(null);
   const formPart = (target: CriteriaTarget) => target as CriteriaFormPart;
   // On a phone a floating panel has no room: the setting opens in the page, under the tags.
   const mobile = useIsMobile();
-  const inlineToken = mobile ? criteriaTokens(preferences).find(token => token.id === openToken) : undefined;
+  const inlineToken = mobile ? criteriaTokens(preferences).find(token => token.key === openToken) : undefined;
   const inlineEditor = useRef<HTMLDivElement>(null);
   const tokenButtons = useRef(new Map<string, HTMLButtonElement>());
   useEffect(() => {
     if (!inlineToken) return;
     inlineEditor.current?.scrollIntoView({ block: "nearest" });
     inlineEditor.current?.querySelector<HTMLElement>("input,button,[role=combobox]")?.focus({ preventScroll: true });
-  }, [inlineToken?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [inlineToken?.key]); // eslint-disable-line react-hooks/exhaustive-deps
   function closeInline() {
     const id = openToken; setOpenToken(null);
     if (id) requestAnimationFrame(() => tokenButtons.current.get(id)?.focus());
@@ -132,10 +132,10 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
       {criteriaTokens(preferences).map(token => {
         const label = `${token.label} : ${token.fullValue}. Modifier`;
         const content = <><span>{token.label}</span><strong>{token.value}</strong></>;
-        if (token.target === "jobgether") return <li key={token.id}><button type="button" className="search-criteria-token" data-tone={token.tone} title={token.fullValue} aria-label={label} onClick={onOpenJobgether}>{content}</button></li>;
-        if (mobile) return <li key={token.id}><button type="button" ref={node => { if (node) tokenButtons.current.set(token.id, node); }} className="search-criteria-token" data-tone={token.tone} data-state={openToken === token.id ? "open" : "closed"} title={token.fullValue} aria-label={label} aria-expanded={openToken === token.id} aria-controls="search-criteria-inline" onClick={() => setOpenToken(openToken === token.id ? null : token.id)}>{content}</button></li>;
-        return <li key={token.id}>
-          <Popover open={openToken === token.id} onOpenChange={open => setOpenToken(open ? token.id : null)}>
+        if (token.target === "jobgether") return <li key={token.key}><button type="button" className="search-criteria-token" data-tone={token.tone} title={token.fullValue} aria-label={label} onClick={onOpenJobgether}>{content}</button></li>;
+        if (mobile) return <li key={token.key}><button type="button" ref={node => { if (node) tokenButtons.current.set(token.key, node); }} className="search-criteria-token" data-tone={token.tone} data-state={openToken === token.key ? "open" : "closed"} title={token.fullValue} aria-label={label} aria-expanded={openToken === token.key} aria-controls="search-criteria-inline" onClick={() => setOpenToken(openToken === token.key ? null : token.key)}>{content}</button></li>;
+        return <li key={token.key}>
+          <Popover open={openToken === token.key} onOpenChange={open => setOpenToken(open ? token.key : null)}>
             <PopoverTrigger asChild>
               <button type="button" className="search-criteria-token" data-tone={token.tone} title={token.fullValue} aria-label={label}>{content}</button>
             </PopoverTrigger>
@@ -155,11 +155,11 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
     {view === "details" ? <div id="search-criteria-details" className="search-criteria-details">
       {criteriaGroups(preferences).map(group => <section key={group.id} aria-labelledby={`search-criteria-${group.id}`}>
         <h3 id={`search-criteria-${group.id}`}>{group.title}</h3>
-        <dl>{group.rows.map(row => <div key={row.id} className="search-criteria-row" data-editing={editingRow === row.id || undefined}>
+        <dl>{group.rows.map(row => <div key={row.key ?? row.id} className="search-criteria-row" data-editing={editingRow === (row.key ?? row.id) || undefined}>
           <dt>{row.label}</dt>
           <dd><ul className="search-criteria-values">{row.values.map(value => <li key={value} data-tone={row.tone}>{value}</li>)}</ul></dd>
-          <dd className="search-criteria-row-action">{editingRow === row.id ? null : <WorkspaceButton variant="quiet" aria-label={`Modifier : ${row.label}`} aria-expanded={false} onClick={() => row.target === "jobgether" ? onOpenJobgether() : setEditingRow(row.id)}>Modifier</WorkspaceButton>}</dd>
-          {editingRow === row.id ? <dd className="search-criteria-row-editor">
+          <dd className="search-criteria-row-action">{editingRow === (row.key ?? row.id) ? null : <WorkspaceButton variant="quiet" aria-label={`Modifier : ${row.label}`} aria-expanded={false} onClick={() => row.target === "jobgether" ? onOpenJobgether() : setEditingRow(row.key ?? row.id)}>Modifier</WorkspaceButton>}</dd>
+          {editingRow === (row.key ?? row.id) ? <dd className="search-criteria-row-editor">
             <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(row.target)} />
             <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={() => setEditingRow(null)}>Terminé</WorkspaceButton></div>
           </dd> : null}

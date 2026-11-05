@@ -1,3 +1,9 @@
+## 5 novembre 2026 — Ma recherche : présence acceptable par contrat
+
+- Avec plusieurs contrats recherchés, la présence se règle contrat par contrat : full remote en CDI et hybride en freelance, par exemple.
+- Les offres sont classées avec le niveau du contrat annoncé ; une offre au contrat non précisé suit le niveau le plus ouvert parmi les contrats recherchés.
+- La barre de critères garde une seule étiquette « Présence », qui résume les niveaux ; le tableau déplié détaille une ligne par contrat.
+
 ## 5 novembre 2026 — Deux contrats de plus : portage salarial et temps partagé
 
 - « Contrats » propose désormais le portage salarial et le temps partagé, en plus du CDI, du CDD et du freelance.

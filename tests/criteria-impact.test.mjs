@@ -17,7 +17,7 @@ const locations = moduleUrl("location-criteria", { "./countries": countries, "./
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations });
 const matching = moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations });
 const views = moduleUrl("opportunity-views");
-const criteria = moduleUrl("search-criteria");
+const criteria = moduleUrl("search-criteria", { "./search-preferences": preferences });
 const { searchPreferences } = await import(preferences);
 const { countToReview, describeCriteriaChanges, impactMessage } = await import(moduleUrl("criteria-impact", { "./matching": matching, "./opportunity-views": views, "./search-criteria": criteria }));
 const nbsp = text => text.replace(/[  ]/g, " ");
