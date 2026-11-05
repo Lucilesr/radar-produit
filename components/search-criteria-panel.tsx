@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import { ChevronDown, ChevronUp, Pencil, Plus } from "lucide-react";
 import { SearchPreferencesForm, type CriteriaFormPart } from "@/components/search-preferences-form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { WorkspaceButton } from "@/components/workspace-form";
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
 import { countToReview, describeCriteriaChanges, impactMessage } from "@/lib/criteria-impact";
-import { criteriaGroups, criteriaTokens, type CriteriaTarget } from "@/lib/search-criteria";
+import { criteriaGroups, criteriaTokens, missingCriteria, type CriteriaTarget, type MissingCriterion } from "@/lib/search-criteria";
 import { searchPreferences } from "@/lib/search-preferences";
 import type { CandidateProfile, JobRecord } from "@/lib/types";
 
@@ -53,6 +53,11 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
   const [formRevision, setFormRevision] = useState(0);
   const [openToken, setOpenToken] = useState<string | null>(null);
   const [editingRow, setEditingRow] = useState<string | null>(null);
+  // « + Critère » : the menu first, then the chosen criterion's own control, in the same panel.
+  const [adding, setAdding] = useState(false);
+  const [addTarget, setAddTarget] = useState<MissingCriterion | null>(null);
+  const missing = missingCriteria(preferences);
+  function closeAdd() { setAdding(false); setAddTarget(null); }
   const formPart = (target: CriteriaTarget) => target as CriteriaFormPart;
   // On a phone a floating panel has no room: the setting opens in the page, under the tags.
   const mobile = useIsMobile();
@@ -147,7 +152,37 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
           </Popover>
         </li>;
       })}
+      {missing.length && mobile ? <li>
+        <button type="button" className="search-criteria-add" aria-expanded={adding} aria-controls="search-criteria-add-inline" onClick={() => { if (adding) closeAdd(); else { setAdding(true); setAddTarget(null); setOpenToken(null); } }}><Plus size={14} aria-hidden />Critère</button>
+      </li> : null}
+      {missing.length && !mobile ? <li>
+        <Popover open={adding} onOpenChange={open => { if (open) { setAdding(true); setAddTarget(null); } else closeAdd(); }}>
+          <PopoverTrigger asChild>
+            <button type="button" className="search-criteria-add"><Plus size={14} aria-hidden />Critère</button>
+          </PopoverTrigger>
+          <PopoverContent align="start" collisionPadding={{ top: 12, right: 12, left: 12, bottom: 96 }} className="search-criteria-popover" onInteractOutside={keepOpenForNestedMenus} onFocusOutside={keepOpenForNestedMenus}>
+            {addTarget
+              ? <>
+                <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(addTarget.target)} />
+                <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={closeAdd}>Terminé</WorkspaceButton></div>
+              </>
+              : <ul className="search-criteria-add-menu">{missing.map(item => <li key={item.id}>
+                <button type="button" onClick={() => setAddTarget(item)}><strong>{item.label}</strong><span>{item.help}</span></button>
+              </li>)}</ul>}
+          </PopoverContent>
+        </Popover>
+      </li> : null}
     </ul> : null}
+    {view === "summary" && mobile && adding ? <div id="search-criteria-add-inline" className="search-criteria-inline-editor">
+      {addTarget
+        ? <>
+          <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(addTarget.target)} />
+          <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={closeAdd}>Terminé</WorkspaceButton></div>
+        </>
+        : <ul className="search-criteria-add-menu">{missing.map(item => <li key={item.id}>
+          <button type="button" onClick={() => setAddTarget(item)}><strong>{item.label}</strong><span>{item.help}</span></button>
+        </li>)}</ul>}
+    </div> : null}
     {view === "summary" && inlineToken ? <div id="search-criteria-inline" ref={inlineEditor} className="search-criteria-inline-editor">
       <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(inlineToken.target)} />
       <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={closeInline}>Terminé</WorkspaceButton></div>
