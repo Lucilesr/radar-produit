@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { SearchPreferencesForm } from "@/components/search-preferences-form";
 import { WorkspaceButton } from "@/components/workspace-form";
+import { useWorkspaceFeedback } from "@/components/workspace-feedback";
+import { countToReview, describeCriteriaChanges, impactMessage } from "@/lib/criteria-impact";
 import { criteriaGroups, criteriaTokens, type CriteriaTarget } from "@/lib/search-criteria";
 import { searchPreferences } from "@/lib/search-preferences";
-import type { CandidateProfile } from "@/lib/types";
+import type { CandidateProfile, JobRecord } from "@/lib/types";
 
 type View = "summary" | "details" | "edit";
 const viewKey = "radar:search-criteria-view";
@@ -27,7 +29,7 @@ function storeView(view: View) {
 }
 
 /** Criteria read at a glance, expanded on demand, and edited with the existing form. */
-export function SearchCriteriaPanel({ profile, onSave, onOpenJobgether }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void }) {
+export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: { profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void }) {
   // A first visit keeps the form open so the onboarding step can save the first criteria.
   const firstSetup = !profile.searchPreferences;
   const [resting, setResting] = useState(readView);
@@ -36,6 +38,28 @@ export function SearchCriteriaPanel({ profile, onSave, onOpenJobgether }: { prof
   const editButton = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef(false);
   const preferences = searchPreferences(profile.searchPreferences);
+  const notify = useWorkspaceFeedback();
+  // Remounts the form after an undo so its fields show the restored values.
+  const [formRevision, setFormRevision] = useState(0);
+
+  /** Every save says what changed and how many offers it leaves to review, with one-step undo. */
+  async function saveWithImpact(next: CandidateProfile) {
+    const previous = profile;
+    const before = searchPreferences(previous.searchPreferences);
+    const after = searchPreferences(next.searchPreferences);
+    const saved = await onSave(next);
+    const changes = saved ? describeCriteriaChanges(before, after) : [];
+    if (changes.length) notify({
+      message: impactMessage(changes, countToReview(jobs, before), countToReview(jobs, after)),
+      action: previous.searchPreferences ? { label: "Annuler", onClick: () => void undo(previous) } : undefined,
+    });
+    return saved;
+  }
+  async function undo(previous: CandidateProfile) {
+    const restored = await onSave(previous);
+    if (restored) setFormRevision(value => value + 1);
+    notify(restored ? { message: "Modification annulée.", tone: "info" } : { message: "Annulation non enregistrée. Réessayez.", tone: "error" });
+  }
 
   useEffect(() => {
     const target = focusTarget.current;
@@ -97,6 +121,6 @@ export function SearchCriteriaPanel({ profile, onSave, onOpenJobgether }: { prof
       </section>)}
     </div> : null}
 
-    {view === "edit" ? <SearchPreferencesForm profile={profile} onSave={onSave} showIntro={false} /> : null}
+    {view === "edit" ? <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} /> : null}
   </section>;
 }

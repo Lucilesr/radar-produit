@@ -1,0 +1,50 @@
+import { assessJob } from "./matching";
+import { inOpportunityView } from "./opportunity-views";
+import { remoteLabels } from "./search-criteria";
+import type { JobRecord, SearchPreferences } from "./types";
+
+/**
+ * Offers that would sit in « À examiner » with these criteria. The jobs already loaded are
+ * re-assessed in the browser, with the same rule as the Opportunités view; no server call.
+ */
+export function countToReview(jobs: JobRecord[], preferences: SearchPreferences) {
+  return jobs.filter(job => {
+    if (job.deletedAt) return false;
+    const assessment = assessJob(job, preferences);
+    return inOpportunityView({ ...job, matchScore: assessment.score, matchTier: assessment.tier, flags: assessment.flags }, "to_review");
+  }).length;
+}
+
+const euro = (amount: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(amount) + " €";
+const contractLabel = (value: string) => value === "cdi" ? "CDI" : value === "cdd" ? "CDD" : "Freelance";
+function listChange(single: string, before: string[], after: string[], added: string, removed: string) {
+  const plus = after.filter(item => !before.includes(item));
+  const minus = before.filter(item => !after.includes(item));
+  return [
+    ...(plus.length ? [`${single} ${added} : ${plus.join(", ")}`] : []),
+    ...(minus.length ? [`${single} ${removed} : ${minus.join(", ")}`] : []),
+  ];
+}
+
+/** Short French descriptions of what changed, for the confirmation shown after a save. */
+export function describeCriteriaChanges(before: SearchPreferences, after: SearchPreferences): string[] {
+  const changes = [
+    ...listChange("Poste", before.roles, after.roles, "ajouté", "retiré"),
+    ...listChange("Contrat", before.contracts.map(contractLabel), after.contracts.map(contractLabel), "ajouté", "retiré"),
+    ...listChange("Lieu", before.includedLocations ?? [], after.includedLocations ?? [], "inclus", "retiré"),
+    ...listChange("Lieu", before.excludedLocations ?? [], after.excludedLocations ?? [], "exclu", "réautorisé"),
+  ];
+  if (before.remote !== after.remote) changes.push(`Présence ${remoteLabels[before.remote]} → ${remoteLabels[after.remote]}`);
+  if (before.minimumSalary !== after.minimumSalary) changes.push(`Salaire ${euro(before.minimumSalary)} → ${euro(after.minimumSalary)}/an`);
+  if (before.minimumDailyRate !== after.minimumDailyRate) changes.push(`TJM ${euro(before.minimumDailyRate)} → ${euro(after.minimumDailyRate)}/jour`);
+  if (before.minimumMatchScore !== after.minimumMatchScore) changes.push(`Score Jobgether ${before.minimumMatchScore} → ${after.minimumMatchScore}`);
+  return changes;
+}
+
+/** « TJM 500 € → 450 €/jour. 22 offres à examiner (+8). » */
+export function impactMessage(changes: string[], before: number, after: number) {
+  const shown = changes.slice(0, 2).join(" · ") + (changes.length > 2 ? ` · +${changes.length - 2}` : "");
+  const delta = after - before;
+  const count = `${after} offre${after > 1 ? "s" : ""} à examiner${delta ? ` (${delta > 0 ? "+" : ""}${delta})` : ""}`;
+  return `${shown}. ${count}.`;
+}

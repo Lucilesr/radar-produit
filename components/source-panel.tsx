@@ -89,7 +89,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
   return <div className="source-workspace signal-sources-workspace">
     <nav className="workspace-tabs" aria-label="Sections de Ma recherche">{sections.map(([id,label])=><button type="button" key={id} aria-pressed={section===id} aria-controls={"source-panel-"+id} onClick={()=>selectSection(id)}>{label}</button>)}</nav>
     <div id="source-panel-criteria" className="source-subpanel" hidden={section!=="criteria"}>
-      <SearchCriteriaPanel profile={profile} onSave={onSave} onOpenJobgether={openJobgether}/>
+      <SearchCriteriaPanel profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
       <div className="market-boundary-note"><span className="market-boundary-dot"/><p><strong>Les lieux annoncés servent au classement.</strong> La langue de l’annonce et les pays autorisés pour le télétravail restent à vérifier sur la page employeur.</p></div>
     </div>
     <div id="source-panel-channels" className="source-subpanel" hidden={section!=="channels"}>
