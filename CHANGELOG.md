@@ -1,3 +1,7 @@
+## 5 novembre 2026 — Présentation de la carte Jobgether
+
+- La carte Jobgether aligne son titre, son état et ses actions sur mobile et ordinateur. Le réglage du score utilise un champ compact avec un seul contour de focus visible.
+
 ## 5 novembre 2026 — Score Jobgether dans sa carte
 
 - Le score minimal des nouvelles offres se règle directement sur la carte Jobgether dans « Jobboards & alertes → Alertes & flux ».

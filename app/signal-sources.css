@@ -47,10 +47,9 @@
 .jobgether-score-setting{display:grid;gap:8px;margin:0 0 16px}
 .jobgether-score-label{font:600 13px/1.4 var(--font-sans)}
 .jobgether-score-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
-.jobgether-score-control{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 9px;border:1px solid var(--input);border-radius:5px;background:var(--card);color:var(--muted-foreground);font:400 13px/1.4 var(--font-sans)}
-.jobgether-score-control:focus-within{outline:3px solid var(--ring);outline-offset:3px}
-.jobgether-score-control input{width:3.5ch;min-width:3.5ch;height:42px;padding:0;border:0;background:transparent;color:var(--foreground);font:600 16px/1.4 var(--font-sans);text-align:right;appearance:textfield}
-.jobgether-score-control input:focus-visible{outline:0}
+.jobgether-score-control{display:inline-flex;align-items:center;gap:8px;color:var(--muted-foreground);font:400 13px/1.4 var(--font-sans)}
+.radar-app .source-workspace .jobgether-score-control input{box-sizing:border-box;width:68px;min-width:68px;height:44px;min-height:44px;padding:8px 10px;border:1px solid var(--input);border-radius:5px;background:var(--card);color:var(--foreground);font:600 16px/1.4 var(--font-sans);text-align:center;appearance:textfield;box-shadow:none}
+.radar-app .source-workspace .jobgether-score-control input:focus-visible{border-color:var(--ring);outline:3px solid var(--ring);outline-offset:3px;box-shadow:none}
 .jobgether-score-control input::-webkit-inner-spin-button,.jobgether-score-control input::-webkit-outer-spin-button{appearance:none;margin:0}
 .jobgether-score-setting .signal-help{margin:0}
 .jobgether-score-setting .signal-form-error{margin:0}
@@ -180,6 +179,17 @@
 
 .signal-source-tools { display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:8px; }
 .signal-source-tools .signal-form-button { min-width:44px; min-height:44px; padding:10px; }
+.signal-source-api-card .signal-source-heading{align-items:center}
+.signal-source-api-card .signal-source-identity{flex:1}
+.signal-source-api-card .signal-source-status{margin-top:10px}
+.signal-source-api-card .signal-source-description{flex:none;margin:16px 0 20px}
+.signal-source-api-card .jobgether-score-setting{padding:16px;border:1px solid var(--border);border-radius:8px;background:var(--signal-soft);gap:10px;margin-bottom:18px}
+.signal-source-api-card .jobgether-score-row{gap:12px}
+.signal-source-api-card .jobgether-score-row .signal-form-button{width:auto;min-height:44px}
+.signal-source-api-card .signal-source-link{margin-bottom:12px}
+.signal-source-api-actions{display:flex;margin-top:10px}
+.signal-source-api-actions .signal-form-button{width:auto;min-width:160px}
+@media(max-width:480px){.signal-source-api-card .signal-source-heading{align-items:flex-start}.signal-source-api-card .signal-source-tools{gap:4px}.signal-source-api-card .jobgether-score-setting{padding:14px}.signal-source-api-card .jobgether-score-row{align-items:stretch}.signal-source-api-card .jobgether-score-row .signal-form-button{flex:1}.signal-source-api-actions .signal-form-button{width:100%}}
 .signal-source-remove-dialog { width:calc(100% - 32px); max-width:520px; padding:24px; }
 .signal-source-remove-dialog .signal-help { margin-top:12px; }
 .signal-source-remove-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin-top:24px; }
