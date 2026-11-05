@@ -61,3 +61,9 @@ test("le message résume deux changements et l'effet sur la liste", () => {
   assert.equal(impactMessage(["A"], 3, 3), "A. 3 offres à examiner.");
   assert.equal(impactMessage(["A"], 2, 1), "A. 1 offre à examiner (-1).");
 });
+
+test("un mot-clé écarté retire l'offre de « À examiner »", () => {
+  const offers = [offer("k", { title: "Product Owner — stage", dailyRate: 600 })];
+  assert.equal(countToReview(offers, searchPreferences({ contracts: ["freelance"], minimumDailyRate: 500 })), 1);
+  assert.equal(countToReview(offers, searchPreferences({ contracts: ["freelance"], minimumDailyRate: 500, excludeKeywords: ["stage"] })), 0);
+});

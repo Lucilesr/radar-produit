@@ -1,5 +1,5 @@
 import type { Assessment, JobInput, JobStatus, SearchPreferences } from "./types";
-import { payFloor, remoteForContract, searchPreferences } from "./search-preferences";
+import { foldKeyword, payFloor, remoteForContract, searchPreferences } from "./search-preferences";
 import { detectWorkArrangement } from "./work-arrangement";
 import { activeStatuses } from "./application-workflow";
 import { isNorthAmericaRestricted } from "./market-scope";
@@ -163,6 +163,19 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   if (/\b(?:fintech|payment|bank|investment|regulated|acpr|saas|ai|llm|generative|public sector|secteur public)\b/i.test(text)) {
     score += 7;
     reasons.push("Secteur ou contexte proche de vos réalisations.");
+  }
+
+  const haystack = foldKeyword(`${text} ${job.company ?? ""}`);
+  const found = (words?: string[]) => (words ?? []).filter(word => haystack.includes(foldKeyword(word)));
+  const boosted = found(search.boostKeywords);
+  if (boosted.length) {
+    score += Math.min(12, 6 * boosted.length);
+    reasons.push(`Mentionne ${boosted.join(", ")}.`);
+  }
+  const unwanted = found(search.excludeKeywords);
+  if (unwanted.length) {
+    excluded = true;
+    flags.push(`Contient ${unwanted.join(", ")}, que vous écartez.`);
   }
 
   score = Math.max(0, Math.min(100, score));

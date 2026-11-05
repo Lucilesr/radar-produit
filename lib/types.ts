@@ -91,6 +91,9 @@ export type SearchPreferences = {
   remoteByContract?: Partial<Record<"cdi" | "cdd" | "freelance" | "portage" | "part_time", "onsite" | "hybrid" | "exceptional" | "full_remote">>;
   minimumSalary: number;
   minimumDailyRate: number;
+  /** Words that make an offer stand out, and words that rule it out. */
+  boostKeywords?: string[];
+  excludeKeywords?: string[];
   minimumMatchScore: number;
   /** 0 to 20: a known pay up to this % under the minimum stays visible as an exception. */
   payTolerancePercent?: number;

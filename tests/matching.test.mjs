@@ -335,3 +335,24 @@ test("la présence acceptée peut différer selon le contrat", () => {
   // Levels outside the searched contracts are ignored when reading back.
   assert.equal(searchPreferences({ contracts: ["cdi"], remoteByContract: { freelance: "onsite" } }).remoteByContract.freelance, undefined);
 });
+
+test("les mots-clés mettent en avant ou écartent une offre", () => {
+  const search = { boostKeywords: ["fintech", "paiement"], excludeKeywords: ["stage", "alternance"] };
+  const offer = extra => ({ ...baseline, annualSalary: 60000, ...extra });
+  // Accents and case are ignored, and the company name counts.
+  const boosted = assessJob(offer({ description: "Plateforme de PAIEMENT et Fintech" }), search);
+  assert.ok(boosted.reasons.some(reason => reason.startsWith("Mentionne")));
+  assert.ok(boosted.score > assessJob(offer({ description: "Plateforme logistique" }), search).score);
+  // An excluded word rules the offer out.
+  const refused = assessJob(offer({ title: "Product Owner — stage" }), search);
+  assert.equal(refused.tier, "excluded");
+  assert.ok(refused.flags.some(flag => flag.startsWith("Contient stage")));
+  // No keyword, no effect.
+  assert.equal(assessJob(offer({ description: "Équipe produit" }), {}).flags.some(flag => flag.startsWith("Contient")), false);
+  // Normalisation: 12 at most, no duplicates, 2 to 40 characters.
+  const saved = searchPreferences({ boostKeywords: ["a", "fintech", "FINTECH", " paiement ", "x".repeat(41), ...Array.from({ length: 15 }, (_, i) => "mot" + i)] });
+  assert.equal(saved.boostKeywords.includes("a"), false);
+  assert.equal(saved.boostKeywords.filter(word => word.toLowerCase() === "fintech").length, 1);
+  assert.ok(saved.boostKeywords.includes("paiement"));
+  assert.equal(saved.boostKeywords.length, 12);
+});

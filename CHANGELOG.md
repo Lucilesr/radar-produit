@@ -1,3 +1,9 @@
+## 5 novembre 2026 — Ma recherche : mots-clés de l'annonce
+
+- Une section « L'annonce » permet de mettre en avant les offres qui parlent de certains sujets (fintech, paiement…) et d'écarter celles qui contiennent d'autres mots (stage, alternance…).
+- Les mots écartés masquent l'offre dans « À examiner » avec un point à vérifier ; les mots mis en avant la font remonter.
+- La casse et les accents sont ignorés ; 12 mots-clés au plus par liste, de 2 à 40 caractères.
+
 ## 5 novembre 2026 — Ma recherche : présence acceptable par contrat
 
 - Avec plusieurs contrats recherchés, la présence se règle contrat par contrat : full remote en CDI et hybride en freelance, par exemple.

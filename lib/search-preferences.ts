@@ -9,6 +9,8 @@ export const defaultSearchPreferences: SearchPreferences = {
   remote: "hybrid",
   minimumSalary: 55000,
   minimumDailyRate: 500,
+  boostKeywords: [],
+  excludeKeywords: [],
   minimumMatchScore: 55,
   payTolerancePercent: 0,
 };
@@ -43,6 +45,16 @@ export function remoteForContract(search: SearchPreferences, contract?: string):
   return remoteOrder.filter(level => searched.includes(level)).at(-1) ?? search.remote;
 }
 
+/** Keywords are compared without case or accents; 12 at most, 2 to 40 characters each. */
+export function normalizeKeywords(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const words = value.filter((word): word is string => typeof word === "string")
+    .map(word => word.trim().replace(/\s+/g, " "))
+    .filter(word => word.length >= 2 && word.length <= 40);
+  return [...new Map(words.map(word => [foldKeyword(word), word])).values()].slice(0, 12);
+}
+export const foldKeyword = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("fr");
+
 export function searchPreferences(value: unknown): SearchPreferences {
   if (!value || typeof value !== "object") return defaultSearchPreferences;
   const raw = value as Partial<SearchPreferences>;
@@ -63,6 +75,8 @@ export function searchPreferences(value: unknown): SearchPreferences {
         return level && contracts.includes(contract as typeof known[number]) ? [[contract, level] as const] : [];
       }))
       : undefined,
+    boostKeywords: normalizeKeywords(raw.boostKeywords),
+    excludeKeywords: normalizeKeywords(raw.excludeKeywords),
     minimumSalary: amount(raw.minimumSalary, defaultSearchPreferences.minimumSalary),
     minimumDailyRate: amount(raw.minimumDailyRate, defaultSearchPreferences.minimumDailyRate),
     payTolerancePercent: typeof raw.payTolerancePercent === "number" && Number.isInteger(raw.payTolerancePercent) && raw.payTolerancePercent >= 0 && raw.payTolerancePercent <= 20 ? raw.payTolerancePercent : 0,
