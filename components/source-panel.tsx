@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ChoiceSelect } from "@/components/choice-select";
 import { ExternalLink, Plus, RefreshCw, Save } from "lucide-react";
 import { ExpandableSection } from "@/components/experience-section";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
@@ -21,6 +22,7 @@ import type { JobRecord } from "@/lib/types";
 import type { CandidateProfile } from "@/lib/types";
 import { SearchCriteriaPanel } from "@/components/search-criteria-panel";
 import { searchPreferences } from "@/lib/search-preferences";
+import { lastRefreshAt, refreshMode, refreshModeLabels, refreshedAgo, shouldRefreshOnOpen } from "@/lib/refresh-schedule";
 import { useDemoMode } from "@/components/demo-mode";
 import { readSearchSection, type SearchSection } from "@/lib/radar-navigation";
 
@@ -54,7 +56,21 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
     finally{setLoading(false);}
   }
   useEffect(()=>{let active=true;fetch("/api/sources",{cache:"no-store"}).then(async response=>{if(!response.ok)throw new Error();const data=await response.json() as {sources:SourceSetting[]};if(active){setSettings(data.sources);setLoadError("");}}).catch(()=>{if(active)setLoadError("Impossible de lire la configuration des sources.");}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[]);
-  async function sync(){
+  // One attempt per visit: the caches of each source still decide what is really fetched.
+  const autoRefreshed=useRef(false);
+  useEffect(()=>{
+    if(!active||demo||!settings||autoRefreshed.current)return;
+    if(!shouldRefreshOnOpen(refreshMode(profile.refreshMode),lastRefreshAt(settings)))return;
+    autoRefreshed.current=true;
+    void sync(true);
+  },[active,demo,settings,profile.refreshMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function saveRefreshMode(mode:string){
+    const saved=await onSave({...profile,refreshMode:mode==="manual"?"manual":"on_open"});
+    notify(saved?{message:mode==="manual"?"Radar n’actualisera plus tout seul.":"Radar actualisera vos flux à l’ouverture."}:{message:"Choix non enregistré. Réessayez.",tone:"error"});
+  }
+
+  async function sync(quiet=false){
     if(locked.current)return;locked.current=true;setOperation("sync");setSyncError("");
     try{
       const response=await fetch("/api/sources/sync",{method:"POST"});
@@ -62,7 +78,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
       if(!response.ok)throw new Error(data.error??"Actualisation non confirmée.");
       const [sourcesRead,jobsRead]=await Promise.all([load(),onSynced()]);
       if(!sourcesRead||!jobsRead)throw new Error("Le flux a répondu, mais les données affichées n’ont pas toutes pu être actualisées. Vos dernières données sont conservées.");
-      notify({message:`${data.imported} nouvelles fiches et ${data.deduplicated} fiches déjà présentes.${data.partialFailure?" Une source est indisponible : voir son état ci-dessous.":""}`,tone:data.partialFailure?"info":"success"});
+      if(!quiet||data.imported)notify({message:`${data.imported} nouvelles fiches et ${data.deduplicated} fiches déjà présentes.${data.partialFailure?" Une source est indisponible : voir son état ci-dessous.":""}`,tone:data.partialFailure?"info":"success"});
     }catch(problem){setSyncError(problem instanceof Error?problem.message:"Actualisation non confirmée.");}
     finally{locked.current=false;setOperation(null);}
   }
@@ -132,7 +148,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,active=true}:{jobs:Job
           <button type="button" onClick={()=>setAddFilter("manual")}><strong>À consulter</strong><span>Radar prépare les recherches, vous ouvrez le site. Par exemple LinkedIn Jobs ou Welcome to the Jungle.</span></button>
         </div>
       </section>:null}
-      <section className="signal-source-panel" aria-labelledby="source-settings-title"><WorkspacePanelHeader id="source-settings-title" title="Collecte automatique" actions={!demo?<WorkspaceButton variant="primary" busy={operation==="sync"} disabled={busy} onClick={()=>void sync()}>{operation!=="sync"?<RefreshCw size={14} aria-hidden/>:null}Actualiser mes flux</WorkspaceButton>:null}/><p className="signal-help">Jobgether utilise les postes de « Mes critères » sans compte ni clé. Les alertes email se créent sur les autres sites. Radar ne lit pas vos comptes de jobboards et ne collecte pas le contenu des sites à consulter.</p>{demo?<p className="signal-help">Dans la démo, vous pouvez modifier ce suivi et les liens web. L’ajout d’une alerte Collective et l’actualisation des flux externes sont désactivés.</p>:null}<WorkspaceFormError message={syncError}/><WorkspaceFormError message={loadError}/></section>
+      <section className="signal-source-panel" aria-labelledby="source-settings-title"><WorkspacePanelHeader id="source-settings-title" title="Collecte automatique" actions={!demo?<span className="source-refresh-actions"><span className="signal-help">{refreshedAgo(lastRefreshAt(settings??[]))}</span><WorkspaceButton variant="primary" busy={operation==="sync"} disabled={busy} onClick={()=>void sync()}>{operation!=="sync"?<RefreshCw size={14} aria-hidden/>:null}Actualiser maintenant</WorkspaceButton></span>:null}/><p className="signal-help">Jobgether utilise les postes de « Mes critères » sans compte ni clé. Les alertes email se créent sur les autres sites. Radar ne lit pas vos comptes de jobboards et ne collecte pas le contenu des sites à consulter.</p>{demo?<p className="signal-help">Dans la démo, vous pouvez modifier ce suivi et les liens web. L’ajout d’une alerte Collective et l’actualisation des flux externes sont désactivés.</p>:null}{!demo?<div className="source-refresh-mode"><ChoiceSelect label="Actualisation" value={refreshMode(profile.refreshMode)} options={[{value:"on_open",label:refreshModeLabels.on_open},{value:"manual",label:refreshModeLabels.manual}]} onChange={mode=>void saveRefreshMode(mode)} disabled={busy}/></div>:null}<WorkspaceFormError message={syncError}/><WorkspaceFormError message={loadError}/></section>
       {settings===null
         ? <div className="signal-source-panel">{loadError?<WorkspaceButton disabled={loading} busy={loading} onClick={()=>void load()}>Réessayer de charger les sources</WorkspaceButton>:<LoadingSkeleton label="Chargement des configurations…" rows={3}/>}</div>
         : followedSources.length?<SourceList sources={followedSources} settings={settings} jobs={jobs} profile={profile} onOpen={source=>setDetailSource(source)} onVisit={visitSource}/>:null}

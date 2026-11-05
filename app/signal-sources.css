@@ -380,3 +380,8 @@
 .source-empty-choices>button:hover{border-color:var(--signal-petrol)}
 .source-empty-choices>button>span{font-size:.88rem;color:var(--signal-muted)}
 @media (max-width:640px){[data-slot=sheet-content].source-add-sheet{width:100vw}.source-add-list>li{grid-template-columns:66px minmax(0,1fr)}.source-add-list>li>:last-child{grid-column:2}}
+
+/* Ma recherche · actualisation à l'ouverture (lot 13a) */
+.source-refresh-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.source-refresh-mode{margin-top:12px;max-width:420px}
+@media (max-width:640px){.source-refresh-actions{width:100%;justify-content:space-between}}

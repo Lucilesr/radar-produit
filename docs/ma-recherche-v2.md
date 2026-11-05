@@ -320,7 +320,7 @@ En deux étapes, livrées dans deux PR.
 
 **13a — Actualisation à l'ouverture (sans infrastructure).**
 
-- À l'ouverture de Radar, si la dernière actualisation du compte date de plus de `refreshEveryHours` (12 par défaut), lancer `POST /api/sources/sync` en arrière-plan, sans bloquer l'affichage.
+- À l'ouverture de Radar, si la dernière actualisation du compte date de plus de `refreshEveryHours` (12 par défaut), lancer `POST /api/sources/sync` en arrière-plan, sans bloquer l'affichage. **Livré à l'ouverture de « Ma recherche »**, le seul endroit qui connaisse les sources ; passer à l'ouverture de l'application demande de charger les sources dans `radar-app.tsx`, comme le lot 9b.
 - Garder les caches existants (15 min pour We Work Remotely ; Jobgether demande de limiter les appels) : l'actualisation ne contourne aucun cache.
 - Ajouter le réglage `refreshMode?: "on_open" | "manual"` dans le compte, et le choix « Actualiser automatiquement à l'ouverture » / « Seulement quand je le demande ».
 - En-tête de la page : « Actualisé il y a 2 h » et le bouton « Actualiser maintenant ».
