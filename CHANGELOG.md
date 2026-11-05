@@ -1,3 +1,7 @@
+## 5 novembre 2026 — Explication des minimums stricts
+
+Ma recherche décrit le masquage des rémunérations connues sous les minimums, y compris avec un contrat inconnu.
+
 ## 5 novembre 2026 — Minimums de rémunération stricts
 
 Les salaires et TJM connus inférieurs aux minimums du compte sont exclus sans tolérance, y compris lorsque le contrat est inconnu. Ces offres sont masquées dans « À examiner ». Les montants absents restent à vérifier ; les sélections et candidatures existantes sont conservées.
