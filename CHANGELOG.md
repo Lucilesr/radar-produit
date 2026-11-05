@@ -1,3 +1,9 @@
+## 5 novembre 2026 — Ma recherche : un seul champ pour les pays et régions
+
+- Les deux champs « Inclure » et « Exclure » sont remplacés par une recherche unique : tapez un lieu, puis Inclure (Entrée) ou Exclure (Maj+Entrée).
+- Les lieux choisis apparaissent dans une liste où chaque ligne bascule entre « Inclus » et « Exclu » sans la retaper, et se retire d'un clic.
+- Des raccourcis proposent les régions déjà connues (Union européenne, Amérique du Nord…).
+
 ## 5 novembre 2026 — Ma recherche : tolérance sous le minimum
 
 - Un curseur de 0 à 20 % règle la tolérance sous les minimums de salaire et de TJM. À 0 %, valeur par défaut, le comportement strict est inchangé.
