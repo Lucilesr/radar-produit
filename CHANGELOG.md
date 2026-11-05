@@ -1,3 +1,8 @@
+## 5 novembre 2026 — Seuil Jobgether dans Ma recherche
+
+- Le seuil de score Jobgether est visible en haut de « Mes critères » et accessible directement depuis « Alertes & flux ».
+- La valeur enregistrée est affichée dans le raccourci vers le réglage.
+
 ## 5 novembre 2026 — Tags des candidatures
 
 - Un dossier de candidature permet de créer des tags sans nom prérempli, de choisir une couleur, de les appliquer ou retirer de la carte, puis de les renommer ou supprimer après confirmation.

@@ -127,6 +127,11 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
       <p>Ces critères classent vos offres dans Radar. Ils ne modifient pas les alertes créées sur les sites externes.</p>
     </header>
     <form className="search-criteria-form" onSubmit={async event => { event.preventDefault(); if (roleSaveInFlight.current || locationSaveInFlight.current) return; setSaving(true); setMessage(""); try { setMessage(await onSave({ ...profile, searchPreferences: { ...draft, roles, includedLocations, excludedLocations } }) ? "Recherche enregistrée. Les matchs utilisent vos critères." : "Enregistrement non confirmé. Réessayez."); } finally { setSaving(false); } }}>
+      <section className="search-criteria-group" aria-labelledby="search-score-title">
+        <div className="search-criteria-group-heading"><h3 id="search-score-title">Score minimal Jobgether</h3><p>Choisissez le score à partir duquel une nouvelle offre Jobgether apparaît dans Radar.</p></div>
+        <label className="search-pay-field" htmlFor="jobgether-minimum-score"><span className="search-pay-label">Score minimal sur 100</span><span className="search-pay-control"><input id="jobgether-minimum-score" className="search-pay-input" type="number" min="0" max="100" step="1" value={draft.minimumMatchScore} aria-describedby="jobgether-score-help" disabled={saving} onChange={event => { setDraft(current => ({ ...current, minimumMatchScore: Math.max(0, Math.min(100, Math.round(Number(event.target.value) || 0))) })); setMessage(""); }} /><span className="search-pay-unit" aria-hidden="true">/ 100</span></span></label>
+        <p id="jobgether-score-help" className="search-criteria-help">55 par défaut. À 0, toutes les nouvelles offres Jobgether peuvent apparaître. Les offres déjà suivies restent accessibles si vous augmentez ce seuil. Cliquez sur Enregistrer pour appliquer votre choix.</p>
+      </section>
       <section className="search-criteria-group" aria-labelledby="search-roles-title">
         <div className="search-criteria-group-heading"><h3 id="search-roles-title">Postes visés</h3><p>Ces intitulés ont le plus de poids dans le classement des offres.</p></div>
         <label htmlFor="searched-role" className="search-field-label">Ajouter un poste</label>
@@ -157,11 +162,6 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
           <label className="search-pay-field"><span className="search-pay-label">TJM minimum<span className="sr-only">, en euros hors taxes par jour</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></span></label>
         </div>
         <p className="search-criteria-help">Une offre un peu sous votre seuil reste visible comme exception. Si le montant manque, il est signalé « à vérifier ».</p>
-      </section>
-      <section className="search-criteria-group" aria-labelledby="search-score-title">
-        <div className="search-criteria-group-heading"><h3 id="search-score-title">Pertinence Jobgether</h3><p>Écartez les offres Jobgether dont le score est trop faible pour votre recherche.</p></div>
-        <label className="search-pay-field"><span className="search-pay-label">Score minimal de match</span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="100" step="1" value={draft.minimumMatchScore} onChange={event => { setDraft(current => ({ ...current, minimumMatchScore: Math.max(0, Math.min(100, Math.round(Number(event.target.value) || 0))) })); setMessage(""); }} /><span className="search-pay-unit" aria-hidden="true">/ 100</span></span></label>
-        <p className="search-criteria-help">55 par défaut. À 0, toutes les offres Jobgether peuvent entrer dans Radar. Les offres déjà suivies restent accessibles si vous augmentez ce seuil.</p>
       </section>
       <footer className="search-criteria-actions"><span role="status" className="search-form-status">{message}</span><button type="submit" className="radar-add-button" disabled={saving || savingRole || savingLocation}>{saving ? "Enregistrement…" : "Enregistrer"}</button></footer>
     </form>
