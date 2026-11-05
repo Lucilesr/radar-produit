@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CandidateProfile, SearchPreferences } from "@/lib/types";
-import { normalizeRoleTitles, payFloor, remoteForContract, searchPreferences } from "@/lib/search-preferences";
+import { foldKeyword, normalizeRoleTitles, payFloor, remoteForContract, searchPreferences } from "@/lib/search-preferences";
 import { contractLabels } from "@/lib/search-criteria";
 
 const presenceOptions = [{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Présence exceptionnelle" }, { value: "full_remote", label: "Full remote" }] as const;
@@ -16,8 +16,8 @@ import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, 
 
 const locationOptions = [...locationRegionOptions, ...countryOptions.filter(option => option.value).map(option => option.label)];
 
-export type CriteriaFormPart = "roles" | "conditions" | "locations" | "pay";
-const partTitles: Record<CriteriaFormPart, string> = { roles: "search-roles-title", conditions: "search-conditions-title", locations: "search-location-title", pay: "search-pay-title" };
+export type CriteriaFormPart = "roles" | "conditions" | "locations" | "pay" | "keywords";
+const partTitles: Record<CriteriaFormPart, string> = { roles: "search-roles-title", conditions: "search-conditions-title", locations: "search-location-title", pay: "search-pay-title", keywords: "search-keywords-title" };
 
 /** The whole criteria form, or with `only` a single group of it (popover or table row). */
 export function SearchPreferencesForm({ profile, onSave, showIntro = true, only }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; showIntro?: boolean; only?: CriteriaFormPart }) {
@@ -37,6 +37,13 @@ export function SearchPreferencesForm({ profile, onSave, showIntro = true, only 
   const [locationMessage, setLocationMessage] = useState("");
   const [roleInput, setRoleInput] = useState("");
   const [savingRole, setSavingRole] = useState(false);
+  const [boostKeywords, setBoostKeywords] = useState(() => searchPreferences(profile.searchPreferences).boostKeywords ?? []);
+  const [excludeKeywords, setExcludeKeywords] = useState(() => searchPreferences(profile.searchPreferences).excludeKeywords ?? []);
+  const [boostInput, setBoostInput] = useState("");
+  const [excludeInput, setExcludeInput] = useState("");
+  const [savingKeywords, setSavingKeywords] = useState(false);
+  const [keywordMessage, setKeywordMessage] = useState("");
+  const keywordSaveInFlight = useRef(false);
   const roleSaveInFlight = useRef(false);
   const [saving, setSaving] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "pending" | "saving" | "saved" | "error">("idle");
@@ -49,6 +56,7 @@ export function SearchPreferencesForm({ profile, onSave, showIntro = true, only 
   useEffect(() => { latest.current = { profile, onSave, roles, includedLocations, excludedLocations }; });
   const [roleMessage, setRoleMessage] = useState("");
   useEffect(() => { setRoles(searchPreferences(profile.searchPreferences).roles); }, [profile.searchPreferences]);
+  useEffect(() => { const saved = searchPreferences(profile.searchPreferences); setBoostKeywords(saved.boostKeywords ?? []); setExcludeKeywords(saved.excludeKeywords ?? []); }, [profile.searchPreferences]);
   useEffect(() => { const saved = searchPreferences(profile.searchPreferences); setIncludedLocations(saved.includedLocations ?? []); setExcludedLocations(saved.excludedLocations ?? []); }, [profile.searchPreferences]);
 
   type PlaceKind = "includedLocations" | "excludedLocations";
@@ -84,6 +92,33 @@ export function SearchPreferencesForm({ profile, onSave, showIntro = true, only 
   function removePlace(label: string) {
     if (savingLocation || savingRole || saving) return;
     void persistPlaces(includedLocations.filter(item => item !== label), excludedLocations.filter(item => item !== label));
+  }
+  type KeywordKind = "boostKeywords" | "excludeKeywords";
+  async function persistKeywords(kind: KeywordKind, next: string[], previous: string[], restoreInput = "") {
+    if (keywordSaveInFlight.current || locationSaveInFlight.current || roleSaveInFlight.current || saving) return;
+    keywordSaveInFlight.current = true; setSavingKeywords(true); setKeywordMessage("Enregistrement…");
+    const update = kind === "boostKeywords" ? setBoostKeywords : setExcludeKeywords;
+    update(next);
+    try {
+      const preferences = searchPreferences(profile.searchPreferences);
+      const saved = await onSave({ ...profile, searchPreferences: { ...preferences, roles, includedLocations, excludedLocations, boostKeywords: kind === "boostKeywords" ? next : boostKeywords, excludeKeywords: kind === "excludeKeywords" ? next : excludeKeywords } });
+      if (saved) setKeywordMessage("Mots-clés enregistrés. Les offres sont reclassées.");
+      else { update(previous); if (restoreInput) (kind === "boostKeywords" ? setBoostInput : setExcludeInput)(restoreInput); setKeywordMessage("Enregistrement non confirmé. Réessayez."); }
+    } catch { update(previous); if (restoreInput) (kind === "boostKeywords" ? setBoostInput : setExcludeInput)(restoreInput); setKeywordMessage("Enregistrement non confirmé. Réessayez."); }
+    finally { keywordSaveInFlight.current = false; setSavingKeywords(false); }
+  }
+  function addKeyword(kind: KeywordKind) {
+    const entry = (kind === "boostKeywords" ? boostInput : excludeInput).trim().replace(/\s+/g, " ");
+    const current = kind === "boostKeywords" ? boostKeywords : excludeKeywords;
+    if (entry.length < 2 || entry.length > 40) { setKeywordMessage("Saisissez un mot-clé de 2 à 40 caractères."); return; }
+    if (current.some(word => foldKeyword(word) === foldKeyword(entry))) { setKeywordMessage("Ce mot-clé est déjà dans la liste."); return; }
+    if (current.length >= 12) { setKeywordMessage("Limite de 12 mots-clés par liste."); return; }
+    (kind === "boostKeywords" ? setBoostInput : setExcludeInput)("");
+    void persistKeywords(kind, [...current, entry], current, entry);
+  }
+  function removeKeyword(kind: KeywordKind, word: string) {
+    const current = kind === "boostKeywords" ? boostKeywords : excludeKeywords;
+    void persistKeywords(kind, current.filter(item => item !== word), current);
   }
   const shortcutPlaces = locationRegionOptions.filter(region => !includedLocations.includes(region) && !excludedLocations.includes(region)).slice(0, 4);
 
@@ -232,6 +267,29 @@ export function SearchPreferencesForm({ profile, onSave, showIntro = true, only 
         <p className="search-criteria-help">{tolerance
           ? `Les offres jusqu’à ${tolerance} % sous votre minimum restent visibles avec la mention « Sous votre minimum » : dès ${euro(payFloor(draft.minimumSalary, tolerance))} brut/an ou ${euro(payFloor(draft.minimumDailyRate, tolerance))} HT/jour. En dessous, elles sont masquées dans « À examiner ».`
           : "Toute rémunération connue sous votre minimum est masquée dans « À examiner », même si le contrat est à confirmer."} Si le montant manque, il reste « à vérifier ».</p>
+      </section> : null}
+      {show("keywords") ? <section className="search-criteria-group" aria-labelledby="search-keywords-title">
+        <div className="search-criteria-group-heading"><h3 id="search-keywords-title">L’annonce</h3><p>Des mots qui font remonter une offre, et des mots qui l’écartent.</p></div>
+        {([["boostKeywords", "Mettre en avant si l’annonce parle de", "Ex. fintech"], ["excludeKeywords", "Écarter si l’annonce contient", "Ex. stage"]] as const).map(([kind, label, placeholder]) => {
+          const items = kind === "boostKeywords" ? boostKeywords : excludeKeywords;
+          const value = kind === "boostKeywords" ? boostInput : excludeInput;
+          const setValue = kind === "boostKeywords" ? setBoostInput : setExcludeInput;
+          const disabled = savingKeywords || savingRole || savingLocation || saving;
+          return <div key={kind} className="search-keyword-field">
+            <label className="search-field-label" htmlFor={kind}>{label}</label>
+            <div className="search-role-entry">
+              <input id={kind} type="text" maxLength={40} value={value} disabled={disabled} placeholder={placeholder}
+                onChange={event => { setValue(event.target.value); setKeywordMessage(""); }}
+                onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addKeyword(kind); } }} />
+              <button type="button" className="secondary-button" disabled={disabled || !value.trim()} onClick={() => addKeyword(kind)}>Ajouter</button>
+            </div>
+            <ul className="search-role-list" data-tone={kind === "excludeKeywords" ? "exclude" : undefined} aria-label={label}>
+              {items.map(word => <li key={word}>{word}<button type="button" aria-label={`Retirer ${word}`} disabled={disabled} onClick={() => removeKeyword(kind, word)}>×</button></li>)}
+            </ul>
+          </div>;
+        })}
+        <p className="search-criteria-help">Les mots mis en avant remontent l’offre dans « À examiner ». Les mots écartés la masquent. La casse et les accents sont ignorés.</p>
+        <p role="status" className="search-form-status">{keywordMessage}</p>
       </section> : null}
       {show("conditions") || show("pay") ? <footer className="search-criteria-actions"><span role="status" className="search-form-status" data-state={saveState}>{statusText}</span>{saveState === "error" ? <button type="button" className="secondary-button" disabled={saving} onClick={() => void persistDraft()}>Réessayer</button> : null}</footer> : null}
     </form>

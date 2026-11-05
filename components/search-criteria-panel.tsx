@@ -16,6 +16,7 @@ type View = "summary" | "details" | "edit";
 const viewKey = "radar:search-criteria-view";
 // First field of each form group, focused when a criterion is opened for editing.
 const editTargets: Record<Exclude<CriteriaTarget, "jobgether">, string> = {
+  keywords: "#boostKeywords",
   roles: "#searched-role",
   conditions: "section[aria-labelledby=search-conditions-title] input",
   locations: "#includedLocations",
