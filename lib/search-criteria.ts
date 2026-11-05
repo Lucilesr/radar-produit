@@ -1,3 +1,4 @@
+import { remoteForContract } from "./search-preferences";
 import type { SearchPreferences } from "./types";
 
 /** Where a criterion is edited: a group of the criteria form, or the Jobgether card. */
@@ -7,12 +8,14 @@ export type CriteriaTone = "include" | "exclude";
 export type CriteriaRow = {
   id: "roles" | "contracts" | "remote" | "salary" | "dailyRate" | "payTolerance" | "matchScore" | "includedLocations" | "excludedLocations";
   label: string;
+  /** Set when several rows share an id, as with one presence row per contract. */
+  key?: string;
   values: string[];
   tone: CriteriaTone;
   target: CriteriaTarget;
 };
 export type CriteriaGroup = { id: "role" | "presence" | "pay" | "geography"; title: string; rows: CriteriaRow[] };
-export type CriteriaToken = { id: CriteriaRow["id"]; label: string; value: string; fullValue: string; tone: CriteriaTone; target: CriteriaTarget };
+export type CriteriaToken = { id: CriteriaRow["id"]; key: string; label: string; value: string; fullValue: string; tone: CriteriaTone; target: CriteriaTarget };
 
 export const contractLabels: Record<SearchPreferences["contracts"][number], string> = { cdi: "CDI", cdd: "CDD", freelance: "Freelance", portage: "Portage salarial", part_time: "Temps partagé" };
 export const remoteLabels: Record<SearchPreferences["remote"], string> = {
@@ -22,6 +25,14 @@ export const remoteLabels: Record<SearchPreferences["remote"], string> = {
   onsite: "Présentiel",
 };
 const euro = (amount: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(amount) + " €";
+
+/** One row when every contract accepts the same presence, one row per contract otherwise. */
+function presenceRows(preferences: SearchPreferences): CriteriaRow[] {
+  const byContract = preferences.contracts.map(contract => [contract, remoteForContract(preferences, contract)] as const);
+  const levels = new Set(byContract.map(([, level]) => level));
+  if (levels.size <= 1) return [{ id: "remote", label: "Présence acceptable", values: [remoteLabels[byContract[0]?.[1] ?? preferences.remote]], tone: "include", target: "conditions" }];
+  return byContract.map(([contract, level]) => ({ id: "remote" as const, key: contract, label: `Présence · ${contractLabels[contract]}`, values: [remoteLabels[level]], tone: "include" as const, target: "conditions" as const }));
+}
 
 /** Rows of the expanded view, grouped by theme. Pay rows only appear for the contracts searched. */
 export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] {
@@ -41,9 +52,7 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
       { id: "roles", label: "Postes visés", values: preferences.roles, tone: "include", target: "roles" },
       { id: "contracts", label: "Contrats", values: contracts.map(contract => contractLabels[contract]), tone: "include", target: "conditions" },
     ] },
-    { id: "presence", title: "La présence", rows: [
-      { id: "remote", label: "Présence acceptable", values: [remoteLabels[preferences.remote]], tone: "include", target: "conditions" },
-    ] },
+    { id: "presence", title: "La présence", rows: presenceRows(preferences) },
     { id: "pay", title: "La rémunération", rows: pay },
     { id: "geography", title: "La géographie", rows: geography },
   ];
@@ -56,13 +65,20 @@ const shortLabels: Partial<Record<CriteriaRow["id"], string>> = {
 
 /** One compact tag per criterion for the collapsed bar. Long lists keep three values, then « +n ». */
 export function criteriaTokens(preferences: SearchPreferences, visible = 3): CriteriaToken[] {
-  return criteriaGroups(preferences).flatMap(group => group.rows).map(row => {
+  const rows = criteriaGroups(preferences).flatMap(group => group.rows);
+  // The bar keeps one presence tag even when each contract has its own level, so it stays stable.
+  const presence = rows.filter(row => row.id === "remote");
+  const merged: CriteriaRow[] = presence.length > 1
+    ? [{ id: "remote", label: "Présence acceptable", values: [presence.map(row => `${row.label.replace("Présence · ", "")} : ${row.values[0]}`).join(", ")], tone: "include", target: "conditions" }]
+    : presence;
+  return rows.flatMap(row => row.id === "remote" ? (row === presence[0] ? merged : []) : [row]).map(row => {
     const shown = row.values.slice(0, visible).join(", ");
     const hidden = row.values.length - visible;
     const prefix = row.id === "salary" || row.id === "dailyRate" || row.id === "matchScore" ? "≥ " : row.id === "payTolerance" ? "−" : "";
     return {
       id: row.id,
-      label: shortLabels[row.id] ?? row.label,
+      key: row.key ?? row.id,
+      label: row.key ? row.label : shortLabels[row.id] ?? row.label,
       value: prefix + shown + (hidden > 0 ? ` +${hidden}` : ""),
       fullValue: prefix + row.values.join(", "),
       tone: row.tone,

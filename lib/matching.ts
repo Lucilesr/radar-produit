@@ -1,5 +1,5 @@
 import type { Assessment, JobInput, JobStatus, SearchPreferences } from "./types";
-import { payFloor, searchPreferences } from "./search-preferences";
+import { payFloor, remoteForContract, searchPreferences } from "./search-preferences";
 import { detectWorkArrangement } from "./work-arrangement";
 import { activeStatuses } from "./application-workflow";
 import { isNorthAmericaRestricted } from "./market-scope";
@@ -63,20 +63,21 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   const explicitPresence=weekly!=null||monthly!=null;
   const arrangement=explicitPresence&&job.remoteMode==="hybrid" ? {mode:"hybrid" as const,daysOnsite:weekly??undefined,lightHybrid:(weekly==null||weekly<=1)&&(monthly==null||monthly<=4)} : detected;
   const pursued = !!job.status && activeStatuses.includes(job.status);
+  const acceptedPresence = remoteForContract(search, job.contractType);
   if (arrangement.mode === "full_remote") {
     score += 25;
     reasons.push("Full remote explicite.");
-  } else if (arrangement.mode === "exceptional" && search.remote !== "full_remote") {
+  } else if (arrangement.mode === "exceptional" && acceptedPresence !== "full_remote") {
     score += 21;
     reasons.push("Présence ponctuelle compatible avec vos préférences.");
   } else if (arrangement.mode === "unknown") {
     score += 5;
     exception = true;
     flags.push("Politique remote à confirmer");
-  } else if (arrangement.mode === "hybrid" && (search.remote === "hybrid" || search.remote === "onsite")) {
+  } else if (arrangement.mode === "hybrid" && (acceptedPresence === "hybrid" || acceptedPresence === "onsite")) {
     score += 12;
     reasons.push("Organisation hybride compatible avec votre présence acceptable.");
-  } else if (arrangement.mode === "onsite" && search.remote === "onsite") {
+  } else if (arrangement.mode === "onsite" && acceptedPresence === "onsite") {
     score += 12;
     reasons.push("Présence sur site compatible avec votre recherche.");
   } else if (pursued) {

@@ -28,6 +28,21 @@ export function payFloor(minimum: number, tolerancePercent = 0) {
   return Math.round(minimum * (100 - tolerancePercent) / 100);
 }
 
+/** From the strictest to the most permissive: a kept offer must fit the accepted presence. */
+const remoteOrder = ["full_remote", "exceptional", "hybrid", "onsite"] as const;
+type Remote = SearchPreferences["remote"];
+const remoteValue = (value: unknown): Remote | undefined =>
+  value === "light_hybrid" ? "hybrid" : value === "occasional" ? "exceptional"
+    : (remoteOrder as readonly string[]).includes(value as string) ? value as Remote : undefined;
+
+/** Presence accepted for one offer; an unknown contract follows the most permissive one searched. */
+export function remoteForContract(search: SearchPreferences, contract?: string): Remote {
+  const forContract = (name: string) => search.remoteByContract?.[name as keyof NonNullable<SearchPreferences["remoteByContract"]>] ?? search.remote;
+  if (contract && contract !== "other" && search.contracts.includes(contract as SearchPreferences["contracts"][number])) return forContract(contract);
+  const searched = search.contracts.map(forContract);
+  return remoteOrder.filter(level => searched.includes(level)).at(-1) ?? search.remote;
+}
+
 export function searchPreferences(value: unknown): SearchPreferences {
   if (!value || typeof value !== "object") return defaultSearchPreferences;
   const raw = value as Partial<SearchPreferences>;
@@ -42,6 +57,12 @@ export function searchPreferences(value: unknown): SearchPreferences {
     excludedLocations: normalizeLocationRules(raw.excludedLocations ?? defaultSearchPreferences.excludedLocations),
     contracts: contracts.length ? [...new Set(contracts)] : defaultSearchPreferences.contracts,
     remote: remote === "light_hybrid" ? "hybrid" : remote === "occasional" ? "exceptional" : remote === "onsite" || remote === "hybrid" || remote === "exceptional" || remote === "full_remote" ? remote : defaultSearchPreferences.remote,
+    remoteByContract: raw.remoteByContract && typeof raw.remoteByContract === "object"
+      ? Object.fromEntries(Object.entries(raw.remoteByContract).flatMap(([contract, value]) => {
+        const level = remoteValue(value);
+        return level && contracts.includes(contract as typeof known[number]) ? [[contract, level] as const] : [];
+      }))
+      : undefined,
     minimumSalary: amount(raw.minimumSalary, defaultSearchPreferences.minimumSalary),
     minimumDailyRate: amount(raw.minimumDailyRate, defaultSearchPreferences.minimumDailyRate),
     payTolerancePercent: typeof raw.payTolerancePercent === "number" && Number.isInteger(raw.payTolerancePercent) && raw.payTolerancePercent >= 0 && raw.payTolerancePercent <= 20 ? raw.payTolerancePercent : 0,

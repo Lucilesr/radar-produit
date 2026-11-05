@@ -317,3 +317,21 @@ test("le parseur reconnaît le portage et le temps partagé", () => {
   assert.equal(read("Mission freelance, TJM 600 €/jour"), "freelance");
   assert.equal(read("Product Owner en CDI, 60 k€"), "cdi");
 });
+
+test("la présence acceptée peut différer selon le contrat", () => {
+  const { remoteForContract } = searchPreferencesModule;
+  const search = searchPreferences({ contracts: ["cdi", "freelance"], remote: "full_remote", remoteByContract: { freelance: "hybrid" } });
+  assert.equal(remoteForContract(search, "cdi"), "full_remote");
+  assert.equal(remoteForContract(search, "freelance"), "hybrid");
+  // An unknown contract follows the most permissive level searched.
+  assert.equal(remoteForContract(search, "other"), "hybrid");
+  assert.equal(remoteForContract(search, undefined), "hybrid");
+  // A contract that is not searched falls back the same way.
+  assert.equal(remoteForContract(search, "cdd"), "hybrid");
+  // A hybrid offer is kept for freelance, excluded for a CDI that wants full remote.
+  const hybrid = { ...baseline, remoteMode: "hybrid", onsiteDaysPerWeek: 2, description: "2 jours sur site par semaine" };
+  assert.equal(assessJob({ ...hybrid, contractType: "freelance", annualSalary: null, dailyRate: 600 }, search).tier !== "excluded", true);
+  assert.equal(assessJob({ ...hybrid, contractType: "cdi", annualSalary: 60000 }, search).tier, "excluded");
+  // Levels outside the searched contracts are ignored when reading back.
+  assert.equal(searchPreferences({ contracts: ["cdi"], remoteByContract: { freelance: "onsite" } }).remoteByContract.freelance, undefined);
+});

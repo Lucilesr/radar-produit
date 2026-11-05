@@ -87,6 +87,8 @@ export type SearchPreferences = {
   excludedLocations?: string[];
   contracts: Array<"cdi" | "cdd" | "freelance" | "portage" | "part_time">;
   remote: "onsite" | "hybrid" | "exceptional" | "full_remote";
+  /** Presence accepted for one contract; a contract absent here follows `remote`. */
+  remoteByContract?: Partial<Record<"cdi" | "cdd" | "freelance" | "portage" | "part_time", "onsite" | "hybrid" | "exceptional" | "full_remote">>;
   minimumSalary: number;
   minimumDailyRate: number;
   minimumMatchScore: number;

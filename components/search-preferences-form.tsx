@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CandidateProfile, SearchPreferences } from "@/lib/types";
-import { normalizeRoleTitles, payFloor, searchPreferences } from "@/lib/search-preferences";
+import { normalizeRoleTitles, payFloor, remoteForContract, searchPreferences } from "@/lib/search-preferences";
+import { contractLabels } from "@/lib/search-criteria";
+
+const presenceOptions = [{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Présence exceptionnelle" }, { value: "full_remote", label: "Full remote" }] as const;
 import { Slider } from "@/components/ui/slider";
 
 const euro = (amount: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(amount) + " €";
@@ -21,6 +24,7 @@ export function SearchPreferencesForm({ profile, onSave, showIntro = true, only 
   const show = (part: CriteriaFormPart) => !only || only === part;
   const [draft, setDraft] = useState<SearchPreferences>(() => searchPreferences(profile.searchPreferences));
   const tolerance = draft.payTolerancePercent ?? 0;
+  const presenceFor = (contract?: SearchPreferences["contracts"][number]) => remoteForContract(draft, contract);
   const [roles, setRoles] = useState(() => searchPreferences(profile.searchPreferences).roles);
   const [includedLocations, setIncludedLocations] = useState(() => searchPreferences(profile.searchPreferences).includedLocations ?? []);
   const [excludedLocations, setExcludedLocations] = useState(() => searchPreferences(profile.searchPreferences).excludedLocations ?? []);
@@ -182,7 +186,12 @@ export function SearchPreferencesForm({ profile, onSave, showIntro = true, only 
         <div className="search-criteria-group-heading"><h3 id="search-conditions-title">Conditions de travail</h3><p>Choisissez les contrats et la présence que vous accepteriez.</p></div>
         <div className="search-criteria-fields">
           <fieldset className="search-contracts"><legend className="search-field-label">Contrats</legend><div className="search-contract-options">{([["cdi", "CDI", ""], ["cdd", "CDD", ""], ["freelance", "Freelance", ""], ["portage", "Portage salarial", "comparé au TJM"], ["part_time", "Temps partagé", "rémunération à vérifier"]] as const).map(([value, label, hint]) => <label key={value}><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} /><span>{label}{hint ? <small>{hint}</small> : null}</span></label>)}</div></fieldset>
-          <div className="search-preferences-presence"><ChoiceSelect label="Présence acceptable" value={draft.remote} onChange={remote => scheduleSave({ ...latestDraft.current, remote })} options={[{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Présence exceptionnelle" }, { value: "full_remote", label: "Full remote" }]} disabled={saving} /></div>
+          <div className="search-preferences-presence">
+            {draft.contracts.length > 1 ? <fieldset className="search-presence-rows"><legend className="search-field-label">Présence acceptable, par contrat</legend>
+              {draft.contracts.map(contract => <ChoiceSelect key={contract} label={contractLabels[contract]} value={presenceFor(contract)} onChange={remote => scheduleSave({ ...latestDraft.current, remoteByContract: { ...latestDraft.current.remoteByContract, [contract]: remote } })} options={presenceOptions} disabled={saving} />)}
+            </fieldset> : <ChoiceSelect label="Présence acceptable" value={presenceFor(draft.contracts[0])} onChange={remote => scheduleSave({ ...latestDraft.current, remote, remoteByContract: {} })} options={presenceOptions} disabled={saving} />}
+            <p className="search-criteria-help">« Présence exceptionnelle » = quelques jours par an sur site, au plus.</p>
+          </div>
         </div>
       </section> : null}
       {show("locations") ? <section className="search-criteria-group" aria-labelledby="search-location-title">
