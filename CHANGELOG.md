@@ -1,3 +1,7 @@
+## 5 novembre 2026 — Libellé du score Jobgether
+
+- Le réglage précise que le score minimal mesure le matching entre le CV et les offres ; la phrase d’aide redondante est retirée.
+
 ## 5 novembre 2026 — Bornes du score Jobgether
 
 - La saisie du score reste entre 0 et 100, y compris lors d’une frappe ou d’un collage hors plage.
