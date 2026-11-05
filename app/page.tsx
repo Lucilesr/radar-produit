@@ -16,7 +16,7 @@ export default async function Home({searchParams}: {searchParams: Promise<Record
   if (user.userId.startsWith("demo:")) await ensureRecruiterDemo(user.userId, (await cookies()).get("radar_demo_mode")?.value === "onboarding");
   else await ensureOnboardingDemo(user.userId).catch(() => undefined);
   // Cleanup is maintenance: a failure must not take down the entire workspace.
-  await purgeExpiredTrash(user.userId).catch(error => console.error("Trash cleanup failed", error));
+  await purgeExpiredTrash(user.userId).catch(error => console.error("Trash cleanup failed:", String(error)));
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(await searchParams ?? {})) {
     for (const item of Array.isArray(value) ? value : value === undefined ? [] : [value]) search.append(key, item);
