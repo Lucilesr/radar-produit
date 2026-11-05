@@ -8,7 +8,7 @@ import { OfferForm } from "@/components/offer-form";
 import { ProfileWorkspace } from "@/components/profile-workspace";
 
 import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { CircleHelp, RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, Mail, Plus, Search, Trash2, Undo2, UserRound, X } from "lucide-react";
+import { CircleHelp, RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, Plus, Search, SlidersHorizontal, Trash2, Undo2, UserRound, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
 import { hasApplication, inOpportunityView, reviewState, type OpportunityView } from "@/lib/opportunity-views";
@@ -37,7 +37,7 @@ const tabs: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof La
   { id: "offers", label: "Opportunités", mobileLabel: "Offres", icon: Search },
   { id: "pipeline", label: "Candidatures", mobileLabel: "Suivi", icon: ClipboardCheck },
   { id: "profile", label: "Mon profil", mobileLabel: "Profil", icon: UserRound },
-  { id: "sources", label: "Ma recherche", mobileLabel: "Recherche", icon: Mail },
+  { id: "sources", label: "Ma recherche", mobileLabel: "Recherche", icon: SlidersHorizontal },
 ];
 
 
