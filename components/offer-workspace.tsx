@@ -14,7 +14,7 @@ import { CalendarDays, CalendarPlus, CheckCircle2, CircleHelp, Copy, ExternalLin
 import { ChoiceSelect, type ChoiceOption } from "@/components/choice-select";
 import { SourceLogo } from "@/components/source-logo";
 import { ApplicationQuestions } from "@/components/application-questions";
-import { ApplicationTagEditor } from "@/components/application-tags";
+import { ApplicationTagBadges } from "@/components/application-tags";
 import { formatDate, fromZonedInput, reviewDue, statusLabels, zonedInput } from "@/lib/application-workflow";
 import { formatEuro } from "@/lib/matching";
 import { hasApplication, workspaceSections } from "@/lib/opportunity-views";
@@ -84,7 +84,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
       <nav aria-label={context === "opportunity" ? "Sections de l’opportunité" : "Sections de la candidature"} className="signal-workspace-tabs">{tabs.map(id => <button type="button" key={id} onClick={() => setView(id)} aria-current={activeView === id ? "page" : undefined}>{labels[id]}</button>)}</nav>
       {context === "opportunity" && !job.deletedAt && showApplicationAction ? <ApplicationTrackingAction job={job} onStatus={onStatus} onOpenApplication={onOpenApplication} /> : null}
     </div>
-    {context === "application" ? <ApplicationTagEditor jobId={job.id}/> : null}
+    {context === "application" ? <ApplicationTagBadges jobId={job.id}/> : null}
     {activeView === "offer" && !editing ? <>
       <section aria-label="Informations clés de l’offre" className="review-conditions">
         <h3>Conditions de l’offre</h3>
