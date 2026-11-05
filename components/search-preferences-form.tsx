@@ -156,7 +156,7 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
           <label className="search-pay-field"><span className="search-pay-label">Salaire annuel minimum<span className="sr-only">, en euros bruts par an</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="1000" placeholder="Ex. 55000" value={draft.minimumSalary} onChange={event => amount("minimumSalary", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ brut/an</span></span></label>
           <label className="search-pay-field"><span className="search-pay-label">TJM minimum<span className="sr-only">, en euros hors taxes par jour</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></span></label>
         </div>
-        <p className="search-criteria-help">Une offre un peu sous votre seuil reste visible comme exception. Si le montant manque, il est signalé « à vérifier ».</p>
+        <p className="search-criteria-help">Toute rémunération connue sous votre minimum est masquée dans « À examiner », même si le contrat est à confirmer. Si le montant manque, il reste « à vérifier ».</p>
       </section>
       <footer className="search-criteria-actions"><span role="status" className="search-form-status">{message}</span><button type="submit" className="radar-add-button" disabled={saving || savingRole || savingLocation}>{saving ? "Enregistrement…" : "Enregistrer"}</button></footer>
     </form>
