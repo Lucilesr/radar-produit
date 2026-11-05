@@ -1,3 +1,8 @@
+## 5 novembre 2026 — « + Critère »
+
+- À la suite de vos étiquettes, « + Critère » propose ce que vous n'avez pas encore réglé : mots-clés à mettre en avant, mots-clés à écarter, tolérance sous le minimum, pistes de recherche.
+- Choisir un critère ouvre directement son contrôle, sans passer par le formulaire complet. Une fois réglé, il quitte la liste et rejoint vos étiquettes.
+
 ## 5 novembre 2026 — Radar s'actualise tout seul à l'ouverture
 
 - Si la dernière collecte date de plus de 12 heures, Radar actualise vos flux en arrière-plan quand vous ouvrez « Ma recherche », sans bloquer l'affichage et sans contourner les caches des sources.

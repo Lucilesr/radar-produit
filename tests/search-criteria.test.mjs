@@ -15,7 +15,7 @@ const locations = moduleUrl("location-criteria", { "./countries": countries, "./
 const tracks = moduleUrl("search-tracks");
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations, "./search-tracks": tracks });
 const { searchPreferences } = await import(preferences);
-const { criteriaGroups, criteriaTokens } = await import(moduleUrl("search-criteria", { "./search-preferences": preferences, "./search-tracks": tracks }));
+const { criteriaGroups, criteriaTokens, missingCriteria } = await import(moduleUrl("search-criteria", { "./search-preferences": preferences, "./search-tracks": tracks }));
 const nbsp = text => text.replace(/[  ]/g, " ");
 
 test("les préférences par défaut donnent une étiquette par critère renseigné", () => {
@@ -65,4 +65,13 @@ test("la tolérance n'apparaît que si elle est réglée", () => {
   const token = criteriaTokens(searchPreferences({ payTolerancePercent: 5 })).find(item => item.id === "payTolerance");
   assert.equal(token.label, "Tolérance");
   assert.equal(token.value, "−5 %");
+});
+
+test("« + Critère » ne propose que ce qui n’est pas encore réglé", () => {
+  const fresh = missingCriteria(searchPreferences({ contracts: ["cdi"], roles: ["Data Analyst"] })).map(item => item.id);
+  assert.deepEqual(fresh, ["boostKeywords", "excludeKeywords", "payTolerance", "searchTracks"]);
+  const filled = missingCriteria(searchPreferences({ contracts: ["cdi"], roles: ["Data Analyst"], boostKeywords: ["fintech"], payTolerancePercent: 5 })).map(item => item.id);
+  assert.deepEqual(filled, ["excludeKeywords", "searchTracks"]);
+  const unpaid = missingCriteria(searchPreferences({ contracts: ["part_time"], roles: ["Data Analyst"] })).map(item => item.id);
+  assert.ok(!unpaid.includes("payTolerance"));
 });

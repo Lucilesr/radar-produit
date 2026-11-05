@@ -109,3 +109,17 @@ export function criteriaTokens(preferences: SearchPreferences, visible = 3): Cri
     };
   });
 }
+
+/** Criteria the account has not set yet, offered behind « + Critère ». */
+export type MissingCriterion = { id: "boostKeywords" | "excludeKeywords" | "payTolerance" | "searchTracks"; label: string; help: string; target: CriteriaTarget };
+
+export function missingCriteria(preferences: SearchPreferences): MissingCriterion[] {
+  const contracts = preferences.contracts;
+  const paid = contracts.includes("cdi") || contracts.includes("cdd") || contracts.includes("freelance");
+  return [
+    ...((preferences.boostKeywords ?? []).length ? [] : [{ id: "boostKeywords" as const, label: "Mots-clés à mettre en avant", help: "Les offres qui les contiennent remontent.", target: "keywords" as const }]),
+    ...((preferences.excludeKeywords ?? []).length ? [] : [{ id: "excludeKeywords" as const, label: "Mots-clés à écarter", help: "Les offres qui les contiennent sont masquées.", target: "keywords" as const }]),
+    ...(paid && !(preferences.payTolerancePercent ?? 0) ? [{ id: "payTolerance" as const, label: "Tolérance sous le minimum", help: "Garder les offres un peu sous votre minimum.", target: "pay" as const }] : []),
+    ...((preferences.searchTracks ?? []).length ? [] : [{ id: "searchTracks" as const, label: "Pistes de recherche", help: "Grouper les intitulés cherchés sur les sources.", target: "roles" as const }]),
+  ];
+}

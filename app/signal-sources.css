@@ -385,3 +385,11 @@
 .source-refresh-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
 .source-refresh-mode{margin-top:12px;max-width:420px}
 @media (max-width:640px){.source-refresh-actions{width:100%;justify-content:space-between}}
+
+/* Ma recherche · « + Critère » (lot 7) */
+.search-criteria-add{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 12px;border:1px dashed var(--signal-input);border-radius:999px;background:none;font:inherit;font-size:.86rem;color:var(--signal-petrol);cursor:pointer}
+.search-criteria-add:hover{border-style:solid;background:var(--signal-soft)}
+.search-criteria-add-menu{display:grid;gap:6px;margin:0;padding:0;list-style:none;min-width:260px}
+.search-criteria-add-menu button{display:grid;gap:2px;width:100%;padding:10px 12px;border:1px solid var(--signal-line);border-radius:5px;background:var(--signal-paper);text-align:left;font:inherit;color:var(--signal-ink);cursor:pointer}
+.search-criteria-add-menu button:hover{border-color:var(--signal-petrol)}
+.search-criteria-add-menu span{font-size:.84rem;color:var(--signal-muted)}
