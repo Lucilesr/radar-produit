@@ -10,6 +10,9 @@ import { Slider } from "@/components/ui/slider";
 
 const euro = (amount: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(amount) + " €";
 import { ChoiceSelect } from "@/components/choice-select";
+import { WorkspaceButton } from "@/components/workspace-form";
+import { foldTerm, maxTermsPerTrack, maxTracks, searchTracksFor, trackKindLabels, trackKinds } from "@/lib/search-tracks";
+import type { SearchTrack } from "@/lib/types";
 import { locationRegionOptions, normalizeLocationRules } from "@/lib/location-criteria";
 import { countryOptions } from "@/lib/countries";
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
@@ -216,6 +219,7 @@ export function SearchPreferencesForm({ profile, onSave, showIntro = true, only 
         <ul className="search-role-list" aria-label="Postes enregistrés">{roles.map(role => <li key={role}>{role}<button type="button" aria-label={`Retirer ${role}`} disabled={savingRole || saving} onClick={() => removeRole(role)}>×</button></li>)}</ul>
         {roleMessage ? <p role="status" className="search-form-status">{roleMessage}</p> : null}
         <p className="search-criteria-help">Les postes s’enregistrent dès l’ajout. Vous pouvez aussi appuyer sur Entrée.</p>
+        <SearchTracksEditor profile={profile} onSave={onSave} roles={roles} disabled={savingRole || saving} />
       </section> : null}
       {show("conditions") ? <section className="search-criteria-group" aria-labelledby="search-conditions-title">
         <div className="search-criteria-group-heading"><h3 id="search-conditions-title">Conditions de travail</h3><p>Choisissez les contrats et la présence que vous accepteriez.</p></div>
@@ -294,4 +298,75 @@ export function SearchPreferencesForm({ profile, onSave, showIntro = true, only 
       {show("conditions") || show("pay") ? <footer className="search-criteria-actions"><span role="status" className="search-form-status" data-state={saveState}>{statusText}</span>{saveState === "error" ? <button type="button" className="secondary-button" disabled={saving} onClick={() => void persistDraft()}>Réessayer</button> : null}</footer> : null}
     </form>
   </section>;
+}
+
+const trackKindOptions = trackKinds.map(kind => ({ value: kind, label: trackKindLabels[kind] }));
+
+/**
+ * Search tracks of this account: the terms Radar looks for on the sources, beyond the roles.
+ * Nothing is hard-coded here; an account without tracks starts from its own roles.
+ */
+function SearchTracksEditor({ profile, onSave, roles, disabled }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; roles: string[]; disabled: boolean }) {
+  const preferences = searchPreferences(profile.searchPreferences);
+  const tracks = preferences.searchTracks ?? [];
+  const shown = tracks.length ? tracks : searchTracksFor({ roles, searchTracks: undefined });
+  const [term, setTerm] = useState<Record<string, string>>({});
+  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function persist(next: SearchTrack[], note: string) {
+    setSaving(true);
+    setMessage("Enregistrement…");
+    try {
+      const saved = await onSave({ ...profile, searchPreferences: { ...preferences, roles, searchTracks: next } });
+      setMessage(saved ? note : "Enregistrement non confirmé. Réessayez.");
+    } catch { setMessage("Enregistrement non confirmé. Réessayez."); }
+    finally { setSaving(false); }
+  }
+  const update = (id: string, change: (track: SearchTrack) => SearchTrack) => shown.map(track => track.id === id ? change(track) : track);
+
+  function addTerm(track: SearchTrack) {
+    const entered = (term[track.id] ?? "").trim().replace(/\s+/g, " ");
+    if (entered.length < 2 || entered.length > 80) { setMessage("Saisissez un terme de 2 à 80 caractères."); return; }
+    if (track.terms.some(existing => foldTerm(existing) === foldTerm(entered))) { setMessage("Ce terme est déjà dans la piste."); return; }
+    if (track.terms.length >= maxTermsPerTrack) { setMessage(`Une piste accepte ${maxTermsPerTrack} termes au plus.`); return; }
+    setTerm({ ...term, [track.id]: "" });
+    void persist(update(track.id, item => ({ ...item, terms: [...item.terms, entered] })), `« ${entered} » ajouté à « ${track.label} ».`);
+  }
+  function removeTerm(track: SearchTrack, value: string) {
+    if (track.terms.length === 1) { setMessage("Gardez au moins un terme, ou retirez la piste."); return; }
+    void persist(update(track.id, item => ({ ...item, terms: item.terms.filter(existing => existing !== value) })), "Terme retiré.");
+  }
+  function addTrack() {
+    if (shown.length >= maxTracks) { setMessage(`Vous pouvez garder ${maxTracks} pistes au plus.`); return; }
+    const id = `piste-${shown.length + 1}`;
+    void persist([...shown, { id, label: `Piste ${shown.length + 1}`, kind: "broad", terms: [roles[0] ?? "Product"] }], "Piste ajoutée. Renommez-la et complétez ses termes.");
+  }
+
+  return <div className="search-tracks">
+    <div className="search-tracks-head">
+      <h4>Pistes de recherche</h4>
+      <p className="search-criteria-help">Radar interroge les sources avec ces termes. Sans piste, il utilise vos postes.</p>
+    </div>
+    <ul>{shown.map(track => <li key={track.id} className="search-track">
+      <div className="search-track-head">
+        <input id={`track-label-${track.id}`} type="text" maxLength={60} defaultValue={track.label} aria-label={`Nom de la piste ${track.label}`} disabled={disabled || saving}
+          onBlur={event => { const label = event.target.value.trim().replace(/\s+/g, " "); if (label && label !== track.label) void persist(update(track.id, item => ({ ...item, label })), "Nom de la piste enregistré."); }} />
+        <ChoiceSelect label="Type" value={track.kind} options={trackKindOptions} disabled={disabled || saving}
+          onChange={kind => void persist(update(track.id, item => ({ ...item, kind: kind as SearchTrack["kind"] })), "Type de piste enregistré.")} />
+        {shown.length > 1 ? <WorkspaceButton variant="quiet" disabled={disabled || saving} onClick={() => void persist(shown.filter(item => item.id !== track.id), `« ${track.label} » retirée.`)}>Retirer la piste</WorkspaceButton> : null}
+      </div>
+      <ul className="search-role-list" aria-label={`Termes de ${track.label}`}>{track.terms.map(value => <li key={value}>{value}
+        <button type="button" aria-label={`Retirer ${value}`} disabled={disabled || saving} onClick={() => removeTerm(track, value)}>×</button>
+      </li>)}</ul>
+      <div className="search-role-entry">
+        <input type="text" maxLength={80} aria-label={`Ajouter un terme à ${track.label}`} placeholder="Ex. Chef de produit" value={term[track.id] ?? ""} disabled={disabled || saving}
+          onChange={event => { setTerm({ ...term, [track.id]: event.target.value }); setMessage(""); }}
+          onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addTerm(track); } }} />
+        <button type="button" className="secondary-button" disabled={disabled || saving || !(term[track.id] ?? "").trim()} onClick={() => addTerm(track)}>Ajouter</button>
+      </div>
+    </li>)}</ul>
+    <WorkspaceButton variant="secondary" disabled={disabled || saving} onClick={addTrack}>Ajouter une piste</WorkspaceButton>
+    {message ? <p role="status" className="search-form-status">{message}</p> : null}
+  </div>;
 }

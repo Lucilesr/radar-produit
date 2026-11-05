@@ -1,4 +1,5 @@
 import { remoteForContract } from "./search-preferences";
+import { searchTracksFor, trackKindLabels } from "./search-tracks";
 import type { SearchPreferences } from "./types";
 
 /** Where a criterion is edited: a group of the criteria form, or the Jobgether card. */
@@ -6,11 +7,13 @@ export type CriteriaTarget = "roles" | "conditions" | "locations" | "pay" | "key
 export type CriteriaTone = "include" | "exclude";
 
 export type CriteriaRow = {
-  id: "roles" | "contracts" | "remote" | "salary" | "dailyRate" | "payTolerance" | "matchScore" | "includedLocations" | "excludedLocations" | "boostKeywords" | "excludeKeywords";
+  id: "roles" | "searchTracks" | "contracts" | "remote" | "salary" | "dailyRate" | "payTolerance" | "matchScore" | "includedLocations" | "excludedLocations" | "boostKeywords" | "excludeKeywords";
   label: string;
   /** Set when several rows share an id, as with one presence row per contract. */
   key?: string;
   values: string[];
+  /** Shorter values for the collapsed bar, when the full ones are too long for a tag. */
+  tokenValues?: string[];
   tone: CriteriaTone;
   target: CriteriaTarget;
 };
@@ -51,11 +54,23 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
     ...(boost.length ? [{ id: "boostKeywords" as const, label: "Mettre en avant", values: boost, tone: "include" as const, target: "keywords" as const }] : []),
     ...(avoid.length ? [{ id: "excludeKeywords" as const, label: "Écarter si l’annonce contient", values: avoid, tone: "exclude" as const, target: "keywords" as const }] : []),
   ];
+  // Only an account that defined its own tracks sees the row; otherwise it would repeat the roles.
+  const tracks: CriteriaRow[] = preferences.searchTracks?.length
+    ? [{
+      id: "searchTracks",
+      label: "Pistes de recherche",
+      values: searchTracksFor(preferences).map(track => `${track.label} · ${trackKindLabels[track.kind]} : ${track.terms.join(", ")}`),
+      tokenValues: searchTracksFor(preferences).map(track => track.label),
+      tone: "include",
+      target: "roles",
+    }]
+    : [];
   const geography: CriteriaRow[] = [{ id: "includedLocations", label: "Lieux inclus", values: included.length ? included : ["Tous les lieux"], tone: "include", target: "locations" }];
   if (excluded.length) geography.push({ id: "excludedLocations", label: "Sauf", values: excluded, tone: "exclude", target: "locations" });
   return [
     { id: "role", title: "Le poste", rows: [
       { id: "roles", label: "Postes visés", values: preferences.roles, tone: "include", target: "roles" },
+      ...tracks,
       { id: "contracts", label: "Contrats", values: contracts.map(contract => contractLabels[contract]), tone: "include", target: "conditions" },
     ] },
     { id: "presence", title: "La présence", rows: presenceRows(preferences) },
@@ -67,7 +82,7 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
 
 const shortLabels: Partial<Record<CriteriaRow["id"], string>> = {
   roles: "Poste", contracts: "Contrat", remote: "Présence", salary: "Salaire", dailyRate: "TJM",
-  matchScore: "Score Jobgether", includedLocations: "Lieux", payTolerance: "Tolérance", boostKeywords: "Mots-clés", excludeKeywords: "Sans",
+  matchScore: "Score Jobgether", includedLocations: "Lieux", searchTracks: "Pistes", payTolerance: "Tolérance", boostKeywords: "Mots-clés", excludeKeywords: "Sans",
 };
 
 /** One compact tag per criterion for the collapsed bar. Long lists keep three values, then « +n ». */
@@ -79,15 +94,16 @@ export function criteriaTokens(preferences: SearchPreferences, visible = 3): Cri
     ? [{ id: "remote", label: "Présence acceptable", values: [presence.map(row => `${row.label.replace("Présence · ", "")} : ${row.values[0]}`).join(", ")], tone: "include", target: "conditions" }]
     : presence;
   return rows.flatMap(row => row.id === "remote" ? (row === presence[0] ? merged : []) : [row]).map(row => {
-    const shown = row.values.slice(0, visible).join(", ");
-    const hidden = row.values.length - visible;
+    const values = row.tokenValues ?? row.values;
+    const shown = values.slice(0, visible).join(", ");
+    const hidden = values.length - visible;
     const prefix = row.id === "salary" || row.id === "dailyRate" || row.id === "matchScore" ? "≥ " : row.id === "payTolerance" ? "−" : "";
     return {
       id: row.id,
       key: row.key ?? row.id,
       label: row.key ? row.label : shortLabels[row.id] ?? row.label,
       value: prefix + shown + (hidden > 0 ? ` +${hidden}` : ""),
-      fullValue: prefix + row.values.join(", "),
+      fullValue: prefix + values.join(", "),
       tone: row.tone,
       target: row.target,
     };

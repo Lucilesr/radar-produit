@@ -81,8 +81,19 @@ export type Assessment = {
   flags: string[];
 };
 
+/** One search track: a named group of job titles Radar looks for on the sources. */
+export type SearchTrack = {
+  id: string;
+  label: string;
+  terms: string[];
+  /** The account's own target, a wider net, or neighbouring titles. */
+  kind: "core" | "broad" | "alternative";
+};
+
 export type SearchPreferences = {
   roles: string[];
+  /** Search tracks of this account; without them, one track is derived from `roles`. */
+  searchTracks?: SearchTrack[];
   includedLocations?: string[];
   excludedLocations?: string[];
   contracts: Array<"cdi" | "cdd" | "freelance" | "portage" | "part_time">;
