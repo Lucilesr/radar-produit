@@ -1,3 +1,8 @@
+## 5 novembre 2026 — Tags des candidatures
+
+- Un dossier de candidature permet de créer des tags sans nom prérempli, de choisir une couleur, de les appliquer ou retirer de la carte, puis de les renommer ou supprimer après confirmation.
+- Les tags sont visibles sur les cartes du Kanban. Cliquer sur un tag filtre les candidatures ; un contrôle Signal permet aussi de choisir le filtre.
+
 ## 5 novembre 2026 — Purge de la corbeille sur D1
 
 - Le nettoyage des offres expirées traite des lots de 20 pour rester sous la limite de 100 paramètres par requête de Cloudflare D1. Une corbeille volumineuse est vidée en plusieurs lots sans bloquer le chargement du radar.

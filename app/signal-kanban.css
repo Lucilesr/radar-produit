@@ -23,6 +23,39 @@
 .application-card h3 button:hover { color:var(--primary); text-decoration:underline; text-underline-offset:3px; }
 .application-card h3 svg { flex:none; margin-top:3px; color:var(--primary); }
 .application-card-company { margin-top:5px; color:var(--muted-foreground); font:400 12px/1.6 var(--font-sans); overflow-wrap:anywhere; }
+.application-card-tags,.application-tags-current { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.application-tag { display:inline-flex; align-items:center; min-height:26px; padding:4px 8px; border:1px solid #20374330; border-radius:4px; font:600 12px/16px var(--font-sans); text-align:left; overflow-wrap:anywhere; }
+button.application-tag:hover,button.application-tag[aria-pressed=true] { outline:2px solid var(--primary); outline-offset:2px; }
+.application-tags-filter { display:flex; align-items:end; flex-wrap:wrap; gap:8px 12px; margin:0 0 14px; }
+.application-tags-filter .choice-select { width:min(270px,100%); }
+.application-tags-filter .signal-form-error { align-self:center; }
+.application-tags-section { padding:16px; border:1px solid var(--border); border-radius:5px; background:var(--card); }
+.application-tags-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.application-tags-heading h3 { font:600 14px/1.5 var(--font-sans); }
+.application-tags-current { margin-top:8px; }
+.application-tags-dialog { width:min(480px,calc(100vw - 24px)); }
+.application-tags-dialog-heading { display:grid; grid-template-columns:42px 1fr 42px; align-items:center; gap:8px; margin-bottom:18px; }
+.application-tags-dialog-heading h2 { text-align:center; font:600 20px/1.4 var(--font-sans); }
+.application-tags-dialog-heading .signal-form-button { min-width:42px; padding:8px; }
+.application-tags-search input,.application-tags-name input { width:100%; min-height:44px; padding:9px 12px; border:1px solid var(--input); }
+.application-tags-list { display:grid; gap:6px; max-height:45dvh; overflow:auto; margin:16px 0; }
+.application-tags-row { display:flex; align-items:center; gap:5px; }
+.application-tags-row label { display:flex; align-items:center; flex:1; min-width:0; gap:10px; cursor:pointer; }
+.application-tags-row input { flex:none; width:18px; height:18px; }
+.application-tags-row .application-tag { flex:1; }
+.application-tags-row .signal-form-button { flex:none; min-width:42px; }
+.application-tags-create { width:100%; margin-top:16px; }
+.application-tags-preview { display:flex; justify-content:center; min-height:90px; align-items:center; margin-bottom:14px; background:var(--signal-soft); border-radius:5px; }
+.application-tags-preview .application-tag { min-width:150px; }
+.application-tags-name { display:grid; gap:6px; font:600 13px/1.5 var(--font-sans); }
+.application-tags-colors { margin-top:18px; }
+.application-tags-colors legend { margin-bottom:10px; font:600 13px/1.5 var(--font-sans); }
+.application-tags-colors>div { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+.application-tag-color { display:grid; place-items:center; min-height:44px; border:1px solid #20374350; border-radius:5px; }
+.application-tag-color[aria-pressed=true] { outline:3px solid var(--primary); outline-offset:2px; }
+.application-tags-actions { display:flex; justify-content:space-between; gap:10px; margin-top:24px; }
+.application-tags-delete { width:100%; margin-top:18px; }
+@media(max-width:640px) { .application-tags-filter .choice-select { width:100%; } .application-tags-dialog { padding:18px 16px; } .application-tags-colors>div { gap:7px; } }
 .application-card-date { display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; margin-top:14px; font:400 11px/1.5 var(--font-sans); color:var(--muted-foreground); }
 .application-card .application-age { min-height:26px; border:1px solid transparent; }
 .application-card .application-age.is-recent { padding-inline:0; color:var(--muted-foreground); }
