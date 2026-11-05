@@ -58,6 +58,7 @@ export function ApplicationTagEditor({ jobId }: { jobId: string }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
+  const trigger = useRef<HTMLButtonElement>(null);
   const assigned = tagsForJob(store.tags, jobId);
   function edit(tag: ApplicationTag | null) { setEditing(tag); setName(tag?.name ?? ""); setColor(tag?.color ?? tagColors[0].value); setError(""); setScreen("edit"); }
   async function act(input: Record<string, unknown>, done?: () => void) {
@@ -68,9 +69,9 @@ export function ApplicationTagEditor({ jobId }: { jobId: string }) {
     finally { lock.current = false; setBusy(false); }
   }
   return <section className="application-tags-section" aria-label="Tags de la candidature">
-    <div className="application-tags-heading"><h3>Tags</h3><WorkspaceButton onClick={() => { setScreen("list"); setError(""); setOpen(true); }}><Pencil size={14} aria-hidden />Tag</WorkspaceButton></div>
+    <div className="application-tags-heading"><h3>Tags</h3><WorkspaceButton ref={trigger} onClick={() => { setScreen("list"); setError(""); setOpen(true); }}><Pencil size={14} aria-hidden />Tag</WorkspaceButton></div>
     <div className="application-tags-current">{!store.ready ? <span className="signal-help">{store.loadError || "Chargement des tags…"}</span> : assigned.length ? assigned.map(tag => <TagBadge key={tag.id} tag={tag}/>) : <span className="signal-help">Aucun tag sur cette carte.</span>}</div>
-    <Dialog.Root open={open} onOpenChange={value => { if (!busy) { setOpen(value); if (!value) setScreen("list"); } }}><Dialog.Portal><Dialog.Overlay className="application-move-overlay"/><Dialog.Content className="application-move-dialog application-tags-dialog" onPointerDownOutside={event => { if (busy) event.preventDefault(); }} onEscapeKeyDown={event => { if (busy) event.preventDefault(); }}>
+    <Dialog.Root open={open} onOpenChange={value => { if (!busy) { setOpen(value); if (!value) setScreen("list"); } }}><Dialog.Portal><Dialog.Overlay className="application-move-overlay"/><Dialog.Content className="application-move-dialog application-tags-dialog" onCloseAutoFocus={event => { event.preventDefault(); trigger.current?.focus({ preventScroll: true }); }} onPointerDownOutside={event => { if (busy) event.preventDefault(); }} onEscapeKeyDown={event => { if (busy) event.preventDefault(); }}>
       <div className="application-tags-dialog-heading">{screen !== "list" ? <WorkspaceButton variant="quiet" aria-label="Retour aux tags" onClick={() => { setScreen("list"); setError(""); }} disabled={busy}><ArrowLeft size={18} aria-hidden/></WorkspaceButton> : <span/>}<Dialog.Title>{screen === "list" ? "Tags" : screen === "delete" ? "Supprimer le tag" : editing ? "Modifier le tag" : "Créer un tag"}</Dialog.Title><Dialog.Close asChild><WorkspaceButton variant="quiet" aria-label="Fermer" disabled={busy}><X size={18} aria-hidden/></WorkspaceButton></Dialog.Close></div>
       {screen === "list" ? <><Dialog.Description className="sr-only">Choisissez les tags de cette carte ou gérez vos tags.</Dialog.Description><label className="application-tags-search"><span className="sr-only">Rechercher un tag</span><input autoFocus value={search} onChange={event => setSearch(event.target.value)} placeholder="Rechercher un tag…" /></label>
         {store.loadError ? <><WorkspaceFormError message={store.loadError}/><WorkspaceButton onClick={() => void store.load()}>Réessayer</WorkspaceButton></> : null}
