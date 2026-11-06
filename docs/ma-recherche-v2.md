@@ -327,6 +327,8 @@ En deux étapes, livrées dans deux PR.
 **13b — Actualisation planifiée (après vérification de l'hébergement).**
 
 - Vérifier d'abord que l'hébergement Sites accepte un déclencheur planifié. Aujourd'hui, `build/sites-worker.ts` n'exporte que `fetch` ; il faudrait un handler `scheduled`.
+- **Constat du 6 novembre 2026 : la planification n'est pas ouverte ici.** Le dépôt n'a pas de `wrangler.toml` ou `wrangler.jsonc` ; la configuration du worker est produite au build par `build/sites-vite-plugin.ts`, à partir de `.openai/hosting.json`, qui ne déclare que `capabilities: ["mcp"]`, `d1` et `r2`. Le `dist/server/wrangler.json` ainsi produit contient `"triggers": {}`, et le plugin n'expose aucune option `crons`. Ajouter un `scheduled` au worker ne suffirait donc pas : sans déclencheur déclaré, il ne serait jamais appelé.
+- **Ce qu'il faut avant d'écrire le code :** savoir si l'hébergement accepte un cron (une option côté Sites, ou un `triggers.crons` passé au plugin), ou sinon un déclencheur extérieur qui appelle une route protégée (`POST /api/sources/sync` avec un secret). Tant que ce point n'est pas tranché, le lot 13a — actualisation à l'ouverture — couvre le besoin sans promettre ce que l'hébergement ne tient pas.
 - Si c'est possible : un passage par jour, avant 7 h (fuseau de chaque compte), qui traite les comptes par lots et respecte un intervalle minimal par source.
 - Choix proposés au compte : « Chaque matin », « Matin et soir », « Seulement quand je le demande ». Pas de fréquence horaire.
 - L'en-tête affiche alors « Prochaine actualisation demain vers 7 h ». N'afficher cette phrase que si la planification est réellement active.
