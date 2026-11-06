@@ -3,6 +3,10 @@
 - Le bandeau « Les lieux annoncés servent au classement » est retiré : il était inexact (un lieu exclu masque l’offre) et ses réserves sur la langue et les pays autorisés sont déjà signalées offre par offre.
 - La phrase d’aide sous « Critères » dit désormais : « Radar classe vos offres selon ces critères ; celles qui en sortent sont masquées dans « À examiner ». »
 
+## 6 novembre 2026 — Ma recherche : curseur de tolérance plus fluide
+
+- Tant que le curseur de tolérance est maintenu, seuls la valeur et les seuils affichés (salaire, TJM) bougent ; l’enregistrement se fait au relâchement. Au clavier, chaque pas reste enregistré.
+
 ## 6 novembre 2026 — Logos des sources
 
 Les douze logos fournis remplacent les illustrations des sources correspondantes, dont Jobgether qui utilisait une icône générique. Les listes, fiches, offres et le panneau d’ajout réutilisent le composant commun SourceLogo et les cadres Signal, sans recadrage ni dépendance externe.

@@ -60,7 +60,9 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
   const addedFocus=useRef<string|null>(null);
   const baseDraft=useRef(searchPreferences(profile.searchPreferences));
   const [draft, setDraft] = useState<SearchPreferences>(() => searchPreferences(profile.searchPreferences));
-  const tolerance = draft.payTolerancePercent ?? 0;
+  // While the thumb is held, only the preview moves; the value is saved on release.
+  const [tolerancePreview, setTolerancePreview] = useState<number | null>(null);
+  const tolerance = tolerancePreview ?? draft.payTolerancePercent ?? 0;
   const presenceFor = (contract?: SearchPreferences["contracts"][number]) => remoteForContract(draft, contract);
   const [roles, setRoles] = useState(() => searchPreferences(profile.searchPreferences).roles);
   const [includedLocations, setIncludedLocations] = useState(() => searchPreferences(profile.searchPreferences).includedLocations ?? []);
@@ -350,7 +352,7 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
  dailyRate:<><label className="search-pay-field"><span className="search-pay-label">TJM minimum<span className="sr-only">, en euros hors taxes par jour</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate || ""} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></span></label></>,
  tolerance:<><div className="search-pay-tolerance">
           <div className="search-pay-tolerance-heading"><span id="search-pay-tolerance-label" className="search-pay-label">Tolérance sous le minimum</span><strong aria-hidden="true">{tolerance} %</strong></div>
-          <Slider min={0} max={20} step={1} value={[tolerance]} onValueChange={([value]) => scheduleSave({ ...latestDraft.current, payTolerancePercent: value })} thumbLabel="Tolérance sous le minimum" thumbValueText={`${tolerance} %`} className="search-pay-tolerance-slider" />
+          <Slider min={0} max={20} step={1} value={[tolerance]} onValueChange={([value]) => setTolerancePreview(value)} onValueCommit={([value]) => { setTolerancePreview(null); if (value !== (latestDraft.current.payTolerancePercent ?? 0)) scheduleSave({ ...latestDraft.current, payTolerancePercent: value }); }} thumbLabel="Tolérance sous le minimum" thumbValueText={`${tolerance} %`} className="search-pay-tolerance-slider" />
         </div>
         <p className="search-criteria-help">{tolerance
           ? `Les offres jusqu’à ${tolerance} % sous votre minimum restent visibles avec la mention « Sous votre minimum » : dès ${euro(payFloor(draft.minimumSalary, tolerance))} brut/an ou ${euro(payFloor(draft.minimumDailyRate, tolerance))} HT/jour. En dessous, elles sont masquées dans « À examiner ».`
