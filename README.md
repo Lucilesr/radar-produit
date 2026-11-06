@@ -48,7 +48,7 @@ npm test
 npx tsc --noEmit --incremental false
 ```
 
-Les tests couvrent notamment la qualification, les statuts, le consentement, l’isolation des comptes, les variantes de réponses, les sauvegardes et la corbeille. Les tests locaux ne prouvent pas le fonctionnement d’une intégration externe.
+Les tests couvrent notamment la qualification, les statuts, le consentement, l’isolation des comptes, les variantes de réponses, les sauvegardes, la suppression de compte et la corbeille. Les tests locaux ne prouvent pas le fonctionnement d’une intégration externe.
 
 ## Architecture et limites
 

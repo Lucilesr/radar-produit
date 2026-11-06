@@ -31,7 +31,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
           <span>Envie d’essayer d’abord ?</span>
           <a className="secondary-button signal-form-button" href="/demo">Voir la démo</a>
         </div>
-        <p className="signin-privacy"><LockKeyhole size={13} aria-hidden /> Vos offres, documents et notes ne sont visibles que par vous. Vous pouvez exporter vos données à tout moment.</p>
+        <p className="signin-privacy"><LockKeyhole size={13} aria-hidden /> Vos offres, documents et notes ne sont visibles que par vous. Vous pouvez exporter vos données ou supprimer votre compte à tout moment.</p>
       </section>
       <ul className="signin-promises" aria-label="Ce que fait Radar">
         {promises.map(({ icon: Icon, title, detail }) => <li key={title}>
