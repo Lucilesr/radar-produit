@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Tout modifier en tableau éditable (lot 15)
+
+« Tout modifier » ouvre les groupes du tableau de critères avec leurs contrôles directement accessibles : postes et pistes, contrats, présence par contrat, minimums et tolérance, zones et mots-clés. Les boutons segmentés remplacent les menus de présence. L’en-tête rassemble l’état de sauvegarde, la reprise en cas d’erreur et le nombre d’offres à examiner. « Ajouter un critère » ouvre une ligne optionnelle ; le premier usage garde l’édition ouverte sans bouton « Terminé ». Les sauvegardes de champs distincts préservent les dernières valeurs des autres contrôles.
+
 ## 6 novembre 2026 — Ma recherche sur une seule page (lot 14)
 
 Critères, sources et autres pistes se lisent à la suite, sans les trois onglets de section. L’actualisation des flux et son réglage rejoignent l’en-tête ; les alertes Collective se consultent et s’ajoutent dans le détail de la source. Les anciens liens de section sont conservés et ouvrent « Autres pistes » si nécessaire. Les recherches web redondantes et « Recherches couvertes » quittent la page. Aucune règle de classement ni dépendance modifiée.

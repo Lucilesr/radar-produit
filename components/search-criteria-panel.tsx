@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Pencil, Plus } from "lucide-react";
-import { SearchPreferencesForm, type CriteriaFormPart } from "@/components/search-preferences-form";
+import { SearchPreferencesForm, type CriteriaFormPart, type CriteriaSaveStatus } from "@/components/search-preferences-form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { WorkspaceButton } from "@/components/workspace-form";
@@ -48,6 +48,8 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
   const editButton = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef(false);
   const preferences = searchPreferences(profile.searchPreferences);
+  const [saveStatus,setSaveStatus]=useState<CriteriaSaveStatus>({state:"idle"});
+  const reportStatus=useCallback((status:CriteriaSaveStatus)=>setSaveStatus(status),[]);
   const notify = useWorkspaceFeedback();
   // Remounts the form after an undo so its fields show the restored values.
   const [formRevision, setFormRevision] = useState(0);
@@ -124,7 +126,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
       </div>
       <div className="search-criteria-panel-actions">
         {view === "edit"
-          ? firstSetup ? null : <WorkspaceButton variant="primary" onClick={done}>Terminé</WorkspaceButton>
+          ? <><span className="search-criteria-save-summary"><span role="status">{saveStatus.state==="error"?"Non enregistré":saveStatus.state==="pending"||saveStatus.state==="saving"?"Enregistrement…":"Enregistré"}</span>{saveStatus.state==="error"&&saveStatus.retry?<WorkspaceButton variant="quiet" onClick={saveStatus.retry}>Réessayer</WorkspaceButton>:null}<span>{countToReview(jobs,preferences)} offres à examiner</span></span>{firstSetup?null:<WorkspaceButton variant="primary" onClick={done}>Terminé</WorkspaceButton>}</>
           : <>
             <WorkspaceButton variant="quiet" aria-expanded={view === "details"} aria-controls="search-criteria-details" onClick={toggle}>
               {view === "details" ? "Replier" : "Tout voir"}{view === "details" ? <ChevronUp size={15} aria-hidden /> : <ChevronDown size={15} aria-hidden />}
@@ -203,6 +205,6 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
       </section>)}
     </div> : null}
 
-    {view === "edit" ? <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} /> : null}
+    {view === "edit" ? <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} table onStatusChange={reportStatus} onOpenJobgether={onOpenJobgether} /> : null}
   </section>;
 }

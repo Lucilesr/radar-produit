@@ -406,3 +406,49 @@
 .workspace-page-header:has(#source-refresh-header){flex-wrap:wrap}
 .workspace-page-header:has(#source-refresh-header)>div{min-width:0}
 @media(max-width:640px){.workspace-page-header:has(#source-refresh-header)>div{width:100%}.workspace-page-header:has(#source-refresh-header) .page-tools{justify-content:flex-start;flex-wrap:wrap}.workspace-page-header:has(#source-refresh-header) h1{white-space:nowrap}}
+
+/* Lot 15: shared controls in the expanded criteria table. */
+.search-criteria-edit-row{display:grid;grid-template-columns:190px minmax(0,1fr);gap:16px;padding:6px 16px;border-bottom:1px solid var(--border)}
+.search-criteria-edit-row dt{padding-top:10px;font-size:13px;font-weight:600}
+.search-criteria-edit-row dd{margin:0;min-width:0}
+.search-criteria-edit-table .search-criteria-help{font-size:12px;line-height:1.4;margin:6px 0 0}
+.search-criteria-edit-table .search-role-list{margin:6px 0 0}
+.search-criteria-edit-table .search-tracks-head{display:none}
+.search-criteria-edit-table .search-track{padding:8px 0}
+.search-criteria-edit-table .search-track-head{gap:8px}
+.search-criteria-edit-table .search-tracks>ul{gap:8px}
+.search-criteria-edit-table .search-track .search-role-entry{margin-top:6px}
+.search-presence-contract{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:center;gap:8px;font-size:13px}
+.search-presence-contract .search-place-toggle{display:flex;flex-wrap:wrap;width:fit-content}
+.search-presence-contract .search-place-toggle button{min-height:42px}
+.search-criteria-save-summary{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:12px;color:var(--muted-foreground)}
+.search-criteria-edit-table .search-pay-tolerance{margin-top:0}
+@media(max-width:640px){.search-criteria-edit-row{grid-template-columns:minmax(0,1fr);gap:8px}.search-criteria-edit-row dt{padding-top:0}.search-presence-contract{grid-template-columns:1fr}.search-presence-contract .search-place-toggle button{min-height:44px}.search-criteria-save-summary{justify-content:flex-start}}
+
+.search-criteria-edit-table .search-tracks{margin:0;padding:0;border:0;gap:8px}
+.search-criteria-edit-table .search-track{gap:6px}
+
+
+@media(min-width:900px){
+ .search-criteria-edit-table .search-track{display:grid;grid-template-columns:minmax(0,1fr) 220px;align-items:center;gap:4px;padding-block:6px}
+ .search-criteria-edit-table .search-track-head{flex-wrap:nowrap;gap:8px}
+ .search-criteria-edit-table .search-track-head>input{flex:1 1 160px;width:160px}
+ .search-criteria-edit-table .search-track .search-role-entry{margin:0;max-width:none}
+ .search-criteria-edit-table .search-track .search-role-entry input{min-width:0}
+ .search-criteria-edit-table .search-track .search-role-list{margin:2px 0}
+ .search-criteria-edit-table .search-tracks .signal-form-button{min-height:42px}
+}
+.search-criteria-edit-table .search-role-list li{min-height:26px;padding:4px 8px;border-radius:4px;font:400 12px/16px var(--font-sans)}
+.search-criteria-edit-table .search-role-list li button{width:20px;height:20px;min-height:20px}
+@media(min-width:900px){
+ .search-criteria-edit-table .search-track-head .choice-select>p{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ .search-criteria-edit-table .search-track-head .choice-select{padding-top:0}
+ .search-criteria-edit-table [data-part=roles]>.search-field-label,.search-criteria-edit-table [data-part=locations]>.search-pay-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}
+@media(max-width:640px){.search-criteria-edit-table .search-role-list li button{min-width:44px;min-height:44px}}
+.source-workspace [data-radar-guide] .search-criteria-edit-table .search-criteria-help,.source-workspace .search-criteria-edit-table[data-radar-guide] .search-criteria-help{font-size:12px;line-height:1.4;margin:6px 0 0}
+@media(min-width:900px){
+ .search-criteria-edit-table .search-track-head{grid-column:1/-1}
+ .search-criteria-edit-table .search-track .search-role-entry{flex-wrap:nowrap;gap:6px}
+}
+.search-preferences-form:has(.search-criteria-edit-table)>.search-criteria-form{margin-top:12px}

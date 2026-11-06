@@ -75,3 +75,29 @@ test("« + Critère » ne propose que ce qui n’est pas encore réglé", () => 
   const unpaid = missingCriteria(searchPreferences({ contracts: ["part_time"], roles: ["Data Analyst"] })).map(item => item.id);
   assert.ok(!unpaid.includes("payTolerance"));
 });
+
+const {criteriaEditParts,criterionParts,criteriaEditGroups,mergeCriteriaDraft}=await import(moduleUrl("criteria-editor",{"./search-criteria":moduleUrl("search-criteria",{"./search-preferences":preferences,"./search-tracks":tracks})}));
+test("chaque ligne de critères pointe vers un contrôle existant, sans doublons dans le tableau",()=>{
+ const prefs=searchPreferences({contracts:["cdi","freelance","portage"],remoteByContract:{cdi:"onsite",freelance:"full_remote"},includedLocations:["Europe"],excludedLocations:["Roumanie"],boostKeywords:["SaaS"],excludeKeywords:["stage"],payTolerancePercent:10,searchTracks:[{id:"data",label:"Data",kind:"core",terms:["Data Analyst"]}]});
+ for(const row of criteriaGroups(prefs).flatMap(group=>group.rows))assert.ok(criteriaEditParts.includes(criterionParts[row.id]),row.id);
+ const rows=criteriaEditGroups(prefs).flatMap(group=>group.rows);
+ assert.equal(rows.filter(row=>row.part==="locations").length,1);
+ assert.equal(rows.filter(row=>row.part==="presence").length,1);
+ assert.equal(rows.filter(row=>row.part==="tracks").length,1);
+});
+test("le tableau ouvre les critères vides demandés et garde une tolérance éditable à zéro",()=>{
+ const prefs=searchPreferences({searchTracks:[],boostKeywords:[],excludeKeywords:[],payTolerancePercent:0});
+ const before=criteriaEditGroups(prefs).flatMap(group=>group.rows).map(row=>row.part);
+ assert.ok(before.includes("tolerance"));assert.ok(!before.includes("boostKeywords"));
+ const after=criteriaEditGroups(prefs,["boostKeywords","excludeKeywords","searchTracks"]).flatMap(group=>group.rows).map(row=>row.part);
+ for(const part of ["boostKeywords","excludeKeywords","tracks"])assert.ok(after.includes(part));
+ assert.equal(new Set(after).size,after.length);
+});
+test("les sauvegardes de champs distincts conservent les dernières valeurs des autres contrôles",()=>{
+ const base=searchPreferences({boostKeywords:[],searchTracks:[]});
+ const next={...base,minimumSalary:60000};
+ const current={...base,boostKeywords:["SaaS"],contracts:["cdi"],searchTracks:[{id:"data",label:"Data",kind:"core",terms:["Data Analyst"]}]};
+ const merged=mergeCriteriaDraft(base,next,current);
+ assert.equal(merged.minimumSalary,60000);assert.deepEqual(merged.boostKeywords,["SaaS"]);assert.deepEqual(merged.contracts,["cdi"]);assert.deepEqual(merged.searchTracks,current.searchTracks);
+ assert.equal(base.minimumSalary,55000);
+});
