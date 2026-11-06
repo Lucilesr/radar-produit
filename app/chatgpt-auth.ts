@@ -49,7 +49,20 @@ export async function requireChatGPTUser(
   const user = await getChatGPTUser();
   if (user) return user;
 
-  redirect(chatGPTSignInPath(returnTo));
+  // Radar's own sign-in page explains the service before handing over to ChatGPT.
+  redirect(radarSignInPagePath(returnTo));
+}
+
+export const RADAR_SIGN_IN_PAGE = "/connexion";
+
+export function radarSignInPagePath(returnTo: string): string {
+  const safeReturnTo = safeRelativeReturnPath(returnTo);
+  return safeReturnTo === "/" ? RADAR_SIGN_IN_PAGE : `${RADAR_SIGN_IN_PAGE}?return_to=${encodeURIComponent(safeReturnTo)}`;
+}
+
+/** Validated destination after sign-in; never an external URL or an auth route. */
+export function safeReturnPath(value: string | null | undefined): string {
+  return safeRelativeReturnPath(value ?? "/");
 }
 
 export function chatGPTSignInPath(returnTo: string): string {
@@ -79,6 +92,7 @@ function safeRelativeReturnPath(value: string): string {
 
 function isReservedAuthPath(pathname: string): boolean {
   return (
+    pathname === RADAR_SIGN_IN_PAGE ||
     pathname === SIGN_IN_PATH ||
     pathname === SIGN_OUT_PATH ||
     pathname === CALLBACK_PATH

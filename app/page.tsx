@@ -1,4 +1,4 @@
-import { requireChatGPTUser } from "./chatgpt-auth";
+import { chatGPTSignOutPath, requireChatGPTUser } from "./chatgpt-auth";
 import { RadarApp } from "@/components/radar-app";
 import { listOffers, purgeExpiredTrash } from "@/lib/job-store";
 import { readCandidateProfile } from "@/lib/profile-store";
@@ -27,5 +27,5 @@ export default async function Home({searchParams}: {searchParams: Promise<Record
     loadRadarState(user.userId, { jobs: owner => listOffers(owner, undefined, true), profile: readCandidateProfile }),
     initialRoute.tab === "profile" && initialProfileSection === "experiences" ? readExperienceLibrary(user.userId).catch(() => undefined) : Promise.resolve(undefined),
   ]);
-  return <RadarApp ownerId={user.userId} userName={user.fullName ?? user.displayName} initialState={initialState} initialRoute={initialRoute} initialProfileSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} />;
+  return <RadarApp ownerId={user.userId} userName={user.fullName ?? user.displayName} userEmail={user.email} signOutPath={chatGPTSignOutPath("/")} initialState={initialState} initialRoute={initialRoute} initialProfileSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} />;
 }

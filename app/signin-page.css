@@ -1,0 +1,38 @@
+/* Radar sign-in page: Signal foundations, outside the workspace shell. */
+.signin-page { min-height: 100vh; display: grid; place-items: center; padding: 48px 24px; background: var(--signal-canvas); color: var(--signal-ink); font-family: var(--font-sans); }
+.signin-layout { display: grid; grid-template-columns: minmax(0, 480px) minmax(0, 360px); gap: 40px; align-items: center; width: 100%; max-width: 920px; }
+.signin-card { display: flex; flex-direction: column; gap: 16px; padding: 36px; background: var(--signal-paper); border: 1px solid var(--signal-line); border-radius: 8px; }
+.signin-card .workspace-brand { margin-bottom: 8px; }
+.signin-card h1 { margin: 0; font: 600 28px/1.2 var(--font-sans); letter-spacing: -.03em; color: var(--signal-ink); }
+.signin-lead { margin: 0; color: var(--signal-muted); font-size: 15px; line-height: 1.5; }
+.signin-card .signin-primary { min-height: 46px; margin-top: 8px; color: #fff; font-size: 14px; text-decoration: none; }
+.signin-help { margin: 0; color: var(--signal-muted); font-size: 13px; line-height: 1.5; }
+.signin-demo { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--signal-line); color: var(--signal-muted); font-size: 13px; }
+.signin-demo .secondary-button { text-decoration: none; }
+.signin-privacy { display: flex; align-items: flex-start; gap: 6px; margin: 0; color: var(--signal-muted); font-size: 12px; line-height: 1.5; }
+.signin-privacy svg { flex-shrink: 0; margin-top: 3px; }
+.signin-promises { display: grid; gap: 22px; margin: 0; padding: 0; list-style: none; }
+.signin-promises li { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 14px; align-items: start; }
+.signin-promise-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; background: var(--signal-soft); color: var(--signal-petrol); }
+.signin-promises strong { display: block; font-size: 14px; color: var(--signal-ink); }
+.signin-promises p { margin: 4px 0 0; color: var(--signal-muted); font-size: 13px; line-height: 1.5; }
+.signin-page a:focus-visible { outline: 3px solid var(--signal-petrol); outline-offset: 3px; }
+@media (max-width: 820px) {
+  .signin-page { place-items: start center; padding: 24px 16px; }
+  .signin-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .signin-card { padding: 24px 20px; }
+  .signin-card h1 { font-size: 24px; }
+  .signin-card .signin-primary, .signin-demo .secondary-button { min-height: 44px; }
+}
+
+/* « Mon compte » in Mon profil. */
+.account-settings { display: grid; gap: 16px; max-width: 760px; }
+.account-identity { display: flex; align-items: center; gap: 12px; }
+.account-identity strong { display: block; font-size: 14px; overflow-wrap: anywhere; }
+.account-identity span { color: var(--signal-muted); font-size: 13px; overflow-wrap: anywhere; }
+.account-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.account-actions form { margin: 0; }
+.sidebar-account .sidebar-signout { margin: 0 0 0 auto; }
+.sidebar-signout button { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--signal-muted); cursor: pointer; }
+.sidebar-signout button:hover { background: var(--signal-soft); color: var(--signal-petrol); }
+.sidebar-signout button:focus-visible { outline: 3px solid var(--signal-petrol); outline-offset: 3px; }
