@@ -172,7 +172,6 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,onShowOffer
     </div>,headerTarget):null}
     <div id="source-panel-criteria" className="source-subpanel">
       <SearchCriteriaPanel active={active} onShowOffers={onShowOffers} profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
-      <div className="market-boundary-note"><span className="market-boundary-dot"/><p><strong>Les lieux annoncés servent au classement.</strong> La langue de l’annonce et les pays autorisés pour le télétravail restent à vérifier sur la page employeur.</p></div>
     </div>
     <div id="source-panel-channels" className="source-subpanel">
       <WorkspacePanelHeader id="source-settings-title" title={<span className="source-title-line"><span>Sources suivies</span>{summary?<span className="source-summary">{summary}</span>:null}</span>} actions={<WorkspaceButton variant="secondary" aria-haspopup="dialog" disabled={!settings} onClick={()=>setAddFilter("all")}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>

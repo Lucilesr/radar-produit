@@ -7,8 +7,6 @@
 @media(max-width:640px) { .signal-source-web-grid { grid-template-columns:1fr; }.signal-source-web-grid>li { padding:16px; } }
 .signal-sources-workspace { display:grid; gap:24px; }
 .signal-source-panel { min-width:0; padding:24px; border:1px solid var(--border); border-radius:5px; background:var(--card); }
-.source-workspace .market-boundary-note { margin:0; padding:14px 18px; background:var(--signal-soft); border:1px solid var(--border); border-radius:5px; font:400 13px/1.65 var(--font-sans); }
-.source-workspace .market-boundary-dot { background:var(--primary); flex:none; }
 .signal-source-panel .signal-panel-header { margin-bottom:12px; }
 .signal-collective-form { display:flex; flex-wrap:wrap; gap:12px; margin-top:16px; align-items:center; }
 .signal-collective-form input { flex:1 1 300px; width:auto; min-width:0; }
@@ -69,9 +67,7 @@
 
 /* Search panels follow the shared workspace width. */
 .source-workspace.signal-sources-workspace{display:block}
-.source-workspace.signal-sources-workspace>:is([data-radar-guide="search-preferences-form"],.source-narrow-panel,.market-boundary-note){width:100%}
-.source-workspace.signal-sources-workspace>.market-boundary-note{margin:0}
-.source-workspace.signal-sources-workspace>.market-boundary-note{font-size:14px}
+.source-workspace.signal-sources-workspace>:is([data-radar-guide="search-preferences-form"],.source-narrow-panel){width:100%}
 .source-workspace .source-narrow-panel .signal-source-tracks{grid-template-columns:repeat(2,minmax(0,1fr))}
 .source-workspace [data-radar-guide="search-preferences-form"] p,
 .source-workspace .source-narrow-panel :is(.signal-help,.signal-source-description),
