@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Classement sans préférence cachée pour le produit
+
+Un intitulé contenant « product », « produit », « PO » ou « PM » ne gagne plus de points quand le compte cherche un autre métier : seule la correspondance avec les postes visés compte. Le bonus fixe de 7 points pour la fintech, le paiement, le SaaS, l’IA ou le secteur public disparaît aussi ; chaque compte valorise ses secteurs avec ses « mots-clés à mettre en avant ». Les anciennes requêtes PO/PM constantes de `web-discovery.ts`, inutilisées, sont supprimées. Aucune migration SQL ni dépendance ajoutée.
+
 ## 6 novembre 2026 — Postes suggérés depuis vos offres (lot 16b)
 
 Sous « Postes visés », le tableau et le popover proposent jusqu’à trois intitulés vus dans au moins trois offres non supprimées des trente derniers jours. Les suggestions excluent les postes déjà visés et les termes des pistes du compte. Un clic ajoute explicitement le poste avec la confirmation d’impact existante ; « Ne plus proposer » conserve le refus dans le compte, y compris après rechargement. Sans suggestion, la ligne disparaît. Aucune dépendance ni migration SQL ajoutée.

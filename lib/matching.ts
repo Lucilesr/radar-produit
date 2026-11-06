@@ -7,7 +7,6 @@ import { announcedLocationFor, assessLocation } from "./location-criteria";
 
 const ownerRoles = [/\bproduct owner\b/i, /\bpo\b/i];
 const managerRoles = [/\bproduct manager\b/i, /\bpm\b/i, /chef de produit (?:digital|numerique|numérique)\b/i];
-const productRole = /\bproduct\b|\bproduit\b|\b(?:po|pm)\b/i;
 
 function matchesSearchedRole(title: string, role: string) {
   if (role === "Product Owner") return ownerRoles.some(pattern => pattern.test(title));
@@ -48,11 +47,6 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   if (matchedRole) {
     score += 38;
     reasons.push(`Intitulé proche de votre recherche : ${matchedRole}.`);
-  } else if (productRole.test(job.title)) {
-    score += 27;
-    exception = true;
-    reasons.push("Autre rôle produit : à examiner comme piste secondaire.");
-    flags.push("Rôle secondaire");
   } else {
     flags.push("Intitulé éloigné des rôles ciblés");
     score -= 12;
@@ -158,11 +152,6 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   if (job.language !== "advanced_en" && /(?:bilingual|bilingue|native[- ]level English|anglais (?:natif|courant exigé)|English\s+(?:C1|C2)|(?:C1|C2)\s+English)/i.test(text)) {
     exception = true;
     flags.push("Exigence bilingue / anglais avancé : vérifier avant de candidater");
-  }
-
-  if (/\b(?:fintech|payment|bank|investment|regulated|acpr|saas|ai|llm|generative|public sector|secteur public)\b/i.test(text)) {
-    score += 7;
-    reasons.push("Secteur ou contexte proche de vos réalisations.");
   }
 
   const haystack = foldKeyword(`${text} ${job.company ?? ""}`);
