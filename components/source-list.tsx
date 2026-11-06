@@ -17,7 +17,7 @@ export type SourceFilter = "all" | "automatic" | "manual" | "action";
 const filters: [SourceFilter, string][] = [["all", "Toutes"], ["automatic", "Automatiques"], ["manual", "À consulter"], ["action", "Action requise"]];
 const groups: [Exclude<SourceFilter, "all" | "action">, string, string][] = [
   ["automatic", "Automatiques", "Radar collecte ces offres pour vous."],
-  ["manual", "À consulter", "Radar prépare les recherches ; vous ouvrez le site."],
+  ["manual", "À consulter", "Radar prépare les recherches ; vous ouvrez le site. Radar ne lit pas vos comptes."],
 ];
 
 /** Sources grouped by how they work, each row saying where it stands and what to do next. */
@@ -37,11 +37,7 @@ export function SourceList({ sources, settings, jobs, profile, onOpen, onVisit }
   const keep = (source: Source) => filter === "all" || (filter === "action" ? attention(source) : sourceKind(source.mode) === filter);
 
 
-  return <section className="signal-source-list" aria-labelledby="source-list-title">
-    <div className="signal-source-list-head">
-      <h2 id="source-list-title">Sources suivies</h2>
-      <p className="signal-help">{sources.length} source{sources.length > 1 ? "s" : ""}{counts.action ? ` · ${counts.action} demande${counts.action > 1 ? "nt" : ""} une action` : " · rien à faire"}</p>
-    </div>
+  return <section className="signal-source-list" aria-labelledby="source-settings-title">
     <div role="tablist" aria-label="Filtrer les sources" className="signal-source-filters">
       {filters.map(([id, label]) => <button type="button" key={id} role="tab" aria-selected={filter === id} onClick={() => setFilter(id)}>
         {label}{id === "action" && counts.action ? <span className="quiet-tag">{counts.action}</span> : null}

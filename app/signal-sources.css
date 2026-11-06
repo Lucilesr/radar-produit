@@ -280,8 +280,6 @@
 
 /* Ma recherche · liste unique des sources (lot 8). */
 .signal-source-list{display:grid;gap:16px}
-.signal-source-list-head h2{margin:0;font:600 18px/1.4 var(--font-sans);letter-spacing:-.015em}
-.signal-source-list-head .signal-help{margin-top:4px}
 .signal-source-filters{display:flex;flex-wrap:wrap;gap:6px 20px;border-bottom:1px solid var(--border)}
 .signal-source-filters button{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:12px 2px;margin-bottom:-1px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted-foreground);font:500 14px/1.4 var(--font-sans)}
 .signal-source-filters button[aria-selected=true]{border-bottom-color:var(--primary);color:var(--primary);font-weight:600}

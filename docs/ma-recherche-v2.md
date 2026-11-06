@@ -410,11 +410,11 @@ Deux PR séparées.
 - **Titre de la section critères** : « Critères », avec à côté l'état « Enregistrés automatiquement » (et, juste après une modification, « Enregistré à l'instant »). La phrase d'aide sous le titre : « Radar classe vos offres selon ces critères ; celles qui en sortent sont masquées dans « À examiner ». Les alertes créées sur les sites externes ne sont pas modifiées. »
 - **Étiquette modifiée** : après un enregistrement, l'étiquette du critère changé porte un point d'accent jusqu'à la prochaine visite de la page (état en mémoire, rien en base).
 - **Message d'impact** : garder « Annuler » et ajouter « Voir les offres », qui ouvre Opportunités sur « À examiner ». `WorkspaceFeedback` n'accepte qu'une `action` : ajouter une `secondaryAction` optionnelle plutôt que de créer un second composant.
-- **Résumé des sources** à côté du titre « Sources » : « 5 actives · 2 à visiter · 1 à configurer », calculé par une fonction pure `sourceSummary(statuses)` dans `lib/source-status.ts`. Un compte à zéro n'est pas affiché.
+- **Un seul titre « Sources suivies »** (6 novembre 2026), avec le bouton « Ajouter une source » sur la même ligne et le résumé « 8 sources · 2 demandent une action » (ou « rien à faire »), calculé par `followedSourcesSummary(total, needingAction)` dans `lib/source-status.ts` avec la même règle que le filtre « Action requise ». Plus de second titre dans `SourceList`, ni de phrase d'aide générale : les sous-titres « Automatiques » et « À consulter » suffisent.
 - **Sources suggérées** sous la liste : « Suggérées pour vos critères : + Remote OK · + Remotive… », 4 au plus, prises dans le catalogue des sources non suivies et triées par `rankSources`. Un clic ajoute la source, comme « Ajouter » dans le panneau du lot 10.
 - **Offres sans salaire affiché** : décidé le 6 novembre 2026, elles sont **gardées**, comme aujourd'hui (signalées « Salaire non communiqué », à vérifier à la main). Pas de nouveau réglage : ajouter seulement une ligne d'information « Sans salaire affiché : gardées, à vérifier » au groupe *La rémunération* de la vue dépliée.
 
-**Tests.** `sourceSummary` (comptes à zéro masqués, ordre des libellés).
+**Tests.** `followedSourcesSummary` (aucune source, singulier, pluriel, rien à faire).
 
 **16b — Postes suggérés.**
 
