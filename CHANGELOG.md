@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Guide : trois lots pour rejoindre les maquettes
+
+Le guide de « Ma recherche » décrit trois lots de plus : une seule page sans onglets (lot 14), « Tout modifier » en tableau éditable (lot 15), puis les finitions et les postes suggérés (lot 16). Les offres sans salaire affiché restent gardées, à vérifier à la main.
+
 ## 6 novembre 2026 — Configuration des sources
 
 Suppression du bouton redondant « Modifier mon suivi ». Le chevron Signal reste disponible dans les cartes héritées ; la liste actuelle utilise le panneau de détail.

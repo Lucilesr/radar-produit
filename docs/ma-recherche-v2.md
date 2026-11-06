@@ -335,6 +335,110 @@ En deux étapes, livrées dans deux PR.
 
 ---
 
+## 3 bis. Rattraper les maquettes (lots 14 à 16)
+
+Constat du 6 novembre 2026, une fois les lots 1 à 13a fusionnés : les briques sont là, mais la page ne ressemble pas encore aux maquettes. Trois écarts restent :
+
+- la page garde ses trois onglets (« Mes critères », « Sources », « Autres pistes ») au lieu d'une seule page ;
+- « Tout modifier » affiche encore l'ancien formulaire complet au lieu du tableau éditable ;
+- plusieurs finitions des maquettes n'ont jamais été décrites dans ce guide.
+
+Ces trois lots ne changent aucune règle de classement des offres, sauf l'ajout du lot 16 sur les postes suggérés, qui ne fait que proposer.
+
+---
+
+### Lot 14 — Une seule page, sans onglets
+
+**But.** Lire ses critères puis ses sources en faisant défiler une seule page, comme dans la maquette.
+
+**Ordre de la page** (`components/source-panel.tsx`) :
+
+1. **En-tête de page.** Le titre « Ma recherche » reste celui de `PageHeader`. Sur cet onglet seulement, à droite du titre : l'état « Actualisé il y a 2 h » (`refreshedAgo`) et le bouton « Actualiser maintenant », qui lance `POST /api/sources/sync`. Ils quittent le bloc « Collecte automatique ». Sur cet onglet, le bouton « Actualiser » générique de `radar-app.tsx` (qui ne relit que les offres) est retiré, pour ne pas avoir deux boutons voisins qui font des choses différentes.
+2. **Critères.** `SearchCriteriaPanel`, puis la note « Les lieux annoncés servent au classement ».
+3. **Sources.** Le bouton « Ajouter une source », l'état vide du lot 10 et la `SourceList`.
+4. **Autres pistes.** En dernier, repliable (`ExpandableSection`, fermée par défaut) : pistes hors annonces et ajouts volontaires.
+
+**Ce qui quitte la liste des sources.** Les blocs restés autour de la liste vont là où ils servent :
+
+| Bloc actuel | Devient |
+| --- | --- |
+| « Collecte automatique » (texte, réglage « Actualisation ») | Le réglage « Actualisation » va dans un menu « … » de l'en-tête de page ou sous le bouton ; le texte d'aide se réduit à une ligne sous le titre « Sources ». |
+| `WebDiscoveryPanel` « Recherches web pour vos postes » | Déjà couvert par « Recherches générées » dans le panneau de chaque source (lot 9) : le retirer de la page. |
+| « Alerte Collective à consulter » et « Ajouter une alerte Collective » | Dans le panneau de détail de la source Collective (`SourceDetail`). |
+| « Recherches couvertes » | Retiré : la ligne « Pistes de recherche » du tableau des critères (lot 12) le montre déjà. |
+
+**Navigation.** Supprimer la barre `workspace-tabs` de la page. `?sources=criteria`, `?sources=channels` et `?sources=outreach` continuent de marcher : ils font défiler jusqu'à la section (et ouvrent « Autres pistes » pour `outreach`). `readSearchSection` reste ; `selectSection` devient un défilement, sans `pushState`. `openJobgether` défile jusqu'à la ligne Jobgether de la liste et ouvre son détail.
+
+**Acceptation.** Plus aucun onglet dans « Ma recherche ». Une seule action d'actualisation visible sur la page. Chaque source n'apparaît qu'une fois. Les liens `?sources=` existants mènent à la bonne section. Le guide de prise en main fonctionne toujours (à revérifier : il peut viser un onglet).
+
+**Tests.** `tests/radar-navigation.test.mjs` : les trois valeurs de `?sources=` donnent toujours une section valide.
+
+---
+
+### Lot 15 — « Tout modifier » en tableau éditable
+
+**But.** Modifier tous ses critères dans le même tableau que « Tout voir », ligne par ligne, au lieu de retomber sur le long formulaire.
+
+**Comportement** (`components/search-criteria-panel.tsx`, vue `edit`) :
+
+- La vue `edit` affiche les groupes de `criteriaGroups` (Le poste, La présence, La rémunération, La géographie, L'annonce), avec le même en-tête de groupe que la vue dépliée. Chaque ligne garde son libellé à gauche (190 px sur ordinateur, au-dessus sur mobile) et montre **directement son contrôle** à droite, déjà ouvert.
+- Les contrôles sont ceux que `SearchPreferencesForm` affiche déjà avec `only` : on découpe le formulaire, on ne le recopie pas. Si une partie (`conditions`, par exemple) regroupe trop de choses pour une ligne, on ajoute des valeurs à `CriteriaFormPart` (`contracts`, `presence`) plutôt que de dupliquer du code.
+- Contrôles attendus par ligne, d'après la maquette :
+  - **Postes visés** : champ à étiquettes (taper puis Entrée), avec la ligne des postes suggérés du lot 16 dessous ;
+  - **Contrats** : une case par contrat, avec sa ligne d'aide ;
+  - **Présence** : une ligne par contrat coché, avec un sélecteur segmenté de 4 options (Full remote, Exceptionnelle, Hybride, Sur site), comme le prévoyait le lot 6a, à la place du menu déroulant actuel ;
+  - **Minimums** : un champ par contrat concerné ; **Tolérance** : le curseur et son exemple chiffré ;
+  - **Zones** : le champ unique du lot 4 et sa liste ;
+  - **Mettre en avant / Écarter** : champs à étiquettes ;
+  - **Pistes de recherche** : l'éditeur actuel, sous les postes.
+- En bas du tableau, un bouton « + Ajouter un critère » ouvre le menu du lot 7 ; le critère choisi devient une ligne.
+- **En-tête en mode édition** : à gauche du bouton « Terminé », l'état d'enregistrement de l'ensemble (« Enregistrement… », « Enregistré », « Non enregistré · Réessayer ») et le nombre d'offres concernées (`countToReview`) : « 22 offres à examiner ». Le message « Enregistré. Les matchs utilisent vos critères. » en bas du formulaire disparaît de cette vue.
+- Le premier usage (aucun critère enregistré) garde son comportement : la vue d'édition est ouverte, sans « Terminé ».
+
+**Acceptation.** Dans la vue `edit`, aucun bloc de l'ancien formulaire (« Conditions de travail », « Pays et régions des offres »…) n'apparaît tel quel. Toute modification s'enregistre seule, sans bouton « Enregistrer ». À 1280 px, la vue tient en moins de deux écrans. Mobile, clavier et focus vérifiés.
+
+**Tests.** Si `CriteriaFormPart` s'enrichit, un test qui vérifie que chaque ligne de `criteriaGroups` pointe vers une partie existante.
+
+---
+
+### Lot 16 — Finitions et postes suggérés
+
+Deux PR séparées.
+
+**16a — Finitions.**
+
+- **Titre de la section critères** : « Critères », avec à côté l'état « Enregistrés automatiquement » (et, juste après une modification, « Enregistré à l'instant »). La phrase « Ces critères classent vos offres… » passe en aide sous le titre.
+- **Étiquette modifiée** : après un enregistrement, l'étiquette du critère changé porte un point d'accent jusqu'à la prochaine visite de la page (état en mémoire, rien en base).
+- **Message d'impact** : garder « Annuler » et ajouter « Voir les offres », qui ouvre Opportunités sur « À examiner ». `WorkspaceFeedback` n'accepte qu'une `action` : ajouter une `secondaryAction` optionnelle plutôt que de créer un second composant.
+- **Résumé des sources** à côté du titre « Sources » : « 5 actives · 2 à visiter · 1 à configurer », calculé par une fonction pure `sourceSummary(statuses)` dans `lib/source-status.ts`. Un compte à zéro n'est pas affiché.
+- **Sources suggérées** sous la liste : « Suggérées pour vos critères : + Remote OK · + Remotive… », 4 au plus, prises dans le catalogue des sources non suivies et triées par `rankSources`. Un clic ajoute la source, comme « Ajouter » dans le panneau du lot 10.
+- **Offres sans salaire affiché** : décidé le 6 novembre 2026, elles sont **gardées**, comme aujourd'hui (signalées « Salaire non communiqué », à vérifier à la main). Pas de nouveau réglage : ajouter seulement une ligne d'information « Sans salaire affiché : gardées, à vérifier » au groupe *La rémunération* de la vue dépliée.
+
+**Tests.** `sourceSummary` (comptes à zéro masqués, ordre des libellés).
+
+**16b — Postes suggérés.**
+
+**But.** Repérer les intitulés proches de sa recherche qu'on n'a pas pensé à viser.
+
+**Données.** Nouveau module pur `lib/role-suggestions.ts` :
+
+```ts
+export function suggestedRoles(jobs: JobRecord[], preferences: SearchPreferences, dismissed: string[] = []): Array<{ title: string; count: number }>;
+```
+
+- Lit les titres des offres non supprimées des 30 derniers jours et les ramène à un intitulé de poste : retirer le genre (« H/F », « F/H »), la séniorité (« Senior », « Junior », « Lead » reste), ce qui suit un tiret ou des parenthèses (« – Paris », « (CDI) »).
+- Garde un intitulé s'il revient dans **au moins 3 offres** et s'il n'est ni dans les `roles` ni dans les termes des pistes du compte (`searchedTerms`), comparaison sans accents ni casse.
+- Renvoie 3 suggestions au plus, triées par nombre d'offres.
+- Les suggestions écartées sont gardées dans le compte : `SearchPreferences.dismissedRoleSuggestions?: string[]` (30 au plus, optionnel, lu avec une valeur par défaut vide).
+
+**Interface.** Sous le champ « Postes visés » (vue d'édition et popover « Poste ») : « Vus dans vos offres : + Chef de produit (6) · + Product Lead (4) ». Un clic ajoute le poste, avec le message d'impact habituel. Chaque suggestion a un bouton « Ne plus proposer » (icône croix, `aria-label` explicite). Rien ne s'affiche s'il n'y a aucune suggestion.
+
+**Acceptation.** Un poste déjà visé, ou présent dans une piste, n'est jamais proposé. Une suggestion écartée ne revient pas, même après rechargement. Aucune suggestion n'est ajoutée sans clic.
+
+**Tests.** Nettoyage des titres (H/F, séniorité, lieu), seuil de 3 offres, exclusion des postes visés et des termes de pistes, suggestions écartées, comptes isolés.
+
+---
+
 ## 4. Points à décider avant les lots concernés
 
 | Lot | Question | Proposition par défaut |
@@ -342,8 +446,9 @@ En deux étapes, livrées dans deux PR.
 | 7 | Critère en langage naturel ? | Reporté ; dépend du connecteur ChatGPT. |
 | 11 | Tolérance maximale autorisée ? | 20 %. |
 | 13b | L'hébergement accepte-t-il une tâche planifiée ? | À vérifier avant de coder ; sinon s'en tenir à 13a. |
+| 16 | Que faire des offres sans salaire affiché ? | **Décidé le 6 novembre 2026 : les garder**, à vérifier à la main. Aucun réglage. |
 
-**Ordre de livraison conseillé :** 1 → 2 → 3 → 11 → 4 → 5 → 6 → 8 → 12 → 9 → 10 → 13a → 7 → 13b.
+**Ordre de livraison conseillé :** 1 → 2 → 3 → 11 → 4 → 5 → 6 → 8 → 12 → 9 → 10 → 13a → 7, puis 14 → 15 → 16a → 16b. Le lot 13b attend la réponse sur l'hébergement.
 
 ---
 
