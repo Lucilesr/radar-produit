@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Page de connexion et déconnexion
+
+Un visiteur non connecté arrive sur une page Radar (`/connexion`) au lieu d’être envoyé directement chez ChatGPT : présentation du service, « Se connecter avec ChatGPT », « Voir la démo » et rappel de confidentialité. La page d’origine est retrouvée après la connexion. « Se déconnecter » apparaît dans la barre latérale et dans la nouvelle section « Mon compte » de Mon profil, accessible aussi sur mobile ; dans la démo, le même bouton devient « Quitter la démo ». La déconnexion ramène sur la page de connexion. Aucune migration SQL ni dépendance ajoutée.
+
 ## 6 novembre 2026 — Un nouveau compte choisit son poste
 
 Un nouveau compte ne reçoit plus les critères PO/PM d’origine : aucun poste, tous les contrats, toute présence et aucun minimum de rémunération. Tant qu’aucun poste n’est choisi, « Opportunités » invite à l’indiquer dans Ma recherche, le guide de prise en main attend un poste pour passer à l’étape suivante, et une offre reçoit « Aucun poste choisi » au lieu d’une pénalité d’intitulé. Sans minimum, une rémunération absente n’est plus signalée. Les critères affichent « Aucun poste choisi » et « Aucun minimum ». Les deux offres d’exemple n’évoquent plus de métier. La démo fictive de Camille garde explicitement sa recherche PO/PM. Un compte qui a déjà enregistré ses critères les conserve. Aucune migration SQL ni dépendance ajoutée.

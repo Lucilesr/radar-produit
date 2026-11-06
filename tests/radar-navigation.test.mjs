@@ -45,3 +45,8 @@ test("Ma recherche : les trois anciens liens ciblent une section valide",()=>{
   assert.equal(new URLSearchParams(radarSearch(readRadarRoute(search),search)).get("sources"),section);
  }
 });
+
+test("navigation : « Mon compte » s'ouvre par lien direct, une valeur inconnue revient au carnet", () => {
+  assert.equal(readProfileSection("account"), "account");
+  assert.equal(readProfileSection("compte"), "experiences");
+});

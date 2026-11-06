@@ -23,6 +23,7 @@ import "./signal-kanban.css";
 import "./onboarding-tour.css";
 import "./demo-notice.css";
 import "./signal-micro-motion.css";
+import "./signin-page.css";
 
 export const metadata: Metadata = {
   title: "Radar Produit",
