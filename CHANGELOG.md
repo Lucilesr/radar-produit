@@ -1,3 +1,8 @@
+## 6 novembre 2026 — Ma recherche : un seul titre pour les sources
+
+- Les titres « Sources » et « Sources suivies » sont fusionnés en « Sources suivies », avec « Ajouter une source » sur la même ligne et le résumé « 8 sources · 2 demandent une action ».
+- La phrase « Radar collecte les flux automatiques… » est retirée : les sous-titres « Automatiques » et « À consulter » disent déjà la même chose. « Radar ne lit pas vos comptes » rejoint le sous-titre « À consulter ».
+
 ## 6 novembre 2026 — Logos des sources
 
 Les douze logos fournis remplacent les illustrations des sources correspondantes, dont Jobgether qui utilisait une icône générique. Les listes, fiches, offres et le panneau d’ajout réutilisent le composant commun SourceLogo et les cadres Signal, sans recadrage ni dépendance externe.

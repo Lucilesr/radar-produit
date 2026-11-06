@@ -8,7 +8,7 @@ function moduleUrl(name) {
   const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
   return "data:text/javascript;base64," + Buffer.from(compiled).toString("base64");
 }
-const { sourceSummary, sourceKind, sourceStatus, needsAction, defaultVisitEveryDays, remindsInToday, visitEvery, visitRhythms } = await import(moduleUrl("source-status"));
+const { followedSourcesSummary, sourceKind, sourceStatus, needsAction, defaultVisitEveryDays, remindsInToday, visitEvery, visitRhythms } = await import(moduleUrl("source-status"));
 const now = new Date("2026-11-05T12:00:00Z");
 const daysAgo = days => new Date(now.getTime() - days * 86400000).toISOString();
 
@@ -67,15 +67,9 @@ test("le rythme choisi décide quand une source repasse à visiter", () => {
   assert.equal(sourceStatus({ ...visitedThreeDaysAgo, visitEveryDays: 1 }, "manual", now), "to_visit");
 });
 
-test("le résumé masque les comptes à zéro et garde l’ordre des libellés",()=>{
- assert.equal(sourceSummary([]),"");
- assert.equal(sourceSummary(["to_configure"]),"1 à configurer");
- assert.equal(sourceSummary(["ok"]),"1 active");
- assert.equal(sourceSummary(["to_visit","up_to_date","ok","new","to_configure"]),"2 actives · 2 à visiter · 1 à configurer");
-});
-test("le résumé n’ignore ni les erreurs ni les pauses et ne dépend pas de l’ordre des sources",()=>{
- const statuses=["paused","error","new","to_configure","ok","up_to_date"];
- assert.equal(sourceSummary(statuses),"2 actives · 1 à visiter · 1 à configurer · 1 en erreur · 1 en pause");
- assert.equal(sourceSummary([...statuses].reverse()),sourceSummary(statuses));
- assert.deepEqual(statuses,["paused","error","new","to_configure","ok","up_to_date"]);
+test("le résumé des sources suivies compte les sources et celles qui demandent une action",()=>{
+ assert.equal(followedSourcesSummary(0,0),"");
+ assert.equal(followedSourcesSummary(1,0),"1 source · rien à faire");
+ assert.equal(followedSourcesSummary(1,1),"1 source · 1 demande une action");
+ assert.equal(followedSourcesSummary(8,2),"8 sources · 2 demandent une action");
 });

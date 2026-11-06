@@ -15,7 +15,8 @@ import { SourceCard, type SourceSetting } from "@/components/source-card";
 import { SourceList } from "@/components/source-list";
 import { SourceDetail } from "@/components/source-detail";
 import { SourceAddSheet, type AddFilter } from "@/components/source-add-sheet";
-import { sourceStatus, sourceSummary } from "@/lib/source-status";
+import { followedSourcesSummary, needsAction, sourceStatus } from "@/lib/source-status";
+import { sourceDrift } from "@/lib/search-drift";
 import { suggestedSources } from "@/lib/source-suggestions";
 import { searchPreferences } from "@/lib/search-preferences";
 import { sourceCatalog } from "@/lib/source-catalog";
@@ -153,7 +154,9 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,onShowOffer
   }
   const followedSources=[...jobboardCatalog,...alertCatalog].filter(source=>sourceVisible(source.name,allInitialSources));
   const suggested=settings?suggestedSources([...jobboardCatalog,...alertCatalog],searchPreferences(profile.searchPreferences),followedSources.map(source=>source.name)):[];
-  const summary=settings?sourceSummary(followedSources.map(source=>sourceStatus(settings.find(setting=>setting.source===source.name),source.mode))):"";
+  // Same rule as the « Action requise » filter: a status to handle or a saved search that drifted.
+  const needingAction=settings?followedSources.filter(source=>{const setting=settings.find(item=>item.source===source.name);return needsAction(sourceStatus(setting,source.mode))||sourceDrift(setting,searchPreferences(profile.searchPreferences)).length>0;}).length:0;
+  const summary=settings?followedSourcesSummary(followedSources.length,needingAction):"";
   async function addSuggested(name:string,trigger:HTMLElement){
     suggestionTrigger.current=trigger;
     await addSource(name);
@@ -172,8 +175,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,onShowOffer
       <div className="market-boundary-note"><span className="market-boundary-dot"/><p><strong>Les lieux annoncés servent au classement.</strong> La langue de l’annonce et les pays autorisés pour le télétravail restent à vérifier sur la page employeur.</p></div>
     </div>
     <div id="source-panel-channels" className="source-subpanel">
-      <WorkspacePanelHeader id="source-settings-title" title={<span className="source-title-line"><span>Sources</span>{summary?<span className="source-summary">{summary}</span>:null}</span>} actions={<WorkspaceButton variant="secondary" aria-haspopup="dialog" disabled={!settings} onClick={()=>setAddFilter("all")}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>
-      <p className="signal-help">Radar collecte les flux automatiques et prépare vos recherches sur les sites à consulter, sans lire vos comptes.</p>
+      <WorkspacePanelHeader id="source-settings-title" title={<span className="source-title-line"><span>Sources suivies</span>{summary?<span className="source-summary">{summary}</span>:null}</span>} actions={<WorkspaceButton variant="secondary" aria-haspopup="dialog" disabled={!settings} onClick={()=>setAddFilter("all")}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>
       {demo?<p className="signal-help">L’actualisation des flux externes et l’ajout d’alertes Collective sont désactivés dans la démo.</p>:null}
       <WorkspaceFormError message={syncError}/><WorkspaceFormError message={loadError}/>
       {settings&&!followedSources.length?<section className="source-empty" aria-labelledby="source-empty-title">
