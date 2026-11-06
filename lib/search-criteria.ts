@@ -27,6 +27,9 @@ export const remoteLabels: Record<SearchPreferences["remote"], string> = {
   hybrid: "Hybride",
   onsite: "Présentiel",
 };
+/** Shown for a role list or a pay minimum the account has not set yet. */
+export const noRoleChosen = "Aucun poste choisi";
+export const noMinimum = "Aucun minimum";
 const euro = (amount: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(amount) + " €";
 
 /** One row when every contract accepts the same presence, one row per contract otherwise. */
@@ -44,8 +47,8 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
   const included = preferences.includedLocations ?? [];
   const excluded = preferences.excludedLocations ?? [];
   const pay: CriteriaRow[] = [];
-  if (salaried) pay.push({ id: "salary", label: "Salaire minimum", values: [`${euro(preferences.minimumSalary)} brut/an`], tone: "include", target: "pay" });
-  if (contracts.includes("freelance") || contracts.includes("portage")) pay.push({ id: "dailyRate", label: "TJM minimum", values: [`${euro(preferences.minimumDailyRate)} HT/jour`], tone: "include", target: "pay" });
+  if (salaried) pay.push({ id: "salary", label: "Salaire minimum", values: [preferences.minimumSalary ? `${euro(preferences.minimumSalary)} brut/an` : noMinimum], tone: "include", target: "pay" });
+  if (contracts.includes("freelance") || contracts.includes("portage")) pay.push({ id: "dailyRate", label: "TJM minimum", values: [preferences.minimumDailyRate ? `${euro(preferences.minimumDailyRate)} HT/jour` : noMinimum], tone: "include", target: "pay" });
   if ((preferences.payTolerancePercent ?? 0) > 0 && (salaried || contracts.includes("freelance"))) pay.push({ id: "payTolerance", label: "Tolérance sous le minimum", values: [`${preferences.payTolerancePercent} %`], tone: "include", target: "pay" });
   pay.push({ id: "matchScore", label: "Score Jobgether minimum", values: [`${preferences.minimumMatchScore} / 100`], tone: "include", target: "jobgether" });
   const boost = preferences.boostKeywords ?? [];
@@ -69,7 +72,7 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
   if (excluded.length) geography.push({ id: "excludedLocations", label: "Sauf", values: excluded, tone: "exclude", target: "locations" });
   return [
     { id: "role", title: "Le poste", rows: [
-      { id: "roles", label: "Postes visés", values: preferences.roles, tone: "include", target: "roles" },
+      { id: "roles", label: "Postes visés", values: preferences.roles.length ? preferences.roles : [noRoleChosen], tone: "include", target: "roles" },
       ...tracks,
       { id: "contracts", label: "Contrats", values: contracts.map(contract => contractLabels[contract]), tone: "include", target: "conditions" },
     ] },
@@ -97,7 +100,7 @@ export function criteriaTokens(preferences: SearchPreferences, visible = 3): Cri
     const values = row.tokenValues ?? row.values;
     const shown = values.slice(0, visible).join(", ");
     const hidden = values.length - visible;
-    const prefix = row.id === "salary" || row.id === "dailyRate" || row.id === "matchScore" ? "≥ " : row.id === "payTolerance" ? "−" : "";
+    const prefix = (row.id === "salary" || row.id === "dailyRate") && values[0] !== noMinimum || row.id === "matchScore" ? "≥ " : row.id === "payTolerance" ? "−" : "";
     return {
       id: row.id,
       key: row.key ?? row.id,

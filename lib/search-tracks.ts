@@ -54,6 +54,7 @@ export function inheritedSearchTracks(roles: string[]): SearchTrack[] | undefine
 /** The account's tracks, or a single core track built from its own roles. */
 export function searchTracksFor(preferences: Pick<SearchPreferences, "roles"> & { searchTracks?: SearchTrack[] }): SearchTrack[] {
   if (preferences.searchTracks?.length) return preferences.searchTracks;
+  if (!preferences.roles.length) return [];
   return [{ id: "core", label: "Cœur de cible", kind: "core", terms: preferences.roles.slice(0, maxTermsPerTrack) }];
 }
 

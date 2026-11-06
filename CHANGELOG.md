@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Un nouveau compte choisit son poste
+
+Un nouveau compte ne reçoit plus les critères PO/PM d’origine : aucun poste, tous les contrats, toute présence et aucun minimum de rémunération. Tant qu’aucun poste n’est choisi, « Opportunités » invite à l’indiquer dans Ma recherche, le guide de prise en main attend un poste pour passer à l’étape suivante, et une offre reçoit « Aucun poste choisi » au lieu d’une pénalité d’intitulé. Sans minimum, une rémunération absente n’est plus signalée. Les critères affichent « Aucun poste choisi » et « Aucun minimum ». Les deux offres d’exemple n’évoquent plus de métier. La démo fictive de Camille garde explicitement sa recherche PO/PM. Un compte qui a déjà enregistré ses critères les conserve. Aucune migration SQL ni dépendance ajoutée.
+
 ## 6 novembre 2026 — Classement sans préférence cachée pour le produit
 
 Un intitulé contenant « product », « produit », « PO » ou « PM » ne gagne plus de points quand le compte cherche un autre métier : seule la correspondance avec les postes visés compte. Le bonus fixe de 7 points pour la fintech, le paiement, le SaaS, l’IA ou le secteur public disparaît aussi ; chaque compte valorise ses secteurs avec ses « mots-clés à mettre en avant ». Les anciennes requêtes PO/PM constantes de `web-discovery.ts`, inutilisées, sont supprimées. Aucune migration SQL ni dépendance ajoutée.

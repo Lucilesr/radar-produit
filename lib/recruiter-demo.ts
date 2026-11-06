@@ -4,7 +4,7 @@ import { getDb } from "@/db";
 import { documents, experienceItems, interviews, jobs, profiles } from "@/db/schema";
 import { assessJob, createFingerprint } from "./matching";
 import { normalizeJobInput } from "./server";
-import type { CandidateProfile, JobStatus } from "./types";
+import type { CandidateProfile, JobStatus, SearchPreferences } from "./types";
 
 // Every visitor gets a separate fictional workspace under a demo: user ID.
 const examples = [
@@ -18,6 +18,15 @@ const examples = [
   { title: "Product Manager · Écosystème B2B", company: "Mira Services", contractType: "cdi", annualSalary: 80000, remoteMode: "full_remote", source: "We Work Remotely", status: "offer", reviewState: "selected", description: "Exemple fictif. Coordonner un écosystème de partenaires B2B et lancer de nouveaux parcours. Proposition de recrutement fictive." },
 ] as const;
 
+// The fictional persona searches PO/PM roles explicitly: a new account no longer inherits them.
+export const demoSearchPreferences: SearchPreferences = {
+  roles: ["Product Owner", "Product Manager"], dismissedRoleSuggestions: [],
+  includedLocations: [], excludedLocations: [],
+  contracts: ["cdi", "freelance"], remote: "hybrid",
+  minimumSalary: 55000, minimumDailyRate: 500,
+  boostKeywords: [], excludeKeywords: [], minimumMatchScore: 55, payTolerancePercent: 0,
+};
+
 const profile: CandidateProfile = {
   headline: "Product Manager / Product Owner · produits B2B et services numériques",
   summary: "Profil entièrement fictif pour montrer Radar Produit. Expérience en discovery, priorisation, delivery et mesure d’adoption sur des produits B2B.",
@@ -27,7 +36,9 @@ const profile: CandidateProfile = {
   skills: ["Discovery", "Roadmap", "Priorisation", "Delivery", "Analyse de données"],
   industries: ["SaaS", "Services numériques", "Finance"],
   achievements: [], evidence: [], linkedinUrl: "",
+  searchPreferences: demoSearchPreferences,
 };
+
 
 const experience = [
   { title: "Product Owner · Portail B2B", organization: "Atelier Horizon (fictif)", role: "Product Owner", period: "2023–2025", context: "Refonte fictive d’un portail de services pour des partenaires professionnels.", contribution: "Animation des ateliers, clarification des besoins et priorisation du backlog avec l’équipe produit.", result: "Parcours simplifié et indicateurs d’adoption définis pour le suivi du lancement.", claimKey: "portail-b2b" },
@@ -44,7 +55,7 @@ export async function ensureRecruiterDemo(userId: string, emptyProfile = false):
   const daysAgo = (days: number) => new Date(now.getTime() - days * 86400000).toISOString();
   const rows = examples.map((example, index) => {
     const input = normalizeJobInput({ ...example, language: "fr", contentCoverage: "summary" });
-    const assessment = assessJob(input);
+    const assessment = assessJob(input, emptyProfile ? undefined : demoSearchPreferences);
     return {
       id: crypto.randomUUID(), userId, fingerprint: createFingerprint(input), ...input,
       status: example.status as JobStatus, reviewState: example.reviewState,
