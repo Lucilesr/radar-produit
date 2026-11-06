@@ -1,6 +1,122 @@
-## 5 novembre 2026 — Configuration des sources
+## 6 novembre 2026 — Configuration des sources
 
-Suppression du bouton redondant « Modifier mon suivi » dans Ma recherche. Le chevron « Configurer cette source » reste le point d’accès aux réglages.
+Suppression du bouton redondant « Modifier mon suivi ». Le chevron Signal reste disponible dans les cartes héritées ; la liste actuelle utilise le panneau de détail.
+
+## 6 novembre 2026 — « Aujourd'hui » rappelle les sources à consulter
+
+- Quand une source à consulter arrive à échéance, elle apparaît dans « Aujourd'hui » : « Welcome to the Jungle à visiter · vue il y a 3 jours ». Un clic ouvre son panneau dans « Ma recherche ».
+- Le rappel suit le rythme choisi pour chaque source et disparaît si vous l'avez coupé.
+- Dans le panneau d'une source, « Collez l'URL d'une offre vue sur ce site » ouvre le formulaire d'ajout avec le lien déjà rempli.
+
+## 5 novembre 2026 — « + Critère »
+
+- À la suite de vos étiquettes, « + Critère » propose ce que vous n'avez pas encore réglé : mots-clés à mettre en avant, mots-clés à écarter, tolérance sous le minimum, pistes de recherche.
+- Choisir un critère ouvre directement son contrôle, sans passer par le formulaire complet. Une fois réglé, il quitte la liste et rejoint vos étiquettes.
+
+## 5 novembre 2026 — Radar s'actualise tout seul à l'ouverture
+
+- Si la dernière collecte date de plus de 12 heures, Radar actualise vos flux en arrière-plan quand vous ouvrez « Ma recherche », sans bloquer l'affichage et sans contourner les caches des sources.
+- L'en-tête de la collecte indique « Actualisé il y a 2 h », et le bouton devient « Actualiser maintenant ».
+- Un réglage « Actualisation » laisse choisir entre « Actualiser automatiquement à l'ouverture » et « Seulement quand je le demande ».
+
+## 5 novembre 2026 — Choisir où Radar cherche
+
+- « Ajouter une source » ouvre un panneau : une recherche, trois filtres, et le catalogue trié selon vos critères — les sources proches de vos contrats, de votre présence et de vos pays d'abord.
+- Chaque entrée affiche son logo, son nom et deux ou trois étiquettes ; celles déjà suivies sont marquées « Ajoutée ».
+- « Votre site n'est pas dans la liste ? » : collez l'URL de votre recherche, elle devient une source à consulter, avec son rythme de visite.
+- Quand aucune source n'est suivie, la page demande « Où Radar doit-il chercher ? » et propose les deux familles, automatiques ou à consulter.
+
+## 5 novembre 2026 — Le détail d'une source, et le rythme auquel la revisiter
+
+- Cliquer sur le nom d'une source ouvre un panneau latéral : ce qu'il faut ouvrir, les recherches préparées depuis vos critères, ce que la source a rapporté, ses réglages et ses notes.
+- « Rythme de visite » : chaque jour, tous les 2 jours ou chaque semaine, avec un rappel dans « Aujourd'hui » que vous pouvez couper. L'état « À visiter » suit le rythme choisi.
+- Les écarts d'une recherche (« X n'est pas dans vos critères ») s'affichent désormais dans ce panneau, à côté des recherches concernées.
+- La liste des sources garde ses lignes compactes : les réglages ne s'ouvrent plus dessous, mais dans le panneau.
+
+## 5 novembre 2026 — Pistes de recherche propres à chaque compte, et alertes d'écart
+
+- Les trois pistes de recherche (« Cœur de cible », « Filet large », « Alternatives pertinentes ») ne sont plus les mêmes pour tout le monde : chaque compte a les siennes, modifiables sous « Postes visés ».
+- Un compte sans piste enregistrée cherche ses propres postes. Un compte qui cherchait les anciens postes par défaut garde les trois pistes d'avant.
+- « Recherches couvertes » affiche les pistes du compte, et non plus un texte figé.
+- Quand une recherche enregistrée sur une source cherche encore un intitulé absent de vos critères, la source l'indique : « X n'est pas dans vos critères », avec « L'ajouter à mes pistes » ou « Retirer de cette recherche ». Ces sources rejoignent le filtre « Action requise ».
+- Les conseils propres à un profil disparaissent des notes de sources.
+
+## 5 novembre 2026 — Ma recherche : une seule liste de sources, avec leur état
+
+- Les sous-onglets « Jobboards » et « Alertes & flux » laissent place à une liste unique, groupée en « Automatiques » et « À consulter ».
+- Chaque source affiche son état : OK, Erreur, À configurer, En pause, Nouvelle, À visiter ou À jour, avec l'action correspondante et sa dernière activité.
+- Des filtres montrent toutes les sources, un seul type, ou celles qui demandent une action.
+- « J'ai fait le tour » marque une source à consulter comme visitée ; son état repasse à « À jour » puis à « À visiter » après le délai.
+- Les réglages d'une source s'ouvrent sous sa ligne, sans quitter la liste.
+
+## 5 novembre 2026 — Ma recherche : mots-clés de l'annonce
+
+- Une section « L'annonce » permet de mettre en avant les offres qui parlent de certains sujets (fintech, paiement…) et d'écarter celles qui contiennent d'autres mots (stage, alternance…).
+- Les mots écartés masquent l'offre dans « À examiner » avec un point à vérifier ; les mots mis en avant la font remonter.
+- La casse et les accents sont ignorés ; 12 mots-clés au plus par liste, de 2 à 40 caractères.
+
+## 5 novembre 2026 — Ma recherche : présence acceptable par contrat
+
+- Avec plusieurs contrats recherchés, la présence se règle contrat par contrat : full remote en CDI et hybride en freelance, par exemple.
+- Les offres sont classées avec le niveau du contrat annoncé ; une offre au contrat non précisé suit le niveau le plus ouvert parmi les contrats recherchés.
+- La barre de critères garde une seule étiquette « Présence », qui résume les niveaux ; le tableau déplié détaille une ligne par contrat.
+
+## 5 novembre 2026 — Deux contrats de plus : portage salarial et temps partagé
+
+- « Contrats » propose désormais le portage salarial et le temps partagé, en plus du CDI, du CDD et du freelance.
+- Le portage se compare au TJM minimum, comme le freelance.
+- Une rémunération de temps partagé n'est jamais comparée telle quelle à un minimum temps plein : l'offre reste visible avec le point à vérifier « Rémunération à temps partiel », à ramener à un temps plein avant de décider.
+- Les annonces mentionnant « portage salarial », « temps partagé », « mi-temps » ou un rythme de 2 à 4 jours par semaine sont reconnues à l'ajout d'une offre.
+
+## 5 novembre 2026 — Ma recherche : finitions du champ de lieux
+
+- Le champ de recherche de lieu n'affiche plus qu'un seul contour net quand il est sélectionné, au lieu de deux cadres arrondis superposés.
+- Les boutons « Inclure » et « Exclure » restent dans le panneau et passent à la ligne quand la place manque, au lieu de dépasser sur le côté.
+
+## 5 novembre 2026 — Ma recherche : un seul champ pour les pays et régions
+
+- Les deux champs « Inclure » et « Exclure » sont remplacés par une recherche unique : tapez un lieu, puis Inclure (Entrée) ou Exclure (Maj+Entrée).
+- Les lieux choisis apparaissent dans une liste où chaque ligne bascule entre « Inclus » et « Exclu » sans la retaper, et se retire d'un clic.
+- Des raccourcis proposent les régions déjà connues (Union européenne, Amérique du Nord…).
+
+## 5 novembre 2026 — Ma recherche : tolérance sous le minimum
+
+- Un curseur de 0 à 20 % règle la tolérance sous les minimums de salaire et de TJM. À 0 %, valeur par défaut, le comportement strict est inchangé.
+- Une offre dont la rémunération connue se situe dans la tolérance reste dans « À examiner », comme exception, avec le point à vérifier « Sous votre minimum… » et un badge sur sa carte. En dessous de la tolérance, elle reste masquée.
+- Le texte d'aide donne les seuils calculés (« dès 52 250 € brut/an ou 475 € HT/jour ») ; l'étiquette « Tolérance » n'apparaît dans la barre de critères que si elle est réglée.
+
+## 5 novembre 2026 — Ma recherche : édition en place
+
+- Une étiquette de critère ouvre un panneau avec ce seul réglage (postes, contrats et présence, rémunération, lieux) ; sur téléphone, le réglage s'ouvre dans la page, sous les étiquettes. Échap ou « Terminé » ferme et rend le focus à l'étiquette.
+- Dans « Tout voir », « Modifier » ouvre le réglage sous la ligne concernée, sans quitter le tableau.
+- « Tout modifier » ouvre toujours le formulaire complet. Les listes de pays et menus ouverts depuis un panneau ne le referment plus.
+
+## 5 novembre 2026 — Ma recherche : enregistrement automatique et annulation
+
+- Contrats, présence, salaire et TJM s'enregistrent seuls 600 ms après la dernière modification ; le bouton « Enregistrer » disparaît. Un état indique « en attente », « enregistrement » ou « enregistré », avec « Réessayer » en cas d'échec. Quitter le formulaire enregistre la dernière modification.
+- Chaque enregistrement affiche ce qui a changé et le nombre d'offres à examiner qui en résulte (« TJM 500 € → 450 €/jour. 22 offres à examiner (+8). »), avec « Annuler » pour revenir aux critères précédents.
+- Un champ de rémunération vidé reste vide au lieu d'afficher 0 devant la saisie suivante.
+
+## 5 novembre 2026 — Ma recherche : critères lisibles d'un coup d'œil
+
+- « Ce que je recherche » s'affiche d'abord comme une ligne d'étiquettes : postes, contrats, présence, minimums de rémunération, score Jobgether et lieux ; les lieux exclus sont signalés à part.
+- « Tout voir » déplie un tableau rangé par thème (le poste, la présence, la rémunération, la géographie). Le choix replié ou déplié est mémorisé sur l'appareil.
+- Une étiquette ou le bouton « Modifier » d'une ligne ouvre le formulaire sur le bon champ ; « Terminé » revient à la vue précédente. Le score Jobgether s'ouvre sur sa carte dans « Alertes & flux ».
+- Un compte sans critères enregistrés voit toujours le formulaire ouvert, pour la première configuration.
+
+## 5 novembre 2026 — Ma recherche : icône et logos des sources
+
+- L’onglet Ma recherche utilise une icône de réglages au lieu d’une enveloppe.
+- Les logos des sources gardent une largeur de texte fixe et restent entiers dans leur cadre, quelle que soit la police disponible ; le logo Remote OK n’est plus coupé.
+- La mention « Radar ne collecte pas le contenu de ces sites et n’utilise aucun de vos comptes » apparaît une seule fois dans le suivi des jobboards au lieu d’être répétée sur chaque carte.
+
+## 5 novembre 2026 — Explication des minimums stricts
+
+Ma recherche décrit le masquage des rémunérations connues sous les minimums, y compris avec un contrat inconnu.
+
+## 5 novembre 2026 — Minimums de rémunération stricts
+
+Les salaires et TJM connus inférieurs aux minimums du compte sont exclus sans tolérance, y compris lorsque le contrat est inconnu. Ces offres sont masquées dans « À examiner ». Les montants absents restent à vérifier ; les sélections et candidatures existantes sont conservées.
 
 ## 5 novembre 2026 — Profil accessible après une mise à jour
 

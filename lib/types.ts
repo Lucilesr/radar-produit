@@ -1,4 +1,4 @@
-export type ContractType = "cdi" | "cdd" | "freelance" | "other";
+export type ContractType = "cdi" | "cdd" | "freelance" | "portage" | "part_time" | "other";
 export type RemoteMode = "full_remote" | "exceptional" | "hybrid" | "onsite" | "unknown";
 export type OfferLanguage = "fr" | "en" | "professional_en" | "advanced_en" | "unknown";
 export type JobStatus = "new" | "watchlist" | "shortlist" | "prepare" | "ready" | "applied" | "interview" | "awaiting_response" | "next_step" | "offer" | "rejected" | "withdrawn" | "closed";
@@ -72,6 +72,8 @@ export type CandidateProfile = {
   cvEnDocumentId?: string;
   detailedExperienceDocumentId?: string;
   applicationNotes?: Record<string, string>;
+  /** Refresh the automatic sources when Radar opens, or only on demand. */
+  refreshMode?: "on_open" | "manual";
 };
 
 export type Assessment = {
@@ -81,13 +83,31 @@ export type Assessment = {
   flags: string[];
 };
 
+/** One search track: a named group of job titles Radar looks for on the sources. */
+export type SearchTrack = {
+  id: string;
+  label: string;
+  terms: string[];
+  /** The account's own target, a wider net, or neighbouring titles. */
+  kind: "core" | "broad" | "alternative";
+};
+
 export type SearchPreferences = {
   roles: string[];
+  /** Search tracks of this account; without them, one track is derived from `roles`. */
+  searchTracks?: SearchTrack[];
   includedLocations?: string[];
   excludedLocations?: string[];
-  contracts: Array<"cdi" | "cdd" | "freelance">;
+  contracts: Array<"cdi" | "cdd" | "freelance" | "portage" | "part_time">;
   remote: "onsite" | "hybrid" | "exceptional" | "full_remote";
+  /** Presence accepted for one contract; a contract absent here follows `remote`. */
+  remoteByContract?: Partial<Record<"cdi" | "cdd" | "freelance" | "portage" | "part_time", "onsite" | "hybrid" | "exceptional" | "full_remote">>;
   minimumSalary: number;
   minimumDailyRate: number;
+  /** Words that make an offer stand out, and words that rule it out. */
+  boostKeywords?: string[];
+  excludeKeywords?: string[];
   minimumMatchScore: number;
+  /** 0 to 20: a known pay up to this % under the minimum stays visible as an exception. */
+  payTolerancePercent?: number;
 };

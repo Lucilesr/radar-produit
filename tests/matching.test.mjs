@@ -14,8 +14,10 @@ const workflow = moduleUrl("application-workflow");
 const marketScope = moduleUrl("market-scope");
 const countries = moduleUrl("countries");
 const locations = moduleUrl("location-criteria", { "./countries": countries, "./market-scope": marketScope });
-const preferences = moduleUrl("search-preferences", { "./location-criteria": locations });
-const { searchPreferences } = await import(preferences);
+const tracks = moduleUrl("search-tracks");
+const preferences = moduleUrl("search-preferences", { "./location-criteria": locations, "./search-tracks": tracks });
+const searchPreferencesModule = await import(preferences);
+const { searchPreferences } = searchPreferencesModule;
 const { assessJob } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations }));
 const { assessLocation, normalizeLocationRules } = await import(locations);
 const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement }));
@@ -134,11 +136,11 @@ test("choix manuel d'entretien conservé, pas de dérogation présumée", () => 
   assert.equal(assessJob({ ...offer, status: "interview", annualSalary: 40000 }, { ...searchPreferences(), remote: "exceptional" }).tier, "excluded");
 });
 
-test("seuils et rémunérations absentes inchangés", () => {
-  for (const [salary, tier] of [[55000, "priority"], [50000, "exception"], [49999, "excluded"], [null, "exception"]]) {
+test("minimums stricts et rémunérations absentes à confirmer", () => {
+  for (const [salary, tier] of [[55000, "priority"], [54999, "excluded"], [50000, "excluded"], [49999, "excluded"], [null, "exception"]]) {
     assert.equal(assessJob({ ...baseline, annualSalary: salary }).tier, tier);
   }
-  for (const [rate, tier] of [[500, "priority"], [450, "exception"], [449, "excluded"], [null, "exception"]]) {
+  for (const [rate, tier] of [[500, "priority"], [499, "excluded"], [450, "excluded"], [449, "excluded"], [null, "exception"]]) {
     assert.equal(assessJob({ ...baseline, contractType: "freelance", dailyRate: rate }).tier, tier);
   }
 });
@@ -228,4 +230,130 @@ test("CDD est conservé et filtré comme contrat salarié", () => {
   assert.equal(assessJob(cdd, { ...searchPreferences(), contracts: ["cdi"] }).tier, "excluded");
   assert.equal(assessJob(cdd, { ...searchPreferences(), contracts: ["cdd"] }).tier, "priority");
   assert.equal(parseOfferText("Product Owner\nCDD\nSalaire 65k€", "Autre").contractType, "cdd");
+});
+
+for (const contractType of ["cdi", "cdd", "freelance", "other"]) {
+  test(`tout montant connu respecte les minimums personnalisés : ${contractType}`, () => {
+    const preferences = { ...searchPreferences(), minimumSalary: 58000, minimumDailyRate: 570, contracts: ["cdi", "cdd", "freelance"] };
+    const offer = { ...baseline, contractType, annualSalary: null, dailyRate: null };
+    for (const [field, threshold, flag] of [["annualSalary", 58000, "Salaire"], ["dailyRate", 570, "TJM"]]) {
+      for (const value of [0, threshold - 1, threshold - 5000]) {
+        const result = assessJob({ ...offer, [field]: value }, preferences);
+        assert.equal(result.tier, "excluded");
+        assert(result.flags.some(text => text.startsWith(`${flag} sous votre seuil`)));
+      }
+      assert.notEqual(assessJob({ ...offer, [field]: threshold }, preferences).tier, "excluded");
+      assert.notEqual(assessJob({ ...offer, [field]: threshold + 1 }, preferences).tier, "excluded");
+    }
+    assert.notEqual(assessJob(offer, preferences).tier, "excluded");
+    assert.equal(assessJob({ ...offer, annualSalary: 58000, dailyRate: 569 }, preferences).tier, "excluded");
+  });
+}
+
+test("le recalcul des critères masque les offres sous les minimums dans À examiner", async () => {
+  const { inOpportunityView } = await import(opportunityViews);
+  const preferences = { ...searchPreferences(), minimumSalary: 58000, minimumDailyRate: 570 };
+  for (const amounts of [{ annualSalary: 57999 }, { annualSalary: 25000 }, { annualSalary: null, dailyRate: 569 }]) {
+    const offer = { ...baseline, ...amounts, contractType: "other", status: "new", reviewState: "to_review" };
+    const assessment = assessJob(offer, preferences);
+    assert(!inOpportunityView({ ...offer, matchTier: assessment.tier, flags: assessment.flags }, "to_review"));
+    const lower = assessJob(offer, { ...preferences, minimumSalary: 0, minimumDailyRate: 0 });
+    assert(inOpportunityView({ ...offer, matchTier: lower.tier, flags: lower.flags }, "to_review"));
+  }
+});
+
+test("la tolérance sous le minimum garde les offres proches comme exceptions", () => {
+  const { payFloor } = searchPreferencesModule;
+  assert.equal(payFloor(55000, 5), 52250);
+  assert.equal(payFloor(500, 5), 475);
+  const strict = { minimumSalary: 55000, minimumDailyRate: 500 };
+  const tolerant = { ...strict, payTolerancePercent: 5 };
+  // Strict by default: PR #156 behaviour is unchanged.
+  assert.equal(searchPreferences(strict).payTolerancePercent, 0);
+  assert.equal(assessJob({ ...baseline, annualSalary: 54999 }, strict).tier, "excluded");
+  // At the limit: kept, flagged.
+  const atFloor = assessJob({ ...baseline, annualSalary: 52250 }, tolerant);
+  assert.notEqual(atFloor.tier, "excluded");
+  assert.equal(atFloor.tier, "exception");
+  assert.ok(atFloor.flags.some(flag => flag.startsWith("Sous votre minimum")));
+  // One euro below the limit: excluded as before.
+  assert.equal(assessJob({ ...baseline, annualSalary: 52249 }, tolerant).tier, "excluded");
+  // At the minimum: a normal match, no tolerance flag.
+  assert.ok(!assessJob({ ...baseline, annualSalary: 55000 }, tolerant).flags.some(flag => flag.startsWith("Sous votre minimum")));
+  // Same rule for the daily rate.
+  const freelance = { ...baseline, contractType: "freelance", annualSalary: null };
+  assert.equal(assessJob({ ...freelance, dailyRate: 475 }, tolerant).tier, "exception");
+  assert.equal(assessJob({ ...freelance, dailyRate: 474 }, tolerant).tier, "excluded");
+  // Out-of-range values fall back to strict.
+  assert.equal(searchPreferences({ payTolerancePercent: 35 }).payTolerancePercent, 0);
+  assert.equal(searchPreferences({ payTolerancePercent: 2.5 }).payTolerancePercent, 0);
+});
+
+test("le portage salarial se compare au TJM, le temps partagé reste à vérifier", () => {
+  const search = { contracts: ["cdi", "freelance", "portage", "part_time"], minimumSalary: 55000, minimumDailyRate: 500 };
+  assert.deepEqual(searchPreferences(search).contracts, ["cdi", "freelance", "portage", "part_time"]);
+  // Portage: the daily rate decides, like freelance.
+  const portage = { ...baseline, contractType: "portage", annualSalary: null };
+  assert.equal(assessJob({ ...portage, dailyRate: 550 }, search).tier !== "excluded", true);
+  assert.equal(assessJob({ ...portage, dailyRate: 400 }, search).tier, "excluded");
+  assert.ok(assessJob({ ...portage, dailyRate: null }, search).flags.some(flag => flag.startsWith("TJM non communiqué")));
+  // Shared time: a part-time salary is never compared to a full-time minimum.
+  const shared = { ...baseline, contractType: "part_time" };
+  const lowSalary = assessJob({ ...shared, annualSalary: 30000, dailyRate: null }, search);
+  assert.notEqual(lowSalary.tier, "excluded");
+  assert.ok(lowSalary.flags.some(flag => flag.startsWith("Rémunération à temps partiel")));
+  assert.ok(assessJob({ ...shared, annualSalary: null, dailyRate: null }, search).flags.some(flag => flag.startsWith("Rémunération du temps partagé")));
+  // An announced daily rate is compared as usual.
+  assert.equal(assessJob({ ...shared, annualSalary: null, dailyRate: 300 }, search).tier, "excluded");
+  // A contract that is not searched still excludes the offer.
+  assert.equal(assessJob({ ...portage, dailyRate: 550 }, { ...search, contracts: ["cdi"] }).tier, "excluded");
+});
+
+test("le parseur reconnaît le portage et le temps partagé", () => {
+  const read = text => parseOfferText(text, "Autre").contractType;
+  assert.equal(read("Product Owner en portage salarial, TJM 600 €/jour"), "portage");
+  assert.equal(read("Mission via une société de portage, 550 € / jour"), "portage");
+  assert.equal(read("Product Manager à temps partagé, 3 jours par semaine"), "part_time");
+  assert.equal(read("Poste de Product Owner à mi-temps"), "part_time");
+  assert.equal(read("Mission freelance, TJM 600 €/jour"), "freelance");
+  assert.equal(read("Product Owner en CDI, 60 k€"), "cdi");
+});
+
+test("la présence acceptée peut différer selon le contrat", () => {
+  const { remoteForContract } = searchPreferencesModule;
+  const search = searchPreferences({ contracts: ["cdi", "freelance"], remote: "full_remote", remoteByContract: { freelance: "hybrid" } });
+  assert.equal(remoteForContract(search, "cdi"), "full_remote");
+  assert.equal(remoteForContract(search, "freelance"), "hybrid");
+  // An unknown contract follows the most permissive level searched.
+  assert.equal(remoteForContract(search, "other"), "hybrid");
+  assert.equal(remoteForContract(search, undefined), "hybrid");
+  // A contract that is not searched falls back the same way.
+  assert.equal(remoteForContract(search, "cdd"), "hybrid");
+  // A hybrid offer is kept for freelance, excluded for a CDI that wants full remote.
+  const hybrid = { ...baseline, remoteMode: "hybrid", onsiteDaysPerWeek: 2, description: "2 jours sur site par semaine" };
+  assert.equal(assessJob({ ...hybrid, contractType: "freelance", annualSalary: null, dailyRate: 600 }, search).tier !== "excluded", true);
+  assert.equal(assessJob({ ...hybrid, contractType: "cdi", annualSalary: 60000 }, search).tier, "excluded");
+  // Levels outside the searched contracts are ignored when reading back.
+  assert.equal(searchPreferences({ contracts: ["cdi"], remoteByContract: { freelance: "onsite" } }).remoteByContract.freelance, undefined);
+});
+
+test("les mots-clés mettent en avant ou écartent une offre", () => {
+  const search = { boostKeywords: ["fintech", "paiement"], excludeKeywords: ["stage", "alternance"] };
+  const offer = extra => ({ ...baseline, annualSalary: 60000, ...extra });
+  // Accents and case are ignored, and the company name counts.
+  const boosted = assessJob(offer({ description: "Plateforme de PAIEMENT et Fintech" }), search);
+  assert.ok(boosted.reasons.some(reason => reason.startsWith("Mentionne")));
+  assert.ok(boosted.score > assessJob(offer({ description: "Plateforme logistique" }), search).score);
+  // An excluded word rules the offer out.
+  const refused = assessJob(offer({ title: "Product Owner — stage" }), search);
+  assert.equal(refused.tier, "excluded");
+  assert.ok(refused.flags.some(flag => flag.startsWith("Contient stage")));
+  // No keyword, no effect.
+  assert.equal(assessJob(offer({ description: "Équipe produit" }), {}).flags.some(flag => flag.startsWith("Contient")), false);
+  // Normalisation: 12 at most, no duplicates, 2 to 40 characters.
+  const saved = searchPreferences({ boostKeywords: ["a", "fintech", "FINTECH", " paiement ", "x".repeat(41), ...Array.from({ length: 15 }, (_, i) => "mot" + i)] });
+  assert.equal(saved.boostKeywords.includes("a"), false);
+  assert.equal(saved.boostKeywords.filter(word => word.toLowerCase() === "fintech").length, 1);
+  assert.ok(saved.boostKeywords.includes("paiement"));
+  assert.equal(saved.boostKeywords.length, 12);
 });

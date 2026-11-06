@@ -1,5 +1,5 @@
 import type { Assessment, JobInput, JobStatus, SearchPreferences } from "./types";
-import { searchPreferences } from "./search-preferences";
+import { foldKeyword, payFloor, remoteForContract, searchPreferences } from "./search-preferences";
 import { detectWorkArrangement } from "./work-arrangement";
 import { activeStatuses } from "./application-workflow";
 import { isNorthAmericaRestricted } from "./market-scope";
@@ -63,20 +63,21 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   const explicitPresence=weekly!=null||monthly!=null;
   const arrangement=explicitPresence&&job.remoteMode==="hybrid" ? {mode:"hybrid" as const,daysOnsite:weekly??undefined,lightHybrid:(weekly==null||weekly<=1)&&(monthly==null||monthly<=4)} : detected;
   const pursued = !!job.status && activeStatuses.includes(job.status);
+  const acceptedPresence = remoteForContract(search, job.contractType);
   if (arrangement.mode === "full_remote") {
     score += 25;
     reasons.push("Full remote explicite.");
-  } else if (arrangement.mode === "exceptional" && search.remote !== "full_remote") {
+  } else if (arrangement.mode === "exceptional" && acceptedPresence !== "full_remote") {
     score += 21;
     reasons.push("Présence ponctuelle compatible avec vos préférences.");
   } else if (arrangement.mode === "unknown") {
     score += 5;
     exception = true;
     flags.push("Politique remote à confirmer");
-  } else if (arrangement.mode === "hybrid" && (search.remote === "hybrid" || search.remote === "onsite")) {
+  } else if (arrangement.mode === "hybrid" && (acceptedPresence === "hybrid" || acceptedPresence === "onsite")) {
     score += 12;
     reasons.push("Organisation hybride compatible avec votre présence acceptable.");
-  } else if (arrangement.mode === "onsite" && search.remote === "onsite") {
+  } else if (arrangement.mode === "onsite" && acceptedPresence === "onsite") {
     score += 12;
     reasons.push("Présence sur site compatible avec votre recherche.");
   } else if (pursued) {
@@ -92,36 +93,44 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     flags.push("Type de contrat non recherché.");
   }
 
-  if (job.contractType === "cdi" || job.contractType === "cdd") {
+  const tolerance = search.payTolerancePercent ?? 0;
+  if (job.contractType !== "part_time" && (job.annualSalary != null || job.contractType === "cdi" || job.contractType === "cdd")) {
     if (job.annualSalary == null) {
       exception = true;
       flags.push("Salaire non communiqué");
     } else if (job.annualSalary >= search.minimumSalary) {
       score += 20;
       reasons.push(`Rémunération annoncée à ${formatEuro(job.annualSalary)} brut/an.`);
-    } else if (job.annualSalary >= search.minimumSalary - 5000) {
+    } else if (tolerance && job.annualSalary >= payFloor(search.minimumSalary, tolerance)) {
       exception = true;
-      flags.push(`Salaire légèrement sous votre seuil de ${formatEuro(search.minimumSalary)}.`);
+      flags.push(`Sous votre minimum de ${formatEuro(search.minimumSalary)} brut/an (dans votre tolérance de ${tolerance} %).`);
     } else {
       excluded = true;
       flags.push(`Salaire sous votre seuil de ${formatEuro(search.minimumSalary)}.`);
     }
   }
 
-  if (job.contractType === "freelance") {
+  if (job.dailyRate != null || job.contractType === "freelance" || job.contractType === "portage") {
     if (job.dailyRate == null) {
       exception = true;
       flags.push("TJM non communiqué");
     } else if (job.dailyRate >= search.minimumDailyRate) {
       score += 20;
       reasons.push(`TJM annoncé à ${formatEuro(job.dailyRate)} HT/jour.`);
-    } else if (job.dailyRate >= search.minimumDailyRate - 50) {
+    } else if (tolerance && job.dailyRate >= payFloor(search.minimumDailyRate, tolerance)) {
       exception = true;
-      flags.push(`TJM légèrement sous votre seuil de ${formatEuro(search.minimumDailyRate)}.`);
+      flags.push(`Sous votre minimum de ${formatEuro(search.minimumDailyRate)} HT/jour (dans votre tolérance de ${tolerance} %).`);
     } else {
       excluded = true;
       flags.push(`TJM sous votre seuil de ${formatEuro(search.minimumDailyRate)}.`);
     }
+  }
+
+  if (job.contractType === "part_time" && job.dailyRate == null) {
+    exception = true;
+    flags.push(job.annualSalary == null
+      ? "Rémunération du temps partagé à vérifier."
+      : `Rémunération à temps partiel : ${formatEuro(job.annualSalary)} annoncés, à ramener à un temps plein avant de comparer à votre minimum.`);
   }
 
   if (job.contractType === "other") {
@@ -154,6 +163,19 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   if (/\b(?:fintech|payment|bank|investment|regulated|acpr|saas|ai|llm|generative|public sector|secteur public)\b/i.test(text)) {
     score += 7;
     reasons.push("Secteur ou contexte proche de vos réalisations.");
+  }
+
+  const haystack = foldKeyword(`${text} ${job.company ?? ""}`);
+  const found = (words?: string[]) => (words ?? []).filter(word => haystack.includes(foldKeyword(word)));
+  const boosted = found(search.boostKeywords);
+  if (boosted.length) {
+    score += Math.min(12, 6 * boosted.length);
+    reasons.push(`Mentionne ${boosted.join(", ")}.`);
+  }
+  const unwanted = found(search.excludeKeywords);
+  if (unwanted.length) {
+    excluded = true;
+    flags.push(`Contient ${unwanted.join(", ")}, que vous écartez.`);
   }
 
   score = Math.max(0, Math.min(100, score));

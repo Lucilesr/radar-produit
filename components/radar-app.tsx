@@ -8,7 +8,7 @@ import { OfferForm } from "@/components/offer-form";
 import { ProfileWorkspace } from "@/components/profile-workspace";
 
 import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { CircleHelp, RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, Mail, Plus, Search, Trash2, Undo2, UserRound, X } from "lucide-react";
+import { CircleHelp, RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, Plus, Search, SlidersHorizontal, Trash2, Undo2, UserRound, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
 import { hasApplication, inOpportunityView, reviewState, type OpportunityView } from "@/lib/opportunity-views";
@@ -37,7 +37,7 @@ const tabs: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof La
   { id: "offers", label: "Opportunités", mobileLabel: "Offres", icon: Search },
   { id: "pipeline", label: "Candidatures", mobileLabel: "Suivi", icon: ClipboardCheck },
   { id: "profile", label: "Mon profil", mobileLabel: "Profil", icon: UserRound },
-  { id: "sources", label: "Ma recherche", mobileLabel: "Recherche", icon: Mail },
+  { id: "sources", label: "Ma recherche", mobileLabel: "Recherche", icon: SlidersHorizontal },
 ];
 
 
@@ -72,11 +72,24 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
   const [loading, setLoading] = useState(!initialState);
   const [refreshing, setRefreshing] = useState(false);
   const [jobDialogOpen, setJobDialogOpen] = useState(false);
+  const [jobDialogUrl, setJobDialogUrl] = useState("");
+  // Read once for the « Sources à consulter » reminder; Ma recherche keeps its own copy.
+  const [sourceSettings, setSourceSettings] = useState<{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[]>([]);
   const selectedJob = allJobs.find(job => job.id === route.offer) || null;
   const [loadErrors, setLoadErrors] = useState(initialState?.errors ?? { jobs: false, profile: false });
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [visited, setVisited] = useState({profile:false,sources:false});
   useEffect(()=>{if(tab==="profile"||tab==="sources")setVisited(current=>({...current,[tab]:true}));},[tab]);
+  // The reminder needs the sources; Ma recherche loads and writes its own copy.
+  useEffect(()=>{let alive=true;fetch("/api/sources",{cache:"no-store"}).then(async response=>{if(!response.ok)return;const data=await response.json() as {sources:typeof sourceSettings};if(alive)setSourceSettings(data.sources??[]);}).catch(()=>{});return()=>{alive=false;};},[]);
+  /** Opens « Ma recherche » on one source, which reads these parameters when it appears. */
+  const openSource = (name: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("sources", "channels");
+    url.searchParams.set("source", name);
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+    navigate({ tab: "sources" });
+  };
   const openJob = (job: JobRecord, view: WorkspaceView = "offer") => navigate({ offer: job.id, view, ...(view === "interviews" || view === "application" ? {tab: "pipeline" as Tab} : {}) });
   const closeJob = () => navigate({ offer: undefined, view: "offer" });
   const notify = useWorkspaceFeedback();
@@ -224,24 +237,24 @@ function RadarWorkspace({ ownerId, userName, initialState, initialRoute, initial
         {tab!=="pipeline"?<PageHeader title={tabs.find(item => item.id === tab)?.label || "Radar Produit"}><div className="page-tools"><span className="page-header-privacy"><PrivateLabel /></span><button type="button" onClick={() => void refreshOffers()} disabled={refreshing} className="secondary-button page-refresh-action" aria-label="Actualiser les offres"><RefreshCw size={15} className={refreshing ? "animate-spin" : ""} aria-hidden /><span className="page-refresh-label">Actualiser</span></button></div></PageHeader>:null}
         {tab!=="pipeline"&&loading ? <WorkspaceLoading /> : null}
         {tab!=="pipeline"?loadNotice:null}
-        {!loading && !loadErrors.jobs && tab === "dashboard" ? <TodayWorkspace jobs={allJobs} onTriage={() => navigate({tab:"offers",filter:"to_review",query:"",offer:undefined})} onSelected={() => navigate({tab:"offers",filter:"selected",query:"",offer:undefined})} onAdd={()=>setJobDialogOpen(true)} onOpen={openJob} /> : null}
+        {!loading && !loadErrors.jobs && tab === "dashboard" ? <TodayWorkspace jobs={allJobs} sources={sourceSettings} onOpenSource={openSource} onTriage={() => navigate({tab:"offers",filter:"to_review",query:"",offer:undefined})} onSelected={() => navigate({tab:"offers",filter:"selected",query:"",offer:undefined})} onAdd={()=>setJobDialogOpen(true)} onOpen={openJob} /> : null}
         {trashError ? <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">{trashError}<button className="ml-3 underline" onClick={() => { setTrashError(null); void refreshOffers(); }}>Actualiser pour vérifier</button></div> : null}
         {!loading && !loadErrors.jobs && tab === "offers" ? <OpportunitiesWorkspace currentJob={selectedJob} jobs={shownJobs} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>void changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>{setJobs(current=>current.map(job=>job.id===updated.id?updated:job));setToast("Offre mise à jour.");}} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing} /> : null}
         {tab === "pipeline" ? <ApplicationsWorkspace placeholder={loading?<WorkspaceLoading/>:loadErrors.jobs?loadNotice:undefined} notice={!loading&&!loadErrors.jobs?loadNotice:undefined} jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
         {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace active={tab === "profile"} initialSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} profile={profile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
-        {profileLoaded && (tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel active={tab==="sources"} jobs={jobs} profile={profile} onSave={saveSearch} onSynced={()=>refreshOffers({silent:true})} /></Suspense></WorkspaceBoundary></div> : null}
+        {profileLoaded && (tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel active={tab==="sources"} jobs={jobs} profile={profile} onSave={saveSearch} onSynced={()=>refreshOffers({silent:true})} onAddOffer={url=>{setJobDialogUrl(url);setJobDialogOpen(true);}} /></Suspense></WorkspaceBoundary></div> : null}
         {tab !== "profile" && tab !== "offers" ? <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span></footer> : null}
         </div>
       </section>
     </div>
     {profileLoaded ? <OnboardingTour ownerId={ownerId ?? ""} profile={profile} activeTab={tab} onNavigate={selectTab} initialHasFact={initialExperienceLibrary?.items.some(item => item.validation === "approved")} /> : null}
-    {jobDialogOpen ? <JobDialog onClose={() => setJobDialogOpen(false)} onCreated={onJobCreated} /> : null}
+    {jobDialogOpen ? <JobDialog initialUrl={jobDialogUrl} onClose={() => { setJobDialogOpen(false); setJobDialogUrl(""); }} onCreated={onJobCreated} /> : null}
     {selectedJob && tab !== "offers" ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} headerActions={<>{(selectedJob.sourceUrl || selectedJob.applicationUrl) ? <a href={selectedJob.sourceUrl || selectedJob.applicationUrl} target="_blank" rel="noopener noreferrer" className="signal-quiet-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : null}{selectedJob.deletedAt ? <button type="button" className="signal-quiet-button" disabled={!!trashBusy || refreshing} onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={15} aria-hidden />Restaurer</button> : null}{tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? <ApplicationTagEditor key={selectedJob.id} jobId={selectedJob.id}/> : null}</>} meta={<OfferSourceBadge job={selectedJob} />} onClose={closeJob}><OfferWorkspace key={selectedJob.id + ":" + tab} onViewChange={view => navigate({ view })} job={selectedJob} profile={profile} initialView={workspaceView} showAnnouncement={false} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => navigate({ tab: "pipeline", offer: selectedJob.id, view: "application" })} onCancelApplication={() => cancelApplication(selectedJob.id)} onChange={(updated, message) => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setToast(message ?? "Dossier enregistré."); }} /></Modal> : null}
   </main>;
 }
 
-function JobDialog({ onClose, onCreated }: { onClose: () => void; onCreated: (job: JobRecord, deduplicated?: boolean) => void }) {
-  return <Modal title="Ajouter une opportunité" description="Complétez les faits de l’annonce." onClose={onClose}><OfferForm onCancel={onClose} onSave={async input=>{
+function JobDialog({ initialUrl = "", onClose, onCreated }: { initialUrl?: string; onClose: () => void; onCreated: (job: JobRecord, deduplicated?: boolean) => void }) {
+  return <Modal title="Ajouter une opportunité" description="Complétez les faits de l’annonce." onClose={onClose}><OfferForm draftKey={initialUrl?`offer-from-source`:""} job={initialUrl?{title:"",contractType:"other",remoteMode:"unknown",language:"fr",source:"Autre",sourceUrl:initialUrl}:undefined} onCancel={onClose} onSave={async input=>{
     const response=await fetch("/api/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input)});
     const result=await response.json() as {job?:JobRecord;deduplicated?:boolean;error?:string};
     if(!response.ok||!result.job)throw new Error(result.error??"Enregistrement non confirmé. Votre saisie est conservée.");

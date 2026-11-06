@@ -2,62 +2,128 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CandidateProfile, SearchPreferences } from "@/lib/types";
-import { normalizeRoleTitles, searchPreferences } from "@/lib/search-preferences";
+import { foldKeyword, normalizeRoleTitles, payFloor, remoteForContract, searchPreferences } from "@/lib/search-preferences";
+import { contractLabels } from "@/lib/search-criteria";
+
+const presenceOptions = [{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Présence exceptionnelle" }, { value: "full_remote", label: "Full remote" }] as const;
+import { Slider } from "@/components/ui/slider";
+
+const euro = (amount: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(amount) + " €";
 import { ChoiceSelect } from "@/components/choice-select";
+import { WorkspaceButton } from "@/components/workspace-form";
+import { foldTerm, maxTermsPerTrack, maxTracks, searchTracksFor, trackKindLabels, trackKinds } from "@/lib/search-tracks";
+import type { SearchTrack } from "@/lib/types";
 import { locationRegionOptions, normalizeLocationRules } from "@/lib/location-criteria";
 import { countryOptions } from "@/lib/countries";
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
 
 const locationOptions = [...locationRegionOptions, ...countryOptions.filter(option => option.value).map(option => option.label)];
 
-export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean> }) {
+export type CriteriaFormPart = "roles" | "conditions" | "locations" | "pay" | "keywords";
+const partTitles: Record<CriteriaFormPart, string> = { roles: "search-roles-title", conditions: "search-conditions-title", locations: "search-location-title", pay: "search-pay-title", keywords: "search-keywords-title" };
+
+/** The whole criteria form, or with `only` a single group of it (popover or table row). */
+export function SearchPreferencesForm({ profile, onSave, showIntro = true, only }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; showIntro?: boolean; only?: CriteriaFormPart }) {
+  const show = (part: CriteriaFormPart) => !only || only === part;
   const [draft, setDraft] = useState<SearchPreferences>(() => searchPreferences(profile.searchPreferences));
+  const tolerance = draft.payTolerancePercent ?? 0;
+  const presenceFor = (contract?: SearchPreferences["contracts"][number]) => remoteForContract(draft, contract);
   const [roles, setRoles] = useState(() => searchPreferences(profile.searchPreferences).roles);
   const [includedLocations, setIncludedLocations] = useState(() => searchPreferences(profile.searchPreferences).includedLocations ?? []);
   const [excludedLocations, setExcludedLocations] = useState(() => searchPreferences(profile.searchPreferences).excludedLocations ?? []);
-  const [includedInput, setIncludedInput] = useState("");
-  const [excludedInput, setExcludedInput] = useState("");
+  const [placeInput, setPlaceInput] = useState("");
+  // Highlighted suggestion and Shift+Enter: one field adds a place as included or excluded.
+  const highlightedPlace = useRef<string | null>(null);
+  const [placeListOpen, setPlaceListOpen] = useState(false);
   const locationSaveInFlight = useRef(false);
   const [savingLocation, setSavingLocation] = useState(false);
   const [locationMessage, setLocationMessage] = useState("");
   const [roleInput, setRoleInput] = useState("");
   const [savingRole, setSavingRole] = useState(false);
+  const [boostKeywords, setBoostKeywords] = useState(() => searchPreferences(profile.searchPreferences).boostKeywords ?? []);
+  const [excludeKeywords, setExcludeKeywords] = useState(() => searchPreferences(profile.searchPreferences).excludeKeywords ?? []);
+  const [boostInput, setBoostInput] = useState("");
+  const [excludeInput, setExcludeInput] = useState("");
+  const [savingKeywords, setSavingKeywords] = useState(false);
+  const [keywordMessage, setKeywordMessage] = useState("");
+  const keywordSaveInFlight = useRef(false);
   const roleSaveInFlight = useRef(false);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
+  const [saveState, setSaveState] = useState<"idle" | "pending" | "saving" | "saved" | "error">("idle");
+  // Contracts, presence and pay save on their own, 600 ms after the last change.
+  // Refs hold the latest values so a delayed save never writes stale roles or places.
+  const latestDraft = useRef(draft);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const draftSaveInFlight = useRef(false);
+  const latest = useRef({ profile, onSave, roles, includedLocations, excludedLocations });
+  useEffect(() => { latest.current = { profile, onSave, roles, includedLocations, excludedLocations }; });
   const [roleMessage, setRoleMessage] = useState("");
   useEffect(() => { setRoles(searchPreferences(profile.searchPreferences).roles); }, [profile.searchPreferences]);
+  useEffect(() => { const saved = searchPreferences(profile.searchPreferences); setBoostKeywords(saved.boostKeywords ?? []); setExcludeKeywords(saved.excludeKeywords ?? []); }, [profile.searchPreferences]);
   useEffect(() => { const saved = searchPreferences(profile.searchPreferences); setIncludedLocations(saved.includedLocations ?? []); setExcludedLocations(saved.excludedLocations ?? []); }, [profile.searchPreferences]);
 
-  async function persistLocation(kind: "includedLocations" | "excludedLocations", next: string[], previous: string[], restoreInput = "") {
+  type PlaceKind = "includedLocations" | "excludedLocations";
+  async function persistPlaces(nextIncluded: string[], nextExcluded: string[], restoreInput = "") {
     if (locationSaveInFlight.current || roleSaveInFlight.current || saving) return;
+    const previous = { included: includedLocations, excluded: excludedLocations };
     locationSaveInFlight.current = true; setSavingLocation(true); setLocationMessage("Enregistrement…");
-    const update = kind === "includedLocations" ? setIncludedLocations : setExcludedLocations;
+    setIncludedLocations(nextIncluded); setExcludedLocations(nextExcluded);
+    const restore = () => { setIncludedLocations(previous.included); setExcludedLocations(previous.excluded); if (restoreInput) setPlaceInput(restoreInput); setLocationMessage("Enregistrement non confirmé. Réessayez."); };
+    try {
+      const preferences = searchPreferences(profile.searchPreferences);
+      const saved = await onSave({ ...profile, searchPreferences: { ...preferences, roles, includedLocations: nextIncluded, excludedLocations: nextExcluded } });
+      if (!saved) restore(); else setLocationMessage("Lieux enregistrés. Les offres sont reclassées.");
+    } catch { restore(); }
+    finally { locationSaveInFlight.current = false; setSavingLocation(false); }
+  }
+  const sameplace = (a: string, b: string) => normalizeLocationRules([a])[0] === b;
+  /** Adds a place to one list; a place already in the other list moves over in the same save. */
+  function addPlace(kind: PlaceKind, selected?: string) {
+    if (savingLocation || savingRole || saving) return;
+    const entry = selected ?? highlightedPlace.current ?? placeInput;
+    const label = normalizeLocationRules([entry])[0];
+    if (!label) { setLocationMessage("Saisissez un pays ou une région."); return; }
+    const target = kind === "includedLocations" ? includedLocations : excludedLocations;
+    const other = kind === "includedLocations" ? excludedLocations : includedLocations;
+    if (target.some(item => sameplace(item, label))) { setLocationMessage(`« ${label} » est déjà ${kind === "includedLocations" ? "incluse" : "exclue"}.`); return; }
+    if (target.length >= 20) { setLocationMessage("Limite de 20 lieux par liste."); return; }
+    const nextTarget = [...target, label];
+    const nextOther = other.filter(item => !sameplace(item, label));
+    setPlaceInput(""); highlightedPlace.current = null; setPlaceListOpen(false);
+    void persistPlaces(kind === "includedLocations" ? nextTarget : nextOther, kind === "includedLocations" ? nextOther : nextTarget, entry);
+  }
+  function removePlace(label: string) {
+    if (savingLocation || savingRole || saving) return;
+    void persistPlaces(includedLocations.filter(item => item !== label), excludedLocations.filter(item => item !== label));
+  }
+  type KeywordKind = "boostKeywords" | "excludeKeywords";
+  async function persistKeywords(kind: KeywordKind, next: string[], previous: string[], restoreInput = "") {
+    if (keywordSaveInFlight.current || locationSaveInFlight.current || roleSaveInFlight.current || saving) return;
+    keywordSaveInFlight.current = true; setSavingKeywords(true); setKeywordMessage("Enregistrement…");
+    const update = kind === "boostKeywords" ? setBoostKeywords : setExcludeKeywords;
     update(next);
     try {
       const preferences = searchPreferences(profile.searchPreferences);
-      const saved = await onSave({ ...profile, searchPreferences: { ...preferences, roles, includedLocations: kind === "includedLocations" ? next : includedLocations, excludedLocations: kind === "excludedLocations" ? next : excludedLocations } });
-      if (!saved) { update(previous); if (restoreInput) (kind === "includedLocations" ? setIncludedInput : setExcludedInput)(restoreInput); setLocationMessage("Enregistrement non confirmé. Réessayez."); }
-      else setLocationMessage("Lieux enregistrés. Les offres sont reclassées.");
-    } catch { update(previous); if (restoreInput) (kind === "includedLocations" ? setIncludedInput : setExcludedInput)(restoreInput); setLocationMessage("Enregistrement non confirmé. Réessayez."); }
-    finally { locationSaveInFlight.current = false; setSavingLocation(false); }
+      const saved = await onSave({ ...profile, searchPreferences: { ...preferences, roles, includedLocations, excludedLocations, boostKeywords: kind === "boostKeywords" ? next : boostKeywords, excludeKeywords: kind === "excludeKeywords" ? next : excludeKeywords } });
+      if (saved) setKeywordMessage("Mots-clés enregistrés. Les offres sont reclassées.");
+      else { update(previous); if (restoreInput) (kind === "boostKeywords" ? setBoostInput : setExcludeInput)(restoreInput); setKeywordMessage("Enregistrement non confirmé. Réessayez."); }
+    } catch { update(previous); if (restoreInput) (kind === "boostKeywords" ? setBoostInput : setExcludeInput)(restoreInput); setKeywordMessage("Enregistrement non confirmé. Réessayez."); }
+    finally { keywordSaveInFlight.current = false; setSavingKeywords(false); }
   }
-  function addLocation(kind: "includedLocations" | "excludedLocations", selected?: string) {
-    if (savingLocation || savingRole || saving) return;
-    const entry = selected ?? (kind === "includedLocations" ? includedInput : excludedInput);
-    const current = kind === "includedLocations" ? includedLocations : excludedLocations;
-    const label = normalizeLocationRules([entry])[0];
-    if (!label) { setLocationMessage("Saisissez un pays ou une région."); return; }
-    if (current.some(item => normalizeLocationRules([item])[0] === label)) { setLocationMessage("Ce lieu est déjà dans la liste."); return; }
-    if (current.length >= 20) { setLocationMessage("Limite de 20 lieux par liste."); return; }
-    if (kind === "includedLocations") setIncludedInput(""); else setExcludedInput("");
-    void persistLocation(kind, [...current, label], current, entry);
+  function addKeyword(kind: KeywordKind) {
+    const entry = (kind === "boostKeywords" ? boostInput : excludeInput).trim().replace(/\s+/g, " ");
+    const current = kind === "boostKeywords" ? boostKeywords : excludeKeywords;
+    if (entry.length < 2 || entry.length > 40) { setKeywordMessage("Saisissez un mot-clé de 2 à 40 caractères."); return; }
+    if (current.some(word => foldKeyword(word) === foldKeyword(entry))) { setKeywordMessage("Ce mot-clé est déjà dans la liste."); return; }
+    if (current.length >= 12) { setKeywordMessage("Limite de 12 mots-clés par liste."); return; }
+    (kind === "boostKeywords" ? setBoostInput : setExcludeInput)("");
+    void persistKeywords(kind, [...current, entry], current, entry);
   }
-  function removeLocation(kind: "includedLocations" | "excludedLocations", label: string) {
-    if (savingLocation || savingRole || saving) return;
-    const current = kind === "includedLocations" ? includedLocations : excludedLocations;
-    void persistLocation(kind, current.filter(item => item !== label), current);
+  function removeKeyword(kind: KeywordKind, word: string) {
+    const current = kind === "boostKeywords" ? boostKeywords : excludeKeywords;
+    void persistKeywords(kind, current.filter(item => item !== word), current);
   }
+  const shortcutPlaces = locationRegionOptions.filter(region => !includedLocations.includes(region) && !excludedLocations.includes(region)).slice(0, 4);
 
   async function persistRoles(next: string[], previous: string[], restoreInput = "") {
     roleSaveInFlight.current = true;
@@ -109,56 +175,198 @@ export function SearchPreferencesForm({ profile, onSave }: { profile: CandidateP
     }
     void persistRoles(roles.filter(item => item !== role), roles);
   }
+  async function persistDraft() {
+    if (roleSaveInFlight.current || locationSaveInFlight.current || draftSaveInFlight.current) {
+      saveTimer.current = setTimeout(() => { saveTimer.current = null; void persistDraft(); }, 300);
+      return;
+    }
+    const current = latest.current;
+    draftSaveInFlight.current = true; setSaving(true); setSaveState("saving");
+    try {
+      const saved = await current.onSave({ ...current.profile, searchPreferences: { ...latestDraft.current, minimumMatchScore: searchPreferences(current.profile.searchPreferences).minimumMatchScore, roles: current.roles, includedLocations: current.includedLocations, excludedLocations: current.excludedLocations } });
+      setSaveState(saved ? "saved" : "error");
+    } catch { setSaveState("error"); }
+    finally { draftSaveInFlight.current = false; setSaving(false); }
+  }
+  function scheduleSave(next: SearchPreferences) {
+    latestDraft.current = next;
+    setDraft(next);
+    setSaveState("pending");
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => { saveTimer.current = null; void persistDraft(); }, 600);
+  }
+  // Leaving the form (« Terminé ») still saves a change made in the last 600 ms.
+  useEffect(() => () => { if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; void persistDraft(); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const toggle = (value: SearchPreferences["contracts"][number]) => {
-    setDraft(current => {
-      const selected = current.contracts;
-      if (selected.includes(value) && selected.length === 1) return current;
-      return { ...current, contracts: selected.includes(value) ? selected.filter(item => item !== value) : [...selected, value] };
-    });
-    setMessage("");
+    const selected = latestDraft.current.contracts;
+    if (selected.includes(value) && selected.length === 1) return;
+    scheduleSave({ ...latestDraft.current, contracts: selected.includes(value) ? selected.filter(item => item !== value) : [...selected, value] });
   };
   const amount = (key: "minimumSalary" | "minimumDailyRate", value: string) => {
-    setDraft(current => ({ ...current, [key]: Math.max(0, Math.min(1000000, Number(value) || 0)) }));
-    setMessage("");
+    scheduleSave({ ...latestDraft.current, [key]: Math.max(0, Math.min(1000000, Number(value) || 0)) });
   };
-  return <section className="search-preferences-form" aria-labelledby="search-preferences-title" data-radar-guide="search-preferences-form">
-    <header className="search-criteria-intro">
+  const statusText = { idle: "", pending: "Modification en attente d’enregistrement…", saving: "Enregistrement…", saved: "Enregistré. Les matchs utilisent vos critères.", error: "Enregistrement non confirmé." }[saveState];
+  return <section className={only ? "search-preferences-form search-preferences-form-single" : "search-preferences-form"} aria-labelledby={only ? partTitles[only] : showIntro ? "search-preferences-title" : "search-criteria-title"} data-radar-guide={only ? undefined : "search-preferences-form"}>
+    {showIntro ? <header className="search-criteria-intro">
       <h2 id="search-preferences-title" className="source-heading">Ce que je recherche</h2>
       <p>Ces critères classent vos offres dans Radar. Ils ne modifient pas les alertes créées sur les sites externes.</p>
-    </header>
-    <form className="search-criteria-form" onSubmit={async event => { event.preventDefault(); if (roleSaveInFlight.current || locationSaveInFlight.current) return; setSaving(true); setMessage(""); try { setMessage(await onSave({ ...profile, searchPreferences: { ...draft, minimumMatchScore: searchPreferences(profile.searchPreferences).minimumMatchScore, roles, includedLocations, excludedLocations } }) ? "Recherche enregistrée. Les matchs utilisent vos critères." : "Enregistrement non confirmé. Réessayez."); } finally { setSaving(false); } }}>
-      <section className="search-criteria-group" aria-labelledby="search-roles-title">
+    </header> : null}
+    <form className="search-criteria-form" onSubmit={event => { event.preventDefault(); if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; void persistDraft(); } }}>
+      {show("roles") ? <section className="search-criteria-group" aria-labelledby="search-roles-title">
         <div className="search-criteria-group-heading"><h3 id="search-roles-title">Postes visés</h3><p>Ces intitulés ont le plus de poids dans le classement des offres.</p></div>
         <label htmlFor="searched-role" className="search-field-label">Ajouter un poste</label>
         <div className="search-role-entry"><input id="searched-role" type="text" maxLength={80} value={roleInput} disabled={savingRole || saving} onChange={event => { setRoleInput(event.target.value); setRoleMessage(""); }} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addRole(); } }} placeholder="Ex. Product Owner" /><button type="button" className="secondary-button" disabled={savingRole || saving || !roleInput.trim()} onClick={addRole}>Ajouter</button></div>
         <ul className="search-role-list" aria-label="Postes enregistrés">{roles.map(role => <li key={role}>{role}<button type="button" aria-label={`Retirer ${role}`} disabled={savingRole || saving} onClick={() => removeRole(role)}>×</button></li>)}</ul>
         {roleMessage ? <p role="status" className="search-form-status">{roleMessage}</p> : null}
         <p className="search-criteria-help">Les postes s’enregistrent dès l’ajout. Vous pouvez aussi appuyer sur Entrée.</p>
-      </section>
-      <section className="search-criteria-group" aria-labelledby="search-conditions-title">
+        <SearchTracksEditor profile={profile} onSave={onSave} roles={roles} disabled={savingRole || saving} />
+      </section> : null}
+      {show("conditions") ? <section className="search-criteria-group" aria-labelledby="search-conditions-title">
         <div className="search-criteria-group-heading"><h3 id="search-conditions-title">Conditions de travail</h3><p>Choisissez les contrats et la présence que vous accepteriez.</p></div>
         <div className="search-criteria-fields">
-          <fieldset className="search-contracts"><legend className="search-field-label">Contrats</legend><div className="search-contract-options">{([["cdi", "CDI"], ["cdd", "CDD"], ["freelance", "Freelance"]] as const).map(([value, label]) => <label key={value}><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} />{label}</label>)}</div></fieldset>
-          <div className="search-preferences-presence"><ChoiceSelect label="Présence acceptable" value={draft.remote} onChange={remote => { setDraft(current => ({ ...current, remote })); setMessage(""); }} options={[{ value: "onsite", label: "Présentiel" }, { value: "hybrid", label: "Hybride" }, { value: "exceptional", label: "Présence exceptionnelle" }, { value: "full_remote", label: "Full remote" }]} disabled={saving} /></div>
+          <fieldset className="search-contracts"><legend className="search-field-label">Contrats</legend><div className="search-contract-options">{([["cdi", "CDI", ""], ["cdd", "CDD", ""], ["freelance", "Freelance", ""], ["portage", "Portage salarial", "comparé au TJM"], ["part_time", "Temps partagé", "rémunération à vérifier"]] as const).map(([value, label, hint]) => <label key={value}><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} /><span>{label}{hint ? <small>{hint}</small> : null}</span></label>)}</div></fieldset>
+          <div className="search-preferences-presence">
+            {draft.contracts.length > 1 ? <fieldset className="search-presence-rows"><legend className="search-field-label">Présence acceptable, par contrat</legend>
+              {draft.contracts.map(contract => <ChoiceSelect key={contract} label={contractLabels[contract]} value={presenceFor(contract)} onChange={remote => scheduleSave({ ...latestDraft.current, remoteByContract: { ...latestDraft.current.remoteByContract, [contract]: remote } })} options={presenceOptions} disabled={saving} />)}
+            </fieldset> : <ChoiceSelect label="Présence acceptable" value={presenceFor(draft.contracts[0])} onChange={remote => scheduleSave({ ...latestDraft.current, remote, remoteByContract: {} })} options={presenceOptions} disabled={saving} />}
+            <p className="search-criteria-help">« Présence exceptionnelle » = quelques jours par an sur site, au plus.</p>
+          </div>
         </div>
-      </section>
-      <section className="search-criteria-group" aria-labelledby="search-location-title">
+      </section> : null}
+      {show("locations") ? <section className="search-criteria-group" aria-labelledby="search-location-title">
         <div className="search-criteria-group-heading"><h3 id="search-location-title">Pays et régions des offres</h3><p>Utilisez le lieu annoncé dans l’offre, distinct des pays autorisés pour télétravailler.</p></div>
-        <div className="search-pay-grid">
-          {(["includedLocations", "excludedLocations"] as const).map(kind => { const include = kind === "includedLocations"; const value = include ? includedInput : excludedInput; const setValue = include ? setIncludedInput : setExcludedInput; const items = include ? includedLocations : excludedLocations; const disabled = savingLocation || savingRole || saving; return <div key={kind} className="search-pay-field"><label className="search-pay-label" htmlFor={kind}>{include ? "Inclure" : "Exclure"}</label><div className="search-role-entry search-location-entry"><Combobox items={locationOptions} value={null} inputValue={value} onInputValueChange={next => { setValue(next); setLocationMessage(""); }} onValueChange={selected => { if (selected) addLocation(kind, selected); }} disabled={disabled}><ComboboxInput id={kind} className="search-location-combobox" placeholder={include ? "Ex. Europe" : "Ex. Roumanie"} aria-describedby="search-location-help" maxLength={80} disabled={disabled} /><ComboboxContent className="search-location-menu"><ComboboxEmpty>Aucun pays ni région trouvé. Vous pouvez ajouter le lieu saisi.</ComboboxEmpty><ComboboxList>{(option: string) => <ComboboxItem key={option} value={option}>{option}</ComboboxItem>}</ComboboxList></ComboboxContent></Combobox><button type="button" className="secondary-button" onClick={() => addLocation(kind)} disabled={disabled || !value.trim()}>Ajouter</button></div><ul className="search-role-list" aria-label={include ? "Lieux inclus" : "Lieux exclus"}>{items.map(label => <li key={label}>{label}<button type="button" aria-label={`Retirer ${label} des lieux ${include ? "inclus" : "exclus"}`} disabled={disabled} onClick={() => removeLocation(kind, label)}>×</button></li>)}</ul></div>; })}
+        <label className="search-pay-label" htmlFor="includedLocations">Chercher un pays ou une région</label>
+        <div className="search-role-entry search-location-entry search-place-entry">
+          <Combobox items={locationOptions} value={null} inputValue={placeInput} open={placeListOpen} onOpenChange={setPlaceListOpen} onInputValueChange={next => { setPlaceInput(next); setPlaceListOpen(next.trim().length > 0); setLocationMessage(""); }} onItemHighlighted={value => { highlightedPlace.current = typeof value === "string" ? value : null; }} onValueChange={selected => { if (selected) addPlace("includedLocations", selected); }} disabled={savingLocation || savingRole || saving}>
+            <ComboboxInput id="includedLocations" className="search-location-combobox" placeholder="Ex. Europe, Roumanie…" aria-describedby="search-location-help" maxLength={80} disabled={savingLocation || savingRole || saving} onKeyDown={event => { if (event.key !== "Enter") return; event.preventDefault(); addPlace(event.shiftKey ? "excludedLocations" : "includedLocations"); }} />
+            <ComboboxContent className="search-location-menu"><ComboboxEmpty>Aucun pays ni région trouvé. Vous pouvez ajouter le lieu saisi.</ComboboxEmpty><ComboboxList>{(option: string) => <ComboboxItem key={option} value={option}>{option}</ComboboxItem>}</ComboboxList></ComboboxContent>
+          </Combobox>
+          <button type="button" className="secondary-button" onClick={() => addPlace("includedLocations")} disabled={savingLocation || savingRole || saving || !placeInput.trim()}>Inclure</button>
+          <button type="button" className="secondary-button search-place-exclude" onClick={() => addPlace("excludedLocations")} disabled={savingLocation || savingRole || saving || !placeInput.trim()}>Exclure</button>
         </div>
-        <p id="search-location-help" className="search-criteria-help">Choisissez une suggestion, ou écrivez un autre lieu et cliquez sur Ajouter. L’enregistrement est immédiat. Les exclusions priment : « Europe » incluse et « Roumanie » exclue signifie Europe sauf Roumanie. Un lieu trop vague reste à vérifier.</p>
+        {shortcutPlaces.length ? <div className="search-place-shortcuts"><span>Raccourcis :</span>{shortcutPlaces.map(region => <button type="button" key={region} disabled={savingLocation || savingRole || saving} onClick={() => addPlace("includedLocations", region)}>+ {region}</button>)}</div> : null}
+        {includedLocations.length || excludedLocations.length ? <ul className="search-place-list" aria-label="Lieux choisis">
+          {[...includedLocations.map(label => [label, "includedLocations"] as const), ...excludedLocations.map(label => [label, "excludedLocations"] as const)].map(([label, kind]) => <li key={kind + label} data-kind={kind}>
+            <span className="search-place-name">{label}</span>
+            <span className="search-place-toggle" role="group" aria-label={`${label} : inclus ou exclu`}>
+              <button type="button" aria-pressed={kind === "includedLocations"} disabled={savingLocation || savingRole || saving} onClick={() => kind === "includedLocations" ? undefined : addPlace("includedLocations", label)}>Inclus</button>
+              <button type="button" aria-pressed={kind === "excludedLocations"} disabled={savingLocation || savingRole || saving} onClick={() => kind === "excludedLocations" ? undefined : addPlace("excludedLocations", label)}>Exclu</button>
+            </span>
+            <button type="button" className="search-place-remove" aria-label={`Retirer ${label}`} disabled={savingLocation || savingRole || saving} onClick={() => removePlace(label)}>×</button>
+          </li>)}
+        </ul> : null}
+        <p id="search-location-help" className="search-criteria-help">Tapez un lieu, puis Inclure (Entrée) ou Exclure (Maj+Entrée). L’enregistrement est immédiat. Les exclusions priment : « Europe » incluse et « Roumanie » exclue signifie Europe sauf Roumanie. Un lieu trop vague reste à vérifier.</p>
         <p role="status" className="search-form-status">{locationMessage}</p>
-      </section>
-      <section className="search-criteria-group" aria-labelledby="search-pay-title">
+      </section> : null}
+      {show("pay") ? <section className="search-criteria-group" aria-labelledby="search-pay-title">
         <div className="search-criteria-group-heading"><h3 id="search-pay-title">Rémunération souhaitée</h3><p>Renseignez le seuil correspondant à chaque type de contrat recherché.</p></div>
         <div className="search-pay-grid">
-          <label className="search-pay-field"><span className="search-pay-label">Salaire annuel minimum<span className="sr-only">, en euros bruts par an</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="1000" placeholder="Ex. 55000" value={draft.minimumSalary} onChange={event => amount("minimumSalary", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ brut/an</span></span></label>
-          <label className="search-pay-field"><span className="search-pay-label">TJM minimum<span className="sr-only">, en euros hors taxes par jour</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></span></label>
+          <label className="search-pay-field"><span className="search-pay-label">Salaire annuel minimum<span className="sr-only">, en euros bruts par an</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="1000" placeholder="Ex. 55000" value={draft.minimumSalary || ""} onChange={event => amount("minimumSalary", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ brut/an</span></span></label>
+          <label className="search-pay-field"><span className="search-pay-label">TJM minimum<span className="sr-only">, en euros hors taxes par jour</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate || ""} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></span></label>
         </div>
-        <p className="search-criteria-help">Une offre un peu sous votre seuil reste visible comme exception. Si le montant manque, il est signalé « à vérifier ».</p>
-      </section>
-      <footer className="search-criteria-actions"><span role="status" className="search-form-status">{message}</span><button type="submit" className="radar-add-button" disabled={saving || savingRole || savingLocation}>{saving ? "Enregistrement…" : "Enregistrer"}</button></footer>
+        <div className="search-pay-tolerance">
+          <div className="search-pay-tolerance-heading"><span id="search-pay-tolerance-label" className="search-pay-label">Tolérance sous le minimum</span><strong aria-hidden="true">{tolerance} %</strong></div>
+          <Slider min={0} max={20} step={1} value={[tolerance]} onValueChange={([value]) => scheduleSave({ ...latestDraft.current, payTolerancePercent: value })} thumbLabel="Tolérance sous le minimum" thumbValueText={`${tolerance} %`} className="search-pay-tolerance-slider" />
+        </div>
+        <p className="search-criteria-help">{tolerance
+          ? `Les offres jusqu’à ${tolerance} % sous votre minimum restent visibles avec la mention « Sous votre minimum » : dès ${euro(payFloor(draft.minimumSalary, tolerance))} brut/an ou ${euro(payFloor(draft.minimumDailyRate, tolerance))} HT/jour. En dessous, elles sont masquées dans « À examiner ».`
+          : "Toute rémunération connue sous votre minimum est masquée dans « À examiner », même si le contrat est à confirmer."} Si le montant manque, il reste « à vérifier ».</p>
+      </section> : null}
+      {show("keywords") ? <section className="search-criteria-group" aria-labelledby="search-keywords-title">
+        <div className="search-criteria-group-heading"><h3 id="search-keywords-title">L’annonce</h3><p>Des mots qui font remonter une offre, et des mots qui l’écartent.</p></div>
+        {([["boostKeywords", "Mettre en avant si l’annonce parle de", "Ex. fintech"], ["excludeKeywords", "Écarter si l’annonce contient", "Ex. stage"]] as const).map(([kind, label, placeholder]) => {
+          const items = kind === "boostKeywords" ? boostKeywords : excludeKeywords;
+          const value = kind === "boostKeywords" ? boostInput : excludeInput;
+          const setValue = kind === "boostKeywords" ? setBoostInput : setExcludeInput;
+          const disabled = savingKeywords || savingRole || savingLocation || saving;
+          return <div key={kind} className="search-keyword-field">
+            <label className="search-field-label" htmlFor={kind}>{label}</label>
+            <div className="search-role-entry">
+              <input id={kind} type="text" maxLength={40} value={value} disabled={disabled} placeholder={placeholder}
+                onChange={event => { setValue(event.target.value); setKeywordMessage(""); }}
+                onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addKeyword(kind); } }} />
+              <button type="button" className="secondary-button" disabled={disabled || !value.trim()} onClick={() => addKeyword(kind)}>Ajouter</button>
+            </div>
+            <ul className="search-role-list" data-tone={kind === "excludeKeywords" ? "exclude" : undefined} aria-label={label}>
+              {items.map(word => <li key={word}>{word}<button type="button" aria-label={`Retirer ${word}`} disabled={disabled} onClick={() => removeKeyword(kind, word)}>×</button></li>)}
+            </ul>
+          </div>;
+        })}
+        <p className="search-criteria-help">Les mots mis en avant remontent l’offre dans « À examiner ». Les mots écartés la masquent. La casse et les accents sont ignorés.</p>
+        <p role="status" className="search-form-status">{keywordMessage}</p>
+      </section> : null}
+      {show("conditions") || show("pay") ? <footer className="search-criteria-actions"><span role="status" className="search-form-status" data-state={saveState}>{statusText}</span>{saveState === "error" ? <button type="button" className="secondary-button" disabled={saving} onClick={() => void persistDraft()}>Réessayer</button> : null}</footer> : null}
     </form>
   </section>;
+}
+
+const trackKindOptions = trackKinds.map(kind => ({ value: kind, label: trackKindLabels[kind] }));
+
+/**
+ * Search tracks of this account: the terms Radar looks for on the sources, beyond the roles.
+ * Nothing is hard-coded here; an account without tracks starts from its own roles.
+ */
+function SearchTracksEditor({ profile, onSave, roles, disabled }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; roles: string[]; disabled: boolean }) {
+  const preferences = searchPreferences(profile.searchPreferences);
+  const tracks = preferences.searchTracks ?? [];
+  const shown = tracks.length ? tracks : searchTracksFor({ roles, searchTracks: undefined });
+  const [term, setTerm] = useState<Record<string, string>>({});
+  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function persist(next: SearchTrack[], note: string) {
+    setSaving(true);
+    setMessage("Enregistrement…");
+    try {
+      const saved = await onSave({ ...profile, searchPreferences: { ...preferences, roles, searchTracks: next } });
+      setMessage(saved ? note : "Enregistrement non confirmé. Réessayez.");
+    } catch { setMessage("Enregistrement non confirmé. Réessayez."); }
+    finally { setSaving(false); }
+  }
+  const update = (id: string, change: (track: SearchTrack) => SearchTrack) => shown.map(track => track.id === id ? change(track) : track);
+
+  function addTerm(track: SearchTrack) {
+    const entered = (term[track.id] ?? "").trim().replace(/\s+/g, " ");
+    if (entered.length < 2 || entered.length > 80) { setMessage("Saisissez un terme de 2 à 80 caractères."); return; }
+    if (track.terms.some(existing => foldTerm(existing) === foldTerm(entered))) { setMessage("Ce terme est déjà dans la piste."); return; }
+    if (track.terms.length >= maxTermsPerTrack) { setMessage(`Une piste accepte ${maxTermsPerTrack} termes au plus.`); return; }
+    setTerm({ ...term, [track.id]: "" });
+    void persist(update(track.id, item => ({ ...item, terms: [...item.terms, entered] })), `« ${entered} » ajouté à « ${track.label} ».`);
+  }
+  function removeTerm(track: SearchTrack, value: string) {
+    if (track.terms.length === 1) { setMessage("Gardez au moins un terme, ou retirez la piste."); return; }
+    void persist(update(track.id, item => ({ ...item, terms: item.terms.filter(existing => existing !== value) })), "Terme retiré.");
+  }
+  function addTrack() {
+    if (shown.length >= maxTracks) { setMessage(`Vous pouvez garder ${maxTracks} pistes au plus.`); return; }
+    const id = `piste-${shown.length + 1}`;
+    void persist([...shown, { id, label: `Piste ${shown.length + 1}`, kind: "broad", terms: [roles[0] ?? "Product"] }], "Piste ajoutée. Renommez-la et complétez ses termes.");
+  }
+
+  return <div className="search-tracks">
+    <div className="search-tracks-head">
+      <h4>Pistes de recherche</h4>
+      <p className="search-criteria-help">Radar interroge les sources avec ces termes. Sans piste, il utilise vos postes.</p>
+    </div>
+    <ul>{shown.map(track => <li key={track.id} className="search-track">
+      <div className="search-track-head">
+        <input id={`track-label-${track.id}`} type="text" maxLength={60} defaultValue={track.label} aria-label={`Nom de la piste ${track.label}`} disabled={disabled || saving}
+          onBlur={event => { const label = event.target.value.trim().replace(/\s+/g, " "); if (label && label !== track.label) void persist(update(track.id, item => ({ ...item, label })), "Nom de la piste enregistré."); }} />
+        <ChoiceSelect label="Type" value={track.kind} options={trackKindOptions} disabled={disabled || saving}
+          onChange={kind => void persist(update(track.id, item => ({ ...item, kind: kind as SearchTrack["kind"] })), "Type de piste enregistré.")} />
+        {shown.length > 1 ? <WorkspaceButton variant="quiet" disabled={disabled || saving} onClick={() => void persist(shown.filter(item => item.id !== track.id), `« ${track.label} » retirée.`)}>Retirer la piste</WorkspaceButton> : null}
+      </div>
+      <ul className="search-role-list" aria-label={`Termes de ${track.label}`}>{track.terms.map(value => <li key={value}>{value}
+        <button type="button" aria-label={`Retirer ${value}`} disabled={disabled || saving} onClick={() => removeTerm(track, value)}>×</button>
+      </li>)}</ul>
+      <div className="search-role-entry">
+        <input type="text" maxLength={80} aria-label={`Ajouter un terme à ${track.label}`} placeholder="Ex. Chef de produit" value={term[track.id] ?? ""} disabled={disabled || saving}
+          onChange={event => { setTerm({ ...term, [track.id]: event.target.value }); setMessage(""); }}
+          onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addTerm(track); } }} />
+        <button type="button" className="secondary-button" disabled={disabled || saving || !(term[track.id] ?? "").trim()} onClick={() => addTerm(track)}>Ajouter</button>
+      </div>
+    </li>)}</ul>
+    <WorkspaceButton variant="secondary" disabled={disabled || saving} onClick={addTrack}>Ajouter une piste</WorkspaceButton>
+    {message ? <p role="status" className="search-form-status">{message}</p> : null}
+  </div>;
 }

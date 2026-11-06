@@ -20,6 +20,26 @@ export async function saveSourceSetting(userId: string, source: string, data: Re
   await db.insert(sourceSettings).values(record).onConflictDoUpdate({ target: [sourceSettings.userId, sourceSettings.source], set: { data: record.data, updatedAt: record.updatedAt } });
   return { source, ...merged, updatedAt: record.updatedAt };
 }
+/** Marks a source the person went through, so its visit rhythm restarts. */
+export async function recordSourceVisit(userId: string, value: unknown) {
+  const input = z.object({
+    source: z.string().refine(name => sourceCatalog.some(source => source.name === name)),
+    visited: z.literal(true),
+  }).strict().parse(value);
+  return saveSourceSetting(userId, input.source, { lastVisitedAt: new Date().toISOString() });
+}
+
+/** How often this source should be gone through, and whether Aujourd'hui reminds about it. */
+export async function saveSourceVisitRhythm(userId: string, value: unknown) {
+  const input = z.object({
+    source: z.string().refine(name => sourceCatalog.some(source => source.name === name)),
+    rhythm: z.literal(true),
+    visitEveryDays: z.union([z.literal(1), z.literal(2), z.literal(7)]),
+    remindInToday: z.boolean(),
+  }).strict().parse(value);
+  return saveSourceSetting(userId, input.source, { visitEveryDays: input.visitEveryDays, remindInToday: input.remindInToday });
+}
+
 export async function userSourceSetting(userId: string, value: unknown) {
   const input = z.object({ source: z.string().refine(name => sourceCatalog.some(source => source.name === name)), state: z.enum(["not_configured", "action_needed", "configured", "paused"]), notes: z.string().max(1500).default(""), linkUrl: z.string().trim().max(2048).optional(), selected: z.boolean().optional() }).strict().parse(value);
   if (input.linkUrl && !validSearchLink(input.linkUrl)) throw new Error("Lien invalide");
@@ -91,8 +111,8 @@ export async function syncJobgetherFeed(userId: string) {
         const url = new URL("https://jobgether.com/api/v1/jobs");
         url.searchParams.set("keyword", role); url.searchParams.set("sort", "date");
         url.searchParams.set("limit", "25"); url.searchParams.set("page", String(page));
-        if (search.contracts.every(contract => contract !== "cdd"))
-          url.searchParams.set("contractType", search.contracts.map(contract => contract === "freelance" ? "freelance" : "full-time").join(","));
+        if (search.contracts.every(contract => contract !== "cdd" && contract !== "part_time"))
+          url.searchParams.set("contractType", [...new Set(search.contracts.map(contract => contract === "freelance" || contract === "portage" ? "freelance" : "full-time"))].join(","));
         if (search.remote === "full_remote") url.searchParams.set("remoteType", "full-remote");
         else url.searchParams.set("includeHybrid", "true");
         const response = await fetch(url, { signal: AbortSignal.timeout(15000), headers: { Accept: "application/json" } });

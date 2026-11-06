@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, ArrowUpRight, CalendarDays, Check, ClipboardCheck, Columns3, List } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CalendarDays, Check, ClipboardCheck, Columns3, Compass, List } from "lucide-react";
 import { usePersonalBoard } from "@/components/use-personal-board";
 import { ApplicationKanban } from "@/components/application-kanban";
 import { RadarMark } from "@/components/radar-mark";
@@ -8,14 +8,15 @@ import { WorkspaceButton, WorkspacePanelHeader } from "@/components/workspace-fo
 import { selectTriageActions } from "@/lib/triage";
 import { hasApplication, inOpportunityView } from "@/lib/opportunity-views";
 import { activeStatuses, applicationAge, formatDate, reviewDue, terminalStatuses } from "@/lib/application-workflow";
-import { upcomingInterviews } from "@/lib/workspace-agenda";
+import { sourcesToVisit, upcomingInterviews } from "@/lib/workspace-agenda";
+import { sourceCatalog } from "@/lib/source-catalog";
 import { StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
 import { PageHeader, WorkspaceState } from "@/components/workspace-ui";
 import type { JobRecord, JobStatus } from "@/lib/types";
 
 // Recalculate deadlines on entry and explicit data changes; keep the page stable while reading.
 function useNow(jobs: JobRecord[]) { const [now,setNow]=useState(()=>Date.now()); useEffect(()=>setNow(Date.now()),[jobs]);return now; }
-export function TodayWorkspace({ jobs, onTriage, onSelected, onAdd, onOpen }: {jobs:JobRecord[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void}) {
+export function TodayWorkspace({ jobs, sources, onTriage, onSelected, onAdd, onOpen, onOpenSource }: {jobs:JobRecord[];sources?:{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onOpenSource?:(name:string)=>void}) {
   const now=useNow(jobs);
   const count=jobs.filter(job=>inOpportunityView(job,"to_review")).length;
   const selected=jobs.filter(job=>inOpportunityView(job,"selected")).length;
@@ -23,6 +24,8 @@ export function TodayWorkspace({ jobs, onTriage, onSelected, onAdd, onOpen }: {j
   const actions=selectTriageActions(jobs,now,4).filter(action=>action.kind!=="offer_check");
   const urgent=actions.find(action=>action.kind==="interview_review"||action.kind==="interview_date");
   const upcoming=upcomingInterviews(jobs,now).slice(0,3);
+  const modeOf=(name:string)=>sourceCatalog.find(source=>source.name===name)?.mode;
+  const toVisit=onOpenSource?sourcesToVisit(sources??[],modeOf,new Date(now)).slice(0,3):[];
   const openAction=(action:typeof actions[number])=>onOpen(action.job,action.kind.startsWith("interview")?"interviews":hasApplication(action.job)?"application":"brief");
   return <div className="today-layout">
     <div className="today-main">
@@ -36,6 +39,9 @@ export function TodayWorkspace({ jobs, onTriage, onSelected, onAdd, onOpen }: {j
         {actions.filter(action=>action!==urgent).slice(0,3).map(action=><button key={action.job.id} type="button" className="workspace-task" onClick={()=>openAction(action)}><span className="workspace-task-icon"><ClipboardCheck size={18} aria-hidden /></span><span><strong>{action.title}</strong><small>{action.detail}</small></span><ArrowUpRight size={17} aria-hidden /></button>)}
         {!actions.filter(action=>action!==urgent).length?<p className="workspace-caption">Aucune action supplémentaire en attente.</p>:null}
       </section>
+      {toVisit.length?<section className="today-sources" aria-labelledby="today-sources-title"><WorkspacePanelHeader id="today-sources-title" title="Sources à consulter"/>
+        {toVisit.map(entry=><button key={entry.source} type="button" className="workspace-task" onClick={()=>onOpenSource?.(entry.source)}><span className="workspace-task-icon"><Compass size={18} aria-hidden /></span><span><strong>{entry.source} à visiter</strong><small>{entry.detail}</small></span><ArrowUpRight size={17} aria-hidden /></button>)}
+      </section>:null}
       <div className="today-summary" role="group" aria-label="Résumé de votre recherche"><button type="button" onClick={onTriage}><strong>{count}</strong> à examiner</button><button type="button" onClick={onSelected}><strong>{selected}</strong> dans ma sélection</button><span><strong>{active}</strong> candidature{active>1?"s":""} active{active>1?"s":""}</span></div>
     </div>
     <aside className="today-agenda" aria-labelledby="today-agenda-title"><WorkspacePanelHeader id="today-agenda-title" title="Prochains entretiens" actions={<CalendarDays size={18} aria-hidden/>}/>
