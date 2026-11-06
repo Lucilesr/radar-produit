@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Configuration des sources
+
+Suppression du bouton redondant « Modifier mon suivi ». Le chevron Signal reste disponible dans les cartes héritées ; la liste actuelle utilise le panneau de détail.
+
 ## 6 novembre 2026 — « Aujourd'hui » rappelle les sources à consulter
 
 - Quand une source à consulter arrive à échéance, elle apparaît dans « Aujourd'hui » : « Welcome to the Jungle à visiter · vue il y a 3 jours ». Un clic ouvre son panneau dans « Ma recherche ».
