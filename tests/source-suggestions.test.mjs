@@ -15,7 +15,7 @@ const locations = moduleUrl("location-criteria", { "./countries": countries, "./
 const tracks = moduleUrl("search-tracks");
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations, "./search-tracks": tracks });
 const { searchPreferences } = await import(preferences);
-const { matchesSourceQuery, rankSources, sourceTags } = await import(moduleUrl("source-suggestions", { "./source-status": moduleUrl("source-status") }));
+const { suggestedSources, matchesSourceQuery, rankSources, sourceTags } = await import(moduleUrl("source-suggestions", { "./source-status": moduleUrl("source-status") }));
 
 // Fictional catalogue entries.
 const sources = [
@@ -51,4 +51,15 @@ test("la recherche porte sur le nom, le groupe et les étiquettes", () => {
   assert.ok(matchesSourceQuery(sources[2], "alerte") === false);
   assert.ok(matchesSourceQuery(sources[0], "Alerte email"));
   assert.ok(matchesSourceQuery(sources[0], "  "));
+});
+
+test("les suggestions excluent les sources suivies et volontaires, avec quatre propositions au plus",()=>{
+ const catalog=[...sources,...Array.from({length:5},(_,index)=>({...sources[2],name:`Source ${index}`}))];
+ const prefs=searchPreferences({contracts:["freelance"],remote:"full_remote"});
+ const followed=["Gamma","Source 0"];
+ const expected=rankSources(catalog.filter(source=>source.mode!=="manual"&&!followed.includes(source.name)),prefs).slice(0,4);
+ const result=suggestedSources(catalog,prefs,followed);
+ assert.deepEqual(result,expected);assert.equal(result.length,4);
+ assert.deepEqual(suggestedSources(catalog,prefs,catalog.map(source=>source.name)),[]);
+ assert.deepEqual(suggestedSources([],prefs,[]),[]);
 });

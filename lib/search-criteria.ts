@@ -123,3 +123,22 @@ export function missingCriteria(preferences: SearchPreferences): MissingCriterio
     ...((preferences.searchTracks ?? []).length ? [] : [{ id: "searchTracks" as const, label: "Pistes de recherche", help: "Grouper les intitulés cherchés sur les sources.", target: "roles" as const }]),
   ];
 }
+
+/** IDs used by the tags: record successful changes only, including criteria removed from view. */
+export function changedCriteriaIds(before: SearchPreferences, after: SearchPreferences): CriteriaRow["id"][] {
+  const fields: [CriteriaRow["id"], unknown, unknown][] = [
+    ["roles", before.roles, after.roles],
+    ["searchTracks", before.searchTracks ?? [], after.searchTracks ?? []],
+    ["contracts", before.contracts, after.contracts],
+    ["remote", before.contracts.map(contract => [contract, remoteForContract(before, contract)]), before.contracts.map(contract => [contract, remoteForContract(after, contract)])],
+    ["salary", before.minimumSalary, after.minimumSalary],
+    ["dailyRate", before.minimumDailyRate, after.minimumDailyRate],
+    ["payTolerance", before.payTolerancePercent ?? 0, after.payTolerancePercent ?? 0],
+    ["matchScore", before.minimumMatchScore, after.minimumMatchScore],
+    ["includedLocations", before.includedLocations ?? [], after.includedLocations ?? []],
+    ["excludedLocations", before.excludedLocations ?? [], after.excludedLocations ?? []],
+    ["boostKeywords", before.boostKeywords ?? [], after.boostKeywords ?? []],
+    ["excludeKeywords", before.excludeKeywords ?? [], after.excludeKeywords ?? []],
+  ];
+  return fields.filter(([, previous, next]) => JSON.stringify(previous) !== JSON.stringify(next)).map(([id]) => id);
+}

@@ -8,7 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { WorkspaceButton } from "@/components/workspace-form";
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
 import { countToReview, describeCriteriaChanges, impactMessage } from "@/lib/criteria-impact";
-import { criteriaGroups, criteriaTokens, missingCriteria, type CriteriaTarget, type MissingCriterion } from "@/lib/search-criteria";
+import { changedCriteriaIds, criteriaGroups, criteriaTokens, missingCriteria, type CriteriaTarget, type MissingCriterion } from "@/lib/search-criteria";
 import { searchPreferences } from "@/lib/search-preferences";
 import type { CandidateProfile, JobRecord } from "@/lib/types";
 
@@ -39,7 +39,7 @@ function storeView(view: View) {
 }
 
 /** Criteria read at a glance, expanded on demand, and edited with the existing form. */
-export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: { profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void }) {
+export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, onShowOffers, active = true }: { profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void; onShowOffers:()=>void; active?:boolean }) {
   // A first visit keeps the form open so the onboarding step can save the first criteria.
   const firstSetup = !profile.searchPreferences;
   const [resting, setResting] = useState(readView);
@@ -51,6 +51,28 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
   const [saveStatus,setSaveStatus]=useState<CriteriaSaveStatus>({state:"idle"});
   const reportStatus=useCallback((status:CriteriaSaveStatus)=>setSaveStatus(status),[]);
   const notify = useWorkspaceFeedback();
+  const [modified,setModified]=useState<Set<string>>(()=>new Set());
+  const [justSaved,setJustSaved]=useState(false);
+  const recentTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+  useEffect(()=>{
+    setModified(new Set());setJustSaved(false);
+    if(recentTimer.current)clearTimeout(recentTimer.current);
+    return()=>{if(recentTimer.current)clearTimeout(recentTimer.current);};
+  },[active]);
+  function recordChanges(before:ReturnType<typeof searchPreferences>,after:ReturnType<typeof searchPreferences>){
+    const ids=changedCriteriaIds(before,after);
+    if(!ids.length)return;
+    setModified(current=>new Set([...current,...ids]));setJustSaved(true);
+    if(recentTimer.current)clearTimeout(recentTimer.current);
+    recentTimer.current=setTimeout(()=>setJustSaved(false),7000);
+  }
+  const previousSaved=useRef(profile.searchPreferences);
+  const wasActive=useRef(active);
+  // Also cover changes made in a source's detail (Jobgether) and one-step undo.
+  useEffect(()=>{
+    if(active&&wasActive.current)recordChanges(searchPreferences(previousSaved.current),preferences);
+    previousSaved.current=profile.searchPreferences;wasActive.current=active;
+  },[profile.searchPreferences,active]); // eslint-disable-line react-hooks/exhaustive-deps
   // Remounts the form after an undo so its fields show the restored values.
   const [formRevision, setFormRevision] = useState(0);
   const [openToken, setOpenToken] = useState<string | null>(null);
@@ -86,6 +108,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
     if (changes.length) notify({
       message: impactMessage(changes, countToReview(jobs, before), countToReview(jobs, after)),
       action: previous.searchPreferences ? { label: "Annuler", onClick: () => void undo(previous) } : undefined,
+      secondaryAction:{label:"Voir les offres",onClick:onShowOffers},
     });
     return saved;
   }
@@ -121,7 +144,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
   return <section className="search-criteria-panel" aria-labelledby="search-criteria-title">
     <header className="search-criteria-panel-header">
       <div>
-        <h2 id="search-criteria-title" className="source-heading">Ce que je recherche</h2>
+        <div className="search-criteria-title-line"><h2 id="search-criteria-title" className="source-heading">Critères</h2><span className="signal-help" role="status">{justSaved?"Enregistré à l’instant":"Enregistrés automatiquement"}</span></div>
         <p>Ces critères classent vos offres dans Radar. Ils ne modifient pas les alertes créées sur les sites externes.</p>
       </div>
       <div className="search-criteria-panel-actions">
@@ -138,8 +161,8 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
 
     {view === "summary" ? <ul className="search-criteria-tokens" aria-label="Critères enregistrés">
       {criteriaTokens(preferences).map(token => {
-        const label = `${token.label} : ${token.fullValue}. Modifier`;
-        const content = <><span>{token.label}</span><strong>{token.value}</strong></>;
+        const label = `${token.label} : ${token.fullValue}. Modifier${modified.has(token.id)?". Modifié lors de cette visite":""}`;
+        const content = <><span>{token.label}</span><strong>{token.value}</strong>{modified.has(token.id)?<span className="search-criteria-changed-dot" aria-hidden="true"/>:null}</>;
         if (token.target === "jobgether") return <li key={token.key}><button type="button" className="search-criteria-token" data-tone={token.tone} title={token.fullValue} aria-label={label} onClick={onOpenJobgether}>{content}</button></li>;
         if (mobile) return <li key={token.key}><button type="button" ref={node => { if (node) tokenButtons.current.set(token.key, node); }} className="search-criteria-token" data-tone={token.tone} data-state={openToken === token.key ? "open" : "closed"} title={token.fullValue} aria-label={label} aria-expanded={openToken === token.key} aria-controls="search-criteria-inline" onClick={() => setOpenToken(openToken === token.key ? null : token.key)}>{content}</button></li>;
         return <li key={token.key}>
@@ -202,6 +225,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether }: 
             <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={() => setEditingRow(null)}>Terminé</WorkspaceButton></div>
           </dd> : null}
         </div>)}</dl>
+        {group.id==="pay"?<p className="search-criteria-salary-note signal-help">Sans salaire affiché : gardées, à vérifier</p>:null}
       </section>)}
     </div> : null}
 

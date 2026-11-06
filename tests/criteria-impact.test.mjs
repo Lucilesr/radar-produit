@@ -20,7 +20,7 @@ const matching = moduleUrl("matching", { "./work-arrangement": arrangement, "./a
 const views = moduleUrl("opportunity-views");
 const criteria = moduleUrl("search-criteria", { "./search-preferences": preferences, "./search-tracks": tracks });
 const { searchPreferences } = await import(preferences);
-const { countToReview, describeCriteriaChanges, impactMessage } = await import(moduleUrl("criteria-impact", { "./matching": matching, "./opportunity-views": views, "./search-criteria": criteria }));
+const { countToReview, describeCriteriaChanges, impactMessage } = await import(moduleUrl("criteria-impact", { "./search-preferences": preferences, "./matching": matching, "./opportunity-views": views, "./search-criteria": criteria }));
 const nbsp = text => text.replace(/[  ]/g, " ");
 
 // Fictional offers only.
@@ -52,6 +52,7 @@ test("chaque changement de critère est décrit en clair", () => {
     "Contrat ajouté : Freelance",
     "Lieu exclu : Roumanie",
     "Présence Hybride → Full remote",
+    "Pistes de recherche mises à jour",
     "TJM 500 € → 450 €/jour",
   ]);
   assert.deepEqual(describeCriteriaChanges(before, before), []);
@@ -67,4 +68,10 @@ test("un mot-clé écarté retire l'offre de « À examiner »", () => {
   const offers = [offer("k", { title: "Product Owner — stage", dailyRate: 600 })];
   assert.equal(countToReview(offers, searchPreferences({ contracts: ["freelance"], minimumDailyRate: 500 })), 1);
   assert.equal(countToReview(offers, searchPreferences({ contracts: ["freelance"], minimumDailyRate: 500, excludeKeywords: ["stage"] })), 0);
+});
+
+test("la confirmation couvre aussi la présence par contrat et les pistes",()=>{
+ const before=searchPreferences({remoteByContract:{cdi:"hybrid"},searchTracks:[]});
+ const after={...before,remoteByContract:{cdi:"full_remote"},searchTracks:[{id:"data",label:"Data",kind:"core",terms:["Data Analyst"]}]};
+ assert.deepEqual(describeCriteriaChanges(before,after),["Présence CDI Hybride → Full remote","Pistes de recherche mises à jour"]);
 });

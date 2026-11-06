@@ -15,6 +15,9 @@ import { SourceCard, type SourceSetting } from "@/components/source-card";
 import { SourceList } from "@/components/source-list";
 import { SourceDetail } from "@/components/source-detail";
 import { SourceAddSheet, type AddFilter } from "@/components/source-add-sheet";
+import { sourceStatus, sourceSummary } from "@/lib/source-status";
+import { suggestedSources } from "@/lib/source-suggestions";
+import { searchPreferences } from "@/lib/search-preferences";
 import { sourceCatalog } from "@/lib/source-catalog";
 import { validSearchLink } from "@/lib/web-discovery";
 import type { JobRecord } from "@/lib/types";
@@ -28,7 +31,7 @@ const initialAlertSources = new Set(["Collective", "Apec", "Free-Work", "We Work
 const initialJobboardSources = new Set(["LinkedIn Jobs", "Welcome to the Jungle", "Wellfound", "Himalayas"]);
 const allInitialSources = new Set([...initialAlertSources, ...initialJobboardSources]);
 
-export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true,headerTarget}:{jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSynced:()=>Promise<boolean>;onAddOffer?:(url:string)=>void;active?:boolean;headerTarget?:HTMLElement|null}) {
+export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,onShowOffers,active=true,headerTarget}:{jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSynced:()=>Promise<boolean>;onAddOffer?:(url:string)=>void;onShowOffers:()=>void;active?:boolean;headerTarget?:HTMLElement|null}) {
   const demo=useDemoMode();
   const notify=useWorkspaceFeedback();
   const [settings,setSettings]=useState<SourceSetting[]|null>(null);
@@ -59,6 +62,13 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
   const [operation,setOperation]=useState<"sync"|null>(null);
   const [syncError,setSyncError]=useState("");
   const [addingSource,setAddingSource]=useState<string|null>(null),[addSourceError,setAddSourceError]=useState("");
+  const suggestionTrigger=useRef<HTMLElement|null>(null);
+  useEffect(()=>{
+    if(addingSource!==null||!suggestionTrigger.current)return;
+    const trigger=suggestionTrigger.current;suggestionTrigger.current=null;
+    const target=trigger.isConnected?trigger:(document.querySelector<HTMLElement>(".source-suggestions button:not(:disabled)")??document.querySelector<HTMLElement>("#source-panel-channels .signal-panel-actions button"));
+    target?.focus();
+  },[addingSource,settings]);
   const [detailSource,setDetailSource]=useState<typeof sourceCatalog[number]|null>(null);
   const [addFilter,setAddFilter]=useState<AddFilter|null>(null);
   const [removingSource,setRemovingSource]=useState<typeof sourceCatalog[number]|null>(null);
@@ -120,6 +130,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
   const jobboardCatalog=sourceCatalog.filter(source=>source.mode==="web"||source.mode==="research");
   const sourceVisible=(name:string,defaults:Set<string>)=>isSourceVisible(name,settings??[],defaults);
   async function addSource(name:string){
+    if(addingSource!==null)return;
     const existing=settings?.find(item=>item.source===name);
     setAddingSource(name);setAddSourceError("");
     try{const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:name,state:existing?.state??"not_configured",notes:existing?.notes??"",linkUrl:existing?.linkUrl??"",selected:true})});const data=await response.json() as {source?:SourceSetting;error?:string};if(!response.ok||!data.source)throw new Error(data.error??"Source non ajoutée.");onSourceSaved(data.source);notify({message:name==="Jobgether"?"Jobgether activé pour ce compte.":`${name} ajouté aux sources à configurer.`});if(name==="Jobgether"&&!demo)await sync();}
@@ -141,6 +152,12 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
     finally{setAddingSource(null);}
   }
   const followedSources=[...jobboardCatalog,...alertCatalog].filter(source=>sourceVisible(source.name,allInitialSources));
+  const suggested=settings?suggestedSources([...jobboardCatalog,...alertCatalog],searchPreferences(profile.searchPreferences),followedSources.map(source=>source.name)):[];
+  const summary=settings?sourceSummary(followedSources.map(source=>sourceStatus(settings.find(setting=>setting.source===source.name),source.mode))):"";
+  async function addSuggested(name:string,trigger:HTMLElement){
+    suggestionTrigger.current=trigger;
+    await addSource(name);
+  }
   const cards=(modes:readonly string[])=>settings===null
     ? <div className="signal-source-panel">{loadError?<WorkspaceButton disabled={loading} busy={loading} onClick={()=>void load()}>Réessayer de charger les sources</WorkspaceButton>:<LoadingSkeleton label="Chargement des configurations…" rows={2}/>}</div>
     : <div className="source-settings-grid">{sourceCatalog.filter(source=>modes.includes(source.mode)).map(source=><SourceCard key={source.name} source={source} setting={settings.find(item=>item.source===source.name)} count={jobs.filter(job=>job.source===source.name).length} profile={profile} onSaveSearch={onSave} onSaved={onSourceSaved}/>)}</div>;
@@ -151,11 +168,11 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
       <Popover><PopoverTrigger asChild><WorkspaceButton variant="quiet" aria-label="Réglages d’actualisation"><MoreHorizontal size={18} aria-hidden/></WorkspaceButton></PopoverTrigger><PopoverContent align="end"><ChoiceSelect label="Actualisation" value={refreshMode(profile.refreshMode)} options={[{value:"on_open",label:refreshModeLabels.on_open},{value:"manual",label:refreshModeLabels.manual}]} onChange={mode=>void saveRefreshMode(mode)} disabled={demo||busy}/></PopoverContent></Popover>
     </div>,headerTarget):null}
     <div id="source-panel-criteria" className="source-subpanel">
-      <SearchCriteriaPanel profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
+      <SearchCriteriaPanel active={active} onShowOffers={onShowOffers} profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
       <div className="market-boundary-note"><span className="market-boundary-dot"/><p><strong>Les lieux annoncés servent au classement.</strong> La langue de l’annonce et les pays autorisés pour le télétravail restent à vérifier sur la page employeur.</p></div>
     </div>
     <div id="source-panel-channels" className="source-subpanel">
-      <WorkspacePanelHeader id="source-settings-title" title="Sources" actions={<WorkspaceButton variant="secondary" aria-haspopup="dialog" disabled={!settings} onClick={()=>setAddFilter("all")}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>
+      <WorkspacePanelHeader id="source-settings-title" title={<span className="source-title-line"><span>Sources</span>{summary?<span className="source-summary">{summary}</span>:null}</span>} actions={<WorkspaceButton variant="secondary" aria-haspopup="dialog" disabled={!settings} onClick={()=>setAddFilter("all")}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>
       <p className="signal-help">Radar collecte les flux automatiques et prépare vos recherches sur les sites à consulter, sans lire vos comptes.</p>
       {demo?<p className="signal-help">L’actualisation des flux externes et l’ajout d’alertes Collective sont désactivés dans la démo.</p>:null}
       <WorkspaceFormError message={syncError}/><WorkspaceFormError message={loadError}/>
@@ -170,6 +187,8 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
       {settings===null
         ? <div className="signal-source-panel">{loadError?<WorkspaceButton disabled={loading} busy={loading} onClick={()=>void load()}>Réessayer de charger les sources</WorkspaceButton>:<LoadingSkeleton label="Chargement des configurations…" rows={3}/>}</div>
         : followedSources.length?<SourceList sources={followedSources} settings={settings} jobs={jobs} profile={profile} onOpen={openDetail} onVisit={visitSource}/>:null}
+      {settings&&suggested.length?<div className="source-suggestions" role="group" aria-label="Sources suggérées pour vos critères"><span className="signal-help">Suggérées pour vos critères :</span>{suggested.map(source=><WorkspaceButton key={source.name} variant="quiet" disabled={addingSource!==null} busy={addingSource===source.name} onClick={event=>void addSuggested(source.name,event.currentTarget)}><Plus size={14} aria-hidden/>{source.name}</WorkspaceButton>)}</div>:null}
+      {addFilter===null?<WorkspaceFormError message={addSourceError}/>:null}
     </div>
     <ExpandableSection title="Autres pistes" className="source-research signal-source-research">
     <div id="source-panel-outreach" className="source-subpanel">

@@ -122,3 +122,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--primary); }
 @media(prefers-reduced-motion:reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+.signal-toast-actions{display:flex;flex-wrap:wrap;gap:4px 14px}
+.signal-toast-actions .signal-toast-link{min-height:42px}
+@media(max-width:640px){.signal-toast-actions .signal-toast-link{min-height:44px}}
