@@ -339,9 +339,6 @@ button:focus-visible, a:focus-visible { outline-color: var(--signal-petrol); }
 .offer-source-button:hover { background: #f1f2fc; }
 .offer-apply-button { border: 1px solid #f2c994; background: #fff2da; color: #81521e; }
 .offer-apply-button:hover { background: #ffe8bf; }
-.market-boundary-note { display: flex; align-items: flex-start; gap: 10px; border: 1px solid #e0dcf6; border-radius: 15px; background: linear-gradient(100deg, var(--signal-canvas), var(--signal-soft)); padding: 12px 15px; color: #5c5878; font-size: 12px; line-height: 1.6; }
-.market-boundary-note strong { color: var(--signal-petrol-dark); }
-.market-boundary-dot { width: 10px; height: 10px; flex-shrink: 0; margin-top: 4px; border-radius: 50%; background: linear-gradient(130deg, #9450fd, var(--signal-petrol) 60%, var(--signal-petrol)); box-shadow: 0 0 0 4px #ffffff99; }
 
 @media (max-width: 1240px) {
   .radar-shell { grid-template-columns: 214px minmax(0, 1fr); }

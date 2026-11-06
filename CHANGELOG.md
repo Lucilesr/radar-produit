@@ -1,3 +1,8 @@
+## 6 novembre 2026 — Ma recherche : une seule phrase sur le rôle des critères
+
+- Le bandeau « Les lieux annoncés servent au classement » est retiré : il était inexact (un lieu exclu masque l’offre) et ses réserves sur la langue et les pays autorisés sont déjà signalées offre par offre.
+- La phrase d’aide sous « Critères » dit désormais : « Radar classe vos offres selon ces critères ; celles qui en sortent sont masquées dans « À examiner ». »
+
 ## 6 novembre 2026 — Ma recherche : curseur de tolérance plus fluide
 
 - Tant que le curseur de tolérance est maintenu, seuls la valeur et les seuils affichés (salaire, TJM) bougent ; l’enregistrement se fait au relâchement. Au clavier, chaque pas reste enregistré.
