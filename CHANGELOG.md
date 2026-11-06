@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Supprimer son compte
+
+« Mon compte », dans Mon profil, propose « Exporter mes données » (la sauvegarde intégrale existante) et « Supprimer mon compte ». La suppression demande de saisir « SUPPRIMER », puis efface définitivement les fichiers du compte (CV et documents) et toutes ses lignes dans les tables du compte, en une seule transaction, avant de vérifier qu’il ne reste rien. Radar se déconnecte ensuite et revient à la page de connexion. Comme l’export, la suppression refuse de s’exécuter si une table inconnue apparaît, et une relance termine une suppression interrompue. Elle est désactivée dans la démo. Aucune migration SQL ni dépendance ajoutée.
+
 ## 6 novembre 2026 — Page de connexion et déconnexion
 
 Un visiteur non connecté arrive sur une page Radar (`/connexion`) au lieu d’être envoyé directement chez ChatGPT : présentation du service, « Se connecter avec ChatGPT », « Voir la démo » et rappel de confidentialité. La page d’origine est retrouvée après la connexion. « Se déconnecter » apparaît dans la barre latérale et dans la nouvelle section « Mon compte » de Mon profil, accessible aussi sur mobile ; dans la démo, le même bouton devient « Quitter la démo ». La déconnexion ramène sur la page de connexion. Aucune migration SQL ni dépendance ajoutée.

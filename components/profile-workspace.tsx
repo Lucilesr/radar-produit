@@ -9,7 +9,7 @@ import type { CandidateProfile } from "@/lib/types";
 import type { DocumentLinks } from "@/lib/document-input";
 import { readProfileSection, type ProfileSection as Section } from "@/lib/radar-navigation";
 const sections: [Section,string][]=[["experiences","Carnet d’expériences"],["documents","Mes documents"],["account","Mon compte"]];
-type Account={userName:string;email?:string;demo:boolean;signOutPath:string};
+type Account={ownerId:string;userName:string;email?:string;demo:boolean;signOutPath:string};
 export function ProfileWorkspace({profile,account,onDocumentsLinked,initialSection="experiences",active=true,initialExperienceLibrary}:{profile:CandidateProfile;account:Account;onDocumentsLinked:(links:DocumentLinks)=>void;initialSection?:Section;active?:boolean;initialExperienceLibrary?:Library}) {
   const [draft,setDraft]=useState(profile),[section,setSection]=useState<Section>(initialSection);
   const [visited,setVisited]=useState({experiences:initialSection==="experiences",documents:initialSection==="documents",account:initialSection==="account"});

@@ -1,4 +1,4 @@
-import { BACKUP_FORMAT, BACKUP_TABLES, canonical, sha256 } from "./account-backup-format.mjs";
+import { BACKUP_FORMAT, BACKUP_TABLES, PLATFORM_TABLES, canonical, sha256 } from "./account-backup-format.mjs";
 
 type Row = Record<string, string | number | null>;
 export class BackupError extends Error {
@@ -23,9 +23,7 @@ async function snapshot(db: D1Database, userId: string) {
   if (result.length !== statements.length || result.some(r => !r.success || !Array.isArray(r.results))) fail("lecture-base");
   const catalog = result[0].results;
   // A new business table must be explicitly included before an export can claim completeness.
-  // __appgarden_migrations was observed on the hosted database during lot-0 recipe.
-  // It belongs to the deployment platform, not to a candidate account.
-  const technicalTables = ["d1_migrations", "__drizzle_migrations", "__appgarden_migrations"];
+  const technicalTables = PLATFORM_TABLES;
   const unknown = catalog.filter(r => r.type === "table" && !BACKUP_TABLES.includes(String(r.name)) && !technicalTables.includes(String(r.name)));
   if (unknown.length) fail("schema-inattendu:" + unknown.map(r => String(r.name).replace(/[^a-zA-Z0-9_]/g, "").slice(0, 80)).join(","));
   const tables: Record<string, Row[]> = {};
