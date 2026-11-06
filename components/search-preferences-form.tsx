@@ -355,8 +355,8 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
           <Slider min={0} max={20} step={1} value={[tolerance]} onValueChange={([value]) => setTolerancePreview(value)} onValueCommit={([value]) => { setTolerancePreview(null); if (value !== (latestDraft.current.payTolerancePercent ?? 0)) scheduleSave({ ...latestDraft.current, payTolerancePercent: value }); }} thumbLabel="Tolérance sous le minimum" thumbValueText={`${tolerance} %`} className="search-pay-tolerance-slider" />
         </div>
         <p className="search-criteria-help">{tolerance
-          ? `Les offres jusqu’à ${tolerance} % sous votre minimum restent visibles avec la mention « Sous votre minimum » : dès ${euro(payFloor(draft.minimumSalary, tolerance))} brut/an ou ${euro(payFloor(draft.minimumDailyRate, tolerance))} HT/jour. En dessous, elles sont masquées dans « À examiner ».`
-          : "Toute rémunération connue sous votre minimum est masquée dans « À examiner », même si le contrat est à confirmer."} Si le montant manque, il reste « à vérifier ».</p></>,
+          ? `Les offres jusqu’à ${tolerance} % sous votre minimum restent visibles : dès ${euro(payFloor(draft.minimumSalary, tolerance))} brut/an ou ${euro(payFloor(draft.minimumDailyRate, tolerance))} HT/jour. En dessous, elles sont masquées dans « À examiner ».`
+          : "Toute rémunération connue sous votre minimum est masquée dans « À examiner », même si le contrat est à confirmer."}</p></>,
  boostKeywords:keywordControl("boostKeywords"),
  excludeKeywords:keywordControl("excludeKeywords"),
  minimums:null,

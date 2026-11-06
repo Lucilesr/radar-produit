@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Aide de la tolérance raccourcie
+
+La phrase de tolérance conserve les seuils calculés et le masquage sous le seuil, sans la mention de badge ni la phrase sur le montant manquant.
+
 ## 6 novembre 2026 — Ma recherche : un seul titre pour les sources
 
 - Les titres « Sources » et « Sources suivies » sont fusionnés en « Sources suivies », avec « Ajouter une source » sur la même ligne et le résumé « 8 sources · 2 demandent une action ».
