@@ -57,7 +57,7 @@ export function SourceList({ sources, settings, jobs, profile, onOpen, onVisit }
           const status = statusFor(source);
           const count = jobs.filter(job => job.source === source.name).length;
           const drift = driftFor(source);
-          return <li key={source.name} data-status={status}>
+          return <li key={source.name} data-source={source.name} data-status={status}>
             <div className="signal-source-row">
               <span className="signal-source-row-logo"><SourceLogo name={source.name} compact /></span>
               <span className="signal-source-row-name">

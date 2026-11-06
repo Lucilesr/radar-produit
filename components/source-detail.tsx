@@ -5,6 +5,7 @@ import { ExternalLink } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { SourceCard, type SourceSetting } from "@/components/source-card";
+import { CollectiveAlertPanel } from "@/components/collective-alert-panel";
 import { SourceLogo } from "@/components/source-logo";
 import { WorkspaceButton } from "@/components/workspace-form";
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
@@ -37,7 +38,8 @@ function sourceSearches(source: Source, setting: SourceSetting | undefined, prof
 }
 
 /** Everything about one source: what to open, when to come back, and what it brought. */
-export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSearch, onSaved, onRemove, onVisit, onAddOffer }: {
+export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSearch, onSaved, onRemove, onVisit, onAddOffer, onReturnFocus }: {
+  onReturnFocus?: () => void;
   source: Source | null; setting?: SourceSetting; jobs: JobRecord[]; profile: CandidateProfile;
   onClose: () => void; onSaveSearch: (profile: CandidateProfile) => Promise<boolean>; onSaved: (setting: SourceSetting) => void;
   onRemove: (source: Source) => void; onVisit: (source: Source) => Promise<void>; onAddOffer?: (url: string) => void;
@@ -92,7 +94,7 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
   }
 
   return <Sheet open onOpenChange={open => { if (!open) onClose(); }}>
-    <SheetContent side="right" className="source-detail">
+    <SheetContent side="right" className="source-detail" onCloseAutoFocus={event=>{if(onReturnFocus){event.preventDefault();onReturnFocus();}}}>
       <SheetHeader className="source-detail-head">
         <span className="source-detail-logo"><SourceLogo name={source.name} compact /></span>
         <SheetTitle>{source.name}</SheetTitle>
@@ -104,6 +106,7 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
       </SheetHeader>
 
       <div className="source-detail-body">
+        {source.name==="Collective"?<CollectiveAlertPanel setting={setting} onSaved={onSaved}/>:null}
         <section className="source-detail-action" aria-labelledby="source-detail-open">
           <h3 id="source-detail-open">Passer en revue</h3>
           <div className="source-detail-buttons">
