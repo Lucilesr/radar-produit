@@ -7,19 +7,13 @@ const file = new URL("../lib/web-discovery.ts", import.meta.url);
 const source = readFileSync(file, "utf8");
 const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
 const moduleUrl = "data:text/javascript;base64," + Buffer.from(js).toString("base64");
-const { discoveryQueries, discoveryQueriesForRoles, groupedDiscoveryQueries, searchUrl, defaultSearchLinks, validSearchLink } = await import(moduleUrl);
+const { discoveryQueriesForRoles, groupedDiscoveryQueries, searchUrl, defaultSearchLinks, validSearchLink } = await import(moduleUrl);
 
 test("regroupe les postes en une recherche par jobboard", () => {
   const queries = groupedDiscoveryQueries(["Product Manager", "Product Owner", "Product Builder"]);
   assert.equal(queries.length, 2);
   assert(queries.every(query => query.expression.includes('"Product Manager" OR "Product Owner" OR "Product Builder"')));
   assert(queries.every(query => query.role === "Tous les postes"));
-});
-
-test("propose quatre recherches PO/PM en français, sans filtre géographique", () => {
-  assert.deepEqual(discoveryQueries.map(query => query.id), ["linkedin-po", "linkedin-pm", "wttj-po", "wttj-pm"]);
-  assert(discoveryQueries.every(query => query.expression.includes("français OR French")));
-  assert(discoveryQueries.every(query => query.expression.includes("site:")));
 });
 
 test("Google est un lien complémentaire vers un index public", () => {

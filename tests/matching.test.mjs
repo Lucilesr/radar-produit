@@ -76,10 +76,27 @@ test("les anciens choix PO/PM deviennent des intitulés éditables", () => {
 test("les intitulés libres donnent la priorité aux postes saisis", () => {
   const search = { roles: ["Product Ops", "Chef de projet digital"], contracts: ["cdi"], remote: "full_remote", minimumSalary: 65000, minimumDailyRate: 600 };
   assert.equal(assessJob({ ...baseline, annualSalary: 65000 }, search).tier, "exception");
-  assert.match(assessJob({ ...baseline, annualSalary: 65000 }, search).flags.join(" "), /Rôle secondaire/);
+  assert.match(assessJob({ ...baseline, annualSalary: 65000 }, search).flags.join(" "), /Intitulé éloigné des rôles ciblés/);
   assert.equal(assessJob({ ...baseline, title: "Senior Product Ops", annualSalary: 65000 }, search).tier, "priority");
   assert.equal(assessJob({ ...baseline, title: "Chef de projet digital", annualSalary: 65000 }, search).tier, "priority");
   assert.equal(assessJob({ ...baseline, title: "Product Ops", annualSalary: null }, search).tier, "exception");
+});
+
+test("un intitulé produit ne gagne rien pour un compte qui cherche un autre métier", () => {
+  const search = { roles: ["Data Analyst"], contracts: ["cdi"], remote: "full_remote", minimumSalary: 45000, minimumDailyRate: 400 };
+  const product = assessJob({ ...baseline, title: "Product Manager", annualSalary: 50000 }, search);
+  const unrelated = assessJob({ ...baseline, title: "Comptable", annualSalary: 50000 }, search);
+  assert.equal(product.score, unrelated.score);
+  assert.equal(product.reasons.some(reason => /rôle produit/i.test(reason)), false);
+  assert.equal(product.flags.includes("Rôle secondaire"), false);
+  assert(assessJob({ ...baseline, title: "Data Analyst", annualSalary: 50000 }, search).score > product.score);
+});
+
+test("aucun secteur n'est valorisé en dehors des mots-clés du compte", () => {
+  const search = { roles: ["Data Analyst"], contracts: ["cdi"], remote: "full_remote", minimumSalary: 45000, minimumDailyRate: 400 };
+  const job = { ...baseline, title: "Data Analyst", annualSalary: 50000 };
+  assert.equal(assessJob({ ...job, description: "Fintech SaaS, paiements, IA générative" }, search).score, assessJob(job, search).score);
+  assert(assessJob({ ...job, description: "Fintech SaaS" }, { ...search, boostKeywords: ["fintech"] }).score > assessJob(job, search).score);
 });
 
 test("les autres critères de recherche restent appliqués", () => {
