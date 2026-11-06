@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Logos des sources
+
+Les douze logos fournis remplacent les illustrations des sources correspondantes, dont Jobgether qui utilisait une icône générique. Les listes, fiches, offres et le panneau d’ajout réutilisent le composant commun SourceLogo et les cadres Signal, sans recadrage ni dépendance externe.
+
 ## 6 novembre 2026 — Supprimer son compte
 
 « Mon compte », dans Mon profil, propose « Exporter mes données » (la sauvegarde intégrale existante) et « Supprimer mon compte ». La suppression demande de saisir « SUPPRIMER », puis efface définitivement les fichiers du compte (CV et documents) et toutes ses lignes dans les tables du compte, en une seule transaction, avant de vérifier qu’il ne reste rien. Radar se déconnecte ensuite et revient à la page de connexion. Comme l’export, la suppression refuse de s’exécuter si une table inconnue apparaît, et une relance termine une suppression interrompue. Elle est désactivée dans la démo. Aucune migration SQL ni dépendance ajoutée.
