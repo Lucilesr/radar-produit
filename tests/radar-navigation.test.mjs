@@ -11,7 +11,7 @@ test("navigation : lien partageable, filtres et recherche restaurés sans perdre
   const closed = readRadarRoute(radarSearch({...route, offer:undefined}, "?offer=demo&view=brief"));
   assert.equal(closed.offer, undefined); assert.equal(closed.view,"offer"); assert.equal(closed.filter,"selected");
 });
-test("navigation : les sous-onglets de Ma recherche gardent leur lien direct", () => {
+test("navigation : les sections de Ma recherche gardent leur lien direct", () => {
   const alerts = "?tab=sources&sources=channels&utm_source=demo";
   assert.equal(readSearchSection(new URLSearchParams(alerts).get("sources")), "channels");
   assert.equal(new URLSearchParams(radarSearch(readRadarRoute(alerts), alerts)).get("sources"), "channels");
@@ -36,4 +36,12 @@ test("navigation : Mes documents → Candidatures → Mon profil revient au carn
   // A direct link or Back/Forward to the original entry still opens documents.
   assert.equal(readProfileSection(new URLSearchParams(documents).get("profile")), "documents");
   assert.equal(new URLSearchParams(radarSearch(readRadarRoute(documents), documents)).get("profile"), "documents");
+});
+
+test("Ma recherche : les trois anciens liens ciblent une section valide",()=>{
+ for(const section of ["criteria","channels","outreach"]){
+  const search=`?tab=sources&sources=${section}`;
+  assert.equal(readSearchSection(new URLSearchParams(search).get("sources")),section);
+  assert.equal(new URLSearchParams(radarSearch(readRadarRoute(search),search)).get("sources"),section);
+ }
 });

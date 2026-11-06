@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Ma recherche sur une seule page (lot 14)
+
+Critères, sources et autres pistes se lisent à la suite, sans les trois onglets de section. L’actualisation des flux et son réglage rejoignent l’en-tête ; les alertes Collective se consultent et s’ajoutent dans le détail de la source. Les anciens liens de section sont conservés et ouvrent « Autres pistes » si nécessaire. Les recherches web redondantes et « Recherches couvertes » quittent la page. Aucune règle de classement ni dépendance modifiée.
+
 ## 6 novembre 2026 — Guide : trois lots pour rejoindre les maquettes
 
 Le guide de « Ma recherche » décrit trois lots de plus : une seule page sans onglets (lot 14), « Tout modifier » en tableau éditable (lot 15), puis les finitions et les postes suggérés (lot 16). Les offres sans salaire affiché restent gardées, à vérifier à la main.

@@ -396,3 +396,13 @@
 
 /* Aujourd'hui · sources à consulter (lot 9b) */
 .source-detail-offer{margin-top:10px}
+
+/* Ma recherche: one continuous page, with legacy section anchors. */
+.source-workspace.signal-sources-workspace{display:grid;gap:32px}
+.source-subpanel{scroll-margin-top:24px}
+.source-refresh-actions .signal-form-button{min-height:42px}
+@media(max-width:640px){.source-refresh-actions .signal-form-button{min-height:44px}.source-refresh-actions{justify-content:flex-start}}
+
+.workspace-page-header:has(#source-refresh-header){flex-wrap:wrap}
+.workspace-page-header:has(#source-refresh-header)>div{min-width:0}
+@media(max-width:640px){.workspace-page-header:has(#source-refresh-header)>div{width:100%}.workspace-page-header:has(#source-refresh-header) .page-tools{justify-content:flex-start;flex-wrap:wrap}.workspace-page-header:has(#source-refresh-header) h1{white-space:nowrap}}
