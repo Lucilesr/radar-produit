@@ -470,3 +470,8 @@
 @media(max-width:640px){.role-suggestion .signal-form-button{min-height:44px}.role-suggestion .signal-form-button+button{min-width:44px}}
 
 .role-suggestion>.signal-form-button:first-child{min-width:0;flex:1}
+
+/* Supplied square logos stay legible in the shared source controls. */
+.signal-source-row-logo .source-logo-square{height:28px;max-width:38px}
+.source-detail-logo .source-logo-square{height:32px;max-width:40px}
+.source-add-logo .source-logo-square{height:24px;max-width:40px}
