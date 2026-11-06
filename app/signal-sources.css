@@ -459,3 +459,14 @@
 .search-criteria-changed-dot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--primary)}
 .search-criteria-salary-note{margin:0;padding:10px 16px;border-top:1px solid var(--border)}
 .source-suggestions{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+
+/* Lot 16b: explicit role suggestions use the shared Signal buttons and surfaces. */
+.role-suggestions{display:grid;gap:6px;margin-top:10px}
+.role-suggestions>p{margin:0}
+.role-suggestions ul{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.role-suggestion{display:flex;align-items:stretch;min-width:0;max-width:100%;border:1px solid var(--border);border-radius:5px;background:var(--signal-soft)}
+.role-suggestion .signal-form-button{min-height:42px;white-space:normal;overflow-wrap:anywhere}
+.role-suggestion .signal-form-button+button{flex:none;min-width:42px;border-left:1px solid var(--border)}
+@media(max-width:640px){.role-suggestion .signal-form-button{min-height:44px}.role-suggestion .signal-form-button+button{min-width:44px}}
+
+.role-suggestion>.signal-form-button:first-child{min-width:0;flex:1}

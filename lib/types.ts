@@ -96,6 +96,8 @@ export type SearchPreferences = {
   roles: string[];
   /** Search tracks of this account; without them, one track is derived from `roles`. */
   searchTracks?: SearchTrack[];
+  /** Role suggestions dismissed by this account; at most 30. */
+  dismissedRoleSuggestions?: string[];
   includedLocations?: string[];
   excludedLocations?: string[];
   contracts: Array<"cdi" | "cdd" | "freelance" | "portage" | "part_time">;

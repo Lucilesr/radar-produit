@@ -171,7 +171,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
               <button type="button" className="search-criteria-token" data-tone={token.tone} title={token.fullValue} aria-label={label}>{content}</button>
             </PopoverTrigger>
             <PopoverContent align="start" collisionPadding={{ top: 12, right: 12, left: 12, bottom: 96 }} className="search-criteria-popover" onInteractOutside={keepOpenForNestedMenus} onFocusOutside={keepOpenForNestedMenus}>
-              <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(token.target)} />
+              <SearchPreferencesForm jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(token.target)} />
               <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={() => setOpenToken(null)}>Terminé</WorkspaceButton></div>
             </PopoverContent>
           </Popover>
@@ -188,7 +188,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
           <PopoverContent align="start" collisionPadding={{ top: 12, right: 12, left: 12, bottom: 96 }} className="search-criteria-popover" onInteractOutside={keepOpenForNestedMenus} onFocusOutside={keepOpenForNestedMenus}>
             {addTarget
               ? <>
-                <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(addTarget.target)} />
+                <SearchPreferencesForm jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(addTarget.target)} />
                 <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={closeAdd}>Terminé</WorkspaceButton></div>
               </>
               : <ul className="search-criteria-add-menu">{missing.map(item => <li key={item.id}>
@@ -201,7 +201,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
     {view === "summary" && mobile && adding ? <div id="search-criteria-add-inline" className="search-criteria-inline-editor">
       {addTarget
         ? <>
-          <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(addTarget.target)} />
+          <SearchPreferencesForm jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(addTarget.target)} />
           <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={closeAdd}>Terminé</WorkspaceButton></div>
         </>
         : <ul className="search-criteria-add-menu">{missing.map(item => <li key={item.id}>
@@ -209,7 +209,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
         </li>)}</ul>}
     </div> : null}
     {view === "summary" && inlineToken ? <div id="search-criteria-inline" ref={inlineEditor} className="search-criteria-inline-editor">
-      <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(inlineToken.target)} />
+      <SearchPreferencesForm jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(inlineToken.target)} />
       <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={closeInline}>Terminé</WorkspaceButton></div>
     </div> : null}
 
@@ -221,7 +221,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
           <dd><ul className="search-criteria-values">{row.values.map(value => <li key={value} data-tone={row.tone}>{value}</li>)}</ul></dd>
           <dd className="search-criteria-row-action">{editingRow === (row.key ?? row.id) ? null : <WorkspaceButton variant="quiet" aria-label={`Modifier : ${row.label}`} aria-expanded={false} onClick={() => row.target === "jobgether" ? onOpenJobgether() : setEditingRow(row.key ?? row.id)}>Modifier</WorkspaceButton>}</dd>
           {editingRow === (row.key ?? row.id) ? <dd className="search-criteria-row-editor">
-            <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(row.target)} />
+            <SearchPreferencesForm jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(row.target)} />
             <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" onClick={() => setEditingRow(null)}>Terminé</WorkspaceButton></div>
           </dd> : null}
         </div>)}</dl>
@@ -229,6 +229,6 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
       </section>)}
     </div> : null}
 
-    {view === "edit" ? <SearchPreferencesForm key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} table onStatusChange={reportStatus} onOpenJobgether={onOpenJobgether} /> : null}
+    {view === "edit" ? <SearchPreferencesForm jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} table onStatusChange={reportStatus} onOpenJobgether={onOpenJobgether} /> : null}
   </section>;
 }

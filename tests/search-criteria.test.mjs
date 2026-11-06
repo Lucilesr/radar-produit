@@ -109,3 +109,10 @@ test("les repères ciblent seulement les critères modifiés, y compris présenc
  assert.deepEqual(changedCriteriaIds(before,after),["searchTracks","remote","salary","excludedLocations","boostKeywords"]);
  assert.deepEqual(changedCriteriaIds({...before,boostKeywords:undefined},{...before,boostKeywords:[]}),[]);
 });
+
+test("une sauvegarde différée de rémunération conserve les suggestions écartées du compte",()=>{
+ const base=searchPreferences({roles:["Data Analyst"]});
+ const current={...base,dismissedRoleSuggestions:["Chef de produit"]};
+ const result=mergeCriteriaDraft(base,{...base,minimumSalary:60000},current);
+ assert.deepEqual(searchPreferences(JSON.parse(JSON.stringify(result))).dismissedRoleSuggestions,["Chef de produit"]);
+});
