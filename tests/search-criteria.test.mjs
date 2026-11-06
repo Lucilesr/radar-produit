@@ -15,7 +15,7 @@ const locations = moduleUrl("location-criteria", { "./countries": countries, "./
 const tracks = moduleUrl("search-tracks");
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations, "./search-tracks": tracks });
 const { searchPreferences } = await import(preferences);
-const { criteriaGroups, criteriaTokens, missingCriteria } = await import(moduleUrl("search-criteria", { "./search-preferences": preferences, "./search-tracks": tracks }));
+const { changedCriteriaIds, criteriaGroups, criteriaTokens, missingCriteria } = await import(moduleUrl("search-criteria", { "./search-preferences": preferences, "./search-tracks": tracks }));
 const nbsp = text => text.replace(/[  ]/g, " ");
 
 test("les préférences par défaut donnent une étiquette par critère renseigné", () => {
@@ -100,4 +100,12 @@ test("les sauvegardes de champs distincts conservent les dernières valeurs des 
  const merged=mergeCriteriaDraft(base,next,current);
  assert.equal(merged.minimumSalary,60000);assert.deepEqual(merged.boostKeywords,["SaaS"]);assert.deepEqual(merged.contracts,["cdi"]);assert.deepEqual(merged.searchTracks,current.searchTracks);
  assert.equal(base.minimumSalary,55000);
+});
+
+test("les repères ciblent seulement les critères modifiés, y compris présence par contrat et retraits",()=>{
+ const before=searchPreferences({searchTracks:[],boostKeywords:["SaaS"],remoteByContract:{cdi:"hybrid"},excludedLocations:["Roumanie"]});
+ const after={...before,minimumSalary:60000,remoteByContract:{cdi:"full_remote"},boostKeywords:[],excludedLocations:[],searchTracks:[{id:"data",label:"Data",kind:"core",terms:["Data Analyst"]}]};
+ assert.deepEqual(changedCriteriaIds(before,before),[]);
+ assert.deepEqual(changedCriteriaIds(before,after),["searchTracks","remote","salary","excludedLocations","boostKeywords"]);
+ assert.deepEqual(changedCriteriaIds({...before,boostKeywords:undefined},{...before,boostKeywords:[]}),[]);
 });

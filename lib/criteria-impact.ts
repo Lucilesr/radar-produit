@@ -1,3 +1,4 @@
+import { remoteForContract } from "./search-preferences";
 import { assessJob } from "./matching";
 import { inOpportunityView } from "./opportunity-views";
 import { contractLabels, remoteLabels } from "./search-criteria";
@@ -35,6 +36,11 @@ export function describeCriteriaChanges(before: SearchPreferences, after: Search
     ...listChange("Lieu", before.excludedLocations ?? [], after.excludedLocations ?? [], "exclu", "réautorisé"),
   ];
   if (before.remote !== after.remote) changes.push(`Présence ${remoteLabels[before.remote]} → ${remoteLabels[after.remote]}`);
+  for(const contract of before.contracts){
+    const previous=remoteForContract(before,contract),next=remoteForContract(after,contract);
+    if(previous!==next && before.remote===after.remote)changes.push(`Présence ${contractLabel(contract)} ${remoteLabels[previous]} → ${remoteLabels[next]}`);
+  }
+  if(JSON.stringify(before.searchTracks??[])!==JSON.stringify(after.searchTracks??[]))changes.push("Pistes de recherche mises à jour");
   if (before.minimumSalary !== after.minimumSalary) changes.push(`Salaire ${euro(before.minimumSalary)} → ${euro(after.minimumSalary)}/an`);
   if (before.minimumDailyRate !== after.minimumDailyRate) changes.push(`TJM ${euro(before.minimumDailyRate)} → ${euro(after.minimumDailyRate)}/jour`);
   changes.push(...listChange("Mot-clé", before.boostKeywords ?? [], after.boostKeywords ?? [], "ajouté", "retiré"));

@@ -55,3 +55,9 @@ export function matchesSourceQuery(source: CatalogSource, query: string): boolea
   if (!needle) return true;
   return [source.name, source.group, ...sourceTags(source)].some(text => has(text, needle));
 }
+
+/** Four untracked collection/consultation sources at most, using the catalogue ranking. */
+export function suggestedSources<T extends CatalogSource>(sources: readonly T[], preferences: SearchPreferences, followedNames: readonly string[]): T[] {
+  const followed = new Set(followedNames);
+  return rankSources(sources.filter(source => sourceKind(source.mode) !== "outreach" && !followed.has(source.name)), preferences).slice(0, 4);
+}

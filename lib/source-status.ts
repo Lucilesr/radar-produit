@@ -60,3 +60,16 @@ export const statusActions: Record<SourceStatus, string> = {
 };
 
 export const needsAction = (status: SourceStatus) => status === "error" || status === "to_configure" || status === "to_visit" || status === "new";
+
+/** Stable summary of followed sources: healthy, awaiting a visit, setup, errors, pauses. */
+export function sourceSummary(statuses: readonly SourceStatus[]): string {
+  const count = (values: readonly SourceStatus[]) => statuses.filter(status => values.includes(status)).length;
+  const groups: [number, string, string][] = [
+    [count(["ok", "up_to_date"]), "active", "actives"],
+    [count(["new", "to_visit"]), "à visiter", "à visiter"],
+    [count(["to_configure"]), "à configurer", "à configurer"],
+    [count(["error"]), "en erreur", "en erreur"],
+    [count(["paused"]), "en pause", "en pause"],
+  ];
+  return groups.filter(([amount]) => amount > 0).map(([amount, singular, plural]) => `${amount} ${amount === 1 ? singular : plural}`).join(" · ");
+}

@@ -8,7 +8,7 @@ function moduleUrl(name) {
   const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
   return "data:text/javascript;base64," + Buffer.from(compiled).toString("base64");
 }
-const { sourceKind, sourceStatus, needsAction, defaultVisitEveryDays, remindsInToday, visitEvery, visitRhythms } = await import(moduleUrl("source-status"));
+const { sourceSummary, sourceKind, sourceStatus, needsAction, defaultVisitEveryDays, remindsInToday, visitEvery, visitRhythms } = await import(moduleUrl("source-status"));
 const now = new Date("2026-11-05T12:00:00Z");
 const daysAgo = days => new Date(now.getTime() - days * 86400000).toISOString();
 
@@ -65,4 +65,17 @@ test("le rythme choisi décide quand une source repasse à visiter", () => {
   const now = new Date("2026-11-05T08:00:00Z");
   assert.equal(sourceStatus({ ...visitedThreeDaysAgo, visitEveryDays: 7 }, "manual", now), "up_to_date");
   assert.equal(sourceStatus({ ...visitedThreeDaysAgo, visitEveryDays: 1 }, "manual", now), "to_visit");
+});
+
+test("le résumé masque les comptes à zéro et garde l’ordre des libellés",()=>{
+ assert.equal(sourceSummary([]),"");
+ assert.equal(sourceSummary(["to_configure"]),"1 à configurer");
+ assert.equal(sourceSummary(["ok"]),"1 active");
+ assert.equal(sourceSummary(["to_visit","up_to_date","ok","new","to_configure"]),"2 actives · 2 à visiter · 1 à configurer");
+});
+test("le résumé n’ignore ni les erreurs ni les pauses et ne dépend pas de l’ordre des sources",()=>{
+ const statuses=["paused","error","new","to_configure","ok","up_to_date"];
+ assert.equal(sourceSummary(statuses),"2 actives · 1 à visiter · 1 à configurer · 1 en erreur · 1 en pause");
+ assert.equal(sourceSummary([...statuses].reverse()),sourceSummary(statuses));
+ assert.deepEqual(statuses,["paused","error","new","to_configure","ok","up_to_date"]);
 });

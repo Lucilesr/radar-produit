@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Finitions de Ma recherche (lot 16a)
+
+La section « Critères » indique l’enregistrement automatique et signale les critères modifiés pendant la visite. Les confirmations d’impact proposent « Annuler » et « Voir les offres », vers « À examiner ». Le titre « Sources » rassemble les statuts suivis ; jusqu’à quatre sources non suivies sont suggérées selon les critères et s’ajoutent directement. La vue dépliée rappelle que les offres sans salaire affiché sont gardées, à vérifier. Aucune règle de classement ni suggestion de poste modifiée.
+
 ## 6 novembre 2026 — Tout modifier en tableau éditable (lot 15)
 
 « Tout modifier » ouvre les groupes du tableau de critères avec leurs contrôles directement accessibles : postes et pistes, contrats, présence par contrat, minimums et tolérance, zones et mots-clés. Les boutons segmentés remplacent les menus de présence. L’en-tête rassemble l’état de sauvegarde, la reprise en cas d’erreur et le nombre d’offres à examiner. « Ajouter un critère » ouvre une ligne optionnelle ; le premier usage garde l’édition ouverte sans bouton « Terminé ». Les sauvegardes de champs distincts préservent les dernières valeurs des autres contrôles.

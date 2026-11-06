@@ -7,6 +7,7 @@ export type WorkspaceFeedback = {
   message: string;
   tone?: "success" | "info" | "error";
   action?: { label: string; onClick: () => void };
+  secondaryAction?: { label: string; onClick: () => void };
 };
 
 const FeedbackContext = createContext<((feedback: WorkspaceFeedback) => void) | null>(null);
@@ -27,7 +28,7 @@ export function useWorkspaceFeedback() {
 }
 
 /** One notification shape; errors persist, other tones pause while being read. */
-export function WorkspaceToast({ message, tone = "success", action, onClose }: WorkspaceFeedback & { onClose: () => void }) {
+export function WorkspaceToast({ message, tone = "success", action, secondaryAction, onClose }: WorkspaceFeedback & { onClose: () => void }) {
   const close = useRef(onClose);
   useEffect(() => { close.current = onClose; }, [onClose]);
   const [paused, setPaused] = useState(false);
@@ -42,7 +43,7 @@ export function WorkspaceToast({ message, tone = "success", action, onClose }: W
     onFocusCapture={() => setPaused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false); }}>
     <span className="signal-toast-icon" aria-hidden><Icon size={15} /></span>
     <div className="signal-toast-copy"><p role={tone === "error" ? "alert" : "status"}>{message}</p>
-      {action ? <button type="button" className="signal-toast-link" onClick={() => { onClose(); action.onClick(); }}>{action.label}<ArrowRight size={12} aria-hidden /></button> : null}
+      <div className="signal-toast-actions">{[action,secondaryAction].map((item,index)=>item?<button key={index} type="button" className="signal-toast-link" onClick={() => { onClose(); item.onClick(); }}>{item.label}<ArrowRight size={12} aria-hidden /></button>:null)}</div>
     </div>
     <button type="button" className="signal-toast-close" onClick={onClose} aria-label="Fermer la notification"><X size={16} aria-hidden /></button>
   </div>;

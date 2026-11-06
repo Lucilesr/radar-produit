@@ -452,3 +452,10 @@
  .search-criteria-edit-table .search-track .search-role-entry{flex-wrap:nowrap;gap:6px}
 }
 .search-preferences-form:has(.search-criteria-edit-table)>.search-criteria-form{margin-top:12px}
+
+/* Lot 16a: criteria feedback and source suggestions reuse Signal text, tags and buttons. */
+.search-criteria-title-line,.source-title-line{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.search-criteria-title-line .signal-help,.source-summary{font:400 12px/1.5 var(--font-sans);color:var(--muted-foreground)}
+.search-criteria-changed-dot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+.search-criteria-salary-note{margin:0;padding:10px 16px;border-top:1px solid var(--border)}
+.source-suggestions{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
