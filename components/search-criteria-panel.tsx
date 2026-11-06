@@ -145,7 +145,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
     <header className="search-criteria-panel-header">
       <div>
         <div className="search-criteria-title-line"><h2 id="search-criteria-title" className="source-heading">Critères</h2><span className="signal-help" role="status">{justSaved?"Enregistré à l’instant":"Enregistrés automatiquement"}</span></div>
-        <p>Ces critères classent vos offres dans Radar. Ils ne modifient pas les alertes créées sur les sites externes.</p>
+        <p>Radar classe vos offres selon ces critères ; celles qui en sortent sont masquées dans « À examiner ». Les alertes créées sur les sites externes ne sont pas modifiées.</p>
       </div>
       <div className="search-criteria-panel-actions">
         {view === "edit"

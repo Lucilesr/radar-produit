@@ -118,8 +118,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input[type='checkb
 .offer-open-button:hover { background: var(--signal-petrol-dark); transform: none; }
 .offer-source-button, .offer-apply-button { border-radius: 999px; }
 .offer-full-description summary { color: var(--signal-petrol-dark); }
-.market-boundary-note { background: var(--signal-soft); border-color: var(--signal-line); }
-.market-boundary-dot { background: var(--signal-petrol); }
 .profile-jump-nav { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
 .profile-jump-nav a { display: flex; flex-direction: column; gap: 3px; border: 1px solid var(--signal-line); border-radius: 12px; padding: 12px 18px; background: #fff; color: #333; font-size: 13px; font-weight: 500; text-decoration: none; }
 .profile-jump-nav a:first-child { background: var(--signal-soft); border-color: var(--signal-input); color: var(--signal-petrol-dark); }

@@ -354,7 +354,7 @@ Ces trois lots ne changent aucune règle de classement des offres, sauf l'ajout 
 **Ordre de la page** (`components/source-panel.tsx`) :
 
 1. **En-tête de page.** Le titre « Ma recherche » reste celui de `PageHeader`. Sur cet onglet seulement, à droite du titre : l'état « Actualisé il y a 2 h » (`refreshedAgo`) et le bouton « Actualiser maintenant », qui lance `POST /api/sources/sync`. Ils quittent le bloc « Collecte automatique ». Sur cet onglet, le bouton « Actualiser » générique de `radar-app.tsx` (qui ne relit que les offres) est retiré, pour ne pas avoir deux boutons voisins qui font des choses différentes.
-2. **Critères.** `SearchCriteriaPanel`, puis la note « Les lieux annoncés servent au classement ».
+2. **Critères.** `SearchCriteriaPanel`. Plus de note sur les lieux : la phrase d'aide sous « Critères » dit que les critères classent les offres et que celles qui en sortent sont masquées dans « À examiner ».
 3. **Sources.** Le bouton « Ajouter une source », l'état vide du lot 10 et la `SourceList`.
 4. **Autres pistes.** En dernier, repliable (`ExpandableSection`, fermée par défaut) : pistes hors annonces et ajouts volontaires.
 
@@ -407,7 +407,7 @@ Deux PR séparées.
 
 **16a — Finitions.**
 
-- **Titre de la section critères** : « Critères », avec à côté l'état « Enregistrés automatiquement » (et, juste après une modification, « Enregistré à l'instant »). La phrase « Ces critères classent vos offres… » passe en aide sous le titre.
+- **Titre de la section critères** : « Critères », avec à côté l'état « Enregistrés automatiquement » (et, juste après une modification, « Enregistré à l'instant »). La phrase d'aide sous le titre : « Radar classe vos offres selon ces critères ; celles qui en sortent sont masquées dans « À examiner ». Les alertes créées sur les sites externes ne sont pas modifiées. »
 - **Étiquette modifiée** : après un enregistrement, l'étiquette du critère changé porte un point d'accent jusqu'à la prochaine visite de la page (état en mémoire, rien en base).
 - **Message d'impact** : garder « Annuler » et ajouter « Voir les offres », qui ouvre Opportunités sur « À examiner ». `WorkspaceFeedback` n'accepte qu'une `action` : ajouter une `secondaryAction` optionnelle plutôt que de créer un second composant.
 - **Résumé des sources** à côté du titre « Sources » : « 5 actives · 2 à visiter · 1 à configurer », calculé par une fonction pure `sourceSummary(statuses)` dans `lib/source-status.ts`. Un compte à zéro n'est pas affiché.
