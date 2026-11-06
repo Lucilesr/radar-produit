@@ -44,7 +44,10 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   }
 
   const matchedRole = search.roles.find(role => matchesSearchedRole(job.title, role));
-  if (matchedRole) {
+  if (!search.roles.length) {
+    exception = true;
+    flags.push("Aucun poste choisi : indiquez le poste que vous cherchez dans Ma recherche.");
+  } else if (matchedRole) {
     score += 38;
     reasons.push(`Intitulé proche de votre recherche : ${matchedRole}.`);
   } else {
@@ -90,8 +93,11 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   const tolerance = search.payTolerancePercent ?? 0;
   if (job.contractType !== "part_time" && (job.annualSalary != null || job.contractType === "cdi" || job.contractType === "cdd")) {
     if (job.annualSalary == null) {
-      exception = true;
-      flags.push("Salaire non communiqué");
+      // Without a minimum, a missing salary blocks nothing: no flag to check.
+      if (search.minimumSalary > 0) {
+        exception = true;
+        flags.push("Salaire non communiqué");
+      }
     } else if (job.annualSalary >= search.minimumSalary) {
       score += 20;
       reasons.push(`Rémunération annoncée à ${formatEuro(job.annualSalary)} brut/an.`);
@@ -106,8 +112,10 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
 
   if (job.dailyRate != null || job.contractType === "freelance" || job.contractType === "portage") {
     if (job.dailyRate == null) {
-      exception = true;
-      flags.push("TJM non communiqué");
+      if (search.minimumDailyRate > 0) {
+        exception = true;
+        flags.push("TJM non communiqué");
+      }
     } else if (job.dailyRate >= search.minimumDailyRate) {
       score += 20;
       reasons.push(`TJM annoncé à ${formatEuro(job.dailyRate)} HT/jour.`);

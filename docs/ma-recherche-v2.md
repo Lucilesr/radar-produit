@@ -282,7 +282,7 @@ Les notes libres de `source-card.tsx` passent dans ce panneau, sous un `Expandab
 | `source-catalog.ts` → `searchTracks` | 3 pistes PO/PM, avec « CDI ≥ 55 k€ » dans le texte | `SearchPreferences.searchTracks` |
 | `web-discovery.ts` → `discoveryQueries` | Requêtes PO/PM constantes | Généré depuis les postes et les pistes du compte (`discoveryQueriesForRoles` existe déjà) |
 | `source-catalog.ts` → `note` | Conseils PO/PM (« Quatre alertes PO/PM… ») | Note générique sur la source ; les conseils personnels vont dans `notes` du compte |
-| `search-preferences.ts` → `defaultSearchPreferences.roles` | PO, PM | À choisir pendant l'onboarding ; plus de poste imposé à un nouveau compte. **Reporté au lot 10**, avec l'état vide et le premier réglage : la valeur par défaut reste le filet de sécurité d'un profil illisible. |
+| `search-preferences.ts` → `defaultSearchPreferences` | PO, PM, CDI + freelance, 55 k€, 500 €/jour | **Fait (ouverture multi-comptes)** : un nouveau compte part sans poste, avec tous les contrats, toute présence et aucun minimum. L'onboarding demande le poste ; « Opportunités » l'attend avant d'afficher les offres. Un profil enregistré garde ses valeurs. |
 
 **Données.**
 

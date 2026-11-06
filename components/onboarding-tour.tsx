@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { RadarTab } from "@/lib/radar-navigation";
 import type { CandidateProfile } from "@/lib/types";
+import { hasSearchedRole, searchPreferences } from "@/lib/search-preferences";
 
 type Phase = "setup" | "intro" | "tour" | "paused" | "done";
 type State = { phase: Phase; index: number };
@@ -25,7 +26,8 @@ const tour = (demo: boolean): Step[] => [
   { target: "nav-sources", title: "Ma recherche", detail: demo ? "Définissez vos critères et découvrez les sources d’offres fictives." : "Définissez vos critères, choisissez vos sources de veille et contrôlez leur actualisation.", action: "click" },
 ];
 const mobileTourLabels: Record<string,string> = {"nav-dashboard":"Accueil","nav-offers":"Offres","nav-pipeline":"Suivi","nav-profile":"Profil","nav-sources":"Recherche"};
-const complete = (p: CandidateProfile) => Boolean(p.searchPreferences);
+// Criteria are set once the account has chosen a role: the neutral defaults have none.
+const complete = (p: CandidateProfile) => hasSearchedRole(searchPreferences(p.searchPreferences));
 
 export function OnboardingTour({ ownerId, profile, activeTab, onNavigate, initialHasFact }: { ownerId: string; profile: CandidateProfile; activeTab: RadarTab; onNavigate: (tab: RadarTab) => void; initialHasFact?: boolean }) {
   const [state, setState] = useState<State | null>(null);

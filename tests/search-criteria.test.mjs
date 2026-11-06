@@ -18,14 +18,37 @@ const { searchPreferences } = await import(preferences);
 const { changedCriteriaIds, criteriaGroups, criteriaTokens, missingCriteria } = await import(moduleUrl("search-criteria", { "./search-preferences": preferences, "./search-tracks": tracks }));
 const nbsp = text => text.replace(/[  ]/g, " ");
 
-test("les préférences par défaut donnent une étiquette par critère renseigné", () => {
-  const tokens = criteriaTokens(searchPreferences(undefined));
+test("les critères enregistrés donnent une étiquette par critère renseigné", () => {
+  const tokens = criteriaTokens({ ...searchPreferences(undefined), roles: ["Product Owner", "Product Manager"], contracts: ["cdi", "freelance"], remote: "hybrid", minimumSalary: 55000, minimumDailyRate: 500 });
   assert.deepEqual(tokens.map(token => token.id), ["roles", "contracts", "remote", "salary", "dailyRate", "matchScore", "includedLocations"]);
   assert.equal(tokens[0].value, "Product Owner, Product Manager");
   assert.equal(nbsp(tokens.find(token => token.id === "salary").value), "≥ 55 000 € brut/an");
   assert.equal(nbsp(tokens.find(token => token.id === "dailyRate").value), "≥ 500 € HT/jour");
   assert.equal(tokens.find(token => token.id === "includedLocations").value, "Tous les lieux");
   assert.ok(tokens.every(token => token.tone === "include"));
+});
+
+test("un nouveau compte part de critères neutres, sans poste ni minimum", () => {
+  const neutral = searchPreferences(undefined);
+  assert.deepEqual(neutral.roles, []);
+  assert.deepEqual(neutral.contracts, ["cdi", "cdd", "freelance", "portage", "part_time"]);
+  assert.equal(neutral.remote, "onsite");
+  assert.equal(neutral.minimumSalary, 0);
+  assert.equal(neutral.minimumDailyRate, 0);
+  assert.equal(neutral.searchTracks, undefined);
+  const tokens = criteriaTokens(neutral);
+  assert.equal(tokens[0].value, "Aucun poste choisi");
+  assert.equal(tokens.find(token => token.id === "salary").value, "Aucun minimum");
+  assert.equal(tokens.find(token => token.id === "dailyRate").value, "Aucun minimum");
+  assert.ok(!tokens.some(token => /Product/.test(token.fullValue)));
+});
+
+test("un compte enregistré garde ses valeurs, même en retirant tous ses postes", () => {
+  const saved = searchPreferences({ roles: ["Data Analyst"], contracts: ["cdi"], remote: "full_remote", minimumSalary: 48000, minimumDailyRate: 0 });
+  assert.deepEqual(saved.roles, ["Data Analyst"]);
+  assert.equal(saved.minimumSalary, 48000);
+  assert.deepEqual(searchPreferences({ ...saved, roles: [] }).roles, []);
+  assert.deepEqual(searchPreferences({ ...saved, roles: "Product Owner" }).roles, []);
 });
 
 test("les seuils suivent les contrats recherchés", () => {
@@ -94,7 +117,7 @@ test("le tableau ouvre les critères vides demandés et garde une tolérance éd
  assert.equal(new Set(after).size,after.length);
 });
 test("les sauvegardes de champs distincts conservent les dernières valeurs des autres contrôles",()=>{
- const base=searchPreferences({boostKeywords:[],searchTracks:[]});
+ const base=searchPreferences({boostKeywords:[],searchTracks:[],minimumSalary:55000});
  const next={...base,minimumSalary:60000};
  const current={...base,boostKeywords:["SaaS"],contracts:["cdi"],searchTracks:[{id:"data",label:"Data",kind:"core",terms:["Data Analyst"]}]};
  const merged=mergeCriteriaDraft(base,next,current);

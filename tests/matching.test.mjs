@@ -18,13 +18,25 @@ const tracks = moduleUrl("search-tracks");
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations, "./search-tracks": tracks });
 const searchPreferencesModule = await import(preferences);
 const { searchPreferences } = searchPreferencesModule;
-const { assessJob } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations }));
+const { assessJob: assessWith } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations }));
 const { assessLocation, normalizeLocationRules } = await import(locations);
 const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement }));
 const { createCandidateBrief, briefOffer } = await import(moduleUrl("candidate-brief"));
 const opportunityViews = moduleUrl("opportunity-views");
 const { selectTriageActions, sortOffersForTriage } = await import(moduleUrl("triage", { "./application-workflow": workflow, "./opportunity-views": opportunityViews }));
+// These fixtures describe a PO/PM search explicitly: a new account no longer starts with it.
+const poSearch = searchPreferences({ roles: ["Product Owner", "Product Manager"], contracts: ["cdi", "freelance"], remote: "hybrid", minimumSalary: 55000, minimumDailyRate: 500 });
+const assessJob = (job, preferences = poSearch) => assessWith(job, preferences);
 const baseline = { title: "Product Owner", company: "Fixture", contractType: "cdi", annualSalary: 55000, remoteMode: "full_remote", language: "fr", source: "Autre" };
+
+test("sans poste choisi, une offre reste à vérifier sans pénalité d'intitulé", () => {
+  const neutral = searchPreferences(undefined);
+  const result = assessWith({ ...baseline, annualSalary: null }, neutral);
+  assert.equal(result.tier, "exception");
+  assert.match(result.flags.join(" "), /Aucun poste choisi/);
+  assert.doesNotMatch(result.flags.join(" "), /Salaire non communiqué|Intitulé éloigné/);
+  assert.equal(assessWith({ ...baseline, contractType: "freelance", dailyRate: null, annualSalary: null }, neutral).flags.some(flag => /TJM non communiqué/.test(flag)), false);
+});
 
 test("le seuil Jobgether est normalisé par compte", () => {
   assert.equal(searchPreferences(undefined).minimumMatchScore, 55);
@@ -36,7 +48,7 @@ test("le seuil Jobgether est normalisé par compte", () => {
 
 test("Europe inclut les offres situées dans un pays européen", () => {
   assert.deepEqual(assessLocation("Paris, France", ["Europe"], []), { excluded: false, uncertain: false });
-  assert.equal(assessJob({ ...baseline, announcedLocation: "Berlin, Germany" }, { ...searchPreferences(undefined), includedLocations: ["Europe"] }).tier, "priority");
+  assert.equal(assessJob({ ...baseline, announcedLocation: "Berlin, Germany" }, { ...poSearch, includedLocations: ["Europe"] }).tier, "priority");
 });
 test("Europe sauf Roumanie accepte les autres pays et garde une zone vague à vérifier", () => {
   assert.deepEqual(assessLocation("Bucharest, Romania", ["Europe"], ["Roumanie"]), { excluded: true, uncertain: false });
@@ -60,11 +72,11 @@ test("une exclusion ne masque pas une offre ouverte dans un autre lieu", () => {
   assert.deepEqual(assessLocation(undefined, ["Europe"], []), { excluded: false, uncertain: true });
 });
 test("une inclusion explicite peut ouvrir le marché américain auparavant écarté", () => {
-  const preferences = { ...searchPreferences(undefined), includedLocations: ["États-Unis"] };
+  const preferences = { ...poSearch, includedLocations: ["États-Unis"] };
   assert.notEqual(assessJob({ ...baseline, description: "Remote - United States", announcedLocation: "États-Unis" }, preferences).tier, "excluded");
 });
 test("exclure un autre pays ne désactive pas la restriction américaine existante", () => {
-  const preferences = { ...searchPreferences(undefined), excludedLocations: ["France"] };
+  const preferences = { ...poSearch, excludedLocations: ["France"] };
   assert.equal(assessJob({ ...baseline, description: "Remote - United States" }, preferences).tier, "excluded");
 });
 
@@ -146,11 +158,11 @@ test("les rythmes hybrides sont acceptés quand le choix est hybride", () => {
 
 test("choix manuel d'entretien conservé, pas de dérogation présumée", () => {
   const offer = { ...baseline, remoteMode: "hybrid", description: "2 jours sur site par semaine" };
-  const result = assessJob({ ...offer, status: "interview" }, { ...searchPreferences(), remote: "exceptional" });
+  const result = assessJob({ ...offer, status: "interview" }, { ...poSearch, remote: "exceptional" });
   assert.equal(result.tier, "exception");
   assert.match(result.flags.join(" "), /non acquise/);
-  assert.equal(assessJob({ ...offer, status: "closed" }, { ...searchPreferences(), remote: "exceptional" }).tier, "excluded");
-  assert.equal(assessJob({ ...offer, status: "interview", annualSalary: 40000 }, { ...searchPreferences(), remote: "exceptional" }).tier, "excluded");
+  assert.equal(assessJob({ ...offer, status: "closed" }, { ...poSearch, remote: "exceptional" }).tier, "excluded");
+  assert.equal(assessJob({ ...offer, status: "interview", annualSalary: 40000 }, { ...poSearch, remote: "exceptional" }).tier, "excluded");
 });
 
 test("minimums stricts et rémunérations absentes à confirmer", () => {
@@ -222,7 +234,7 @@ test("une offre sélectionnée n’est pas présentée comme une candidature dé
 });
 
 test("les rythmes de présence explicites respectent le choix hybride",()=>{
- const assess=(onsiteDaysPerWeek,onsiteDaysPerMonth)=>assessJob({...baseline,remoteMode:"hybrid",onsiteDaysPerWeek,onsiteDaysPerMonth},{...searchPreferences(),remote:"hybrid"});
+ const assess=(onsiteDaysPerWeek,onsiteDaysPerMonth)=>assessJob({...baseline,remoteMode:"hybrid",onsiteDaysPerWeek,onsiteDaysPerMonth},{...poSearch,remote:"hybrid"});
  assert.equal(assess(1,null).tier,"match");assert.equal(assess(2,null).tier,"match");assert.equal(assess(null,2).tier,"match");assert.equal(assess(null,8).tier,"match");assert.equal(assess(1,8).tier,"match");
 });
 
@@ -235,23 +247,23 @@ test("les quatre niveaux de présence et les anciennes préférences sont reconn
   assert.equal(searchPreferences({ remote: "occasional" }).remote, "exceptional");
   assert.equal(searchPreferences({ remote: "light_hybrid" }).remote, "hybrid");
   const offer = { ...baseline, remoteMode: "hybrid", annualSalary: 65000 };
-  assert.equal(assessJob(offer, { ...searchPreferences(), remote: "full_remote" }).tier, "excluded");
-  assert.equal(assessJob(offer, { ...searchPreferences(), remote: "exceptional" }).tier, "excluded");
-  assert.equal(assessJob(offer, { ...searchPreferences(), remote: "hybrid" }).tier, "match");
-  assert.equal(assessJob({ ...offer, remoteMode: "onsite" }, { ...searchPreferences(), remote: "onsite" }).tier, "match");
+  assert.equal(assessJob(offer, { ...poSearch, remote: "full_remote" }).tier, "excluded");
+  assert.equal(assessJob(offer, { ...poSearch, remote: "exceptional" }).tier, "excluded");
+  assert.equal(assessJob(offer, { ...poSearch, remote: "hybrid" }).tier, "match");
+  assert.equal(assessJob({ ...offer, remoteMode: "onsite" }, { ...poSearch, remote: "onsite" }).tier, "match");
 });
 
 test("CDD est conservé et filtré comme contrat salarié", () => {
   const cdd = { ...baseline, contractType: "cdd", annualSalary: 65000 };
   assert.deepEqual(searchPreferences({ contracts: ["cdd"] }).contracts, ["cdd"]);
-  assert.equal(assessJob(cdd, { ...searchPreferences(), contracts: ["cdi"] }).tier, "excluded");
-  assert.equal(assessJob(cdd, { ...searchPreferences(), contracts: ["cdd"] }).tier, "priority");
+  assert.equal(assessJob(cdd, { ...poSearch, contracts: ["cdi"] }).tier, "excluded");
+  assert.equal(assessJob(cdd, { ...poSearch, contracts: ["cdd"] }).tier, "priority");
   assert.equal(parseOfferText("Product Owner\nCDD\nSalaire 65k€", "Autre").contractType, "cdd");
 });
 
 for (const contractType of ["cdi", "cdd", "freelance", "other"]) {
   test(`tout montant connu respecte les minimums personnalisés : ${contractType}`, () => {
-    const preferences = { ...searchPreferences(), minimumSalary: 58000, minimumDailyRate: 570, contracts: ["cdi", "cdd", "freelance"] };
+    const preferences = { ...poSearch, minimumSalary: 58000, minimumDailyRate: 570, contracts: ["cdi", "cdd", "freelance"] };
     const offer = { ...baseline, contractType, annualSalary: null, dailyRate: null };
     for (const [field, threshold, flag] of [["annualSalary", 58000, "Salaire"], ["dailyRate", 570, "TJM"]]) {
       for (const value of [0, threshold - 1, threshold - 5000]) {
@@ -269,7 +281,7 @@ for (const contractType of ["cdi", "cdd", "freelance", "other"]) {
 
 test("le recalcul des critères masque les offres sous les minimums dans À examiner", async () => {
   const { inOpportunityView } = await import(opportunityViews);
-  const preferences = { ...searchPreferences(), minimumSalary: 58000, minimumDailyRate: 570 };
+  const preferences = { ...poSearch, minimumSalary: 58000, minimumDailyRate: 570 };
   for (const amounts of [{ annualSalary: 57999 }, { annualSalary: 25000 }, { annualSalary: null, dailyRate: 569 }]) {
     const offer = { ...baseline, ...amounts, contractType: "other", status: "new", reviewState: "to_review" };
     const assessment = assessJob(offer, preferences);

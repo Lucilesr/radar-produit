@@ -6,7 +6,7 @@ import { normalizeJobInput } from "./server";
 
 const examples = [
   {
-    title: "EXEMPLE — Product Owner à examiner",
+    title: "EXEMPLE — Offre à examiner",
     company: "Entreprise fictive Atlas",
     contractType: "cdi",
     remoteMode: "hybrid",
@@ -17,7 +17,7 @@ const examples = [
     reviewState: "to_review",
   },
   {
-    title: "EXEMPLE — Product Manager, candidature envoyée",
+    title: "EXEMPLE — Candidature envoyée",
     company: "Entreprise fictive Boréal",
     contractType: "cdi",
     remoteMode: "full_remote",

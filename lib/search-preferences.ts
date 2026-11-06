@@ -2,15 +2,20 @@ import type { SearchPreferences } from "./types";
 import { normalizeLocationRules } from "./location-criteria";
 import { foldTerm, inheritedSearchTracks, normalizeSearchTracks } from "./search-tracks";
 
+/**
+ * Neutral starting point of an account that has not chosen its criteria yet:
+ * no role, every contract, any presence, no pay minimum. Radar asks for the role
+ * during onboarding; a saved profile always keeps its own values.
+ */
 export const defaultSearchPreferences: SearchPreferences = {
-  roles: ["Product Owner", "Product Manager"],
+  roles: [],
   dismissedRoleSuggestions: [],
   includedLocations: [],
   excludedLocations: [],
-  contracts: ["cdi", "freelance"],
-  remote: "hybrid",
-  minimumSalary: 55000,
-  minimumDailyRate: 500,
+  contracts: ["cdi", "cdd", "freelance", "portage", "part_time"],
+  remote: "onsite",
+  minimumSalary: 0,
+  minimumDailyRate: 0,
   boostKeywords: [],
   excludeKeywords: [],
   minimumMatchScore: 55,
@@ -18,13 +23,18 @@ export const defaultSearchPreferences: SearchPreferences = {
 };
 
 export function normalizeRoleTitles(value: unknown): string[] {
-  if (!Array.isArray(value)) return defaultSearchPreferences.roles;
+  if (!Array.isArray(value)) return [];
   const roles = value.filter((role): role is string => typeof role === "string")
     .map(role => role.trim().replace(/\s+/g, " "))
     .map(role => role.toLowerCase() === "po" || role.toLowerCase() === "product owner" ? "Product Owner" : role.toLowerCase() === "pm" || role.toLowerCase() === "product manager" ? "Product Manager" : role)
     .filter(role => role.length >= 2 && role.length <= 80 && /[\p{L}\p{N}]/u.test(role));
   const unique = [...new Map(roles.map(role => [role.toLocaleLowerCase("fr"), role])).values()];
-  return unique.length ? unique.slice(0, 12) : defaultSearchPreferences.roles;
+  return unique.slice(0, 12);
+}
+
+/** True once the account has chosen at least one role: offers can then be ranked. */
+export function hasSearchedRole(preferences: Pick<SearchPreferences, "roles">) {
+  return preferences.roles.length > 0;
 }
 
 /** Lowest pay kept with a tolerance, rounded to the euro: 55 000 at 5 % gives 52 250. */
