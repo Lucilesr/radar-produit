@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import type { CandidateProfile, SearchPreferences } from "@/lib/types";
-import { foldKeyword, normalizeRoleTitles, payFloor, remoteForContract, searchPreferences } from "@/lib/search-preferences";
+import { Plus, X } from "lucide-react";
+import { suggestedRoles } from "@/lib/role-suggestions";
+import type { CandidateProfile, SearchPreferences, JobRecord } from "@/lib/types";
+import { foldKeyword, maxDismissedRoleSuggestions, normalizeRoleTitles, payFloor, remoteForContract, searchPreferences } from "@/lib/search-preferences";
 import { contractLabels, missingCriteria } from "@/lib/search-criteria";
 import { criteriaEditGroups, mergeCriteriaDraft, type CriteriaFormPart, type CriteriaEditPart } from "@/lib/criteria-editor";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -12,7 +14,7 @@ import { Slider } from "@/components/ui/slider";
 
 const euro = (amount: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(amount) + " €";
 import { ChoiceSelect } from "@/components/choice-select";
-import { WorkspaceButton } from "@/components/workspace-form";
+import { WorkspaceButton, WorkspaceFormError } from "@/components/workspace-form";
 import { foldTerm, maxTermsPerTrack, maxTracks, searchTracksFor, trackKindLabels, trackKinds } from "@/lib/search-tracks";
 import type { SearchTrack } from "@/lib/types";
 import { locationRegionOptions, normalizeLocationRules } from "@/lib/location-criteria";
@@ -25,7 +27,7 @@ const partTitles: Record<CriteriaFormPart, string> = { roles: "search-roles-titl
 export type CriteriaSaveStatus = { state: "idle"|"pending"|"saving"|"saved"|"error"; retry?:()=>void };
 
 /** The whole criteria form, or with `only` a single group of it (popover or table row). */
-export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro = true, only, table = false, onStatusChange, onOpenJobgether }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; showIntro?: boolean; only?: CriteriaFormPart; table?:boolean; onStatusChange?:(status:CriteriaSaveStatus)=>void; onOpenJobgether?:()=>void }) {
+export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro = true, only, table = false, onStatusChange, onOpenJobgether, jobs = [] }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; showIntro?: boolean; only?: CriteriaFormPart; table?:boolean; onStatusChange?:(status:CriteriaSaveStatus)=>void; onOpenJobgether?:()=>void; jobs?:JobRecord[] }) {
   const savedProfile=useRef(profile);
   const saveQueue=useRef<Promise<unknown>>(Promise.resolve());
   const failedSave=useRef<(()=>Promise<boolean>)|null>(null);
@@ -41,7 +43,7 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
         const candidate={...savedProfile.current,searchPreferences:mergeCriteriaDraft(base,requested,searchPreferences(savedProfile.current.searchPreferences))};
         try{
           const saved=await saveProfile(candidate);
-          if(saved){savedProfile.current=candidate;failedSave.current=null;setRoleMessage("");setLocationMessage("");setKeywordMessage("");}else failedSave.current=attempt;
+          if(saved){savedProfile.current=candidate;failedSave.current=null;setRoleMessage("");setLocationMessage("");setKeywordMessage("");setSuggestionError("");}else failedSave.current=attempt;
           return saved;
         }catch{failedSave.current=attempt;return false;}
         finally{pendingSaves.current--;setAggregateState(pendingSaves.current?"saving":failedSave.current?"error":"saved");}
@@ -90,6 +92,33 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
   const latest = useRef({ profile, onSave, roles, includedLocations, excludedLocations });
   useEffect(() => { latest.current = { profile, onSave, roles, includedLocations, excludedLocations }; });
   const [roleMessage, setRoleMessage] = useState("");
+  const [suggestionError,setSuggestionError]=useState("");
+  const [suggestionOperation,setSuggestionOperation]=useState<{title:string;kind:"add"|"dismiss"}|null>(null);
+  const suggestionInFlight=useRef(false);
+  const suggestionList=useRef<HTMLDivElement>(null);
+  const roleField=useRef<HTMLInputElement>(null);
+  const [suggestionFocus,setSuggestionFocus]=useState<HTMLElement|null>(null);
+  const preferences=searchPreferences(profile.searchPreferences);
+  const suggestions=suggestedRoles(jobs,preferences);
+  const suggestionBusy=savingRole||savingLocation||saving||aggregateState==="saving"||saveState==="pending"||suggestionOperation!==null;
+  useEffect(()=>{
+    if(!suggestionFocus)return;
+    const target=suggestionFocus.isConnected?suggestionFocus:(suggestionList.current?.querySelector<HTMLElement>("button:not(:disabled)")??roleField.current);
+    target?.focus();setSuggestionFocus(null);
+  },[suggestionFocus,suggestions]);
+  async function actOnSuggestion(title:string,kind:"add"|"dismiss",trigger:HTMLElement){
+    if(suggestionInFlight.current||suggestionBusy)return;
+    if(kind==="add"&&roles.length>=12||kind==="dismiss"&&(preferences.dismissedRoleSuggestions??[]).length>=maxDismissedRoleSuggestions)return;
+    suggestionInFlight.current=true;setSuggestionOperation({title,kind});setSuggestionError("");
+    try{
+      const saved=kind==="add"
+        ? await persistRoles(normalizeRoleTitles([...roles,title]),roles)
+        : await onSave({...profile,searchPreferences:{...preferences,dismissedRoleSuggestions:[...(preferences.dismissedRoleSuggestions??[]),title]}});
+      if(!saved)setSuggestionError(kind==="add"?"Poste non ajouté. Réessayez.":"Suggestion non écartée. Réessayez.");
+      else if(kind==="dismiss")setRoleMessage(`« ${title} » ne sera plus proposé.`);
+    }catch{setSuggestionError("Modification non enregistrée. Réessayez.");}
+    finally{suggestionInFlight.current=false;setSuggestionOperation(null);setSuggestionFocus(trigger);}
+  }
   useEffect(() => { setRoles(searchPreferences(profile.searchPreferences).roles); }, [profile.searchPreferences]);
   useEffect(() => { const saved = searchPreferences(profile.searchPreferences); setBoostKeywords(saved.boostKeywords ?? []); setExcludeKeywords(saved.excludeKeywords ?? []); }, [profile.searchPreferences]);
   useEffect(() => { const saved = searchPreferences(profile.searchPreferences); setIncludedLocations(saved.includedLocations ?? []); setExcludedLocations(saved.excludedLocations ?? []); }, [profile.searchPreferences]);
@@ -180,10 +209,12 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
         if (restoreInput) setRoleInput(restoreInput);
         setRoleMessage("Enregistrement non confirmé. Réessayez.");
       }
+      return saved;
     } catch {
       setRoles(previous);
       if (restoreInput) setRoleInput(restoreInput);
       setRoleMessage("Enregistrement non confirmé. Réessayez.");
+      return false;
     } finally {
       roleSaveInFlight.current = false;
       setSavingRole(false);
@@ -271,10 +302,20 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
         <p role="status" className="search-form-status">{keywordMessage}</p></>;
   const controls:Record<CriteriaEditPart,ReactNode>={
  roles:<><label htmlFor="searched-role" className="search-field-label">Ajouter un poste</label>
-        <div className="search-role-entry"><input id="searched-role" type="text" maxLength={80} value={roleInput} disabled={savingRole || saving} onChange={event => { setRoleInput(event.target.value); setRoleMessage(""); }} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addRole(); } }} placeholder="Ex. Product Owner" /><button type="button" className="secondary-button" disabled={savingRole || saving || !roleInput.trim()} onClick={addRole}>Ajouter</button></div>
+        <div className="search-role-entry"><input ref={roleField} id="searched-role" type="text" maxLength={80} value={roleInput} disabled={savingRole || saving} onChange={event => { setRoleInput(event.target.value); setRoleMessage(""); }} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addRole(); } }} placeholder="Ex. Product Owner" /><button type="button" className="secondary-button" disabled={savingRole || saving || !roleInput.trim()} onClick={addRole}>Ajouter</button></div>
         <ul className="search-role-list" aria-label="Postes enregistrés">{roles.map(role => <li key={role}>{role}<button type="button" aria-label={`Retirer ${role}`} disabled={savingRole || saving} onClick={() => removeRole(role)}>×</button></li>)}</ul>
         {roleMessage ? <p role="status" className="search-form-status">{roleMessage}</p> : null}
-        <p className="search-criteria-help">Les postes s’enregistrent dès l’ajout. Vous pouvez aussi appuyer sur Entrée.</p></>,
+        <p className="search-criteria-help">Les postes s’enregistrent dès l’ajout. Vous pouvez aussi appuyer sur Entrée.</p>
+        {suggestions.length?<div ref={suggestionList} className="role-suggestions" role="group" aria-label="Postes suggérés depuis vos offres">
+          <p className="signal-help">Vus dans vos offres :</p>
+          <ul>{suggestions.map(suggestion=><li key={suggestion.title} className="role-suggestion">
+            <WorkspaceButton variant="quiet" busy={suggestionOperation?.title===suggestion.title&&suggestionOperation.kind==="add"} disabled={suggestionBusy||roles.length>=12} title={roles.length>=12?"Vous pouvez viser jusqu’à 12 postes.":undefined} onClick={event=>void actOnSuggestion(suggestion.title,"add",event.currentTarget)}><Plus size={14} aria-hidden/>{suggestion.title} ({suggestion.count})</WorkspaceButton>
+            <WorkspaceButton variant="quiet" busy={suggestionOperation?.title===suggestion.title&&suggestionOperation.kind==="dismiss"} disabled={suggestionBusy||(preferences.dismissedRoleSuggestions??[]).length>=maxDismissedRoleSuggestions} aria-label={`Ne plus proposer ${suggestion.title}`} title={(preferences.dismissedRoleSuggestions??[]).length>=maxDismissedRoleSuggestions?"Vous pouvez écarter jusqu’à 30 suggestions.":undefined} onClick={event=>void actOnSuggestion(suggestion.title,"dismiss",event.currentTarget)}><X size={14} aria-hidden/></WorkspaceButton>
+          </li>)}</ul>
+          {roles.length>=12?<p className="signal-help">Vous visez déjà 12 postes. Retirez-en un pour en ajouter un autre.</p>:null}
+          {(preferences.dismissedRoleSuggestions??[]).length>=maxDismissedRoleSuggestions?<p className="signal-help">Vous avez écarté 30 suggestions, la limite de votre liste.</p>:null}
+        </div>:null}
+        <WorkspaceFormError message={suggestionError}/></>,
  tracks:<><SearchTracksEditor profile={profile} onSave={onSave} roles={roles} disabled={savingRole || saving} /></>,
  contracts:<><fieldset className="search-contracts"><legend className={table?"sr-only":"search-field-label"}>Contrats</legend><div className="search-contract-options">{([["cdi", "CDI", ""], ["cdd", "CDD", ""], ["freelance", "Freelance", ""], ["portage", "Portage salarial", "comparé au TJM"], ["part_time", "Temps partagé", "rémunération à vérifier"]] as const).map(([value, label, hint]) => <label key={value}><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} /><span>{label}{hint ? <small>{hint}</small> : null}</span></label>)}</div></fieldset></>,
  presence:<><fieldset className="search-presence-rows"><legend className="sr-only">Présence acceptable par contrat</legend>

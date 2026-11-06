@@ -4,6 +4,7 @@ import { foldTerm, inheritedSearchTracks, normalizeSearchTracks } from "./search
 
 export const defaultSearchPreferences: SearchPreferences = {
   roles: ["Product Owner", "Product Manager"],
+  dismissedRoleSuggestions: [],
   includedLocations: [],
   excludedLocations: [],
   contracts: ["cdi", "freelance"],
@@ -56,6 +57,18 @@ export function normalizeKeywords(value: unknown): string[] {
 }
 export const foldKeyword = foldTerm;
 
+export const maxDismissedRoleSuggestions = 30;
+
+/** Keep the account's dismissals without losing an older choice on another criteria save. */
+export function normalizeDismissedRoleSuggestions(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const titles = value.filter((title): title is string => typeof title === "string")
+    .map(title => title.trim().replace(/\s+/g, " "))
+    .filter(title => title.length >= 2 && title.length <= 80 && /\p{L}/u.test(title));
+  const seen = new Set<string>();
+  return titles.filter(title => !seen.has(foldTerm(title)) && seen.add(foldTerm(title)) !== undefined).slice(0, maxDismissedRoleSuggestions);
+}
+
 export function searchPreferences(value: unknown): SearchPreferences {
   if (!value || typeof value !== "object") return defaultSearchPreferences;
   const raw = value as Partial<SearchPreferences>;
@@ -67,6 +80,7 @@ export function searchPreferences(value: unknown): SearchPreferences {
   return {
     roles,
     searchTracks: normalizeSearchTracks(raw.searchTracks) ?? inheritedSearchTracks(roles),
+    dismissedRoleSuggestions: normalizeDismissedRoleSuggestions(raw.dismissedRoleSuggestions),
     includedLocations: normalizeLocationRules(raw.includedLocations),
     excludedLocations: normalizeLocationRules(raw.excludedLocations ?? defaultSearchPreferences.excludedLocations),
     contracts: contracts.length ? [...new Set(contracts)] : defaultSearchPreferences.contracts,

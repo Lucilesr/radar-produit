@@ -1,3 +1,7 @@
+## 6 novembre 2026 — Postes suggérés depuis vos offres (lot 16b)
+
+Sous « Postes visés », le tableau et le popover proposent jusqu’à trois intitulés vus dans au moins trois offres non supprimées des trente derniers jours. Les suggestions excluent les postes déjà visés et les termes des pistes du compte. Un clic ajoute explicitement le poste avec la confirmation d’impact existante ; « Ne plus proposer » conserve le refus dans le compte, y compris après rechargement. Sans suggestion, la ligne disparaît. Aucune dépendance ni migration SQL ajoutée.
+
 ## 6 novembre 2026 — Finitions de Ma recherche (lot 16a)
 
 La section « Critères » indique l’enregistrement automatique et signale les critères modifiés pendant la visite. Les confirmations d’impact proposent « Annuler » et « Voir les offres », vers « À examiner ». Le titre « Sources » rassemble les statuts suivis ; jusqu’à quatre sources non suivies sont suggérées selon les critères et s’ajoutent directement. La vue dépliée rappelle que les offres sans salaire affiché sont gardées, à vérifier. Aucune règle de classement ni suggestion de poste modifiée.
