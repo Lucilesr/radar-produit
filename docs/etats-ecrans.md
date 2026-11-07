@@ -684,7 +684,7 @@ Preuve : `questions-apres-validation-defaut`, après une confirmation réelle. L
 | G-P1 | Mon profil / documents | Un fichier lié est déclaré indisponible pendant sa lecture initiale. | Squelette ou lecture en cours avant de conclure à l’absence ; erreur de lecture distincte. | Correctif Mon profil préparé ; recette après déploiement. |
 | G-P2 | Mon profil / carnet | Recherche sans résultat : conseil de changer de filtre mais pas de commande pour effacer la recherche. | Message adapté et Effacer la recherche, avec retour du focus. | Même PR Mon profil. |
 | G-P3 | Mon profil / carnet | Défilements JavaScript smooth non soumis à la préférence système. | Positionnement instantané si le mouvement réduit est demandé. | Même PR Mon profil. |
-| G-A1 | Aujourd’hui | Nouveau profil sans poste : le chemin vers le réglage initial n’est pas explicite dans la carte prioritaire. | Orientation vers poste, sources et première actualisation ; tour existant conservé. | PR Aujourd’hui à créer. |
+| G-A1 | Aujourd’hui | Nouveau profil sans poste : le chemin vers le réglage initial n’est pas explicite dans la carte prioritaire. | Orientation vers poste, sources et première actualisation ; tour existant conservé. | Correctif Aujourd’hui préparé ; recette après déploiement. |
 
 ### Cosmétique ou amélioration planifiée
 
