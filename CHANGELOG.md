@@ -2,6 +2,10 @@
 
 « Tout modifier » reste aligné à droite lorsque l’en-tête passe sur plusieurs lignes, ainsi que dans les vues détaillée et édition. Les boutons et le focus Signal existants sont conservés.
 
+## 7 novembre 2026 — Statut automatique des sources
+
+Le sélecteur d’état du suivi disparaît : la configuration se déduit des liens et recherches enregistrés ou d’une alerte reçue. Une note seule ne configure pas une source. Les collecteurs intégrés sont prêts sans réglage manuel ; la pause reste une action explicite. Le tag rejoint la croix en haut à droite du panneau. Replier la configuration libère immédiatement la place pour les offres trouvées.
+
 ## 7 novembre 2026 — Panneau des sources simplifié
 
 Le tag « À configurer » suffit dans la liste. Le panneau affiche une seule identité, des recherches sans doublons pour les sources à consulter et une configuration qui regroupe suivi, lien, notes et rythme de visite. Le chevron reste aligné avec le titre. L’aide détaillée est repliable ; la suppression et la fermeture restent accessibles pendant le défilement, avec confirmation et retour du focus.

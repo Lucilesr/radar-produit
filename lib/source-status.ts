@@ -7,6 +7,10 @@ export type SourceStatus = "ok" | "error" | "to_configure" | "paused" | "new" | 
 /** What a setting of one source holds, as far as its status is concerned. */
 export type SourceStatusInput = {
   state?: string;
+  linkUrl?: string;
+  searchLinks?: Record<string, { Site?: string; Google?: string }>;
+  latestAlert?: { url: string };
+  lastSyncedAt?: string;
   selected?: boolean;
   health?: string;
   lastVisitedAt?: string;
@@ -27,11 +31,24 @@ export const visitEvery = (setting?: { visitEveryDays?: number }) =>
 /** « Aujourd'hui » reminds about a source to visit unless the account turned it off. */
 export const remindsInToday = (setting?: { remindInToday?: boolean }) => setting?.remindInToday !== false;
 
+/** Configuration is inferred from saved inputs, never from a declared progress state. */
+export function hasSourceConfiguration(setting: SourceStatusInput, mode: SourceMode): boolean {
+  // These built-in collectors have no per-source setup to complete.
+  if (mode === "rss" || mode === "api") return true;
+  const usable = (value?: string) => {
+    if (!value || value.length > 2048) return false;
+    try { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password; }
+    catch { return false; }
+  };
+  return usable(setting?.linkUrl) || usable(setting?.latestAlert?.url)
+    || Object.values(setting?.searchLinks ?? {}).some(links => usable(links?.Site) || usable(links?.Google));
+}
+
 export function sourceStatus(setting: SourceStatusInput, mode: SourceMode, now: Date = new Date()): SourceStatus {
   if (sourceKind(mode) === "automatic") {
     if (setting?.state === "paused") return "paused";
     if (setting?.health === "degraded") return "error";
-    return setting?.state === "configured" ? "ok" : "to_configure";
+    return hasSourceConfiguration(setting, mode) ? "ok" : "to_configure";
   }
   if (!setting?.lastVisitedAt) return "new";
   const days = setting.visitEveryDays && setting.visitEveryDays > 0 ? setting.visitEveryDays : defaultVisitEveryDays;
@@ -40,7 +57,7 @@ export function sourceStatus(setting: SourceStatusInput, mode: SourceMode, now: 
 }
 
 export const statusLabels: Record<SourceStatus, string> = {
-  ok: "OK",
+  ok: "Configurée",
   error: "Erreur",
   to_configure: "À configurer",
   paused: "En pause",
