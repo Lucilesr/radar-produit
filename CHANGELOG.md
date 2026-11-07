@@ -1,3 +1,7 @@
+## 8 novembre 2026 — Fiche après annulation d’une candidature
+
+- Après Annuler, la fiche maintenue à l’écran relit le statut courant de l’offre. Elle retrouve immédiatement l’action de candidature ; le maintien de lecture après un envoi confirmé reste disponible.
+
 ## 8 novembre 2026 — Vérification de la sauvegarde sur Node22
 
 - Le test d’isolation A/B compare le fichier SQLite octet par octet avant et après export. Il fonctionne aussi sans `sqlite.serialize`, sans ignorer le test ni affaiblir ses contrôles. Aucun changement applicatif.
