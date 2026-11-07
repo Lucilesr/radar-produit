@@ -1,3 +1,7 @@
+## 8 novembre 2026 — Audit C0 des candidatures
+
+- Inventaire du suivi existant, des limites temporelles et mobiles, et des lots C1–C4/L3 retenus. Documentation seule ; le comportement applicatif reste celui du staging39.
+
 ## 8 novembre 2026 — Ranger la réserve
 
 - Compteur de groupes traités, annulation immédiate et actions adaptées : archiver les anciennes, garder les annonces sans rémunération, viser un poste voisin sur choix explicite.
