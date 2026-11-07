@@ -1,12 +1,12 @@
 # Inventaire des états de Radar
 
-Relevé du 7 novembre 2026, après fusion documentaire de #207. Référence applicative de départ : staging version 13, code de `main` validé avant cet audit. L’inventaire ne change pas le code applicatif. Les corrections sont suivies séparément en fin de document, une PR par écran.
+Relevé du 7 novembre 2026, commencé après la fusion documentaire de [#207](https://github.com/Lucilesr/radar-produit/pull/207) sur le staging v13. L’inventaire initial a été publié sans code dans [#212](https://github.com/Lucilesr/radar-produit/pull/212). Les tableaux sont actualisés pour le **staging privé v22** ; les anomalies observées avant correction restent décrites dans le classement historique et leur résolution dans le journal final. Les correctifs applicatifs passent par des PR séparées par écran ou sous-vue.
 
 ## Lecture et périmètre
 
 - **oui** : l’état possède un rendu ou un comportement dans le code actuel ; **partiel** : il existe, avec une lacune décrite ; **non** : aucun traitement dédié. L’existence dans le code et la reproduction visuelle sont distinguées.
-- Les captures viennent uniquement du staging, avec le personnage fictif Camille et des sociétés fictives. Aucun profil, CV, offre ou écran de production n’est publié.
-- Formats de recette : **1360 × 900** et **390 × 844**, sans débordement horizontal de page dans les captures répertoriées. Le Kanban garde son défilement horizontal interne.
+- Les captures viennent uniquement du staging, avec le personnage fictif Camille et des sociétés fictives. Les quatre images du dialogue standard de suppression sont cadrées strictement sur ce dialogue : aucune identité ni donnée du compte ne figure dans le cadre. Aucun profil, CV, offre ou écran de production n’est publié.
+- Fenêtres de recette : **1360 × 900** et **390 × 844** en pixels CSS, avec contrôle du débordement horizontal de page. Le Kanban garde son défilement horizontal interne. Certaines images sont en pleine page ou limitées au dialogue ; le manifeste donne séparément fenêtre, dimensions réelles de l’image et cadrage. Les premières captures tronquées ont été refaites, sans retouche des images.
 - Jeu de volume : **1 000 offres et 50 candidatures**, dont des descriptions et intitulés longs, des fourchettes, des aperçus incomplets et des annonces publiées depuis plus de 21 jours. Création par les API existantes, dans un compte `demo:` isolé ; aucun code applicatif ni schéma modifié.
 - Un exemple chargé n’est pas un compte réellement vide. Un filtre sans résultat n’est pas une suppression des données. Les intitulés des captures précisent le scénario.
 - Un écran à jour n’est pas une preuve de mode hors ligne. Les tentatives d’accès aux outils de simulation réseau de Chrome ont échoué (navigation puis application native). **Hors ligne réel, réseau lent et émulation du mouvement réduit restent à reproduire** ; aucune capture n’est présentée comme telle. La règle CSS de mouvement réduit et les chemins d’erreur sont examinés dans le code. Un conflit API 409 a en revanche été effectivement déclenché et capturé.
@@ -31,7 +31,7 @@ Implémentation : [components/radar-app.tsx](../components/radar-app.tsx). Menu 
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -43,7 +43,7 @@ Implémentation : [components/today-workspace.tsx](../components/today-workspace
 
 | état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
 | --- | --- | --- | --- | --- |
-| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | partiel |
+| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | oui |
 | Vide | La collection est vide ou un filtre ne donne rien. | Ni offre ni sélection : file à jour, Ajouter une offre ; agenda vide explicite. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | oui |
 | Chargement | Entrée, lecture du brouillon ou requête en cours. | Squelette global ; pas de balayage fictif. | Attendre ; les commandes dépendantes sont désactivées. | oui |
 | Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Erreur globale avec Réessayer ; absence d’état propre à une source en erreur. | Lire l’erreur et réessayer ; conserver le brouillon. | oui |
@@ -52,7 +52,7 @@ Implémentation : [components/today-workspace.tsx](../components/today-workspace
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -73,7 +73,7 @@ Implémentation : [components/opportunities-workspace.tsx](../components/opportu
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | partiel |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -88,13 +88,13 @@ Implémentation : [components/offer-workspace.tsx](../components/offer-workspace
 | Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | oui |
 | Vide | La collection est vide ou un filtre ne donne rien. | Données manquantes : À confirmer, Fiche incomplète ou Fiche mystère ; aucune valeur inventée. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | oui |
 | Chargement | Entrée, lecture du brouillon ou requête en cours. | Fiche en mémoire ; aucun squelette distinct. | Attendre ; les commandes dépendantes sont désactivées. | partiel |
-| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Erreur d’une action : message et conservation des faits ; pas de délai sur toutes les requêtes. | Lire l’erreur et réessayer ; conserver le brouillon. | partiel |
+| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Erreur d’une action : message et conservation des faits ; attente bornée à 15 s. | Lire l’erreur et réessayer ; conserver le brouillon. | oui |
 | Succès | Lecture aboutie ou écriture confirmée. | Conditions, adéquation, informations absentes, description et dates. | Poursuivre ; fermer le retour de confirmation si présent. | oui |
 | Partiel : une source en erreur | Un flux échoue mais les autres données sont lisibles. | Les offres connues restent ; l’état de santé est détaillé dans Sources. Les autres écrans ne détaillent pas tous la panne. | Consulter Sources ; réessayer sans effacer les données. | partiel |
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -115,7 +115,7 @@ Implémentation : [components/offer-form.tsx](../components/offer-form.tsx). Ann
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -136,7 +136,7 @@ Implémentation : [lib/daily-lot.ts](../lib/daily-lot.ts). Vingt offres au plus 
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -157,7 +157,7 @@ Implémentation : [lib/reserve.ts](../lib/reserve.ts). Voir le groupe, confirmat
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | partiel |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -172,13 +172,13 @@ Implémentation : [lib/opportunity-views.ts](../lib/opportunity-views.ts). Aprè
 | Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | partiel |
 | Vide | La collection est vide ou un filtre ne donne rien. | Aucune offre archivée : état vide et retour à À examiner. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | oui |
 | Chargement | Entrée, lecture du brouillon ou requête en cours. | Pas de lecture distincte ; état calculé sur les offres. | Attendre ; les commandes dépendantes sont désactivées. | partiel |
-| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Remise à examiner en erreur : offre conservée ; absence de délai dédié à cette écriture. | Lire l’erreur et réessayer ; conserver le brouillon. | partiel |
+| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Remise à examiner en erreur : offre conservée ; attente bornée à 15 s. | Lire l’erreur et réessayer ; conserver le brouillon. | oui |
 | Succès | Lecture aboutie ou écriture confirmée. | Après 21 jours depuis publication, sinon ajout ; rouvrir redonne 21 jours. | Poursuivre ; fermer le retour de confirmation si présent. | oui |
 | Partiel : une source en erreur | Un flux échoue mais les autres données sont lisibles. | Les offres connues restent ; l’état de santé est détaillé dans Sources. Les autres écrans ne détaillent pas tous la panne. | Consulter Sources ; réessayer sans effacer les données. | partiel |
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -199,7 +199,7 @@ Implémentation : [components/opportunities-workspace.tsx](../components/opportu
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -220,7 +220,7 @@ Implémentation : [components/today-workspace.tsx](../components/today-workspace
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -241,7 +241,7 @@ Implémentation : [components/application-kanban.tsx](../components/application-
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -262,7 +262,7 @@ Implémentation : [components/offer-workspace.tsx](../components/offer-workspace
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -270,20 +270,20 @@ Preuve visuelle de référence : [ordinateur](etats-ecrans/candidatures-fiche-or
 
 ### 13. Candidatures — questions du recruteur
 
-Implémentation : [components/application-questions.tsx](../components/application-questions.tsx). Question, limite de caractères, réponse, historique et archivage réversible ; défaut B-C1 après confirmation.
+Implémentation : [components/application-questions.tsx](../components/application-questions.tsx). Question, limite de caractères, réponse confirmée, historique et archivage réversible.
 
 | état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
 | --- | --- | --- | --- | --- |
-| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | partiel |
+| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | oui |
 | Vide | La collection est vide ou un filtre ne donne rien. | Aucune question : Ajouter ; aucune variante : indication explicite. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | oui |
 | Chargement | Entrée, lecture du brouillon ou requête en cours. | Squelettes de questions et actions occupées. | Attendre ; les commandes dépendantes sont désactivées. | oui |
-| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Message d’erreur API ; après confirmation la réponse revient à son ancienne valeur dans le formulaire alors que la nouvelle existe côté serveur (B-C1). | Lire l’erreur et réessayer ; conserver le brouillon. | oui |
-| Succès | Lecture aboutie ou écriture confirmée. | Question, limite de caractères, réponse, historique et archivage réversible ; défaut B-C1 après confirmation. | Poursuivre ; fermer le retour de confirmation si présent. | oui |
+| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Message d’erreur API et reprise ; après confirmation la question, la limite et la réponse confirmées restent affichées. | Lire l’erreur et réessayer ; conserver le brouillon. | oui |
+| Succès | Lecture aboutie ou écriture confirmée. | Question, limite de caractères, réponse confirmée, historique et archivage réversible. | Poursuivre ; fermer le retour de confirmation si présent. | oui |
 | Partiel : une source en erreur | Un flux échoue mais les autres données sont lisibles. | Les offres connues restent ; l’état de santé est détaillé dans Sources. Les autres écrans ne détaillent pas tous la panne. | Consulter Sources ; réessayer sans effacer les données. | partiel |
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -304,7 +304,7 @@ Implémentation : [components/offer-workspace.tsx](../components/offer-workspace
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -325,7 +325,7 @@ Implémentation : [components/offer-workspace.tsx](../components/offer-workspace
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -346,7 +346,7 @@ Implémentation : [components/offer-workspace.tsx](../components/offer-workspace
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -367,7 +367,7 @@ Implémentation : [components/offer-workspace.tsx](../components/offer-workspace
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -379,8 +379,8 @@ Implémentation : [components/experience-library.tsx](../components/experience-l
 
 | état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
 | --- | --- | --- | --- | --- |
-| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | partiel |
-| Vide | La collection est vide ou un filtre ne donne rien. | Aucune expérience ou aucun résultat : message ; recherche vide sans action Effacer. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | partiel |
+| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | oui |
+| Vide | La collection est vide ou un filtre ne donne rien. | Aucune expérience ou aucun résultat : message adapté ; Effacer la recherche rend le focus au champ. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | oui |
 | Chargement | Entrée, lecture du brouillon ou requête en cours. | Squelette, progression d’extraction et contenu préchargé. | Attendre ; les commandes dépendantes sont désactivées. | oui |
 | Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Lecture, extraction, validation ou conflit : message et contrôles de reprise. | Lire l’erreur et réessayer ; conserver le brouillon. | oui |
 | Succès | Lecture aboutie ou écriture confirmée. | Approuvée, à relire, masquée ; historique et provenance. | Poursuivre ; fermer le retour de confirmation si présent. | oui |
@@ -388,7 +388,7 @@ Implémentation : [components/experience-library.tsx](../components/experience-l
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | partiel |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -409,7 +409,7 @@ Implémentation : [components/experience-library.tsx](../components/experience-l
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | partiel |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -421,16 +421,16 @@ Implémentation : [components/profile-documents.tsx](../components/profile-docum
 
 | état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
 | --- | --- | --- | --- | --- |
-| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | partiel |
+| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | oui |
 | Vide | La collection est vide ou un filtre ne donne rien. | Aucun fichier : importer ; démo : aucun document d’exemple pour cette rubrique. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | oui |
-| Chargement | Entrée, lecture du brouillon ou requête en cours. | Lecture de vos fichiers ; un lien peut être annoncé indisponible avant la fin du chargement. | Attendre ; les commandes dépendantes sont désactivées. | oui |
+| Chargement | Entrée, lecture du brouillon ou requête en cours. | Lecture du fichier, puis document enregistré, absence réelle ou erreur de lecture ; aucune indisponibilité annoncée pendant le chargement. | Attendre ; les commandes dépendantes sont désactivées. | oui |
 | Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Lecture/import/rattachement en erreur : alerte et actualisation ; fichiers antérieurs gardés. | Lire l’erreur et réessayer ; conserver le brouillon. | oui |
 | Succès | Lecture aboutie ou écriture confirmée. | Fichier enregistré, téléchargement, remplacement et versions antérieures conservées. | Poursuivre ; fermer le retour de confirmation si présent. | oui |
 | Partiel : une source en erreur | Un flux échoue mais les autres données sont lisibles. | Les offres connues restent ; l’état de santé est détaillé dans Sources. Les autres écrans ne détaillent pas tous la panne. | Consulter Sources ; réessayer sans effacer les données. | partiel |
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -445,13 +445,13 @@ Implémentation : [components/account-settings.tsx](../components/account-settin
 | Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | oui |
 | Vide | La collection est vide ou un filtre ne donne rien. | Compte fictif : identité de démo ; ni suppression réelle ni import de fichiers. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | oui |
 | Chargement | Entrée, lecture du brouillon ou requête en cours. | Téléchargement de sauvegarde, validation de suppression et indicateur occupé. | Attendre ; les commandes dépendantes sont désactivées. | oui |
-| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Échec d’export ou de suppression : message, sans faux succès ; pas de restauration dans l’interface. | Lire l’erreur et réessayer ; conserver le brouillon. | partiel |
+| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Échec d’export ou de suppression : message, sans faux succès ; suppression bornée à 60 s, vérification de l’état du compte avant nouvelle tentative ; pas de restauration dans l’interface. | Lire l’erreur et réessayer ; conserver le brouillon. | partiel |
 | Succès | Lecture aboutie ou écriture confirmée. | Déconnexion ; export complet ; suppression typée SUPPRIMER et confirmation définitive. | Poursuivre ; fermer le retour de confirmation si présent. | oui |
 | Partiel : une source en erreur | Un flux échoue mais les autres données sont lisibles. | Les offres connues restent ; l’état de santé est détaillé dans Sources. Les autres écrans ne détaillent pas tous la panne. | Consulter Sources ; réessayer sans effacer les données. | partiel |
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -466,13 +466,13 @@ Implémentation : [components/search-criteria-panel.tsx](../components/search-cr
 | Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | oui |
 | Vide | La collection est vide ou un filtre ne donne rien. | Aucun poste : invitation à définir son poste ; critères non renseignés explicités. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | oui |
 | Chargement | Entrée, lecture du brouillon ou requête en cours. | Brouillon de niveau puis Terminé ; écriture avec état occupé. | Attendre ; les commandes dépendantes sont désactivées. | oui |
-| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Échec de sauvegarde : erreur, jetons inchangés ; pas de faux succès. | Lire l’erreur et réessayer ; conserver le brouillon. | partiel |
+| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Échec de sauvegarde : erreur, jetons inchangés ; attente bornée à 15 s et pas de faux succès. | Lire l’erreur et réessayer ; conserver le brouillon. | partiel |
 | Succès | Lecture aboutie ou écriture confirmée. | Critère, jetons éditables, Tout voir, Tout modifier ; niveau enregistré seulement à la validation. | Poursuivre ; fermer le retour de confirmation si présent. | oui |
 | Partiel : une source en erreur | Un flux échoue mais les autres données sont lisibles. | Les offres connues restent ; l’état de santé est détaillé dans Sources. Les autres écrans ne détaillent pas tous la panne. | Consulter Sources ; réessayer sans effacer les données. | partiel |
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -493,7 +493,7 @@ Implémentation : [components/search-preferences-form.tsx](../components/search-
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -505,16 +505,16 @@ Implémentation : [components/source-panel.tsx](../components/source-panel.tsx).
 
 | état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
 | --- | --- | --- | --- | --- |
-| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | partiel |
+| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | oui |
 | Vide | La collection est vide ou un filtre ne donne rien. | Aucune source suivie : choix Automatiques ou À consulter. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | oui |
 | Chargement | Entrée, lecture du brouillon ou requête en cours. | Squelette et Actualiser occupé ; actualisation externe désactivée en démo. | Attendre ; les commandes dépendantes sont désactivées. | oui |
-| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Configuration ou sync en erreur : message et reprise ; pas de borne sur toutes les requêtes. | Lire l’erreur et réessayer ; conserver le brouillon. | partiel |
+| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Configuration ou sync en erreur : message et reprise ; réglages bornés à 15 s, flux à 45 s puis relecture parallèle à 15 s. | Lire l’erreur et réessayer ; conserver le brouillon. | oui |
 | Succès | Lecture aboutie ou écriture confirmée. | Nouvelle, à configurer, configurée, pause, échec temporaire ou dégradation par source. | Poursuivre ; fermer le retour de confirmation si présent. | oui |
 | Partiel : une source en erreur | Un flux échoue mais les autres données sont lisibles. | Les offres connues restent ; l’état de santé est détaillé dans Sources. Les autres écrans ne détaillent pas tous la panne. | Consulter Sources ; réessayer sans effacer les données. | oui |
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -535,7 +535,7 @@ Implémentation : [components/source-detail.tsx](../components/source-detail.tsx
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -556,7 +556,7 @@ Implémentation : [components/source-add-sheet.tsx](../components/source-add-she
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -568,16 +568,16 @@ Implémentation : [components/onboarding-tour.tsx](../components/onboarding-tour
 
 | état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
 | --- | --- | --- | --- | --- |
-| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | partiel |
-| Vide | La collection est vide ou un filtre ne donne rien. | Compte non réglé : étapes de configuration ; pause puis reprise possible. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | oui |
+| Compte neuf | Première ouverture, critères ou contenus absents. | Le contenu fictif éventuel est marqué comme exemple ; la configuration ou l’état vide s’applique. | Définir le poste, consulter le guide ou créer le premier contenu. | oui |
+| Vide | La collection est vide ou un filtre ne donne rien. | Compte non réglé : étapes de configuration suivant la page réellement ouverte ; pause puis reprise possible. | Ajouter, changer de vue ou effacer le filtre selon le contexte. | oui |
 | Chargement | Entrée, lecture du brouillon ou requête en cours. | Vérification du carnet occupée ; erreurs de lecture peu détaillées. | Attendre ; les commandes dépendantes sont désactivées. | oui |
-| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Stockage local indisponible : pas d’erreur bloquante ; reprise non garantie. | Lire l’erreur et réessayer ; conserver le brouillon. | oui |
+| Erreur réseau ou API | Réponse non confirmée, erreur HTTP ou conflit de version. | Vérification du carnet bornée à 15 s, erreur et reprise ; stockage local indisponible non bloquant, progression locale non garantie. | Lire l’erreur et réessayer ; conserver le brouillon. | oui |
 | Succès | Lecture aboutie ou écriture confirmée. | Cinq écrans de visite, sept étapes de préparation, Terminer ou Plus tard. | Poursuivre ; fermer le retour de confirmation si présent. | oui |
 | Partiel : une source en erreur | Un flux échoue mais les autres données sont lisibles. | Les offres connues restent ; l’état de santé est détaillé dans Sources. Les autres écrans ne détaillent pas tous la panne. | Consulter Sources ; réessayer sans effacer les données. | partiel |
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -598,7 +598,7 @@ Implémentation : [components/choice-select.tsx](../components/choice-select.tsx
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -619,7 +619,7 @@ Implémentation : [components/workspace-feedback.tsx](../components/workspace-fe
 | Beaucoup de données | Compte de recette à 1 000 offres et 50 candidatures. | Le lot reste borné à vingt ; les listes, groupes, tableaux et historiques gardent leur défilement. Aucune garantie de virtualisation globale. | Filtrer, rechercher ou utiliser le lot du jour. | oui |
 | Textes très longs | Titre, société, description ou note à la limite acceptée. | Retour à la ligne ou zone de saisie bornée ; les limites doivent être annoncées avant enregistrement. | Lire, corriger ou raccourcir ; conserver le texte non enregistré. | oui |
 | Hors ligne | Connexion perdue après ouverture, ou avant une nouvelle visite. | Les données déjà en mémoire peuvent rester ; erreur de requête et brouillon local selon l’écran. Pas de mode de consultation hors ligne garanti ni de bandeau global. | Réessayer une fois la connexion revenue ; ne pas annoncer un faux enregistrement. | partiel |
-| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont coupées. Les déplacements JavaScript explicitement smooth du carnet ne suivent pas encore tous cette préférence. | Conserver les états finaux et les informations textuelles. | oui |
+| Mouvement réduit | Préférence système prefers-reduced-motion: reduce. | Les animations CSS sont réduites ; les déplacements JavaScript du carnet deviennent instantanés si la préférence système le demande. Émulation visuelle non réalisée. | Conserver les états finaux et les informations textuelles. | oui |
 | Clavier seul | Navigation Tab, Entrée, Espace et Échap, sans pointeur. | Contrôles nommés et focus visible ; dialogues et retours au déclencheur. Les raccourcis S/L/X sont encore prévus, non livrés. | Utiliser les contrôles existants ; poignée clavier pour le Kanban. | oui |
 | Mobile à 390 px | Écran de recette 390 × 844. | Navigation basse ; contenu sur une colonne ou feuille ; défilement contenu pour le Kanban. | Lire et agir sans défilement horizontal de la page. | oui |
 
@@ -627,9 +627,9 @@ Preuve visuelle de référence : [ordinateur](etats-ecrans/notification-succes-o
 
 ## Couverture des preuves
 
-Les photos indexées couvrent les vues principales, les formulaires prêts et désactivés, plusieurs chargements observés, les listes et filtres vides, le conflit API 409, le bilan passé, une relance prévue, les confirmations, le succès et les textes longs. Le lot est photographié avec un compte contenant 1 000 offres et 50 candidatures (puis 50 offres déplacées en corbeille, toujours restaurables). Les nombres affichés évoluent pendant cette recette.
+Les **172 photos, soit 86 paires ordinateur/mobile**, couvrent les vues principales, les formulaires prêts et désactivés, plusieurs chargements observés, les listes et filtres vides, le conflit API 409, une erreur API 400 corrigée, le bilan passé, une relance prévue, les confirmations, le succès, les textes longs, le lot bouclé, sa conservation après rechargement et les sept étapes de configuration du guide. Le lot est photographié avec un compte contenant 1 000 offres et 50 candidatures (puis 50 offres déplacées en corbeille, toujours restaurables). Les nombres affichés évoluent pendant cette recette.
 
-**Restent sans preuve visuelle exhaustive** : panne réseau réelle, hors ligne, préférence système de mouvement réduit, panne partielle de flux externe (la démo désactive l’actualisation externe), premier compte sans exemples et parcours de suppression définitive. Ces conditions sont recensées par lecture du code ; elles ne doivent pas être assimilées à des captures réussies. Les captures de navigation au clavier documentent un parcours réel, pas un audit de chaque combinaison de touches de tous les contrôles.
+**Restent sans preuve visuelle exhaustive** : panne réseau réelle, hors ligne, préférence système de mouvement réduit, panne partielle de flux externe (la démo désactive l’actualisation externe), premier compte sans exemples et succès d’une suppression définitive. Le compte de démo « onboarding » n’a ni critères, ni CV, ni expériences, mais conserve huit offres fictives : il ne prouve donc pas un compte sans aucune donnée. Le dialogue de suppression a été vérifié jusqu’à son annulation, jamais validé. Ces conditions sont recensées par lecture du code ; elles ne doivent pas être assimilées à des captures réussies. Les captures de navigation au clavier documentent un parcours réel, pas un audit de chaque combinaison de touches de tous les contrôles.
 
 ## États spécifiques et limites métier
 
@@ -647,11 +647,11 @@ Les photos indexées couvrent les vues principales, les formulaires prêts et d�
 
 | Référence | Constat actuel | Contradiction / suite |
 | --- | --- | --- |
-| §4.1 Compte neuf | Guide existant ; l’accueil ne remplace pas encore son contenu par les trois étapes prévues. | Écart d’orientation gênant pour un poste non choisi ; corriger l’état de départ sans livrer Q3/Q4/Q5. |
+| §4.1 Compte neuf | Trois étapes et accès à Ma recherche livrés en #217 ; guide synchronisé en #218. | L’écart d’orientation initial est corrigé. Les fonctions Q3/Q4/Q5 restent futures. |
 | §4.1 Rien à faire | File à jour / Ajouter une offre et agenda vide ; lot bouclé existe. | Le texte « Revenez demain, le radar veille » serait trompeur si l’actualisation est manuelle ; préférer l’état réel. |
 | §4.1 Entretien imminent | L’agenda existe ; l’action prioritaire retient surtout les bilans et entretiens à dater. | « Comme aujourd’hui » ne décrit pas exactement la priorité de tout entretien imminent ; distinguer échéance future et bilan en retard. |
-| §4.2 Balayage | Actualisation et santé par source existent, mais pas SignalRadar ni carte d’écho. | Écran futur Q2, pas un écran existant à maquiller en capture réelle. Le plafond de 60 s doit aussi borner l’attente côté interface. |
-| §4.3 Lot vide | Message et retour de vue ; archives dépendantes de l’accès à la réserve. | Le lien vers les archives doit rester présent quand le lot contient tout le reste. |
+| §4.2 Balayage | Actualisation et santé par source existent, mais pas SignalRadar ni carte d’écho. | Écran futur Q2, pas un écran existant à maquiller en capture réelle. Le plafond côté interface est livré : flux 45 s puis relecture 15 s en parallèle. La simulation visuelle de panne reste absente. |
+| §4.3 Lot vide | Message et retour de vue ; accès aux archives indépendant de la réserve depuis #214. | Défaut d’accès corrigé et reproduit sur staging sans réserve, puis après lot bouclé. |
 | §4.3 Décision en erreur | Message, retour de l’offre et compensation du choix optimiste. | Le compteur peut bouger avant le résultat ; le texte « ne bouge pas » doit viser l’état confirmé ou conduire à attendre la réponse. |
 | §4.3 Raccourcis S/L/X | Boutons et navigation clavier présents ; ces trois raccourcis ne le sont pas. | Fonction future de tri, ne pas les annoncer comme existants. |
 | §4.3 Fiches mystère | Les guides imposent cinq places mais autorisent un complément si les offres ordinaires manquent. | Le strict « cinq au plus » du score / résumé de maquette est incompatible avec ce complément ; garder la règle détaillée de docs/tri.md et l’expliciter. |
@@ -660,36 +660,38 @@ Les photos indexées couvrent les vues principales, les formulaires prêts et d�
 | §4.6 Portée | Aucun radar à dix crans ni écran de paliers. | Q4 futur ; la jauge ne doit pas bloquer des fonctions existantes. |
 | §4.7 Semaine | Aucun plan weekPlan, engagement ou rythme dans l’interface. | Q5 futur ; série et jokers restent masqués avant L1/L2. |
 | §4.8 Réserve | Groupes, filtre et confirmation existent ; ni compteur de rafale ni Annuler immédiat de groupe. | Enrichissement futur, distinct du défaut d’accès aux archives. |
-| §4 + §3.3 Réduit | CSS réduite existante ; défilements smooth explicites dans le carnet. | Écart réel d’accessibilité ; Q6 et data-motion ne sont pas livrés. |
+| §4 + §3.3 Réduit | CSS réduite existante ; défilements du carnet instantanés selon la préférence système depuis #216. | Défaut de code corrigé ; émulation visuelle à compléter. Q6 et data-motion restent futurs. |
 | §1 et §4.3 | #201 et #206 sont fusionnées, testées et publiées ; §1 les dit encore à rebaser. | État documentaire périmé ; l’inventaire fait foi pour le livré, sans changer rétroactivement les maquettes. |
 | Maquettes / §3.2 | HTML statiques demandent Google Fonts et support.js absent. | Les maquettes sont des références visuelles, pas une preuve d’autonomie hors ligne ni des composants livrés ; les polices de l’app restent locales/système. |
 
 ## États manquants ou défaillants, par gravité
 
+**Bilan après correction : 1 bloquant et 12 gênants identifiés, corrigés et déployés.** Le tableau garde la description du défaut observé avant correction ; la colonne Suivi indique le livré. Les limites de reproduction restent distinctes des défauts résolus.
+
 ### Bloquant
 
 | ID | Écran | Défaut confirmé | Correction attendue | Suivi |
 | --- | --- | --- | --- | --- |
-| B-C1 | Candidatures / questions | Après validation, la réponse de 90 caractères est conservée côté serveur mais revient à sa valeur initiale dans le formulaire (vide lors du premier essai, formulaire à nouveau sale). Une seconde validation pourrait écraser la réponse avec du vide. | Conserver dans le brouillon la question, la limite et la réponse effectivement confirmées ; vérifier sauvegarde puis réouverture. | Correctif Candidatures préparé ; recette après déploiement. |
+| B-C1 | Candidatures / questions | Après validation, la réponse nouvellement saisie est conservée côté serveur mais revient à sa valeur initiale dans le formulaire (vide lors du premier essai, formulaire à nouveau sale). Une seconde validation pourrait écraser la réponse avec du vide. | Conserver dans le brouillon la question, la limite et la réponse effectivement confirmées ; vérifier sauvegarde puis réouverture. | Corrigé, [#213](https://github.com/Lucilesr/radar-produit/pull/213) ; livré dans v22. |
 
 Preuve : `questions-apres-validation-defaut`, après une confirmation réelle. La lecture de contrôle API retrouve la réponse fictive et sa version 2 ; aucun contenu privé n’est inclus dans cette vérification. Un export ou une suppression définitive de compte n’a pas été exécuté pour l’audit.
 
-### Gênant — à corriger sans nouvelle validation de périmètre
+### Gênant — corrigés dans les PR par écran ou sous-vue
 
 | ID | Écran | Défaut et conséquence | Correction attendue | Suivi |
 | --- | --- | --- | --- | --- |
-| G-O1 | Opportunités | Lien Archives uniquement dans la réserve ; si aucune offre n’attend hors du lot, il peut être inaccessible. | Accès indépendant du nombre d’offres dans la réserve. | Correctif Opportunités préparé ; recette après déploiement. |
-| G-O2 | Opportunités / éditeur | L’ajout et la lecture de fiche employeur pouvaient laisser le formulaire occupé sans délai. | Sortie après 15 s et saisie conservée. | Correctif éditeur préparé. |
-| G-S1 | Sources | Lectures et écritures non bornées ; une requête qui ne répond pas peut laisser des commandes occupées indéfiniment. | Délai maximum, fin de chargement, erreur compréhensible et reprise ; 60 s maximum pour l’actualisation. | Correctif Sources préparé ; recette après déploiement. |
-| G-C1 | Candidatures / entretiens | Colonnes, tags, statuts et écritures d’entretien ont des requêtes sans borne cohérente. | Délai, sortie de l’état occupé, reprise et saisie conservée. | Correctif Candidatures préparé ; recette après déploiement. |
-| G-C2 | Candidatures / notes | Une lecture d’historique sans réponse laissait un faux état vide. | Chargement nommé, délai et Réessayer sans modifier les notes. | Correctif historique préparé. |
-| G-P1 | Mon profil / documents | Un fichier lié est déclaré indisponible pendant sa lecture initiale. | Squelette ou lecture en cours avant de conclure à l’absence ; erreur de lecture distincte. | Correctif Mon profil préparé ; recette après déploiement. |
-| G-P2 | Mon profil / carnet | Recherche sans résultat : conseil de changer de filtre mais pas de commande pour effacer la recherche. | Message adapté et Effacer la recherche, avec retour du focus. | Même PR Mon profil. |
-| G-P3 | Mon profil / carnet | Défilements JavaScript smooth non soumis à la préférence système. | Positionnement instantané si le mouvement réduit est demandé. | Même PR Mon profil. |
-| G-P4 | Mon compte | Une requête de suppression sans réponse pouvait verrouiller le dialogue indéfiniment. | Délai de 60 s, fin de l’attente et vérification du compte avant toute nouvelle tentative. | Correctif Mon compte préparé ; aucune suppression exécutée pour la recette. |
-| G-P5 | Mon compte | Après Échap ou Annuler, le focus retombait sur le corps de page. | Revenir au bouton d’ouverture du dialogue. | Correctif Mon compte préparé. |
-| G-A1 | Aujourd’hui | Nouveau profil sans poste : le chemin vers le réglage initial n’est pas explicite dans la carte prioritaire. | Orientation vers poste, sources et première actualisation ; tour existant conservé. | Correctif Aujourd’hui préparé ; recette après déploiement. |
-| G-T1 | Tour de prise en main | Une navigation contextuelle ouvre Ma recherche sans faire avancer l’étape « Ouvrez Ma recherche ». | Suivre la page effectivement ouverte, quelle que soit l’action de navigation. | Correctif Tour préparé ; recette après déploiement. |
+| G-O1 | Opportunités | Lien Archives uniquement dans la réserve ; si aucune offre n’attend hors du lot, il peut être inaccessible. | Accès indépendant du nombre d’offres dans la réserve. | Corrigé, [#214](https://github.com/Lucilesr/radar-produit/pull/214) ; livré dans v22. |
+| G-O2 | Opportunités / éditeur | L’ajout et la lecture de fiche employeur pouvaient laisser le formulaire occupé sans délai. | Sortie après 15 s et saisie conservée. | Corrigé, [#219](https://github.com/Lucilesr/radar-produit/pull/219) ; livré dans v22. |
+| G-S1 | Sources | Lectures et écritures non bornées ; une requête qui ne répond pas peut laisser des commandes occupées indéfiniment. | Délai maximum, fin de chargement, erreur compréhensible et reprise ; 60 s maximum pour l’actualisation. | Corrigé, [#215](https://github.com/Lucilesr/radar-produit/pull/215) ; livré dans v22. |
+| G-C1 | Candidatures / entretiens | Colonnes, tags, statuts et écritures d’entretien ont des requêtes sans borne cohérente. | Délai, sortie de l’état occupé, reprise et saisie conservée. | Corrigé, [#213](https://github.com/Lucilesr/radar-produit/pull/213) ; livré dans v22. |
+| G-C2 | Candidatures / notes | Une lecture d’historique sans réponse laissait un faux état vide. | Chargement nommé, délai et Réessayer sans modifier les notes. | Corrigé, [#220](https://github.com/Lucilesr/radar-produit/pull/220) ; livré dans v22. |
+| G-P1 | Mon profil / documents | Un fichier lié est déclaré indisponible pendant sa lecture initiale. | Squelette ou lecture en cours avant de conclure à l’absence ; erreur de lecture distincte. | Corrigé, [#216](https://github.com/Lucilesr/radar-produit/pull/216) ; livré dans v22. |
+| G-P2 | Mon profil / carnet | Recherche sans résultat : conseil de changer de filtre mais pas de commande pour effacer la recherche. | Message adapté et Effacer la recherche, avec retour du focus. | Corrigé, [#216](https://github.com/Lucilesr/radar-produit/pull/216) ; livré dans v22. |
+| G-P3 | Mon profil / carnet | Défilements JavaScript smooth non soumis à la préférence système. | Positionnement instantané si le mouvement réduit est demandé. | Corrigé, [#216](https://github.com/Lucilesr/radar-produit/pull/216) ; livré dans v22. |
+| G-P4 | Mon compte | Une requête de suppression sans réponse pouvait verrouiller le dialogue indéfiniment. | Délai de 60 s, fin de l’attente et vérification du compte avant toute nouvelle tentative. | Corrigé, [#221](https://github.com/Lucilesr/radar-produit/pull/221) ; livré dans v22. |
+| G-P5 | Mon compte | Après Échap ou Annuler, le focus retombait sur le corps de page. | Revenir au bouton d’ouverture du dialogue. | Corrigé, [#221](https://github.com/Lucilesr/radar-produit/pull/221) ; livré dans v22. |
+| G-A1 | Aujourd’hui | Nouveau profil sans poste : le chemin vers le réglage initial n’est pas explicite dans la carte prioritaire. | Orientation vers poste, sources et première actualisation ; tour existant conservé. | Corrigé, [#217](https://github.com/Lucilesr/radar-produit/pull/217) ; livré dans v22. |
+| G-T1 | Tour de prise en main | Une navigation contextuelle ouvre Ma recherche sans faire avancer l’étape « Ouvrez Ma recherche ». | Suivre la page effectivement ouverte, quelle que soit l’action de navigation. | Corrigé, [#218](https://github.com/Lucilesr/radar-produit/pull/218) ; livré dans v22. |
 
 ### Cosmétique ou amélioration planifiée
 
@@ -701,69 +703,115 @@ Preuve : `questions-apres-validation-defaut`, après une confirmation réelle. L
 
 ## Index des captures réellement produites
 
-Les images suivantes sont des captures d’interface, jamais des maquettes. Une ligne vaut deux fichiers distincts. Les captures d’erreur utilisent un scénario identifié, sans modifier le code de l’application.
+Chaque ligne donne les deux captures d’un même scénario. Les captures `corrige-*`, le guide de configuration et les scénarios de fin de lot documentent les corrections. Les photos initiales de défaut sont conservées pour la comparaison. Les fichiers du compte sont des cadrages de dialogue ; les autres images montrent des données fictives, en fenêtre ou en pleine page. La version exacte de chaque photo est dans le manifeste.
 
 | Scénario | Ordinateur | Mobile |
 | --- | --- | --- |
-| aujourdhui-volume | [1360 px](etats-ecrans/aujourdhui-volume-ordinateur.jpg) | [390 px](etats-ecrans/aujourdhui-volume-mobile.jpg) |
-| brief | [1360 px](etats-ecrans/brief-ordinateur.jpg) | [390 px](etats-ecrans/brief-mobile.jpg) |
-| candidatures-colonne-brouillon | [1360 px](etats-ecrans/candidatures-colonne-brouillon-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-colonne-brouillon-mobile.jpg) |
-| candidatures-conflit-api | [1360 px](etats-ecrans/candidatures-conflit-api-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-conflit-api-mobile.jpg) |
-| candidatures-fiche | [1360 px](etats-ecrans/candidatures-fiche-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-fiche-mobile.jpg) |
-| candidatures-kanban | [1360 px](etats-ecrans/candidatures-kanban-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-kanban-mobile.jpg) |
-| candidatures-kanban-filtre-vide | [1360 px](etats-ecrans/candidatures-kanban-filtre-vide-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-kanban-filtre-vide-mobile.jpg) |
-| candidatures-liste | [1360 px](etats-ecrans/candidatures-liste-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-liste-mobile.jpg) |
-| candidatures-liste-vide | [1360 px](etats-ecrans/candidatures-liste-vide-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-liste-vide-mobile.jpg) |
-| candidatures-questions | [1360 px](etats-ecrans/candidatures-questions-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-questions-mobile.jpg) |
-| candidatures-volume-50-kanban | [1360 px](etats-ecrans/candidatures-volume-50-kanban-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-volume-50-kanban-mobile.jpg) |
-| candidatures-volume-50-liste | [1360 px](etats-ecrans/candidatures-volume-50-liste-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-volume-50-liste-mobile.jpg) |
-| dialogue-calendrier | [1360 px](etats-ecrans/dialogue-calendrier-ordinateur.jpg) | [390 px](etats-ecrans/dialogue-calendrier-mobile.jpg) |
-| dialogue-tag-nouveau | [1360 px](etats-ecrans/dialogue-tag-nouveau-ordinateur.jpg) | [390 px](etats-ecrans/dialogue-tag-nouveau-mobile.jpg) |
-| dialogue-tags | [1360 px](etats-ecrans/dialogue-tags-ordinateur.jpg) | [390 px](etats-ecrans/dialogue-tags-mobile.jpg) |
-| entretiens-bilan-a-faire | [1360 px](etats-ecrans/entretiens-bilan-a-faire-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-bilan-a-faire-mobile.jpg) |
-| entretiens-bilan-brouillon | [1360 px](etats-ecrans/entretiens-bilan-brouillon-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-bilan-brouillon-mobile.jpg) |
-| entretiens-bilan-confirme | [1360 px](etats-ecrans/entretiens-bilan-confirme-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-bilan-confirme-mobile.jpg) |
-| entretiens-brouillon | [1360 px](etats-ecrans/entretiens-brouillon-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-brouillon-mobile.jpg) |
-| entretiens-editeur | [1360 px](etats-ecrans/entretiens-editeur-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-editeur-mobile.jpg) |
-| entretiens-planifie | [1360 px](etats-ecrans/entretiens-planifie-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-planifie-mobile.jpg) |
-| notification-succes | [1360 px](etats-ecrans/notification-succes-ordinateur.jpg) | [390 px](etats-ecrans/notification-succes-mobile.jpg) |
-| opportunites-ajout-vide | [1360 px](etats-ecrans/opportunites-ajout-vide-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-ajout-vide-mobile.jpg) |
-| opportunites-archives | [1360 px](etats-ecrans/opportunites-archives-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-archives-mobile.jpg) |
-| opportunites-corbeille | [1360 px](etats-ecrans/opportunites-corbeille-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-corbeille-mobile.jpg) |
-| opportunites-editeur | [1360 px](etats-ecrans/opportunites-editeur-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-editeur-mobile.jpg) |
-| opportunites-fiche | [1360 px](etats-ecrans/opportunites-fiche-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-fiche-mobile.jpg) |
-| opportunites-lot-volume | [1360 px](etats-ecrans/opportunites-lot-volume-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-lot-volume-mobile.jpg) |
-| opportunites-recherche-vide | [1360 px](etats-ecrans/opportunites-recherche-vide-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-recherche-vide-mobile.jpg) |
-| opportunites-reserve | [1360 px](etats-ecrans/opportunites-reserve-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-reserve-mobile.jpg) |
-| profil-ajout-experience | [1360 px](etats-ecrans/profil-ajout-experience-ordinateur.jpg) | [390 px](etats-ecrans/profil-ajout-experience-mobile.jpg) |
-| profil-carnet-rempli | [1360 px](etats-ecrans/profil-carnet-rempli-ordinateur.jpg) | [390 px](etats-ecrans/profil-carnet-rempli-mobile.jpg) |
-| profil-clavier | [1360 px](etats-ecrans/profil-clavier-ordinateur.jpg) | [390 px](etats-ecrans/profil-clavier-mobile.jpg) |
-| profil-compte | [1360 px](etats-ecrans/profil-compte-ordinateur.jpg) | [390 px](etats-ecrans/profil-compte-mobile.jpg) |
-| profil-documents-fictifs | [1360 px](etats-ecrans/profil-documents-fictifs-ordinateur.jpg) | [390 px](etats-ecrans/profil-documents-fictifs-mobile.jpg) |
-| profil-droits-dialogue | [1360 px](etats-ecrans/profil-droits-dialogue-ordinateur.jpg) | [390 px](etats-ecrans/profil-droits-dialogue-mobile.jpg) |
-| profil-recherche-vide | [1360 px](etats-ecrans/profil-recherche-vide-ordinateur.jpg) | [390 px](etats-ecrans/profil-recherche-vide-mobile.jpg) |
-| profil-textes-longs | [1360 px](etats-ecrans/profil-textes-longs-ordinateur.jpg) | [390 px](etats-ecrans/profil-textes-longs-mobile.jpg) |
-| questions-apres-validation-defaut | [1360 px](etats-ecrans/questions-apres-validation-defaut-ordinateur.jpg) | [390 px](etats-ecrans/questions-apres-validation-defaut-mobile.jpg) |
-| questions-limite-depassee | [1360 px](etats-ecrans/questions-limite-depassee-ordinateur.jpg) | [390 px](etats-ecrans/questions-limite-depassee-mobile.jpg) |
-| questions-nouvelle-vide | [1360 px](etats-ecrans/questions-nouvelle-vide-ordinateur.jpg) | [390 px](etats-ecrans/questions-nouvelle-vide-mobile.jpg) |
-| recherche-criteres-enregistres | [1360 px](etats-ecrans/recherche-criteres-enregistres-ordinateur.jpg) | [390 px](etats-ecrans/recherche-criteres-enregistres-mobile.jpg) |
-| recherche-editeur-complet | [1360 px](etats-ecrans/recherche-editeur-complet-ordinateur.jpg) | [390 px](etats-ecrans/recherche-editeur-complet-mobile.jpg) |
-| recherche-menu-critere | [1360 px](etats-ecrans/recherche-menu-critere-ordinateur.jpg) | [390 px](etats-ecrans/recherche-menu-critere-mobile.jpg) |
-| recherche-niveau-brouillon | [1360 px](etats-ecrans/recherche-niveau-brouillon-ordinateur.jpg) | [390 px](etats-ecrans/recherche-niveau-brouillon-mobile.jpg) |
-| relances-date-prevue | [1360 px](etats-ecrans/relances-date-prevue-ordinateur.jpg) | [390 px](etats-ecrans/relances-date-prevue-mobile.jpg) |
-| reserve-confirmation | [1360 px](etats-ecrans/reserve-confirmation-ordinateur.jpg) | [390 px](etats-ecrans/reserve-confirmation-mobile.jpg) |
-| sources-ajout | [1360 px](etats-ecrans/sources-ajout-ordinateur.jpg) | [390 px](etats-ecrans/sources-ajout-mobile.jpg) |
-| sources-catalogue-vide | [1360 px](etats-ecrans/sources-catalogue-vide-ordinateur.jpg) | [390 px](etats-ecrans/sources-catalogue-vide-mobile.jpg) |
-| sources-fiche | [1360 px](etats-ecrans/sources-fiche-ordinateur.jpg) | [390 px](etats-ecrans/sources-fiche-mobile.jpg) |
-| sources-liste | [1360 px](etats-ecrans/sources-liste-ordinateur.jpg) | [390 px](etats-ecrans/sources-liste-mobile.jpg) |
-| sources-retrait-confirmation | [1360 px](etats-ecrans/sources-retrait-confirmation-ordinateur.jpg) | [390 px](etats-ecrans/sources-retrait-confirmation-mobile.jpg) |
-| tour-aujourdhui | [1360 px](etats-ecrans/tour-aujourdhui-ordinateur.jpg) | [390 px](etats-ecrans/tour-aujourdhui-mobile.jpg) |
-| tour-candidatures | [1360 px](etats-ecrans/tour-candidatures-ordinateur.jpg) | [390 px](etats-ecrans/tour-candidatures-mobile.jpg) |
-| tour-introduction | [1360 px](etats-ecrans/tour-introduction-ordinateur.jpg) | [390 px](etats-ecrans/tour-introduction-mobile.jpg) |
-| tour-opportunites | [1360 px](etats-ecrans/tour-opportunites-ordinateur.jpg) | [390 px](etats-ecrans/tour-opportunites-mobile.jpg) |
-| tour-profil | [1360 px](etats-ecrans/tour-profil-ordinateur.jpg) | [390 px](etats-ecrans/tour-profil-mobile.jpg) |
-| tour-recherche | [1360 px](etats-ecrans/tour-recherche-ordinateur.jpg) | [390 px](etats-ecrans/tour-recherche-mobile.jpg) |
+| archives-vides-apres-restauration | [ordinateur](etats-ecrans/archives-vides-apres-restauration-ordinateur.jpg) | [390 px](etats-ecrans/archives-vides-apres-restauration-mobile.jpg) |
+| aujourdhui-volume | [ordinateur](etats-ecrans/aujourdhui-volume-ordinateur.jpg) | [390 px](etats-ecrans/aujourdhui-volume-mobile.jpg) |
+| brief | [ordinateur](etats-ecrans/brief-ordinateur.jpg) | [390 px](etats-ecrans/brief-mobile.jpg) |
+| candidatures-colonne-brouillon | [ordinateur](etats-ecrans/candidatures-colonne-brouillon-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-colonne-brouillon-mobile.jpg) |
+| candidatures-conflit-api | [ordinateur](etats-ecrans/candidatures-conflit-api-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-conflit-api-mobile.jpg) |
+| candidatures-fiche | [ordinateur](etats-ecrans/candidatures-fiche-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-fiche-mobile.jpg) |
+| candidatures-kanban | [ordinateur](etats-ecrans/candidatures-kanban-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-kanban-mobile.jpg) |
+| candidatures-kanban-filtre-vide | [ordinateur](etats-ecrans/candidatures-kanban-filtre-vide-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-kanban-filtre-vide-mobile.jpg) |
+| candidatures-liste | [ordinateur](etats-ecrans/candidatures-liste-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-liste-mobile.jpg) |
+| candidatures-liste-vide | [ordinateur](etats-ecrans/candidatures-liste-vide-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-liste-vide-mobile.jpg) |
+| candidatures-questions | [ordinateur](etats-ecrans/candidatures-questions-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-questions-mobile.jpg) |
+| candidatures-volume-50-kanban | [ordinateur](etats-ecrans/candidatures-volume-50-kanban-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-volume-50-kanban-mobile.jpg) |
+| candidatures-volume-50-liste | [ordinateur](etats-ecrans/candidatures-volume-50-liste-ordinateur.jpg) | [390 px](etats-ecrans/candidatures-volume-50-liste-mobile.jpg) |
+| compte-confirmation-partielle | [ordinateur](etats-ecrans/compte-confirmation-partielle-ordinateur.jpg) | [390 px](etats-ecrans/compte-confirmation-partielle-mobile.jpg) |
+| compte-dialogue-sans-confirmation | [ordinateur](etats-ecrans/compte-dialogue-sans-confirmation-ordinateur.jpg) | [390 px](etats-ecrans/compte-dialogue-sans-confirmation-mobile.jpg) |
+| corrige-archives-sans-reserve | [ordinateur](etats-ecrans/corrige-archives-sans-reserve-ordinateur.jpg) | [390 px](etats-ecrans/corrige-archives-sans-reserve-mobile.jpg) |
+| corrige-aujourdhui-configuration | [ordinateur](etats-ecrans/corrige-aujourdhui-configuration-ordinateur.jpg) | [390 px](etats-ecrans/corrige-aujourdhui-configuration-mobile.jpg) |
+| corrige-candidature-reponse | [ordinateur](etats-ecrans/corrige-candidature-reponse-ordinateur.jpg) | [390 px](etats-ecrans/corrige-candidature-reponse-mobile.jpg) |
+| corrige-editeur-ajout | [ordinateur](etats-ecrans/corrige-editeur-ajout-ordinateur.jpg) | [390 px](etats-ecrans/corrige-editeur-ajout-mobile.jpg) |
+| corrige-historique-notes | [ordinateur](etats-ecrans/corrige-historique-notes-ordinateur.jpg) | [390 px](etats-ecrans/corrige-historique-notes-mobile.jpg) |
+| corrige-opportunites-archives-acces | [ordinateur](etats-ecrans/corrige-opportunites-archives-acces-ordinateur.jpg) | [390 px](etats-ecrans/corrige-opportunites-archives-acces-mobile.jpg) |
+| corrige-profil-documents | [ordinateur](etats-ecrans/corrige-profil-documents-ordinateur.jpg) | [390 px](etats-ecrans/corrige-profil-documents-mobile.jpg) |
+| corrige-profil-recherche-vide | [ordinateur](etats-ecrans/corrige-profil-recherche-vide-ordinateur.jpg) | [390 px](etats-ecrans/corrige-profil-recherche-vide-mobile.jpg) |
+| corrige-sources-reprise | [ordinateur](etats-ecrans/corrige-sources-reprise-ordinateur.jpg) | [390 px](etats-ecrans/corrige-sources-reprise-mobile.jpg) |
+| corrige-tour-navigation-contextuelle | [ordinateur](etats-ecrans/corrige-tour-navigation-contextuelle-ordinateur.jpg) | [390 px](etats-ecrans/corrige-tour-navigation-contextuelle-mobile.jpg) |
+| dialogue-calendrier | [ordinateur](etats-ecrans/dialogue-calendrier-ordinateur.jpg) | [390 px](etats-ecrans/dialogue-calendrier-mobile.jpg) |
+| dialogue-tag-nouveau | [ordinateur](etats-ecrans/dialogue-tag-nouveau-ordinateur.jpg) | [390 px](etats-ecrans/dialogue-tag-nouveau-mobile.jpg) |
+| dialogue-tags | [ordinateur](etats-ecrans/dialogue-tags-ordinateur.jpg) | [390 px](etats-ecrans/dialogue-tags-mobile.jpg) |
+| entretiens-bilan-a-faire | [ordinateur](etats-ecrans/entretiens-bilan-a-faire-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-bilan-a-faire-mobile.jpg) |
+| entretiens-bilan-brouillon | [ordinateur](etats-ecrans/entretiens-bilan-brouillon-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-bilan-brouillon-mobile.jpg) |
+| entretiens-bilan-confirme | [ordinateur](etats-ecrans/entretiens-bilan-confirme-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-bilan-confirme-mobile.jpg) |
+| entretiens-brouillon | [ordinateur](etats-ecrans/entretiens-brouillon-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-brouillon-mobile.jpg) |
+| entretiens-editeur | [ordinateur](etats-ecrans/entretiens-editeur-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-editeur-mobile.jpg) |
+| entretiens-planifie | [ordinateur](etats-ecrans/entretiens-planifie-ordinateur.jpg) | [390 px](etats-ecrans/entretiens-planifie-mobile.jpg) |
+| lot-boucle | [ordinateur](etats-ecrans/lot-boucle-ordinateur.jpg) | [390 px](etats-ecrans/lot-boucle-mobile.jpg) |
+| lot-boucle-apres-rechargement | [ordinateur](etats-ecrans/lot-boucle-apres-rechargement-ordinateur.jpg) | [390 px](etats-ecrans/lot-boucle-apres-rechargement-mobile.jpg) |
+| lot-progression-une-offre | [ordinateur](etats-ecrans/lot-progression-une-offre-ordinateur.jpg) | [390 px](etats-ecrans/lot-progression-une-offre-mobile.jpg) |
+| notification-succes | [ordinateur](etats-ecrans/notification-succes-ordinateur.jpg) | [390 px](etats-ecrans/notification-succes-mobile.jpg) |
+| opportunites-ajout-vide | [ordinateur](etats-ecrans/opportunites-ajout-vide-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-ajout-vide-mobile.jpg) |
+| opportunites-archives | [ordinateur](etats-ecrans/opportunites-archives-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-archives-mobile.jpg) |
+| opportunites-corbeille | [ordinateur](etats-ecrans/opportunites-corbeille-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-corbeille-mobile.jpg) |
+| opportunites-editeur | [ordinateur](etats-ecrans/opportunites-editeur-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-editeur-mobile.jpg) |
+| opportunites-fiche | [ordinateur](etats-ecrans/opportunites-fiche-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-fiche-mobile.jpg) |
+| opportunites-lot-volume | [ordinateur](etats-ecrans/opportunites-lot-volume-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-lot-volume-mobile.jpg) |
+| opportunites-recherche-vide | [ordinateur](etats-ecrans/opportunites-recherche-vide-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-recherche-vide-mobile.jpg) |
+| opportunites-reserve | [ordinateur](etats-ecrans/opportunites-reserve-ordinateur.jpg) | [390 px](etats-ecrans/opportunites-reserve-mobile.jpg) |
+| profil-ajout-experience | [ordinateur](etats-ecrans/profil-ajout-experience-ordinateur.jpg) | [390 px](etats-ecrans/profil-ajout-experience-mobile.jpg) |
+| profil-carnet-rempli | [ordinateur](etats-ecrans/profil-carnet-rempli-ordinateur.jpg) | [390 px](etats-ecrans/profil-carnet-rempli-mobile.jpg) |
+| profil-clavier | [ordinateur](etats-ecrans/profil-clavier-ordinateur.jpg) | [390 px](etats-ecrans/profil-clavier-mobile.jpg) |
+| profil-compte | [ordinateur](etats-ecrans/profil-compte-ordinateur.jpg) | [390 px](etats-ecrans/profil-compte-mobile.jpg) |
+| profil-documents-fictifs | [ordinateur](etats-ecrans/profil-documents-fictifs-ordinateur.jpg) | [390 px](etats-ecrans/profil-documents-fictifs-mobile.jpg) |
+| profil-droits-dialogue | [ordinateur](etats-ecrans/profil-droits-dialogue-ordinateur.jpg) | [390 px](etats-ecrans/profil-droits-dialogue-mobile.jpg) |
+| profil-recherche-vide | [ordinateur](etats-ecrans/profil-recherche-vide-ordinateur.jpg) | [390 px](etats-ecrans/profil-recherche-vide-mobile.jpg) |
+| profil-sans-document | [ordinateur](etats-ecrans/profil-sans-document-ordinateur.jpg) | [390 px](etats-ecrans/profil-sans-document-mobile.jpg) |
+| profil-sans-experience | [ordinateur](etats-ecrans/profil-sans-experience-ordinateur.jpg) | [390 px](etats-ecrans/profil-sans-experience-mobile.jpg) |
+| profil-textes-longs | [ordinateur](etats-ecrans/profil-textes-longs-ordinateur.jpg) | [390 px](etats-ecrans/profil-textes-longs-mobile.jpg) |
+| questions-apres-validation-defaut | [ordinateur](etats-ecrans/questions-apres-validation-defaut-ordinateur.jpg) | [390 px](etats-ecrans/questions-apres-validation-defaut-mobile.jpg) |
+| questions-limite-depassee | [ordinateur](etats-ecrans/questions-limite-depassee-ordinateur.jpg) | [390 px](etats-ecrans/questions-limite-depassee-mobile.jpg) |
+| questions-nouvelle-vide | [ordinateur](etats-ecrans/questions-nouvelle-vide-ordinateur.jpg) | [390 px](etats-ecrans/questions-nouvelle-vide-mobile.jpg) |
+| recherche-criteres-enregistres | [ordinateur](etats-ecrans/recherche-criteres-enregistres-ordinateur.jpg) | [390 px](etats-ecrans/recherche-criteres-enregistres-mobile.jpg) |
+| recherche-editeur-complet | [ordinateur](etats-ecrans/recherche-editeur-complet-ordinateur.jpg) | [390 px](etats-ecrans/recherche-editeur-complet-mobile.jpg) |
+| recherche-menu-critere | [ordinateur](etats-ecrans/recherche-menu-critere-ordinateur.jpg) | [390 px](etats-ecrans/recherche-menu-critere-mobile.jpg) |
+| recherche-niveau-brouillon | [ordinateur](etats-ecrans/recherche-niveau-brouillon-ordinateur.jpg) | [390 px](etats-ecrans/recherche-niveau-brouillon-mobile.jpg) |
+| recherche-sans-poste | [ordinateur](etats-ecrans/recherche-sans-poste-ordinateur.jpg) | [390 px](etats-ecrans/recherche-sans-poste-mobile.jpg) |
+| relances-date-prevue | [ordinateur](etats-ecrans/relances-date-prevue-ordinateur.jpg) | [390 px](etats-ecrans/relances-date-prevue-mobile.jpg) |
+| reserve-confirmation | [ordinateur](etats-ecrans/reserve-confirmation-ordinateur.jpg) | [390 px](etats-ecrans/reserve-confirmation-mobile.jpg) |
+| sources-ajout | [ordinateur](etats-ecrans/sources-ajout-ordinateur.jpg) | [390 px](etats-ecrans/sources-ajout-mobile.jpg) |
+| sources-catalogue-vide | [ordinateur](etats-ecrans/sources-catalogue-vide-ordinateur.jpg) | [390 px](etats-ecrans/sources-catalogue-vide-mobile.jpg) |
+| sources-erreur-api-url | [ordinateur](etats-ecrans/sources-erreur-api-url-ordinateur.jpg) | [390 px](etats-ecrans/sources-erreur-api-url-mobile.jpg) |
+| sources-fiche | [ordinateur](etats-ecrans/sources-fiche-ordinateur.jpg) | [390 px](etats-ecrans/sources-fiche-mobile.jpg) |
+| sources-liste | [ordinateur](etats-ecrans/sources-liste-ordinateur.jpg) | [390 px](etats-ecrans/sources-liste-mobile.jpg) |
+| sources-retrait-confirmation | [ordinateur](etats-ecrans/sources-retrait-confirmation-ordinateur.jpg) | [390 px](etats-ecrans/sources-retrait-confirmation-mobile.jpg) |
+| sources-sans-source-suivie | [ordinateur](etats-ecrans/sources-sans-source-suivie-ordinateur.jpg) | [390 px](etats-ecrans/sources-sans-source-suivie-mobile.jpg) |
+| tour-aujourdhui | [ordinateur](etats-ecrans/tour-aujourdhui-ordinateur.jpg) | [390 px](etats-ecrans/tour-aujourdhui-mobile.jpg) |
+| tour-candidatures | [ordinateur](etats-ecrans/tour-candidatures-ordinateur.jpg) | [390 px](etats-ecrans/tour-candidatures-mobile.jpg) |
+| tour-configuration-carnet | [ordinateur](etats-ecrans/tour-configuration-carnet-ordinateur.jpg) | [390 px](etats-ecrans/tour-configuration-carnet-mobile.jpg) |
+| tour-configuration-depart | [ordinateur](etats-ecrans/tour-configuration-depart-ordinateur.jpg) | [390 px](etats-ecrans/tour-configuration-depart-mobile.jpg) |
+| tour-configuration-documents | [ordinateur](etats-ecrans/tour-configuration-documents-ordinateur.jpg) | [390 px](etats-ecrans/tour-configuration-documents-mobile.jpg) |
+| tour-configuration-import | [ordinateur](etats-ecrans/tour-configuration-import-ordinateur.jpg) | [390 px](etats-ecrans/tour-configuration-import-mobile.jpg) |
+| tour-configuration-profil | [ordinateur](etats-ecrans/tour-configuration-profil-ordinateur.jpg) | [390 px](etats-ecrans/tour-configuration-profil-mobile.jpg) |
+| tour-configuration-relecture | [ordinateur](etats-ecrans/tour-configuration-relecture-ordinateur.jpg) | [390 px](etats-ecrans/tour-configuration-relecture-mobile.jpg) |
+| tour-introduction | [ordinateur](etats-ecrans/tour-introduction-ordinateur.jpg) | [390 px](etats-ecrans/tour-introduction-mobile.jpg) |
+| tour-opportunites | [ordinateur](etats-ecrans/tour-opportunites-ordinateur.jpg) | [390 px](etats-ecrans/tour-opportunites-mobile.jpg) |
+| tour-pause | [ordinateur](etats-ecrans/tour-pause-ordinateur.jpg) | [390 px](etats-ecrans/tour-pause-mobile.jpg) |
+| tour-profil | [ordinateur](etats-ecrans/tour-profil-ordinateur.jpg) | [390 px](etats-ecrans/tour-profil-mobile.jpg) |
+| tour-recherche | [ordinateur](etats-ecrans/tour-recherche-ordinateur.jpg) | [390 px](etats-ecrans/tour-recherche-mobile.jpg) |
 
-## Journal des corrections
+## Journal des corrections et recette livrée
 
-À compléter après les PR par écran. La production reste sur la version explicitement validée auparavant ; cet audit et ses correctifs ne l’autorisent pas à évoluer.
+L’application du staging v22 correspond au code de `main` après #221 (commit public `71f3a46b33ee52551bdfed083591435ddce17854`). La mise à jour documentaire de cette recette n’ajoute aucun code et ne nécessite pas un déploiement applicatif.
+
+| PR | Écran / sous-vue | Résultat | Déploiement privé |
+| --- | --- | --- | --- |
+| [#213](https://github.com/Lucilesr/radar-produit/pull/213) | Candidatures / questions, tags, entretiens | Réponse confirmée visible après validation et rechargement ; validation désactivée si rien n’a changé ; attente bornée à 15 s, reprise et saisie conservée. | v14, conservé dans v22 |
+| [#214](https://github.com/Lucilesr/radar-produit/pull/214) | Opportunités / lot et archives | Archives accessibles sans réserve ; ouverture avec Entrée, restauration puis archives vides vérifiées ; lot bouclé conservé après rechargement. | v15, conservé dans v22 |
+| [#215](https://github.com/Lucilesr/radar-produit/pull/215) | Sources et Ma recherche | Erreur API avec URL http, saisie conservée, correction en https et sauvegarde confirmée ; état sans source capturé puis huit sources fictives rétablies. | v16, conservé dans v22 |
+| [#216](https://github.com/Lucilesr/radar-produit/pull/216) | Mon profil / carnet et documents | Recherche vide effaçable, focus rendu au champ ; documents distinguent lecture, erreur et absence ; mouvement réduit respecté dans le code. | v17, conservé dans v22 |
+| [#217](https://github.com/Lucilesr/radar-produit/pull/217) | Aujourd’hui / première configuration | Trois étapes lisibles, contraste Signal, bouton ouvrant Ma recherche ; priorité d’un entretien urgent conservée. | v18, conservé dans v22 |
+| [#218](https://github.com/Lucilesr/radar-produit/pull/218) | Tour de prise en main | Étape 1→2 depuis le bouton de l’accueil, 2→3 après choix du poste, puis documents, poursuite sans CV, carnet et pause. | v19, conservé dans v22 |
+| [#219](https://github.com/Lucilesr/radar-produit/pull/219) | Opportunités / éditeur | Ajout fictif avec Entrée confirmé ; attentes de création et de lecture employeur bornées à 15 s. | v20, conservé dans v22 |
+| [#220](https://github.com/Lucilesr/radar-produit/pull/220) | Candidatures / historique des notes | Lecture nommée, historique vide distinct, ouverture au clavier et reprise ; aucune note changée pour la recette. | v21, conservé dans v22 |
+| [#221](https://github.com/Lucilesr/radar-produit/pull/221) | Mon compte / confirmation | Bouton définitif désactivé sans confirmation complète ; focus initial sur Annuler, retour au déclencheur après Échap et Annuler ; attente bornée à 60 s. Aucune suppression exécutée. | v22 |
+
+- **Contrôles par PR applicative : 274 tests réussis, zéro échec, et `npx tsc --noEmit --incremental false` réussi.** L’échec account-backup connu dans les consignes ne s’est pas reproduit dans cet environnement ; aucun correctif de sauvegarde n’est revendiqué.
+- Compilation et neuf déploiements privés confirmés `succeeded`, sans migration. Chaque sous-vue conserve les composants Signal indiqués dans sa PR ; aucun nouveau sélecteur natif ni style isolé.
+- Recette sur ordinateur et à 390 px, clavier et focus selon les parcours décrits ; **aucune erreur relevée dans la console** du parcours final.
+- Les délais et le mouvement réduit ont été vérifiés dans le code et par les contrôles applicatifs, sans injection de panne ni modification artificielle du DOM pour produire une photo. Une simulation réseau, hors ligne, flux partiel et préférence système reste nécessaire pour compléter la preuve visuelle exhaustive.
+- **Aucune promotion en production.** Données, fichiers, configuration et visibilité de production inchangés ; seules les données fictives de comptes de recette du staging ont servi aux manipulations. Le staging reste réservé à la propriétaire, configuration et stockage conservés.
