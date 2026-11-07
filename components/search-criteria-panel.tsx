@@ -18,6 +18,7 @@ const viewKey = "radar:search-criteria-view";
 const editTargets: Record<Exclude<CriteriaTarget, "jobgether">, string> = {
   keywords: "#boostKeywords",
   roles: "#searched-role",
+  level: "[role=group][aria-label='Niveau visé'] button",
   conditions: "section[aria-labelledby=search-conditions-title] input",
   locations: "#includedLocations",
   pay: "section[aria-labelledby=search-pay-title] input",

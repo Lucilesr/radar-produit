@@ -4,6 +4,7 @@ import { detectWorkArrangement } from "./work-arrangement";
 import { activeStatuses } from "./application-workflow";
 import { isNorthAmericaRestricted } from "./market-scope";
 import { announcedLocationFor, assessLocation } from "./location-criteria";
+import { detectLevel, levelSignal } from "./seniority";
 
 const ownerRoles = [/\bproduct owner\b/i, /\bpo\b/i];
 const managerRoles = [/\bproduct manager\b/i, /\bchef(?:fe)? de produits?\b/i, /\bresponsable produit\b/i];
@@ -192,6 +193,11 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     flags.push(`Contient ${unwanted.join(", ")}, que vous écartez.`);
   }
 
+  // Level is a point to check in this lot; it does not change the score yet.
+  const signals: string[] = [];
+  const level = levelSignal(detectLevel(job.title, job.description ?? ""), search.targetLevel, search.acceptLevelAbove);
+  if (level) { signals.push(level); flags.push(level); }
+
   score = Math.max(0, Math.min(100, score));
   const tier = excluded
     ? "excluded"
@@ -201,7 +207,7 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
         ? "priority"
         : "match";
 
-  return { score, tier, reasons, flags };
+  return { score, tier, reasons, flags, signals };
 }
 
 export function createFingerprint(job: JobInput) {
