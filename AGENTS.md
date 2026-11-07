@@ -19,7 +19,7 @@ Avant toute PR ou tout déploiement d’interface, vérifier visuellement le ren
 
 Ce dépôt est public et présente des données fictives. Le site personnel privé et ses données ne doivent jamais être copiés ici.
 
-Pour l’onglet Ma recherche, suivre `docs/ma-recherche-v2.md` lot par lot. Pour le score des offres, suivre `docs/score-v2.md` lot par lot. Pour le tri des offres (lot du jour, réserve), suivre `docs/tri.md`.
+Pour l’onglet Ma recherche, suivre `docs/ma-recherche-v2.md` lot par lot. Pour le score des offres, suivre `docs/score-v2.md` lot par lot. Pour le tri des offres (lot du jour, réserve), suivre `docs/tri.md`. Pour la suite (design system, séance, portée, plan de la semaine, Candidatures), suivre `docs/feuille-de-route.md`.
 
 Pour chaque évolution, y compris les corrections, la documentation et les règles du projet :
 
