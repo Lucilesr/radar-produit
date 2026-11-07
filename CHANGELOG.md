@@ -1,3 +1,8 @@
+## 7 novembre 2026 — Q0, fondations Signal
+
+- Palette, police d’affichage locale et composants communs : compteur, progression, radar, étapes et bilan plein écran. Radar reste sans personnage.
+- La barre du lot réutilise ces fondations ; mouvements réduits respectés, aucune nouvelle disposition d’écran.
+
 ## 7 novembre 2026 — Feuille de route gamification
 
 ## 7 novembre 2026 — Sortie d’attente de Mon compte

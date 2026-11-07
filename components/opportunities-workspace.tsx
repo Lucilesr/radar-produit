@@ -13,6 +13,7 @@ import { formatEuro } from "@/lib/matching";
 import { formatPayRangeShort } from "@/lib/pay-range";
 import { pinMysteryOffers } from "@/lib/fit";
 import { lotHeadline, type DailyLot } from "@/lib/daily-lot";
+import { SignalProgress } from "@/components/signal/signal-progress";
 import type { CandidateProfile, JobRecord, JobStatus } from "@/lib/types";
 
 const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"],["trash","Corbeille"]];
@@ -165,7 +166,7 @@ function DailyLotBanner({lot,total,inLot,onToggle}:{lot:DailyLot;total:number;in
     <div className="daily-lot-text">
       <p className="daily-lot-headline" aria-live="polite"><strong>{lotHeadline(lot)}</strong>{left&&lot.triaged?<span> dans votre lot du jour</span>:null}</p>
       <p className="daily-lot-caption">{caption}</p>
-      <div className="daily-lot-bar" role="progressbar" aria-label="Avancement du lot du jour" aria-valuemin={0} aria-valuemax={lot.size} aria-valuenow={lot.triaged} aria-valuetext={`${lot.triaged} sur ${lot.size}`}><span style={{width:`${lot.size?Math.round(lot.triaged/lot.size*100):0}%`}}/></div>
+      <SignalProgress className="daily-lot-bar" value={lot.triaged} max={lot.size} label="Avancement du lot du jour" tone={done?"finished":"neutral"}/>
     </div>
     {inLot?(others?<button type="button" className="secondary-button daily-lot-switch" onClick={onToggle}>{done?"Continuer avec la réserve":`Voir la réserve (${others})`}</button>:null)
       :<button type="button" className="secondary-button daily-lot-switch" onClick={onToggle}>Revenir au lot du jour</button>}
