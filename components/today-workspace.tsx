@@ -17,7 +17,7 @@ import { lotHeadline, type DailyLot } from "@/lib/daily-lot";
 
 // Recalculate deadlines on entry and explicit data changes; keep the page stable while reading.
 function useNow(jobs: JobRecord[]) { const [now,setNow]=useState(()=>Date.now()); useEffect(()=>setNow(Date.now()),[jobs]);return now; }
-export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd, onOpen, onOpenSource, setupRequired=false, onConfigureSearch, radarLine, sessionAction, sessionNotice, manualRefresh=false }: {sessionAction?:{ready:boolean;minutes:number;available:boolean;resumable:boolean;onStart:()=>void};sessionNotice?:ReactNode;manualRefresh?:boolean;radarLine?:ReactNode;setupRequired?:boolean;onConfigureSearch?:()=>void;jobs:JobRecord[];lot?:DailyLot|null;sources?:{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onOpenSource?:(name:string)=>void}) {
+export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd, onOpen, onOpenSource, setupRequired=false, onConfigureSearch, radarLine, sessionAction, sessionNotice, manualRefresh=false,reach }: {reach?:ReactNode;sessionAction?:{ready:boolean;minutes:number;available:boolean;resumable:boolean;onStart:()=>void};sessionNotice?:ReactNode;manualRefresh?:boolean;radarLine?:ReactNode;setupRequired?:boolean;onConfigureSearch?:()=>void;jobs:JobRecord[];lot?:DailyLot|null;sources?:{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onOpenSource?:(name:string)=>void}) {
   const now=useNow(jobs);
   const count=jobs.filter(job=>inOpportunityView(job,"to_review")).length;
   const selected=jobs.filter(job=>inOpportunityView(job,"selected")).length;
@@ -52,6 +52,7 @@ export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd
       </section>
       {!preparing?sessionNotice:null}
       {!preparing?radarLine:null}
+      {!preparing?reach:null}
       {!preparing?<><section className="today-next" aria-labelledby="today-next-title"><WorkspacePanelHeader id="today-next-title" title="À faire ensuite"/>
         {actions.filter(action=>action!==urgent).slice(0,3).map(action=><button key={action.job.id} type="button" className="workspace-task" onClick={()=>openAction(action)}><span className="workspace-task-icon"><ClipboardCheck size={18} aria-hidden /></span><span><strong>{action.title}</strong><small>{action.detail}</small></span><ArrowUpRight size={17} aria-hidden /></button>)}
         {!actions.filter(action=>action!==urgent).length?<p className="workspace-caption">Aucune action supplémentaire en attente.</p>:null}

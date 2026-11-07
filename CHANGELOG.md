@@ -1,3 +1,9 @@
+## 7 novembre 2026 — Q4, la portée de votre radar
+
+- Dix crans calculés depuis vos critères, sources, visites, expériences et histoires déjà validées ; aucune fonction bloquée par la jauge.
+- Une seule prochaine action sur l’accueil, détail dans Mon profil et huit thèmes pour préparer des récits factuels privés. Les droits de réutilisation restent un choix séparé.
+- Brouillons récupérables, versions comparables, palier signalé une seule fois et dix crans stables ; mouvements réduits respectés. Aucune migration.
+
 ## 7 novembre 2026 — Q3, une séance à votre rythme
 
 - L’accueil propose une séance facultative avec seulement les étapes utiles : lot, relances datées, source à visiter et bloc à valider. La priorité d’un entretien proche reste visible.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ExperienceLibrary } from "@/components/experience-library";
 import type { Library } from "@/components/experience-library";
 import { ProfileDocuments } from "@/components/profile-documents";
@@ -8,9 +8,9 @@ import { AccountSettings } from "@/components/account-settings";
 import type { CandidateProfile } from "@/lib/types";
 import type { DocumentLinks } from "@/lib/document-input";
 import { readProfileSection, type ProfileSection as Section } from "@/lib/radar-navigation";
-const sections: [Section,string][]=[["experiences","Carnet d’expériences"],["documents","Mes documents"],["account","Mon compte"]];
+const sections: [Section,string][]=[["experiences","Carnet d’expériences"],["documents","Mes documents"],["account","Mon compte"],["portee","Portée du radar"]];
 type Account={ownerId:string;userName:string;email?:string;demo:boolean;signOutPath:string};
-export function ProfileWorkspace({profile,account,onDocumentsLinked,initialSection="experiences",active=true,initialExperienceLibrary}:{profile:CandidateProfile;account:Account;onDocumentsLinked:(links:DocumentLinks)=>void;initialSection?:Section;active?:boolean;initialExperienceLibrary?:Library}) {
+export function ProfileWorkspace({profile,account,onDocumentsLinked,initialSection="experiences",active=true,initialExperienceLibrary,reachContent}:{reachContent?:(active:boolean)=>ReactNode;profile:CandidateProfile;account:Account;onDocumentsLinked:(links:DocumentLinks)=>void;initialSection?:Section;active?:boolean;initialExperienceLibrary?:Library}) {
   const [draft,setDraft]=useState(profile),[section,setSection]=useState<Section>(initialSection);
   const [visited,setVisited]=useState({experiences:initialSection==="experiences",documents:initialSection==="documents",account:initialSection==="account"});
   useEffect(()=>{setVisited(current=>({...current,[section]:true}));},[section]);
@@ -22,6 +22,7 @@ export function ProfileWorkspace({profile,account,onDocumentsLinked,initialSecti
   function linked(links:DocumentLinks){setDraft(current=>({...current,...links}));onDocumentsLinked(links);}
   return <div className="profile-workspace"><nav className="workspace-tabs" aria-label="Sections du profil">{sections.map(([id,label])=><button type="button" key={id} data-radar-guide={"profile-"+id} aria-pressed={section===id} aria-controls={"profile-panel-"+id} onClick={()=>select(id)}>{label}</button>)}</nav>
     {(section==="experiences"||visited.experiences)?<div id="profile-panel-experiences" data-radar-guide="experience-library" hidden={section!=="experiences"}><ExperienceLibrary initialLibrary={initialExperienceLibrary} documentId={draft.detailedExperienceDocumentId || draft.cvFrDocumentId || draft.cvEnDocumentId} onOpenDocuments={()=>{select("documents");requestAnimationFrame(()=>{const card=document.getElementById("document-detailedExperienceDocumentId");card?.focus({preventScroll:true});card?.scrollIntoView({block:"center"});});}}/></div>:null}
+    {section==="portee"?<div id="profile-panel-portee">{reachContent?.(active)}</div>:null}
     {section==="account"?<div id="profile-panel-account"><AccountSettings {...account}/></div>:null}
     {(section==="documents"||visited.documents)?<div id="profile-panel-documents" data-radar-guide="profile-documents-panel" hidden={section!=="documents"}><ProfileDocuments links={draft} onLinked={linked} onBusyChange={()=>{}}/></div>:null}
   </div>;

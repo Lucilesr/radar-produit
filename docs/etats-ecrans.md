@@ -1,5 +1,7 @@
 # Inventaire des états de Radar
 
+Complément **Q4** : une [portée détaillée et huit thèmes d’entretien](q4-portee.md) s’ajoutent à Mon profil, avec une version compacte sur Aujourd’hui. Les états de cette sous-vue sont inventoriés à la fin de ce document. La jauge ne conditionne aucun accès.
+
 Complément **Q3, staging v30** : [séance et bilan](q3-seance.md) ajoutent préparation bornée, étapes vides sautées, reprise facultative, pause, sortie sans action et bilan réel. Les commandes de clôture attendent les écritures d’offre, visite et carnet. Quatre compteurs confirmés **1/1/1/1** ont été reproduits sur le staging, avec captures ordinateur et mobile, fermeture Échap et focus à l’accueil.
 
 Complément **Q2, staging v28** : le [bilan du balayage](q2-balayage.md) distingue maintenant chargement borné, nouvelles fiches, absence de nouveauté, cache, pause, panne partielle avec reprise par source et panne complète conservant les offres. Captures fictives ordinateur et mobile, retour clavier et préférence de mouvement réduit réellement exécutée sont documentés dans ce lot. Cela complète les tableaux historiques ci-dessous ; le hors ligne réseau réel reste à reproduire.
@@ -819,3 +821,22 @@ L’application du staging v22 correspond au code de `main` après #221 (commit 
 - Recette sur ordinateur et à 390 px, clavier et focus selon les parcours décrits ; **aucune erreur relevée dans la console** du parcours final.
 - Les délais et le mouvement réduit ont été vérifiés dans le code et par les contrôles applicatifs, sans injection de panne ni modification artificielle du DOM pour produire une photo. Une simulation réseau, hors ligne, flux partiel et préférence système reste nécessaire pour compléter la preuve visuelle exhaustive.
 - **Aucune promotion en production.** Données, fichiers, configuration et visibilité de production inchangés ; seules les données fictives de comptes de recette du staging ont servi aux manipulations. Le staging reste réservé à la propriétaire, configuration et stockage conservés.
+
+### Portée du radar et histoires d’entretien — Q4
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Compte neuf | Aucun critère, source enregistrée ou bloc validé. | « Votre radar s’allume », zéro cran ; aucune fonction verrouillée. | Définir mes critères. | oui |
+| Vide | Aucune histoire validée ou aucun thème classé. | Compte réel à zéro et huit thèmes facultatifs. | Écrire un récit privé. | oui |
+| Chargement | Lecture des sources et du carnet, quinze secondes au plus. | Lecture nommée, radar fixe ; pas de points supposés. | Attendre la lecture, puis reprendre si elle échoue. | oui |
+| Erreur réseau ou API | Lecture, brouillon ou validation non confirmé ; version périmée. | Message Signal, texte conservé, comparaison en cas de conflit. | Réessayer, comparer ou ouvrir le carnet. | oui |
+| Succès | Informations enregistrées, récit validé, seuil atteint. | Crans recalculés ; signal citron une fois ; dix crans stables sans relance. | Relire, choisir la prochaine action facultative. | oui |
+| Partiel : une source en erreur | Sources ou carnet indisponibles, autre lecture réussie. | Portée à relire, valeurs des éléments disponibles ; prochaine action masquée. | Relire les sources ou le carnet. | oui |
+| Beaucoup de données | Mille offres et cinquante candidatures dans le compte. | Le calcul de portée ne parcourt pas les offres ; il lit critères, sources et carnet. Le test de volume général reste celui de l’inventaire initial. | Ouvrir le détail ou continuer son travail. | partiel |
+| Textes très longs | Récit personnel long. | Champs bornés à 6 000 / 4 000 / 4 000 caractères ; dialogue défilant, comparaison avec retour à la ligne. | Corriger et valider, ou reprendre plus tard. | oui |
+| Hors ligne | Une lecture ou une écriture ne répond plus. | Échec borné, copie de confort et texte conservés ; aucune validation supposée réussie. Pas de mode hors ligne complet. | Revenir en ligne puis réessayer. | partiel |
+| Mouvement réduit | Réglage du compte ou du système. | Radar fixe, aucune animation de palier ; compte et message lisibles. | Poursuivre normalement. | oui |
+| Clavier seul | Ouverture d’un thème et navigation au clavier. | Titre focalisé, dialogue piégeant le focus ; Échap ou fermeture rendent le focus. | Saisir, comparer, valider ou reprendre plus tard. | oui |
+| Mobile à 390 px | Fenêtre mobile. | Paliers et thèmes en une colonne, champs de 16 px, dialogue défilant, contrôles Signal. | Mêmes actions que sur ordinateur. | oui |
+
+Contradiction levée avec la maquette Portee : le titre « débloque » suggérait des accès conditionnels, alors que le §4.6 impose toutes les fonctions disponibles. Les paliers décrivent désormais ce que les informations préparent. Ouvrir le premier choix ne gagne aucun point sans enregistrement réel. Les preuves de staging, leurs dimensions et les limites de simulation réseau figurent dans [la recette du lot](q4-portee.md).
