@@ -7,3 +7,7 @@ Dans **Opportunités → À examiner**, le lot du jour contient vingt offres au 
 ## Fondations Q0
 
 La barre du lot utilise le composant Signal commun. La palette, les compteurs, le radar, les étapes et les écrans de bilan sont prêts pour les lots suivants, sans ajouter de nouvel écran à cette étape. Radar reste sans personnage. Les mouvements respectent la préférence de votre appareil ; les nombres restent lisibles sans animation. Aucun son et aucune donnée envoyée à un service de mesure.
+
+## Un second regard le vendredi — Q1c
+
+Dans **Opportunités → Voir la réserve**, le repêchage propose trois offres proches écartées récemment, lorsqu’il en existe. **Restaurer** les remet dans vos offres ; **Laisser** les garde dans la corbeille et les masque pour cette visite. Le tirage reste stable sur la journée. Cette proposition est facultative et ne modifie jamais vos critères.

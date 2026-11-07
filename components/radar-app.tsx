@@ -11,10 +11,12 @@ import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, use
 import { CircleHelp, RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, Plus, Search, SlidersHorizontal, Trash2, Undo2, UserRound, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
+import { demoFriday, fridayRescue } from "@/lib/friday-rescue";
 import { hasApplication, inOpportunityView, reviewState, storedReviewDecision, type OpportunityView } from "@/lib/opportunity-views";
 import { PageHeader, PrivateLabel, WorkspaceBrand, WorkspaceBoundary, WorkspaceLoading, WorkspaceState, useRadarNavigation } from "@/components/workspace-ui";
 import { TodayWorkspace, ApplicationsWorkspace } from "@/components/today-workspace";
 import { useDailyLot } from "@/components/use-daily-lot";
+import { useRadarClock } from "@/components/use-radar-clock";
 import { OpportunitiesWorkspace } from "@/components/opportunities-workspace";
 import { OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/components/offer-workspace";
 import { ApplicationTagEditor } from "@/components/application-tags";
@@ -44,9 +46,9 @@ const tabs: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof La
 ];
 
 
-type RadarAppProps = { ownerId?: string; userName: string; userEmail?: string; signOutPath?: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection; initialExperienceLibrary?: Library };
+type RadarAppProps = { ownerId?: string; userName: string; userEmail?: string; signOutPath?: string; initialState?: RadarInitialState; initialRoute?: RadarRoute; initialProfileSection?: ProfileSection; initialExperienceLibrary?: Library; fridayDemo?:boolean };
 export function RadarApp(props: RadarAppProps) { return <DemoModeProvider enabled={!!props.ownerId?.startsWith("demo:")}><AutosaveOwner owner={props.ownerId??""}><WorkspaceFeedbackProvider><RadarWorkspace {...props} /></WorkspaceFeedbackProvider></AutosaveOwner></DemoModeProvider>; }
-function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-with-chatgpt?return_to=%2F", initialState, initialRoute, initialProfileSection, initialExperienceLibrary }: RadarAppProps) {
+function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-with-chatgpt?return_to=%2F", initialState, initialRoute, initialProfileSection, initialExperienceLibrary, fridayDemo=false }: RadarAppProps) {
   const { route, navigate } = useRadarNavigation(initialRoute);
   const { tab, filter, query, view: workspaceView } = route;
   const previousTab = useRef(tab);
@@ -65,6 +67,8 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   const setQuery = (query: string) => navigate({ query, tab: "offers", offer: undefined }, route.tab === "offers" && !!route.query);
   const searchRef = useRef<HTMLInputElement>(null);
   const [allJobs, setJobs] = useState<JobRecord[]>(initialState?.jobs ?? []);
+  const rescueClock = useRadarClock();
+  const rescueOffers = useMemo(() => rescueClock ? fridayRescue(allJobs, fridayDemo && ownerId?.startsWith("demo:") ? demoFriday(new Date(rescueClock)) : new Date(rescueClock)) : [], [allJobs, rescueClock, fridayDemo, ownerId]);
   useEffect(()=>{const saved=(event:Event)=>{const detail=(event as CustomEvent).detail;if(detail?.owner===ownerId&&typeof detail.id==="string"&&typeof detail.value==="string")setJobs(current=>current.map(job=>job.id===detail.id?{...job,candidateNote:detail.value}:job));};window.addEventListener("radar-note-saved",saved);return()=>window.removeEventListener("radar-note-saved",saved);},[ownerId]);
   const jobs = useMemo(() => allJobs.filter(job => !job.deletedAt), [allJobs]);
   const [trashBusy, setTrashBusy] = useState<string | null>(null);
@@ -164,7 +168,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   }
   function requestDeleteMany(selection: JobRecord[]) { if (trashLock.current || refreshing) return; closeJob(); void changeTrash(selection, true); }
   async function changeTrash(selection: JobRecord[], deleted: boolean) {
-    if (trashLock.current || refreshing || !selection.length) return;
+    if (trashLock.current || refreshing || !selection.length) return false;
     trashLock.current = true; setTrashBusy(selection[0].id); setTrashError(null);
     const optimistic = selection.map(job => ({ id: job.id, deletedAt: deleted ? new Date().toISOString() : undefined }));
     setJobs(current => applyTrashState(current, optimistic));
@@ -177,9 +181,11 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
       setJobs(current => applyTrashState(current, [...results, ...missing]));
       if (missing.length) setTrashError(`${missing.length} offre(s) non confirmée(s), réaffichée(s). Actualisez la liste avant de réessayer.`);
       if (results.length) setToast(deleted ? `${results.length} ${results.length === 1 ? "offre supprimée" : "offres supprimées"}. Restauration possible dans Corbeille.` : `${results.length} ${results.length === 1 ? "offre restaurée" : "offres restaurées"}, avec les notes et entretiens.`);
+      return !missing.length;
     } catch {
       setJobs(current => applyTrashState(current, selection));
       setTrashError("Enregistrement non confirmé : les offres ont été réaffichées. Réessayez ou actualisez pour vérifier. Aucun contenu n’est effacé définitivement.");
+      return false;
     } finally { trashLock.current = false; setTrashBusy(null); }
   }
   async function saveProfile(next: CandidateProfile) {
@@ -249,7 +255,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
         {!loading && !loadErrors.jobs && tab === "dashboard" ? <TodayWorkspace setupRequired={profileLoaded&&!roleChosen} onConfigureSearch={()=>navigate({tab:"sources",offer:undefined})} jobs={allJobs} lot={dailyLot} sources={sourceSettings} onOpenSource={openSource} onTriage={() => navigate({tab:"offers",filter:"to_review",query:"",offer:undefined})} onSelected={() => navigate({tab:"offers",filter:"selected",query:"",offer:undefined})} onAdd={()=>setJobDialogOpen(true)} onOpen={openJob} /> : null}
         {trashError ? <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">{trashError}<button className="ml-3 underline" onClick={() => { setTrashError(null); void refreshOffers(); }}>Actualiser pour vérifier</button></div> : null}
         {!loading && !loadErrors.jobs && tab === "offers" && profileLoaded && !roleChosen ? <WorkspaceState title="Quel poste cherchez-vous ?" action={<button type="button" className="secondary-button" onClick={() => navigate({ tab: "sources" })}>Choisir mon poste</button>}>Radar classe les offres selon le poste que vous visez. Indiquez-le dans Ma recherche pour voir vos opportunités.</WorkspaceState> : null}
-        {!loading && !loadErrors.jobs && tab === "offers" && (!profileLoaded || roleChosen) ? <OpportunitiesWorkspace currentJob={selectedJob} jobs={shownJobs} lot={dailyLot} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>void changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>{setJobs(current=>current.map(job=>job.id===updated.id?updated:job));setToast("Offre mise à jour.");}} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing} /> : null}
+        {!loading && !loadErrors.jobs && tab === "offers" && (!profileLoaded || roleChosen) ? <OpportunitiesWorkspace rescueOffers={rescueOffers} currentJob={selectedJob} jobs={shownJobs} lot={dailyLot} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>{setJobs(current=>current.map(job=>job.id===updated.id?updated:job));setToast("Offre mise à jour.");}} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing} /> : null}
         {tab === "pipeline" ? <ApplicationsWorkspace placeholder={loading?<WorkspaceLoading/>:loadErrors.jobs?loadNotice:undefined} notice={!loading&&!loadErrors.jobs?loadNotice:undefined} jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
         {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace account={{ ownerId: ownerId ?? "", userName, email: userEmail, demo: !!ownerId?.startsWith("demo:"), signOutPath }} active={tab === "profile"} initialSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} profile={profile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
         {profileLoaded && (tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel headerTarget={sourceHeaderTarget} active={tab==="sources"} jobs={jobs} profile={profile} onSave={saveSearch} onSynced={()=>refreshOffers({silent:true})} onAddOffer={url=>{setJobDialogUrl(url);setJobDialogOpen(true);}} /></Suspense></WorkspaceBoundary></div> : null}

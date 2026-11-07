@@ -1,3 +1,8 @@
+## 7 novembre 2026 — Q1c, repêchage du vendredi
+
+- La réserve propose jusqu’à trois offres proches écartées depuis sept jours, avec Restaurer ou Laisser, sans modifier les critères.
+- Tirage stable par jour, absent les autres jours ; scénario de démo fictif pour vérifier le vendredi.
+
 ## 7 novembre 2026 — Q0, fondations Signal
 
 - Palette, police d’affichage locale et composants communs : compteur, progression, radar, étapes et bilan plein écran. Radar reste sans personnage.
