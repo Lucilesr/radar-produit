@@ -1,4 +1,5 @@
 "use client";
+import { requestError } from "@/lib/request-error";
 
 import { useRef, useState } from "react";
 import { Dialog } from "radix-ui";
@@ -22,11 +23,11 @@ export function SourceRemovalDialog({ source, onClose, onRemoved, focusAfterRemo
     if(!source||locked.current)return;
     locked.current=true;setBusy(true);setError("");
     try {
-      const response=await fetch("/api/sources",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,confirmed:true})});
+      const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,confirmed:true})});
       const data=await response.json() as {source?:SourceSetting;error?:string};
       if(!response.ok||!data.source)throw new Error(data.error??"Suppression non confirmée. Réessayez.");
       removed.current=true;onRemoved(data.source);
-    } catch(problem){setError(problem instanceof Error?problem.message:"Suppression non confirmée. Réessayez.");}
+    } catch(problem){setError(requestError(problem, "Suppression non confirmée. Réessayez."));}
     finally {locked.current=false;setBusy(false);}
   }
   return <Dialog.Root open={source!==null} onOpenChange={open=>{if(!open)close();}}>

@@ -1,4 +1,5 @@
 "use client";
+import { requestError } from "@/lib/request-error";
 
 import { useState } from "react";
 import { ExternalLink } from "lucide-react";
@@ -34,11 +35,11 @@ function SearchCard({ query, roles, setting, onSaved }: { query: Query; roles: s
     if (Object.values(next).some(url => url && !validSearchLink(url))) { setError("Saisis une URL https valide pour chaque lien modifié."); return; }
     setBusy(true); setError("");
     try {
-      const response = await fetch("/api/sources", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ source: query.source, role: query.role, links: next }) });
+      const response = await fetch("/api/sources", {signal:AbortSignal.timeout(15000), method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ source: query.source, role: query.role, links: next }) });
       const data = await response.json() as { source?: SourceSetting; error?: string };
       if (!response.ok || !data.source) throw new Error(data.error ?? "Liens non enregistrés.");
       onSaved(data.source); setDraft(null); setEditing(false);
-    } catch (problem) { setError(problem instanceof Error ? problem.message : "Liens non enregistrés."); }
+    } catch (problem) { setError(requestError(problem, "Liens non enregistrés.")); }
     finally { setBusy(false); }
   }
   return <li>

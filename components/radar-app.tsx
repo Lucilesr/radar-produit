@@ -85,7 +85,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   const [visited, setVisited] = useState({profile:false,sources:false});
   useEffect(()=>{if(tab==="profile"||tab==="sources")setVisited(current=>({...current,[tab]:true}));},[tab]);
   // The reminder needs the sources; Ma recherche loads and writes its own copy.
-  useEffect(()=>{let alive=true;fetch("/api/sources",{cache:"no-store"}).then(async response=>{if(!response.ok)return;const data=await response.json() as {sources:typeof sourceSettings};if(alive)setSourceSettings(data.sources??[]);}).catch(()=>{});return()=>{alive=false;};},[]);
+  useEffect(()=>{let alive=true;fetch("/api/sources",{signal:AbortSignal.timeout(15000),cache:"no-store"}).then(async response=>{if(!response.ok)return;const data=await response.json() as {sources:typeof sourceSettings};if(alive)setSourceSettings(data.sources??[]);}).catch(()=>{});return()=>{alive=false;};},[]);
   /** Opens « Ma recherche » on one source, which reads these parameters when it appears. */
   const openSource = (name: string) => {
     const url = new URL(window.location.href);
@@ -184,7 +184,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   }
   async function saveProfile(next: CandidateProfile) {
     try {
-      const response = await fetch("/api/profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(next) });
+      const response = await fetch("/api/profile", {signal:AbortSignal.timeout(15000), method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(next) });
       if (!response.ok) throw new Error("Enregistrement impossible");
       const result = await response.json() as { profile: CandidateProfile };
       setProfile(result.profile); setToast("Profil enregistré dans votre espace privé."); return true;
@@ -211,7 +211,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
     if (trashLock.current) return false;
     setRefreshing(true);
     try {
-      const response = await fetch("/api/jobs?includeDeleted=true", { cache: "no-store" });
+      const response = await fetch("/api/jobs?includeDeleted=true", {signal:AbortSignal.timeout(15000), cache: "no-store" });
       if (!response.ok) throw new Error("Lecture impossible");
       const result = await response.json() as { jobs: JobRecord[] };
       setJobs(result.jobs);

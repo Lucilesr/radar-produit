@@ -1,4 +1,5 @@
 "use client";
+import { requestError } from "@/lib/request-error";
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -87,11 +88,11 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
   const busy=operation!==null;
   async function load(){
     setLoading(true);
-    try{const response=await fetch("/api/sources",{cache:"no-store"});if(!response.ok)throw new Error();setSettings(((await response.json()) as {sources:SourceSetting[]}).sources);setLoadError("");return true;}
+    try{const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),cache:"no-store"});if(!response.ok)throw new Error();setSettings(((await response.json()) as {sources:SourceSetting[]}).sources);setLoadError("");return true;}
     catch{setLoadError("Impossible de lire la configuration des sources.");return false;}
     finally{setLoading(false);}
   }
-  useEffect(()=>{let active=true;fetch("/api/sources",{cache:"no-store"}).then(async response=>{if(!response.ok)throw new Error();const data=await response.json() as {sources:SourceSetting[]};if(active){setSettings(data.sources);setLoadError("");}}).catch(()=>{if(active)setLoadError("Impossible de lire la configuration des sources.");}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[]);
+  useEffect(()=>{let active=true;fetch("/api/sources",{signal:AbortSignal.timeout(15000),cache:"no-store"}).then(async response=>{if(!response.ok)throw new Error();const data=await response.json() as {sources:SourceSetting[]};if(active){setSettings(data.sources);setLoadError("");}}).catch(()=>{if(active)setLoadError("Impossible de lire la configuration des sources.");}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[]);
   // One attempt per visit: the caches of each source still decide what is really fetched.
   const autoRefreshed=useRef(false);
   useEffect(()=>{
@@ -109,22 +110,22 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
   async function sync(quiet=false){
     if(locked.current)return;locked.current=true;setOperation("sync");setSyncError("");
     try{
-      const response=await fetch("/api/sources/sync",{method:"POST"});
+      const response=await fetch("/api/sources/sync",{signal:AbortSignal.timeout(45000),method:"POST"});
       const data=await response.json() as {error?:string;imported?:number;deduplicated?:number;partialFailure?:boolean};
       if(!response.ok)throw new Error(data.error??"Actualisation non confirmée.");
       const [sourcesRead,jobsRead]=await Promise.all([load(),onSynced()]);
       if(!sourcesRead||!jobsRead)throw new Error("Le flux a répondu, mais les données affichées n’ont pas toutes pu être actualisées. Vos dernières données sont conservées.");
       if(!quiet||data.imported)notify({message:`${data.imported} nouvelles fiches et ${data.deduplicated} fiches déjà présentes.${data.partialFailure?" Une source est indisponible : voir son état ci-dessous.":""}`,tone:data.partialFailure?"info":"success"});
-    }catch(problem){setSyncError(problem instanceof Error?problem.message:"Actualisation non confirmée.");}
+    }catch(problem){setSyncError(requestError(problem, "Actualisation non confirmée."));}
     finally{locked.current=false;setOperation(null);}
   }
   async function visitSource(source:typeof sourceCatalog[number]){
     try{
-      const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,visited:true})});
+      const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,visited:true})});
       const data=await response.json() as {source?:SourceSetting;error?:string};
       if(!response.ok||!data.source)throw new Error(data.error??"Visite non enregistrée.");
       onSourceSaved(data.source);notify({message:`${source.name} marqué comme consulté.`});
-    }catch(problem){notify({message:problem instanceof Error?problem.message:"Visite non enregistrée.",tone:"error"});}
+    }catch(problem){notify({message:requestError(problem, "Visite non enregistrée."),tone:"error"});}
   }
   const onSourceSaved=(updated:SourceSetting)=>setSettings(current=>[updated,...(current??[]).filter(item=>item.source!==updated.source)]);
   const alertCatalog=sourceCatalog.filter(source=>source.mode==="email"||source.mode==="rss"||source.mode==="api");
@@ -134,8 +135,8 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
     if(addingSource!==null)return;
     const existing=settings?.find(item=>item.source===name);
     setAddingSource(name);setAddSourceError("");
-    try{const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:name,notes:existing?.notes??"",linkUrl:existing?.linkUrl??"",selected:true})});const data=await response.json() as {source?:SourceSetting;error?:string};if(!response.ok||!data.source)throw new Error(data.error??"Source non ajoutée.");onSourceSaved(data.source);notify({message:name==="Jobgether"?"Jobgether activé pour ce compte.":`${name} ajouté aux sources suivies.`});if(name==="Jobgether"&&!demo)await sync();}
-    catch(problem){setAddSourceError(problem instanceof Error?problem.message:"Source non ajoutée.");}
+    try{const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:name,notes:existing?.notes??"",linkUrl:existing?.linkUrl??"",selected:true})});const data=await response.json() as {source?:SourceSetting;error?:string};if(!response.ok||!data.source)throw new Error(data.error??"Source non ajoutée.");onSourceSaved(data.source);notify({message:name==="Jobgether"?"Jobgether activé pour ce compte.":`${name} ajouté aux sources suivies.`});if(name==="Jobgether"&&!demo)await sync();}
+    catch(problem){setAddSourceError(requestError(problem, "Source non ajoutée."));}
     finally{setAddingSource(null);}
   }
   /** A site the person follows themselves: its URL becomes a source to visit. */
@@ -144,12 +145,12 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
     if(!validSearchLink(url)){setAddSourceError("Saisissez une URL https valide.");return false;}
     setAddingSource("Mon site");
     try{
-      const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:"Mon site",notes:settings?.find(item=>item.source==="Mon site")?.notes??"",linkUrl:url,selected:true})});
+      const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:"Mon site",notes:settings?.find(item=>item.source==="Mon site")?.notes??"",linkUrl:url,selected:true})});
       const data=await response.json() as {source?:SourceSetting;error?:string};
       if(!response.ok||!data.source)throw new Error(data.error??"Site non ajouté.");
       onSourceSaved(data.source);notify({message:"Votre site est ajouté aux sources à consulter."});
       return true;
-    }catch(problem){setAddSourceError(problem instanceof Error?problem.message:"Site non ajouté.");return false;}
+    }catch(problem){setAddSourceError(requestError(problem, "Site non ajouté."));return false;}
     finally{setAddingSource(null);}
   }
   const followedSources=[...jobboardCatalog,...alertCatalog].filter(source=>sourceVisible(source.name,allInitialSources));

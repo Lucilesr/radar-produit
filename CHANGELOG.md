@@ -1,5 +1,9 @@
 ## 7 novembre 2026 — Feuille de route gamification
 
+## 7 novembre 2026 — Attentes bornées des sources
+
+- Les lectures et réglages des sources se terminent après 15 s maximum avec reprise. L’actualisation réserve 45 s au flux puis 15 s à la relecture, sans effacer les données connues.
+
 ## 7 novembre 2026 — Archives accessibles depuis le lot
 
 - Le lien Archives reste accessible quand aucune offre n’attend dans la réserve.
