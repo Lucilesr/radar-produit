@@ -8,7 +8,7 @@ function moduleUrl(name) {
   const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
   return "data:text/javascript;base64," + Buffer.from(compiled).toString("base64");
 }
-const { followedSourcesSummary, sourceKind, sourceStatus, needsAction, defaultVisitEveryDays, remindsInToday, visitEvery, visitRhythms } = await import(moduleUrl("source-status"));
+const { followedSourcesSummary, hasSourceConfiguration, sourceKind, sourceStatus, needsAction, defaultVisitEveryDays, remindsInToday, visitEvery, visitRhythms } = await import(moduleUrl("source-status"));
 const now = new Date("2026-11-05T12:00:00Z");
 const daysAgo = days => new Date(now.getTime() - days * 86400000).toISOString();
 
@@ -27,7 +27,7 @@ test("les sources automatiques suivent leur état et leur santé", () => {
   assert.equal(sourceStatus({ state: "paused", health: "degraded" }, "rss", now), "paused");
   assert.equal(sourceStatus({ state: "not_configured" }, "email", now), "to_configure");
   assert.equal(sourceStatus({ state: "action_needed" }, "email", now), "to_configure");
-  assert.equal(sourceStatus(undefined, "api", now), "to_configure");
+  assert.equal(sourceStatus(undefined, "api", now), "ok");
 });
 
 test("les sources à consulter suivent leur rythme de visite", () => {
@@ -72,4 +72,19 @@ test("le résumé des sources suivies compte les sources et celles qui demandent
  assert.equal(followedSourcesSummary(1,0),"1 source · rien à faire");
  assert.equal(followedSourcesSummary(1,1),"1 source · 1 demande une action");
  assert.equal(followedSourcesSummary(8,2),"8 sources · 2 demandent une action");
+});
+
+
+test("la configuration suit les réglages réels, jamais une déclaration ni des notes", () => {
+  assert.equal(hasSourceConfiguration(undefined, "email"), false);
+  assert.equal(hasSourceConfiguration({ state: "configured" }, "email"), false);
+  assert.equal(sourceStatus({ state: "configured" }, "email", now), "to_configure");
+  assert.equal(sourceStatus({ linkUrl: "https://example.test/alert" }, "email", now), "ok");
+  assert.equal(hasSourceConfiguration({ linkUrl: "ftp://example.test/alert" }, "email"), false);
+  assert.equal(hasSourceConfiguration({ linkUrl: "https://user:secret@example.test" }, "email"), false);
+  assert.equal(hasSourceConfiguration({ searchLinks: { Produit: { Site: "https://example.test/search" } } }, "web"), true);
+  assert.equal(sourceStatus({ latestAlert: { url: "https://app.collective.work/my-personal-space/jobs" } }, "email", now), "ok");
+  assert.equal(hasSourceConfiguration(undefined, "rss"), true);
+  assert.equal(hasSourceConfiguration(undefined, "api"), true);
+  assert.equal(sourceStatus({ linkUrl: "https://example.test", health: "degraded" }, "email", now), "error");
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Trash2 } from "lucide-react";
+import { ExternalLink, Trash2, X } from "lucide-react";
 import { Sheet, SheetContent, SheetClose, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ChoiceSelect } from "@/components/choice-select";
 import { Switch } from "@/components/ui/switch";
@@ -95,14 +95,17 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
   }
 
   return <Sheet open onOpenChange={open => { if (!open) onClose(); }}>
-    <SheetContent side="right" className="source-detail" onCloseAutoFocus={event=>{if(onReturnFocus){event.preventDefault();onReturnFocus();}}}>
+    <SheetContent side="right" className="source-detail" showCloseButton={false} onCloseAutoFocus={event=>{if(onReturnFocus){event.preventDefault();onReturnFocus();}}}>
       <SheetHeader className="source-detail-head">
         <span className="source-detail-logo"><SourceLogo name={source.name} compact /></span>
         <SheetTitle>{source.name}</SheetTitle>
         <SheetDescription>
           {kind === "manual" ? "Source à consulter" : kind === "automatic" ? "Collecte automatique" : "Autre piste"}
         </SheetDescription>
-        <span className="signal-source-pill" data-tone={statusTones[status]}>{statusLabels[status]}</span>
+        <div className="source-detail-head-actions">
+          <span className="signal-source-pill" data-tone={statusTones[status]}>{statusLabels[status]}</span>
+          <SheetClose asChild><WorkspaceButton variant="quiet" aria-label="Fermer la source" className="source-detail-close"><X size={20} aria-hidden /></WorkspaceButton></SheetClose>
+        </div>
       </SheetHeader>
 
       <div className="source-detail-body">
