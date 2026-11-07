@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Feuille de route gamification
+
+Ajout de `docs/feuille-de-route.md` : ordre des lots restants, design system « radar vivant » (jetons, typographie, mouvement, composants), écrans détaillés avec leurs états, onglet Candidatures à auditer, points d’attention. Les sept maquettes de référence sont dans `docs/maquettes/`, avec des données fictives.
+
 ## 7 novembre 2026 — Défilement jusqu’à la zone de lecture
 
 La page Opportunités défile d’abord dans son ensemble. Quand la liste et la fiche atteignent le haut de l’écran, la page s’arrête et chaque colonne peut défiler séparément. En remontant depuis le début d’une colonne, les commandes réapparaissent. La réserve défile avec le reste de la page ; aucune zone blanche ne prolonge la lecture. Le mobile conserve son affichage sur toute la largeur.

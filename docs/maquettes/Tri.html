@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Radar — Séance : trier les offres</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F3F5F6}
+a{color:#193F50}a:hover{color:#24566B}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F3F5F6; font-family: Inter, system-ui, sans-serif; color: #203743">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; padding: 14px 32px; background: #193F50; color: #FFFFFF">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #FFFFFF">
+<svg viewBox="0 0 48 48" width="36" height="36" aria-hidden="true"><rect x="2" y="2" width="44" height="44" rx="12" fill="#24566B"></rect><circle cx="24" cy="24" r="15.5" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-opacity="0.5"></circle><path d="M30 15a11 11 0 1 0 4 13" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"></path><circle cx="24" cy="24" r="3.3" fill="#FFFFFF"></circle><path d="M24 24 35 13" stroke="#FFFFFF" stroke-width="1.8"></path><circle cx="35" cy="13" r="4" fill="#E6EE53"></circle></svg>
+<span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 20px; font-weight: 800">Séance du jour</span>
+</a>
+<ol aria-label="Étapes de la séance" style="display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; flex: 1 1 auto">
+<li aria-current="step" style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #E6EE53; color: #193F50; font-weight: 700; font-size: 14px"><span style="width: 22px; height: 22px; border-radius: 999px; background: #193F50; color: #E6EE53; display: flex; align-items: center; justify-content: center; font-size: 12px">1</span>Trier</li>
+<li style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #24566B; color: #D8E6EC; font-weight: 500; font-size: 14px"><span style="width: 22px; height: 22px; border-radius: 999px; border: 1.5px solid #8FB1C0; display: flex; align-items: center; justify-content: center; font-size: 12px">2</span>Relancer</li>
+<li style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #24566B; color: #D8E6EC; font-weight: 500; font-size: 14px"><span style="width: 22px; height: 22px; border-radius: 999px; border: 1.5px solid #8FB1C0; display: flex; align-items: center; justify-content: center; font-size: 12px">3</span>Visiter Collective</li>
+<li style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #24566B; color: #D8E6EC; font-weight: 500; font-size: 14px"><span style="width: 22px; height: 22px; border-radius: 999px; border: 1.5px solid #8FB1C0; display: flex; align-items: center; justify-content: center; font-size: 12px">4</span>Valider un bloc</li>
+</ol>
+<a href="Main.dc.html" style="color: #D8E6EC; font-size: 15px; font-weight: 500">Quitter la séance</a>
+</header>
+
+<main style="max-width: 1200px; margin: 0 auto; padding: 28px 32px 48px; display: flex; flex-direction: column; gap: 24px">
+
+<section aria-label="Progression du tri" style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px">
+<p style="margin: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 56px; line-height: 1; font-weight: 800; letter-spacing: -0.03em; color: #193F50">Plus que 3</span><span style="font-size: 17px; color: #5B6B76">dans votre lot du jour</span></p>
+<div style="flex: 1 1 360px; display: flex; flex-direction: column; gap: 8px">
+<div role="img" aria-label="17 offres triées sur les 20 du lot du jour" style="position: relative; height: 16px; border-radius: 999px; background: #D4DFE5">
+<div style="width: 85%; height: 16px; border-radius: 999px; background: #193F50"></div>
+<span style="position: absolute; left: calc(85% - 10px); top: -4px; width: 24px; height: 24px; border-radius: 999px; background: #E6EE53; border: 3px solid #193F50; box-sizing: border-box"></span>
+</div>
+<span style="font-size: 14px; color: #5B6B76">17 triées sur 20 · les 20 mieux classées des 138 nouvelles</span>
+</div>
+<a href="Rafale.dc.html" style="display: flex; flex-direction: column; gap: 2px; padding: 12px 18px; border-radius: 18px; background: #FFFFFF; border: 1px solid #D4DFE5; text-decoration: none; color: #203743"><strong style="font-size: 15px; color: #193F50">118 en réserve, déjà rangées en 5 groupes</strong><span style="font-size: 14px; color: #5B6B76">Tout ranger en 5 décisions →</span></a>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<aside aria-label="File de la séance" style="flex: 1 1 280px; display: flex; flex-direction: column; gap: 8px">
+<p style="margin: 0 0 4px; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #5B6B76">Dans cette séance</p>
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #FFFFFF"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#176947"></circle><path d="M7 12.5l3.2 3L17 9" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg><span style="flex: 1; font-size: 14px">PO Data · Scale-up SaaS</span><span style="font-size: 12px; font-weight: 600; color: #176947">Sélectionnée</span></div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #FFFFFF"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#7B8E99"></circle><path d="M12 7v5l3 2" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg><span style="flex: 1; font-size: 14px">Product Manager · Assurtech</span><span style="font-size: 12px; font-weight: 600; color: #5B6B76">Plus tard</span></div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #FFFFFF"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#D4DFE5"></circle><path d="M8 8l8 8M16 8l-8 8" stroke="#5B6B76" stroke-width="2" stroke-linecap="round"></path></svg><span style="flex: 1; font-size: 14px; color: #5B6B76">PO · Retail, hybride 3 j</span><span style="font-size: 12px; font-weight: 600; color: #5B6B76">Écartée</span></div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #193F50; color: #FFFFFF"><span style="width: 20px; height: 20px; border-radius: 999px; background: #E6EE53; flex: none"></span><span style="flex: 1; font-size: 14px; font-weight: 600">PO Paiements · Néobanque</span><span style="font-size: 12px; color: #E6EE53">En cours</span></div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #EAF0F3"><span style="width: 20px; height: 20px; border-radius: 999px; border: 2px solid #7B8E99; flex: none"></span><span style="flex: 1; font-size: 14px">Lead PO · Mobilité</span></div>
+<p style="margin: 8px 0 0; font-size: 13px; color: #5B6B76">Puis 2 autres offres pour finir le lot. Le reste attend en réserve, sans compter dans la séance.</p>
+</aside>
+
+<article aria-labelledby="offer-title" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 32px; border-radius: 28px; background: #FFFFFF; border: 2px solid #193F50">
+<div style="display: flex; gap: 20px; align-items: flex-start">
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 8px">
+<p style="margin: 0; font-size: 15px; font-weight: 600; color: #24566B">Néobanque B2C · repérée sur Welcome to the Jungle</p>
+<h1 id="offer-title" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 40px; line-height: 1.05; font-weight: 800; letter-spacing: -0.02em; color: #193F50">Product Owner Paiements</h1>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px">
+<span style="padding: 6px 12px; border-radius: 999px; background: #EAF0F3; font-size: 14px; font-weight: 600">Full remote · Europe</span>
+<span style="padding: 6px 12px; border-radius: 999px; background: #EAF0F3; font-size: 14px; font-weight: 600">CDI</span>
+<span style="padding: 6px 12px; border-radius: 999px; background: #EAF0F3; font-size: 14px; font-weight: 600">62–70 k€</span>
+<span style="padding: 6px 12px; border-radius: 999px; background: #EAF0F3; font-size: 14px; font-weight: 600">Publiée il y a 2 jours</span>
+</div>
+</div>
+<div role="img" aria-label="Correspondance forte, score 92" style="flex: none; width: 104px; height: 104px; border-radius: 999px; background: #E6EE53; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #193F50"><strong style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 38px; font-weight: 800; line-height: 1">92</strong><span style="font-size: 12px; font-weight: 700">très proche</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; border-radius: 20px; background: #F3F5F6">
+<p style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #5B6B76">Pourquoi elle remonte</p>
+<p style="margin: 0; display: flex; gap: 10px; font-size: 16px"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12.5l4.5 4L19 7" fill="none" stroke="#176947" stroke-width="2.6" stroke-linecap="round"></path></svg>Paiements CB, SEPA et SCA dans les missions</p>
+<p style="margin: 0; display: flex; gap: 10px; font-size: 16px"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12.5l4.5 4L19 7" fill="none" stroke="#176947" stroke-width="2.6" stroke-linecap="round"></path></svg>Full remote, ouvert à toute l’Europe</p>
+<p style="margin: 0; display: flex; gap: 10px; font-size: 16px"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12.5l4.5 4L19 7" fill="none" stroke="#176947" stroke-width="2.6" stroke-linecap="round"></path></svg>Salaire au-dessus de votre minimum</p>
+<p style="margin: 0; display: flex; gap: 10px; font-size: 16px"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#80551A" stroke-width="2.2"></circle><path d="M12 7.5v5.5M12 16.5v.5" stroke="#80551A" stroke-width="2.4" stroke-linecap="round"></path></svg>Anglais courant demandé</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<button type="button" style="flex: 2 1 220px; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; border: 0; border-radius: 999px; background: #E6EE53; color: #193F50; font: 700 18px Inter, sans-serif; cursor: pointer">Sélectionner <kbd style="padding: 2px 8px; border-radius: 6px; background: #193F50; color: #E6EE53; font: 700 13px Inter, sans-serif">S</kbd></button>
+<button type="button" style="flex: 1 1 150px; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; border: 1.5px solid #7B8E99; border-radius: 999px; background: #FFFFFF; color: #203743; font: 600 16px Inter, sans-serif; cursor: pointer">Plus tard <kbd style="padding: 2px 8px; border-radius: 6px; background: #EAF0F3; font: 700 13px Inter, sans-serif">L</kbd></button>
+<button type="button" style="flex: 1 1 150px; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; border: 1.5px solid #7B8E99; border-radius: 999px; background: #FFFFFF; color: #203743; font: 600 16px Inter, sans-serif; cursor: pointer">Écarter <kbd style="padding: 2px 8px; border-radius: 6px; background: #EAF0F3; font: 700 13px Inter, sans-serif">X</kbd></button>
+</div>
+</article>
+</div>
+
+<section aria-label="Ce que vos tris apprennent au radar" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: 20px 24px; border-radius: 20px; background: #FFF1EC; border: 1px solid #F5C6B5">
+<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#FF8A65"></circle><path d="M12 6v7M12 16.5v.5" stroke="#193F50" stroke-width="2.4" stroke-linecap="round"></path></svg>
+<p style="margin: 0; flex: 1 1 400px; font-size: 16px; line-height: 1.45"><strong>Vos tris affinent le radar.</strong> Vous avez écarté 4 offres en hybride 3 jours cette semaine. Ne plus garder l’hybride au-delà de 2 jours ?</p>
+<button type="button" style="min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: #193F50; color: #FFFFFF; font: 600 15px Inter, sans-serif; cursor: pointer">Ajuster mes critères</button>
+<button type="button" style="min-height: 44px; padding: 0 14px; border: 0; background: transparent; color: #193F50; font: 600 15px Inter, sans-serif; cursor: pointer">Pas maintenant</button>
+</section>
+
+<div style="display: flex; justify-content: flex-end">
+<a href="FinDeSeance.dc.html" style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600">Passer à la fin de séance (prototype)
+<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="#193F50" stroke-width="2" stroke-linecap="round"></path></svg></a>
+</div>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":980}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

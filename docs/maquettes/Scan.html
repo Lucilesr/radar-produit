@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Radar — Balayage terminé</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F3F5F6}
+a{color:#193F50}a:hover{color:#24566B}
+@keyframes radar-sweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes radar-blip{0%,100%{opacity:.35}50%{opacity:1}}
+.sweep{transform-origin:200px 200px;animation:radar-sweep 3s linear infinite}
+.blip{animation:radar-blip 2.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.sweep,.blip{animation:none}}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F3F5F6; font-family: Inter, system-ui, sans-serif; color: #203743">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: 14px 32px; background: #FFFFFF; border-bottom: 1px solid #D4DFE5">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #193F50">
+<svg viewBox="0 0 48 48" width="36" height="36" aria-hidden="true"><rect x="2" y="2" width="44" height="44" rx="12" fill="#193F50"></rect><circle cx="24" cy="24" r="15.5" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-opacity="0.5"></circle><path d="M30 15a11 11 0 1 0 4 13" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"></path><circle cx="24" cy="24" r="3.3" fill="#FFFFFF"></circle><path d="M24 24 35 13" stroke="#FFFFFF" stroke-width="1.8"></path><circle cx="35" cy="13" r="4" fill="#E6EE53"></circle></svg>
+<span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.02em">Radar</span>
+</a>
+<nav aria-label="Navigation principale" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto">
+<a href="Main.dc.html" style="padding: 10px 16px; border-radius: 999px; color: #203743; font-weight: 500; font-size: 15px; text-decoration: none">Aujourd’hui</a>
+<a href="Tri.dc.html" style="padding: 10px 16px; border-radius: 999px; color: #203743; font-weight: 500; font-size: 15px; text-decoration: none">Opportunités</a>
+<a href="FinDeSeance.dc.html" style="padding: 10px 16px; border-radius: 999px; color: #203743; font-weight: 500; font-size: 15px; text-decoration: none">Candidatures</a>
+<a href="Portee.dc.html" style="padding: 10px 16px; border-radius: 999px; color: #203743; font-weight: 500; font-size: 15px; text-decoration: none">Mon profil</a>
+<a href="Scan.dc.html" aria-current="page" style="padding: 10px 16px; border-radius: 999px; background: #193F50; color: #FFFFFF; font-weight: 600; font-size: 15px; text-decoration: none">Ma recherche</a>
+</nav>
+<a href="Semaine.dc.html" style="display: flex; align-items: center; gap: 8px; padding: 8px 14px 8px 10px; border-radius: 999px; background: #E6EE53; color: #193F50; font-weight: 700; font-size: 14px; text-decoration: none">
+<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-6 1-9.5z" fill="#193F50"></path></svg>
+4 semaines tenues
+</a>
+</header>
+
+<main style="max-width: 1200px; margin: 0 auto; padding: 32px 32px 48px; display: flex; flex-direction: column; gap: 24px">
+
+<section aria-label="Résultat de l’actualisation" style="display: flex; flex-wrap: wrap; gap: 40px; align-items: center; padding: 40px 48px; border-radius: 28px; background: #193F50; color: #FFFFFF">
+<div style="flex: 1 1 340px; display: flex; justify-content: center">
+<svg viewBox="0 0 400 400" width="360" height="360" role="img" aria-label="Radar : 7 sources balayées, 2 à visiter à la main">
+<defs><linearGradient id="scanfill" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E6EE53" stop-opacity="0"></stop><stop offset="1" stop-color="#E6EE53" stop-opacity="0.5"></stop></linearGradient></defs>
+<circle cx="200" cy="200" r="190" fill="#24566B"></circle>
+<circle cx="200" cy="200" r="142" fill="none" stroke="#5D8496"></circle>
+<circle cx="200" cy="200" r="94" fill="none" stroke="#5D8496"></circle>
+<circle cx="200" cy="200" r="46" fill="none" stroke="#5D8496"></circle>
+<path d="M200 10V390M10 200H390" stroke="#3E6E82"></path>
+<g class="sweep"><path d="M200 200 L200 10 A190 190 0 0 1 334 66 Z" fill="url(#scanfill)"></path><path d="M200 200 L334 66" stroke="#E6EE53" stroke-width="3" stroke-linecap="round"></path></g>
+<circle class="blip" cx="280" cy="110" r="10" fill="#E6EE53"></circle>
+<circle class="blip" cx="300" cy="230" r="8" fill="#E6EE53"></circle>
+<circle class="blip" cx="230" cy="300" r="9" fill="#E6EE53"></circle>
+<circle class="blip" cx="120" cy="270" r="7" fill="#E6EE53"></circle>
+<circle cx="110" cy="130" r="8" fill="none" stroke="#FF8A65" stroke-width="3"></circle>
+<circle cx="160" cy="80" r="8" fill="none" stroke="#FF8A65" stroke-width="3"></circle>
+<circle cx="90" cy="200" r="4" fill="#8FB1C0"></circle>
+<circle cx="250" cy="160" r="4" fill="#8FB1C0"></circle>
+<circle cx="170" cy="330" r="4" fill="#8FB1C0"></circle>
+<circle cx="200" cy="200" r="8" fill="#FFFFFF"></circle>
+</svg>
+</div>
+<div style="flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+<p style="margin: 0; font-size: 14px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #E6EE53">Balayage terminé · à l’instant</p>
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 80px; line-height: 0.95; font-weight: 800; letter-spacing: -0.04em">214<span style="display: block; font-size: 30px; letter-spacing: -0.02em; margin-top: 8px">offres parcourues sur 7 sources</span></h1>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<div style="flex: 1 1 150px; padding: 18px 20px; border-radius: 20px; background: #E6EE53; color: #193F50"><strong style="display: block; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 40px; font-weight: 800">12</strong><span style="font-size: 15px; font-weight: 600">collent à vos critères</span></div>
+<div style="flex: 1 1 150px; padding: 18px 20px; border-radius: 20px; background: #24566B"><strong style="display: block; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 40px; font-weight: 800">42</strong><span style="font-size: 15px; color: #D8E6EC">nouvelles offres</span></div>
+<div style="flex: 1 1 150px; padding: 18px 20px; border-radius: 20px; background: #24566B"><strong style="display: block; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 40px; font-weight: 800">30</strong><span style="font-size: 15px; color: #D8E6EC">doublons écartés</span></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+<a href="Tri.dc.html" style="display: inline-flex; align-items: center; gap: 10px; padding: 16px 26px; border-radius: 999px; background: #E6EE53; color: #193F50; font-weight: 700; font-size: 17px; text-decoration: none">Voir les 12 offres
+<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="#193F50" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+<span style="font-size: 15px; color: #A9C3CF">Les doublons venaient de plusieurs sources : chaque offre n’apparaît qu’une fois</span>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="sources-title" style="padding: 28px; border-radius: 24px; background: #FFFFFF; border: 1px solid #D4DFE5; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px">
+<h2 id="sources-title" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 24px; font-weight: 700; color: #193F50">Ce que chaque source a donné</h2>
+<span style="font-size: 14px; color: #5B6B76">7 actives · 2 à visiter</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 16px"><span style="flex: 0 0 210px; font-size: 15px; font-weight: 600">Welcome to the Jungle</span><div style="flex: 1 1 auto; height: 14px; border-radius: 999px; background: #EAF0F3"><div style="width: 100%; height: 14px; border-radius: 999px; background: #24566B"></div></div><span style="flex: 0 0 120px; font-size: 14px; text-align: right">48 offres · 4 ✓</span></div>
+<div style="display: flex; align-items: center; gap: 16px"><span style="flex: 0 0 210px; font-size: 15px; font-weight: 600">We Work Remotely</span><div style="flex: 1 1 auto; height: 14px; border-radius: 999px; background: #EAF0F3"><div style="width: 83%; height: 14px; border-radius: 999px; background: #24566B"></div></div><span style="flex: 0 0 120px; font-size: 14px; text-align: right">40 offres · 3 ✓</span></div>
+<div style="display: flex; align-items: center; gap: 16px"><span style="flex: 0 0 210px; font-size: 15px; font-weight: 600">Jobgether</span><div style="flex: 1 1 auto; height: 14px; border-radius: 999px; background: #EAF0F3"><div style="width: 75%; height: 14px; border-radius: 999px; background: #24566B"></div></div><span style="flex: 0 0 120px; font-size: 14px; text-align: right">36 offres · 2 ✓</span></div>
+<div style="display: flex; align-items: center; gap: 16px"><span style="flex: 0 0 210px; font-size: 15px; font-weight: 600">Remotive</span><div style="flex: 1 1 auto; height: 14px; border-radius: 999px; background: #EAF0F3"><div style="width: 62%; height: 14px; border-radius: 999px; background: #24566B"></div></div><span style="flex: 0 0 120px; font-size: 14px; text-align: right">30 offres · 1 ✓</span></div>
+<div style="display: flex; align-items: center; gap: 16px"><span style="flex: 0 0 210px; font-size: 15px; font-weight: 600">Himalayas</span><div style="flex: 1 1 auto; height: 14px; border-radius: 999px; background: #EAF0F3"><div style="width: 58%; height: 14px; border-radius: 999px; background: #24566B"></div></div><span style="flex: 0 0 120px; font-size: 14px; text-align: right">28 offres · 1 ✓</span></div>
+<div style="display: flex; align-items: center; gap: 16px"><span style="flex: 0 0 210px; font-size: 15px; font-weight: 600">Remote OK</span><div style="flex: 1 1 auto; height: 14px; border-radius: 999px; background: #EAF0F3"><div style="width: 42%; height: 14px; border-radius: 999px; background: #24566B"></div></div><span style="flex: 0 0 120px; font-size: 14px; text-align: right">20 offres · 1 ✓</span></div>
+<div style="display: flex; align-items: center; gap: 16px"><span style="flex: 0 0 210px; font-size: 15px; font-weight: 600">Free-Work</span><div style="flex: 1 1 auto; height: 14px; border-radius: 999px; background: #EAF0F3"><div style="width: 25%; height: 14px; border-radius: 999px; background: #24566B"></div></div><span style="flex: 0 0 120px; font-size: 14px; text-align: right">12 offres · 0 ✓</span></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; padding-top: 8px; border-top: 1px solid #EAF0F3">
+<a href="#" style="flex: 1 1 260px; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: #FFF1EC; text-decoration: none; color: #203743"><span style="width: 12px; height: 12px; border-radius: 999px; border: 3px solid #E0603E; flex: none"></span><span><strong>Collective</strong> · à visiter, dernière visite il y a 6 jours</span></a>
+<a href="#" style="flex: 1 1 260px; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: #FFF1EC; text-decoration: none; color: #203743"><span style="width: 12px; height: 12px; border-radius: 999px; border: 3px solid #E0603E; flex: none"></span><span><strong>Malt</strong> · à visiter, dernière visite il y a 9 jours</span></a>
+</div>
+</section>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
