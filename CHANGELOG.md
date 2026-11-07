@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Notifications de critères sans actions
+
+La confirmation d’un critère affiche seulement le changement enregistré et son impact. Les actions « Annuler » et « Voir les offres » disparaissent de ces notifications ; la navigation habituelle reste disponible.
+
 ## 7 novembre 2026 — Niveau visé enregistré avec Terminé
 
 Le niveau visé et l’acceptation d’un cran au-dessus restent en cours de choix jusqu’au clic sur « Terminé », sur ordinateur, mobile, dans les critères détaillés et dans « Tout modifier ». Une fermeture sans validation ne les enregistre pas. Le panneau reste ouvert en cas d’échec pour permettre de réessayer.
