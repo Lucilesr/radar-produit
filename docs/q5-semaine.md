@@ -11,3 +11,5 @@ Signal réutilisé : WorkspacePanelHeader/Button/FormError, ChoiceSelect (sélec
 ## Vérifications
 
 Tests purs : semaines à cheval sur l’année, fuseaux proches du lundi, changement d’heure, dates invalides/hors semaine, rythmes incomplets, actions inconnues, aucune coche fabriquée, report et changement de cible, semaine tenue non vide, archivage sans doublon. SQLite : conservation des autres clés du profil, réessais idempotents, conflit de version, isolation A/B, ancien formulaire de profil inoffensif pour les coches, historique lors du changement de semaine, refus de cocher une semaine révolue. Contrôles et recette staging ajoutés après déploiement.
+
+La recette mobile a révélé que Radix pouvait notifier une valeur vide lors du changement simultané de l’action et des options de cible. ChoiceSelect ignore désormais les notifications sans préfixe ni option valide : une suggestion conserve sa cible, son libellé et l’horaire. Vérification locale d’une suggestion passant d’une candidature à une histoire, puis sauvegarde réelle.
