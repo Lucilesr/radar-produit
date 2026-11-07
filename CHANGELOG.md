@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Ranger la réserve
+
+- Compteur de groupes traités, annulation immédiate et actions adaptées : archiver les anciennes, garder les annonces sans rémunération, viser un poste voisin sur choix explicite.
+- Décisions de50offres au plus, reçus privés et annulation protégée des modifications concurrentes. Aucun contenu supprimé définitivement, aucune migration.
+
 ## 8 novembre 2026 — Fiche après annulation d’une candidature
 
 - Après Annuler, la fiche maintenue à l’écran relit le statut courant de l’offre. Elle retrouve immédiatement l’action de candidature ; le maintien de lecture après un envoi confirmé reste disponible.

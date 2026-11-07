@@ -178,3 +178,7 @@
 .triage-learning-contracts input{width:18px;height:18px;flex:none}
 .triage-shortcuts{margin:0 0 12px;color:var(--signal-muted);font-size:13px}
 .triage-shortcuts kbd{font:600 12px/1 var(--font-sans);padding:3px 5px;border:1px solid var(--signal-input);border-radius:4px;background:var(--signal-paper)}
+
+.reserve-progress{margin:0 0 12px;color:var(--signal-petrol-dark);font-weight:600;font-size:var(--signal-type-section)}
+.reserve-undo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.reserve .reserve-group-actions button,.reserve .reserve-undo button{min-height:44px}

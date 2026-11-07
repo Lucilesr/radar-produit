@@ -63,3 +63,9 @@ Les termes confirmés se retirent avec leur croix. Ils nourrissent le composant 
 Si une expérience ou ses droits changent pendant la confirmation, aucun terme n’est ajouté : **Relire les termes** recharge les propositions. Les champs masqués, non validés, non autorisés ou en conflit ne proposent rien. Retirer l’autorisation d’une expérience arrête ses nouvelles propositions ; les mots déjà confirmés restent des critères choisis, que vous pouvez retirer ici. Le panneau et les offres se relisent après une confirmation. Les termes sont conservés dans la sauvegarde intégrale du compte.
 
 Après **Annuler** l’envoi d’une candidature, l’offre revient dans sa vue précédente et sa fiche affiche immédiatement le statut et les actions rétablis. Après un envoi confirmé, la fiche peut rester ouverte pendant votre lecture.
+
+### Ranger la réserve par groupes
+
+Dans **Voir la réserve**, le compteur indique les groupes traités pendant ce rangement et les offres sorties de la réserve. **Écarter le groupe** et **Archiver les N** demandent une confirmation, sur50offres au plus à la fois. Les archives restent restaurables. Pour une annonce ancienne que vous aviez remise à examiner, Archiver rend à nouveau la date de publication prioritaire. **Garder en réserve** range les annonces sans rémunération dans « Gardées pour plus tard ». Un poste voisin réellement présent peut proposer **+ Viser…** : seul ce clic ajoute le poste à vos critères. Aucun changement automatique de recherche.
+
+**Annuler le dernier rangement** rétablit le dernier groupe et, si nécessaire, le rôle ajouté. L’annulation refuse de remplacer un choix modifié ensuite dans un autre onglet : actualisez pour le relire. Les offres écartées restent aussi restaurables depuis la Corbeille. Le compteur et le bouton immédiat concernent cette visite ; les décisions et leurs reçus privés sont conservés dans le compte et sa sauvegarde intégrale.

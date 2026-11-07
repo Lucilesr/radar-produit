@@ -1,0 +1,4 @@
+import {getChatGPTUser} from "@/app/chatgpt-auth";
+import {ensureSameOrigin} from "@/lib/server";
+import {reserveAction,ReserveConflict} from "@/lib/reserve-action-store";
+export async function POST(request:Request){const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401});if(!ensureSameOrigin(request))return Response.json({error:"Origine non autorisée"},{status:403});try{const text=await request.text();if(text.length>10000)return Response.json({error:"Sélection trop volumineuse"},{status:413});return Response.json(await reserveAction(user.userId,JSON.parse(text)),{headers:{"Cache-Control":"private, no-store"}});}catch(error){return Response.json({error:error instanceof ReserveConflict?error.message:"Choix non confirmé. Actualisez la réserve avant de réessayer."},{status:error instanceof ReserveConflict?409:400});}}

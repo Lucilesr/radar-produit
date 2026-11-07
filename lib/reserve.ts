@@ -37,3 +37,13 @@ export function groupReserve(jobs: readonly JobRecord[], now: number) {
   }
   return reserveGroups.filter(group => byGroup.has(group.id)).map(group => ({ ...group, jobs: byGroup.get(group.id)! }));
 }
+
+const foldedRole=(value:string)=>value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+/** A proposal names a role actually present in this group, never an invented new target. */
+export function neighboringRole(jobs:readonly Pick<JobRecord,"title">[],roles:readonly string[]){
+ const known=new Set(roles.map(foldedRole));
+ for(const [role,pattern] of [["Growth PM",/\bgrowth\s+(?:product\s+manager|pm)\b/i],["Product Marketing Manager",/\bproduct\s+marketing\s+manager\b/i],["Product Ops",/\bproduct\s+(?:ops|operations)\b/i],["Scrum Master",/\bscrum\s+master\b/i],["Business Analyst",/\bbusiness\s+analyst\b/i]] as const){
+  if(!known.has(foldedRole(role))&&!roles.some(value=>pattern.test(value))&&jobs.some(job=>pattern.test(job.title)))return role;
+ }
+ return null;
+}
