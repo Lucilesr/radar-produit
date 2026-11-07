@@ -177,6 +177,14 @@ Le chiffre reste lisible au survol (`title`) et pour les lecteurs d'écran. La f
 
 **Tests.** Sélection des fiches mystère (5 au plus) ; priorité du texte collé ; motif « Annonce introuvable ».
 
+**Livré (PR S4) et écarts assumés.**
+
+- « Coller l'annonce » ouvre le formulaire d'édition existant : ses suggestions (`OfferPrefill`, même analyse que `/api/parse-offer`) proposent les valeurs lues, que la personne applique. Pas de remplacement silencieux : la règle de conflit reste une suggestion acceptée.
+- Un texte collé de 600 caractères ou plus, différent de l'ancien, passe `contentCoverage` à `full` côté serveur (`updateOffer`), sauf si la personne a choisi elle-même une autre couverture.
+- Le message « Bonne pioche » (adéquation ≥ 80) ou « Fiche complétée » passe par `WorkspaceToast`. Pas d'animation dans ce lot.
+- « Annonce introuvable » n'est pas ajouté : le bouton « Écarter » existant couvre le cas. À reprendre si on veut un motif dédié dans la corbeille.
+- Les fiches mystère passent en tête de « À examiner » (5 au plus), quel que soit le tri choisi.
+
 ### Lot S5 — Domaine nourri par les expériences
 
 **But.** Que le composant Domaine reflète ce que la personne sait faire, pas seulement ses mots-clés.

@@ -196,10 +196,14 @@ export async function updateOffer(userId: string, id: string, value: unknown) {
     ...("annualSalary" in patch && patch.annualSalary !== current.annualSalary && !("salaryMin" in patch) && !("salaryMax" in patch) ? { salaryMin: null, salaryMax: null } : {}),
     ...("dailyRate" in patch && patch.dailyRate !== current.dailyRate && !("dailyRateMin" in patch) && !("dailyRateMax" in patch) ? { dailyRateMin: null, dailyRateMax: null } : {}),
   };
-  const normalized = normalizeJobInput({ ...current, ...handTyped, ...patch });
+  // A long description typed or pasted by hand is the full announcement (Score v2 S4).
+  const pasted = typeof patch.description === "string" && patch.description.trim().length >= 600 && patch.description !== current.description
+    && current.contentCoverage !== "full" && (patch.contentCoverage === undefined || patch.contentCoverage === current.contentCoverage)
+    ? { contentCoverage: "full" as const } : {};
+  const normalized = normalizeJobInput({ ...current, ...handTyped, ...patch, ...pasted });
   const inferred = (["annualSalary", "dailyRate", "salaryMin", "salaryMax", "dailyRateMin", "dailyRateMax", "contractType", "remoteMode", "language"] as const)
     .filter(key => key in handTyped || ((current[key] == null || current[key] === "other" || current[key] === "unknown") && normalized[key] !== current[key]));
-  const changed = Object.fromEntries([...new Set([...Object.keys(patch), ...inferred])]
+  const changed = Object.fromEntries([...new Set([...Object.keys(patch), ...Object.keys(pasted), ...inferred])]
     .map(key => [key, normalized[key as keyof typeof normalized] ?? null]));
   const assessment = assessJob({ ...current, ...normalized }, searchPreferences((await readCandidateProfile(userId))?.searchPreferences));
   await getDb().update(jobs).set({ ...changed, matchScore: assessment.score, matchTier: assessment.tier,

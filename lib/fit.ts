@@ -92,3 +92,23 @@ export function fitLabel(fit: number | null | undefined, parts: FitParts = {}, t
   if (toWeigh) return "to_weigh";
   return fit >= 80 ? "very_close" : fit >= 60 ? "close" : "far";
 }
+
+type MysteryCandidate = { conditions?: "pass" | "check" | "excluded"; fitParts?: FitParts; confidence?: Confidence; deletedAt?: string };
+
+/** Score v2 S4: the right job, but the source only gave a glimpse. Completing it reveals its fit. */
+export function isMysteryOffer(job: MysteryCandidate) {
+  return !job.deletedAt && job.conditions !== "excluded" && job.fitParts?.role === FIT_WEIGHTS.role && job.confidence === "low";
+}
+
+/** Up to `limit` mystery offers first, in their current order, then the others unchanged. */
+export function pinMysteryOffers<T extends MysteryCandidate>(jobs: readonly T[], limit = 5): T[] {
+  const pinned = jobs.filter(isMysteryOffer).slice(0, limit);
+  return [...pinned, ...jobs.filter(job => !pinned.includes(job))];
+}
+
+/** Message when a completed offer reveals its fit; "Bonne pioche" for a very close one. */
+export function revealMessage(job: { fit?: number | null; fitLabel?: FitLabel }) {
+  if (!job.fitLabel || job.fit == null) return "Fiche complétée. Il manque encore le niveau ou les missions pour la juger.";
+  const label = `${fitLabels[job.fitLabel]} (${job.fit} sur 100)`;
+  return job.fitLabel === "very_close" ? `Bonne pioche : ${label}.` : `Fiche complétée : ${label}.`;
+}
