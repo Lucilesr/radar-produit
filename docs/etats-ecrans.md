@@ -895,3 +895,9 @@ Contradiction levée avec la maquette Portee : le titre « débloque » suggéra
 | Mouvement réduit | Système ou compte | Mêmes informations sans mouvement | Mêmes actions | oui |
 | Clavier seul | Tab / Espace | Confirmation, retrait et retour au titre | Confirmer ou retirer | oui |
 | Mobile390px | Petite fenêtre | Proposition et bouton sur une colonne, cibles44px | Mêmes actions | oui |
+
+### Fiche maintenue après annulation d’envoi
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| succès après annulation | Annuler depuis l’accusé d’envoi ou la fiche | statut courant restauré dans la fiche maintenue et dans la liste | candidater à nouveau ou poursuivre le tri | oui, correction ciblée après Q6 |

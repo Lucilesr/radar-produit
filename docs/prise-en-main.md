@@ -61,3 +61,5 @@ Dans **Ma recherche**, ce panneau repère des termes professionnels dans les cha
 Les termes confirmés se retirent avec leur croix. Ils nourrissent le composant Domaine de l’adéquation, comme vos mots-clés manuels, sans compter un mot identique deux fois. Les poids du score restent les mêmes. Une courte synthèse ne devient pas une description connue grâce à un terme.
 
 Si une expérience ou ses droits changent pendant la confirmation, aucun terme n’est ajouté : **Relire les termes** recharge les propositions. Les champs masqués, non validés, non autorisés ou en conflit ne proposent rien. Retirer l’autorisation d’une expérience arrête ses nouvelles propositions ; les mots déjà confirmés restent des critères choisis, que vous pouvez retirer ici. Le panneau et les offres se relisent après une confirmation. Les termes sont conservés dans la sauvegarde intégrale du compte.
+
+Après **Annuler** l’envoi d’une candidature, l’offre revient dans sa vue précédente et sa fiche affiche immédiatement le statut et les actions rétablis. Après un envoi confirmé, la fiche peut rester ouverte pendant votre lecture.

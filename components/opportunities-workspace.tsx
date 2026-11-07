@@ -46,11 +46,11 @@ export function OpportunitiesWorkspace({enabled=true,onReload,lot,jobs,rescueOff
   const orderedJobs=inLot?lot!.remaining:filter==="to_review"?pinMysteryOffers(sortOpportunitiesByDate(listed,filter,dateOrder)):sortOpportunitiesByDate(listed,filter,dateOrder);
   const [retained,setRetained]=useState<{job:JobRecord;filter:OpportunityView;query:string;index:number}|null>(null);
   const kept=retained?.filter===filter&&retained.query===query?retained:null;
-  const retainedJob=kept&&currentJob?.id===kept.job.id?currentJob:kept?.job;
+  const retainedJob=kept?(orderedJobs.find(job=>job.id===kept.job.id)??(currentJob?.id===kept.job.id?currentJob:kept.job)):undefined;
   const displayJobs=[...orderedJobs];
   if(kept&&!displayJobs.some(job=>job.id===kept.job.id))displayJobs.splice(Math.min(kept.index,displayJobs.length),0,retainedJob!);
   const selected=selectionInView(orderedJobs,selection);
-  const active=displayJobs.find(job=>job.id===activeId)||kept?.job||displayJobs[0];
+  const active=displayJobs.find(job=>job.id===activeId)??retainedJob??displayJobs[0];
   const heldOutside=!!kept&&!jobs.some(job=>job.id===kept.job.id);
   const viewHelp=filter==="archived"?`Annonces publiées il y a au moins ${ARCHIVE_AFTER_DAYS} jours ; date d’ajout utilisée si la publication est inconnue. Une remise à examiner vous redonne ${ARCHIVE_AFTER_DAYS} jours.`:inReserve?"La réserve : les offres hors du lot du jour et celles gardées pour plus tard.":inLot?"Lot du jour : les offres les mieux classées, vingt au plus, dont cinq fiches mystère au plus. Il ne se remplit pas pendant que vous triez.":filter==="selected"?"Votre choix : les offres que vous avez sélectionnées, avant de candidater.":filter==="good_matches"?"Filtre automatique : les offres proches de vos critères selon Radar, sélectionnées ou non.":filter==="trash"?"Les offres restent restaurables pendant 10 jours. Après ce délai, elles sont supprimées définitivement à la prochaine ouverture du radar.":"Les offres qu’il vous reste à examiner.";
   const currentScope=useRef({filter,query,activeId});
