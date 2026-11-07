@@ -11,12 +11,13 @@ import { formatDate } from "@/lib/application-workflow";
 import { formatEuro } from "@/lib/matching";
 import { formatPayRangeShort } from "@/lib/pay-range";
 import { pinMysteryOffers } from "@/lib/fit";
+import { lotHeadline, type DailyLot } from "@/lib/daily-lot";
 import type { CandidateProfile, JobRecord, JobStatus } from "@/lib/types";
 
 const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"],["trash","Corbeille"]];
 const remote={full_remote:"Full remote",exceptional:"Présence ponctuelle",hybrid:"Hybride",onsite:"Sur site",unknown:"Remote à confirmer"};
-export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
-  currentJob?:JobRecord|null; jobs:JobRecord[];counts:Record<OpportunityView,number>;filter:OpportunityView;onFilter:(view:OpportunityView)=>void;query:string;onClearSearch:()=>void;
+export function OpportunitiesWorkspace({lot,jobs,counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
+  lot?:DailyLot|null; currentJob?:JobRecord|null; jobs:JobRecord[];counts:Record<OpportunityView,number>;filter:OpportunityView;onFilter:(view:OpportunityView)=>void;query:string;onClearSearch:()=>void;
   activeId?:string;view:WorkspaceView;onOpen:(job:JobRecord)=>void;onClose:()=>void;profile:CandidateProfile;
   onReview:(id:string,state:"to_review"|"selected")=>Promise<boolean>;onDelete:(job:JobRecord,next?:JobRecord)=>void;onDeleteMany:(jobs:JobRecord[])=>void;onRestore:(job:JobRecord)=>void;
   onStatus:(id:string,status:JobStatus)=>Promise<boolean>;onNote:(id:string,note:string)=>Promise<boolean>;onChange:(job:JobRecord)=>void;onApplication:(job:JobRecord)=>void;
@@ -25,7 +26,11 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
   const [selection,setSelection]=useState<string[]>([]),[selecting,setSelecting]=useState(false),[reviewingIds,setReviewingIds]=useState<string[]>([]),[error,setError]=useState("");
   const [dateOrder,setDateOrder]=useState<"newest"|"oldest">("newest");
   // Score v2 S4: up to five mystery offers lead « À examiner », whatever the chosen order.
-  const orderedJobs=filter==="to_review"?pinMysteryOffers(sortOpportunitiesByDate(jobs,filter,dateOrder)):sortOpportunitiesByDate(jobs,filter,dateOrder);
+  // Tri Q1: « À examiner » opens on the lot of the day; « Toutes les offres » keeps the full list.
+  const [allOffers,setAllOffers]=useState(false);
+  const lotShown=filter==="to_review"&&!query&&!!lot&&lot.size>0;
+  const inLot=lotShown&&!allOffers;
+  const orderedJobs=inLot?lot!.remaining:filter==="to_review"?pinMysteryOffers(sortOpportunitiesByDate(jobs,filter,dateOrder)):sortOpportunitiesByDate(jobs,filter,dateOrder);
   const [retained,setRetained]=useState<{job:JobRecord;filter:OpportunityView;query:string;index:number}|null>(null);
   const kept=retained?.filter===filter&&retained.query===query?retained:null;
   const retainedJob=kept&&currentJob?.id===kept.job.id?currentJob:kept?.job;
@@ -34,7 +39,7 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
   const selected=selectionInView(orderedJobs,selection);
   const active=displayJobs.find(job=>job.id===activeId)||kept?.job||displayJobs[0];
   const heldOutside=!!kept&&!jobs.some(job=>job.id===kept.job.id);
-  const viewHelp=filter==="selected"?"Votre choix : les offres que vous avez sélectionnées, avant de candidater.":filter==="good_matches"?"Filtre automatique : les offres proches de vos critères selon Radar, sélectionnées ou non.":filter==="trash"?"Les offres restent restaurables pendant 10 jours. Après ce délai, elles sont supprimées définitivement à la prochaine ouverture du radar.":"Les offres qu’il vous reste à examiner.";
+  const viewHelp=inLot?"Lot du jour : les offres les mieux classées, vingt au plus, dont cinq fiches mystère au plus. Il ne se remplit pas pendant que vous triez.":filter==="selected"?"Votre choix : les offres que vous avez sélectionnées, avant de candidater.":filter==="good_matches"?"Filtre automatique : les offres proches de vos critères selon Radar, sélectionnées ou non.":filter==="trash"?"Les offres restent restaurables pendant 10 jours. Après ce délai, elles sont supprimées définitivement à la prochaine ouverture du radar.":"Les offres qu’il vous reste à examiner.";
   const currentScope=useRef({filter,query});
   useEffect(()=>{currentScope.current={filter,query};},[filter,query]);
   const viewIsCurrent=()=>currentScope.current.filter===filter&&currentScope.current.query===query;
@@ -77,16 +82,17 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
   const emptyAction: ReactNode=query?<button className="secondary-button" onClick={onClearSearch}>Effacer la recherche</button>:filter!=="to_review"?<button className="secondary-button" onClick={()=>{changeView("to_review");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Voir les offres à examiner</button>:null;
   return <div className={"opportunities-workspace "+(activeId?"has-open-offer":"")}>
     <nav className="workspace-tabs" aria-label="Vues des opportunités">{views.map(([id,label])=><span className="opportunity-tab" key={id}><button type="button" aria-pressed={filter===id} onClick={()=>changeView(id)}>{label}<span>{counts[id]}</span></button>{id==="trash"?<HelpTooltip label="Corbeille">Les offres restent restaurables pendant 10 jours. Après ce délai, elles sont supprimées définitivement à la prochaine ouverture du radar.</HelpTooltip>:null}</span>)}</nav>
+    {lotShown?<DailyLotBanner lot={lot!} total={counts.to_review} inLot={inLot} onToggle={()=>{setRetained(null);setSelection([]);setAllOffers(inLot);}}/>:null}
     <div className="opportunities-toolbar">
       <div className="review-view-summary">
-        <Select value={dateOrder} onValueChange={value=>{setDateOrder(value as "newest"|"oldest");setRetained(null);}}><SelectTrigger className="opportunity-date-order" aria-label={filter==="trash"?"Trier par date d’écartement":"Trier par date de mapping"}><span className="opportunity-date-order-label">Trier :</span><SelectValue /></SelectTrigger><SelectContent position="popper" side="bottom" sideOffset={6} align="start" className="opportunity-date-order-menu"><SelectItem value="newest">Du plus récent au plus ancien</SelectItem><SelectItem value="oldest">Du plus ancien au plus récent</SelectItem></SelectContent></Select>
+        {inLot?<span className="daily-lot-order">Classées par adéquation</span>:<Select value={dateOrder} onValueChange={value=>{setDateOrder(value as "newest"|"oldest");setRetained(null);}}><SelectTrigger className="opportunity-date-order" aria-label={filter==="trash"?"Trier par date d’écartement":"Trier par date de mapping"}><span className="opportunity-date-order-label">Trier :</span><SelectValue /></SelectTrigger><SelectContent position="popper" side="bottom" sideOffset={6} align="start" className="opportunity-date-order-menu"><SelectItem value="newest">Du plus récent au plus ancien</SelectItem><SelectItem value="oldest">Du plus ancien au plus récent</SelectItem></SelectContent></Select>}
         {filter!=="trash"?<HelpTooltip label="Vue des opportunités">{viewHelp}</HelpTooltip>:null}
       </div>
-      <div className="review-toolbar-actions"><button type="button" className="review-radar-filter" aria-pressed={filter==="good_matches"} onClick={()=>changeView(filter==="good_matches"?"to_review":"good_matches")}>Correspondances Radar <span>{counts.good_matches}</span></button>{jobs.length>0&&filter!=="trash"?<button type="button" className="secondary-button" aria-pressed={selecting} onClick={()=>{setRetained(null);setSelecting(!selecting);setSelection([]);}}>{selecting?"Terminer les actions groupées":"Actions groupées"}</button>:null}</div>
+      <div className="review-toolbar-actions"><button type="button" className="review-radar-filter" aria-pressed={filter==="good_matches"} onClick={()=>changeView(filter==="good_matches"?"to_review":"good_matches")}>Correspondances Radar <span>{counts.good_matches}</span></button>{orderedJobs.length>0&&filter!=="trash"?<button type="button" className="secondary-button" aria-pressed={selecting} onClick={()=>{setRetained(null);setSelecting(!selecting);setSelection([]);}}>{selecting?"Terminer les actions groupées":"Actions groupées"}</button>:null}</div>
     </div>
-    {selecting?<div className="opportunities-batch" role="group" aria-label="Actions sur les offres cochées"><span role="status">{selected.length} offre{selected.length>1?"s":""} cochée{selected.length>1?"s":""}</span><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>setSelection(orderedJobs.slice(0,50).map(job=>job.id))}>Cocher {jobs.length>50?"les 50 premières":"tout"}</button>{selected.length?<><button type="button" className="secondary-button" onClick={()=>setSelection([])}>Tout décocher</button><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>onDeleteMany(selected)}><Trash2 size={15} aria-hidden />Mettre à la corbeille</button></>:null}</div>:null}
+    {selecting&&orderedJobs.length?<div className="opportunities-batch" role="group" aria-label="Actions sur les offres cochées"><span role="status">{selected.length} offre{selected.length>1?"s":""} cochée{selected.length>1?"s":""}</span><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>setSelection(orderedJobs.slice(0,50).map(job=>job.id))}>Cocher {jobs.length>50?"les 50 premières":"tout"}</button>{selected.length?<><button type="button" className="secondary-button" onClick={()=>setSelection([])}>Tout décocher</button><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>onDeleteMany(selected)}><Trash2 size={15} aria-hidden />Mettre à la corbeille</button></>:null}</div>:null}
     {error?<WorkspaceState error title="Choix non enregistré">{error}</WorkspaceState>:null}
-    {!displayJobs.length?<WorkspaceState title={query?"Aucune offre ne correspond à cette recherche":filter==="trash"?"La corbeille est vide":filter==="to_review"?"Tout est examiné pour l’instant":filter==="selected"?"Votre sélection est encore vide":"Aucune offre dans cette vue"} action={emptyAction}>{query?"Effacez la recherche pour retrouver les offres de cette vue.":filter==="to_review"?"Retrouvez les offres sélectionnées dans Ma sélection.":filter==="trash"?"Les offres écartées pourront être restaurées ici.":"Ajoutez une annonce ou consultez une autre vue."}</WorkspaceState>:<div className="opportunities-split" ref={readingPane}>
+    {!displayJobs.length&&inLot?null:!displayJobs.length?<WorkspaceState title={query?"Aucune offre ne correspond à cette recherche":filter==="trash"?"La corbeille est vide":filter==="to_review"?"Tout est examiné pour l’instant":filter==="selected"?"Votre sélection est encore vide":"Aucune offre dans cette vue"} action={emptyAction}>{query?"Effacez la recherche pour retrouver les offres de cette vue.":filter==="to_review"?"Retrouvez les offres sélectionnées dans Ma sélection.":filter==="trash"?"Les offres écartées pourront être restaurées ici.":"Ajoutez une annonce ou consultez une autre vue."}</WorkspaceState>:<div className="opportunities-split" ref={readingPane}>
       <div className="opportunity-list" tabIndex={0} role="region" aria-label="Liste des opportunités">{displayJobs.map(job=><article key={job.id} className={"opportunity-list-row "+(active?.id===job.id?"is-current":"")}>
         {selecting?<label className="opportunity-check"><input type="checkbox" aria-label={"Cocher "+job.title+" · "+job.company} checked={selected.some(item=>item.id===job.id)} disabled={trashBusy||(selected.length>=50&&!selection.includes(job.id))} onChange={()=>setSelection(ids=>ids.includes(job.id)?ids.filter(id=>id!==job.id):[...selected.map(item=>item.id),job.id])}/><span className="sr-only">Cocher cette offre</span></label>:null}
         <button type="button" className="opportunity-open" aria-pressed={active?.id===job.id} onClick={event=>{opener.current=event.currentTarget;openListed(job);}}><strong>{job.title}</strong><span>{job.company||"Entreprise à confirmer"} · {job.contractType==="cdi"?"CDI":job.contractType==="cdd"?"CDD":job.contractType==="freelance"?"Freelance":job.contractType==="portage"?"Portage salarial":job.contractType==="part_time"?"Temps partagé":"Contrat à confirmer"}</span><span className="opportunity-conditions"><b>{job.dailyRate?formatPayRangeShort(job.dailyRateMin,job.dailyRateMax,"daily")??`${formatEuro(job.dailyRate)} / jour`:job.annualSalary?formatPayRangeShort(job.salaryMin,job.salaryMax,"annual")??`${formatEuro(job.annualSalary)} / an`:"Rémunération non communiquée"}</b><span>{remote[job.remoteMode]}</span></span><span className="opportunity-evidence">{!job.deletedAt?<FitBadge job={job}/>:null}<span className={"workspace-badge "+(job.flags.length?"is-warning":"")}>{job.deletedAt?"En corbeille":job.flags.length?`${job.flags.length} point${job.flags.length>1?"s":""} à vérifier`:"Critères renseignés"}</span>{!job.deletedAt&&job.flags.some(flag=>flag.startsWith("Sous votre minimum"))?<span className="workspace-badge is-warning">Sous votre minimum</span>:null}<small className="review-list-origin"><span>{job.source}</span>{!job.deletedAt&&reviewState(job)==="selected"?<span className="review-kept-label"><Check size={12}/>Sélectionnée</span>:null}</small></span></button>
@@ -109,6 +115,23 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
     </div>}
     {!displayJobs.length?<OpportunityReadingNotes/>:null}
   </div>;
+}
+
+function DailyLotBanner({lot,total,inLot,onToggle}:{lot:DailyLot;total:number;inLot:boolean;onToggle:()=>void}){
+  const left=lot.remaining.length,done=!left;
+  const others=lot.waiting;
+  const caption=done
+    ?`Vous avez trié les ${lot.size} offres du jour.${others?` ${others} autre${others>1?"s":""} attend${others>1?"ent":""}, sans urgence.`:""}`
+    :lot.triaged?`${lot.triaged} triée${lot.triaged>1?"s":""} sur ${lot.size} · les mieux classées des ${total} à examiner`:`Les ${lot.size} mieux classées des ${total} à examiner. Le lot ne se remplit pas pendant que vous triez.`;
+  return <section className={"daily-lot"+(done?" is-done":"")} aria-label="Lot du jour">
+    <div className="daily-lot-text">
+      <p className="daily-lot-headline" aria-live="polite"><strong>{lotHeadline(lot)}</strong>{left&&lot.triaged?<span> dans votre lot du jour</span>:null}</p>
+      <p className="daily-lot-caption">{caption}</p>
+      <div className="daily-lot-bar" role="progressbar" aria-label="Avancement du lot du jour" aria-valuemin={0} aria-valuemax={lot.size} aria-valuenow={lot.triaged} aria-valuetext={`${lot.triaged} sur ${lot.size}`}><span style={{width:`${lot.size?Math.round(lot.triaged/lot.size*100):0}%`}}/></div>
+    </div>
+    {inLot?(others?<button type="button" className="secondary-button daily-lot-switch" onClick={onToggle}>{done?"Continuer avec les autres offres":`Voir toutes les offres (${total})`}</button>:null)
+      :<button type="button" className="secondary-button daily-lot-switch" onClick={onToggle}>Revenir au lot du jour</button>}
+  </section>;
 }
 
 function OpportunityReadingNotes(){return <footer className="opportunity-reading-notes"><span><ShieldCheck size={13} aria-hidden/>Vos données restent privées.</span><span>Aucune candidature envoyée automatiquement.</span></footer>;}

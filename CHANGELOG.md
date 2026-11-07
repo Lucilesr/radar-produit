@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Tri, lot Q1a : lot du jour
+
+« À examiner » s’ouvre sur un lot du jour : les 20 offres les mieux classées, dont cinq fiches mystère au plus, avec un compteur qui ne fait que descendre (« Plus que 18 offres ») et une barre d’avancement. Trier une offre ne fait jamais entrer une offre de plus ; le lot suit les nouvelles offres tant que rien n’est trié. « Voir toutes les offres » rend la liste complète. L’accueil reprend le compteur. Une offre jugée sur son seul intitulé ne passe plus devant une offre proche dans le classement. Sans migration : le lot est conservé dans le navigateur, un autre appareil le recalcule.
+
 ## 7 novembre 2026 — Notifications de critères sans actions
 
 La confirmation d’un critère affiche seulement le changement enregistré et son impact. Les actions « Annuler » et « Voir les offres » disparaissent de ces notifications ; la navigation habituelle reste disponible.
