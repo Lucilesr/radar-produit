@@ -13,6 +13,7 @@ export function workspaceSections(context: "opportunity" | "application") {
 }
 
 export function reviewState(job: JobRecord): "to_review" | "selected" | "later" | "none" {
+  if (job.reviewState === "reopened") return "to_review";
   if (job.reviewState) return job.reviewState;
   if (["shortlist", "prepare", "ready"].includes(job.status)) return "selected";
   if (["new", "watchlist"].includes(job.status)) return "to_review";
@@ -21,8 +22,15 @@ export function reviewState(job: JobRecord): "to_review" | "selected" | "later" 
 
 export type OpportunityView = "to_review" | "selected" | "good_matches" | "trash" | "archived";
 
-/** Tri Q1b: an offer left without a decision this long leaves « À examiner » for the archive. */
+/** Age of an announcement before it leaves « À examiner » for the archive. */
 export const ARCHIVE_AFTER_DAYS = 21;
+
+export type ReviewDecision = "to_review" | "selected" | "later";
+
+/** An explicit return is distinct from an untouched import, even after a reload. */
+export function storedReviewDecision(decision: ReviewDecision): NonNullable<JobRecord["reviewState"]> {
+  return decision === "to_review" ? "reopened" : decision;
+}
 
 // SQLite's CURRENT_TIMESTAMP gives "2026-11-07 09:30:00", in UTC without a marker.
 function timeOf(value: string | undefined) {
@@ -36,15 +44,21 @@ export function lastActivity(job: Pick<JobRecord, "createdAt" | "updatedAt">) {
   return times.length ? Math.max(...times) : Number.NaN;
 }
 
-/**
- * Archived: still waiting (to examine or kept for later) with no decision for 21 days. Computed
- * at read time, never written: « Remettre à examiner » records a decision and brings it back.
- */
+/** Publication wins over import/edit dates; an explicit decision starts a fresh delay. */
+export function archiveReferenceTime(job: JobRecord) {
+  if (job.reviewState === "reopened" || job.reviewState === "later") return lastActivity(job);
+  const published = timeOf(job.publishedAt);
+  if (Number.isFinite(published)) return published;
+  const created = timeOf(job.createdAt);
+  return Number.isFinite(created) ? created : timeOf(job.updatedAt);
+}
+
+/** Computed at read time: selections and applications are never archived. */
 export function isArchived(job: JobRecord, now = Date.now()) {
   const state = reviewState(job);
   if (job.deletedAt || hasApplication(job) || (state !== "to_review" && state !== "later")) return false;
-  const last = lastActivity(job);
-  return Number.isFinite(last) && now - last > ARCHIVE_AFTER_DAYS * 86400000;
+  const reference = archiveReferenceTime(job);
+  return Number.isFinite(reference) && now - reference >= ARCHIVE_AFTER_DAYS * 86400000;
 }
 
 const outOfSearch = (job: JobRecord) => job.matchTier === "excluded" && job.flags?.some(flag => flag.startsWith("Lieu annoncé hors de votre recherche") || flag.startsWith("Marché limité aux États-Unis") || flag.startsWith("Salaire sous votre seuil") || flag.startsWith("TJM sous votre seuil") || flag.startsWith("Contient "));

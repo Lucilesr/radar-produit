@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Archives depuis la publication de l’annonce
+
+Les offres à examiner passent aux archives 21 jours après leur publication, même si elles viennent d’être importées. Si la publication est inconnue, la date d’ajout sert de référence. Une correction des faits ne rajeunit pas l’annonce. « Remettre à examiner » et « Plus tard » accordent un nouveau délai de 21 jours ; ce choix reste enregistré après rechargement. Les sélections et candidatures sont conservées. Aucun changement de schéma.
+
 ## 7 novembre 2026 — Tri, lot Q1b : « Plus tard », réserve et archives
 
 Nouvelle décision « Plus tard » sur une offre : elle sort du lot du jour (le compteur baisse) et rejoint la réserve. Hors du lot, « À examiner » devient la réserve, rangée en groupes (gardées pour plus tard, hors de vos conditions, loin de votre recherche, rémunération non communiquée, publiées il y a plus de 21 jours, les autres) qu’on peut voir ou écarter d’un coup, après confirmation. Une offre sans décision depuis 21 jours part aux archives : elle ne compte plus, reste consultable et peut être remise à examiner. L’archive est calculée à la lecture, sans migration. La réserve et les archives restent accessibles même lorsqu’aucune offre ne peut former un lot du jour.

@@ -10,6 +10,7 @@ import { rowToInterview } from "./interview-store";
 import { workspaceNoteValue, workspaceNoteValues } from "./workspace-write-store";
 import { z } from "zod";
 import { showJobgetherOffer } from "./jobgether-match";
+import { storedReviewDecision } from "./opportunity-views";
 
 // Browser and agent imports share the same per-user, retry-safe write path.
 export async function saveOffer(userId: string, value: unknown) {
@@ -168,7 +169,7 @@ export async function purgeExpiredTrash(userId: string, now = new Date()) {
 }
 
 export async function setOfferReviewState(userId: string, id: string, reviewState: "to_review" | "selected" | "later") {
-  const [row] = await getDb().update(jobs).set({ reviewState, updatedAt: new Date().toISOString() })
+  const [row] = await getDb().update(jobs).set({ reviewState: storedReviewDecision(reviewState), updatedAt: new Date().toISOString() })
     .where(and(eq(jobs.userId, userId), eq(jobs.id, id), isNull(jobs.deletedAt)))
     .returning({ id: jobs.id });
   return row ? getOffer(userId, id) : null;

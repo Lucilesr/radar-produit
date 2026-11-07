@@ -218,10 +218,11 @@ test("les actions mettent le bilan et la date d’entretien avant le flux d’of
   const rejected = { ...base, id: "rejected", company: "Refus", status: "rejected", publishedAt: "2026-10-14T12:00:00Z" };
   const watched = { ...base, id: "watched", company: "À qualifier", status: "watchlist", publishedAt: "2026-10-14T08:00:00Z" };
   const actions = selectTriageActions([old, rejected, fresh, interview], Date.parse("2026-10-14T12:00:00Z"));
-  assert.deepEqual(actions.map(action => action.job.id), ["meeting", "fresh", "old"]);
+  assert.deepEqual(actions.map(action => action.job.id), ["meeting", "fresh"]);
   assert.equal(actions[0].kind, "interview_review");
+  assert.ok(!actions.some(action => action.job.id === "old")); // archived by its publication date
   assert.ok(!actions.some(action => action.job.id === "rejected"));
-  assert.deepEqual(sortOffersForTriage([old, rejected, watched, fresh], Date.parse("2026-10-14T12:00:00Z")).map(job => job.id), ["watched", "fresh", "old"]);
+  assert.deepEqual(sortOffersForTriage([old, rejected, watched, fresh], Date.parse("2026-10-14T12:00:00Z")).map(job => job.id), ["watched", "fresh"]);
 });
 
 test("une offre sélectionnée n’est pas présentée comme une candidature déjà envoyée", () => {

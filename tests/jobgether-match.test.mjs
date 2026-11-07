@@ -17,5 +17,6 @@ test("le seuil Jobgether dépend du réglage du compte", () => {
 test("les choix déjà suivis et les autres sources restent accessibles", () => {
   assert.equal(showJobgetherOffer("Jobgether", 54, 80, "new", "selected"), true);
   assert.equal(showJobgetherOffer("Jobgether", 54, 80, "applied", "to_review"), true);
+  assert.equal(showJobgetherOffer("Jobgether", 54, 80, "new", "reopened"), true);
   assert.equal(showJobgetherOffer("We Work Remotely", 54, 80, "new", "to_review"), true);
 });

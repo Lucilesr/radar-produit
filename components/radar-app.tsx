@@ -11,7 +11,7 @@ import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, use
 import { CircleHelp, RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, Plus, Search, SlidersHorizontal, Trash2, Undo2, UserRound, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
-import { hasApplication, inOpportunityView, reviewState, type OpportunityView } from "@/lib/opportunity-views";
+import { hasApplication, inOpportunityView, reviewState, storedReviewDecision, type OpportunityView } from "@/lib/opportunity-views";
 import { PageHeader, PrivateLabel, WorkspaceBrand, WorkspaceBoundary, WorkspaceLoading, WorkspaceState, useRadarNavigation } from "@/components/workspace-ui";
 import { TodayWorkspace, ApplicationsWorkspace } from "@/components/today-workspace";
 import { useDailyLot } from "@/components/use-daily-lot";
@@ -128,7 +128,9 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   async function updateJob(id: string, changes: { status?: JobStatus; candidateNote?: string; reviewState?: "to_review" | "selected" | "later"; boardColumnId?: string; expectedStatus?: JobStatus; expectedBoardColumnId?: string|null }) {
     const previousJob = allJobs.find(job => job.id === id);
     const previousReviewState = previousJob?.reviewState;
-    if (changes.reviewState) setJobs(current => current.map(job => job.id === id ? { ...job, reviewState: changes.reviewState } : job));
+    const optimisticReviewState = changes.reviewState ? storedReviewDecision(changes.reviewState) : undefined;
+    const optimisticUpdatedAt = new Date().toISOString();
+    if (changes.reviewState) setJobs(current => current.map(job => job.id === id ? { ...job, reviewState: optimisticReviewState, updatedAt: optimisticUpdatedAt } : job));
     try {
       const response = await fetch(`/api/jobs/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) });
       if (!response.ok) throw new Error("Mise à jour impossible");
@@ -142,7 +144,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
       else setToast("Statut enregistré.");
       return true;
     } catch {
-      if (changes.reviewState) setJobs(current => current.map(job => job.id === id && job.reviewState === changes.reviewState ? { ...job, reviewState: previousReviewState } : job));
+      if (changes.reviewState) setJobs(current => current.map(job => job.id === id && job.reviewState === optimisticReviewState && job.updatedAt === optimisticUpdatedAt ? { ...job, reviewState: previousReviewState, updatedAt: previousJob?.updatedAt } : job));
       setToast("La mise à jour n’a pas été enregistrée. Vos données restent inchangées.", true); return false;
     }
   }
