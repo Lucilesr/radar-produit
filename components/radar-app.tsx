@@ -125,7 +125,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
     active: allJobs.filter((job) => hasApplication(job) && activeStatuses.includes(job.status)).length,
   }), [jobs, allJobs]);
 
-  async function updateJob(id: string, changes: { status?: JobStatus; candidateNote?: string; reviewState?: "to_review" | "selected"; boardColumnId?: string; expectedStatus?: JobStatus; expectedBoardColumnId?: string|null }) {
+  async function updateJob(id: string, changes: { status?: JobStatus; candidateNote?: string; reviewState?: "to_review" | "selected" | "later"; boardColumnId?: string; expectedStatus?: JobStatus; expectedBoardColumnId?: string|null }) {
     const previousJob = allJobs.find(job => job.id === id);
     const previousReviewState = previousJob?.reviewState;
     if (changes.reviewState) setJobs(current => current.map(job => job.id === id ? { ...job, reviewState: changes.reviewState } : job));
@@ -133,9 +133,10 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
       const response = await fetch(`/api/jobs/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) });
       if (!response.ok) throw new Error("Mise à jour impossible");
       const { job } = (await response.json()) as { job: JobRecord };
-      setJobs(current => current.map(item => item.id === id ? changes.reviewState ? { ...item, reviewState: job.reviewState } : { ...job, candidateNote: changes.candidateNote === undefined ? item.candidateNote : job.candidateNote } : item));
+      setJobs(current => current.map(item => item.id === id ? changes.reviewState ? { ...item, reviewState: job.reviewState, updatedAt: job.updatedAt ?? item.updatedAt } : { ...job, candidateNote: changes.candidateNote === undefined ? item.candidateNote : job.candidateNote } : item));
       if (changes.candidateNote !== undefined) setProfile(current => ({ ...current, applicationNotes: { ...current.applicationNotes, [id]: job.candidateNote ?? "" } }));
       if (changes.candidateNote !== undefined) setToast("Note enregistrée dans votre espace privé.");
+      else if (changes.reviewState === "later") setToast("Offre gardée pour plus tard, dans la réserve.");
       else if (changes.reviewState) setToast(changes.reviewState === "selected" ? "Offre ajoutée à ma sélection." : "Offre remise à examiner.", false, {label: changes.reviewState === "selected" ? "Voir ma sélection" : "Voir les offres à examiner", onClick: () => navigate({tab:"offers",filter:changes.reviewState === "selected" ? "selected" : "to_review",offer:undefined})});
       else if (changes.status === "applied") setToast("Cette opportunité fait maintenant partie de vos candidatures.", false, {label:"Annuler",onClick:()=>void cancelApplication(id,previousJob&&reviewState(previousJob)==="selected"?"selected":"to_review")});
       else setToast("Statut enregistré.");
@@ -200,7 +201,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   }
   const dailyLot = useDailyLot(allJobs, !loading && !loadErrors.jobs);
   const searchedJobs = allJobs.filter(job => `${job.title} ${job.company} ${job.source}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
-  const viewCounts = Object.fromEntries((["to_review", "selected", "good_matches", "trash"] as OfferFilter[]).map(view => [view, searchedJobs.filter(job => inOpportunityView(job, view)).length])) as Record<OfferFilter, number>;
+  const viewCounts = Object.fromEntries((["to_review", "selected", "good_matches", "trash", "archived"] as OfferFilter[]).map(view => [view, searchedJobs.filter(job => inOpportunityView(job, view)).length])) as Record<OfferFilter, number>;
   const shownJobs = filter === "to_review" ? sortOffersForTriage(searchedJobs) : searchedJobs.filter(job => inOpportunityView(job, filter));
   function selectTab(next: Tab) { navigate({ tab: next, offer: undefined }); }
 

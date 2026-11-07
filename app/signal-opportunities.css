@@ -132,3 +132,24 @@
 .daily-lot-switch{flex:none}
 .daily-lot-order{color:var(--muted-foreground);font-size:13px}
 @media(max-width:760px){.has-open-offer>.daily-lot{display:none}.daily-lot{padding:14px}.daily-lot-headline strong{font-size:20px}.daily-lot-switch{width:100%;justify-content:center}}
+
+/* Tri Q1b — réserve rangée par groupes, « Plus tard » et archives. */
+.reserve{margin:0 0 14px;padding:16px 18px;border:1px solid var(--signal-line);border-radius:5px;background:var(--card)}
+.reserve-head h3{display:flex;align-items:baseline;gap:8px;margin:0;color:var(--signal-petrol-dark);font-size:17px;font-weight:700}
+.reserve-head h3 span{color:var(--muted-foreground);font-size:13px;font-weight:500}
+.reserve-head p{margin:4px 0 12px;color:var(--muted-foreground);font-size:13px;line-height:1.45}
+.reserve-groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin:0;padding:0;list-style:none}
+.reserve-group{display:flex;flex-direction:column;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--signal-line);border-radius:5px;background:var(--signal-paper)}
+.reserve-group.is-shown{border-color:var(--signal-petrol);box-shadow:inset 0 0 0 1px var(--signal-petrol)}
+.reserve-group-text{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline}
+.reserve-group-text strong{color:var(--foreground);font-size:14px;line-height:1.35}
+.reserve-group-count{color:var(--signal-petrol-dark);font-size:20px;font-weight:700;line-height:1}
+.reserve-group-text small{grid-column:1/-1;color:var(--muted-foreground);font-size:12px;line-height:1.4}
+.reserve-group-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.reserve-group-actions .secondary-button,.reserve-group-actions .signal-quiet-button,.reserve-group-actions .signal-danger-button{min-height:42px;padding:6px 10px;font-size:13px}
+.reserve-archives{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:4px 0;border:0;background:none;color:var(--signal-petrol);font:600 13px/1.4 var(--font-sans);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.reserve-archives:focus-visible{outline:2px solid var(--ring);outline-offset:3px;border-radius:3px}
+.reserve-archive-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 14px;padding:12px 16px;border:1px dashed var(--signal-input);border-radius:5px;background:var(--card)}
+.reserve-archive-head p{display:flex;align-items:center;gap:8px;margin:0;color:var(--muted-foreground);font-size:13px;line-height:1.45}
+.opportunity-later-badge{display:inline-flex;align-items:center;gap:5px}
+@media(max-width:760px){.has-open-offer>.reserve,.has-open-offer>.reserve-archive-head{display:none}.reserve{padding:14px}.reserve-group-actions .secondary-button,.reserve-group-actions .signal-quiet-button,.reserve-group-actions .signal-danger-button{min-height:44px}}

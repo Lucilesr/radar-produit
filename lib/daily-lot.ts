@@ -1,5 +1,5 @@
 import { isMysteryOffer } from "./fit";
-import { inOpportunityView } from "./opportunity-views";
+import { awaitingDecision, inOpportunityView } from "./opportunity-views";
 import { triageScore } from "./triage";
 import type { JobRecord } from "./types";
 
@@ -51,8 +51,10 @@ export function pickLot(toReview: readonly JobRecord[], now: number, size = DAIL
 export function buildDailyLot(jobs: readonly JobRecord[], stored: StoredLot | null | undefined, now: number, size = DAILY_LOT_SIZE): DailyLot {
   const day = lotDay(now);
   const byId = new Map(jobs.map(job => [job.id, job]));
-  const toReview = jobs.filter(job => inOpportunityView(job, "to_review"));
-  const pending = (job: JobRecord | undefined) => !!job && inOpportunityView(job, "to_review");
+  // « Plus tard » and other decisions take an offer out of the lot; it stays in « À examiner ».
+  const toReview = jobs.filter(job => awaitingDecision(job, now));
+  const pending = (job: JobRecord | undefined) => !!job && awaitingDecision(job, now);
+  const examined = jobs.filter(job => inOpportunityView(job, "to_review", now)).length;
   // Ids of another day, another account or a deleted offer are simply dropped.
   const kept = stored?.day === day ? [...new Set(stored.ids)].filter(id => byId.has(id)).slice(0, size) : [];
   const started = kept.some(id => !pending(byId.get(id)));
@@ -64,7 +66,7 @@ export function buildDailyLot(jobs: readonly JobRecord[], stored: StoredLot | nu
   }
   const remaining = ids.map(id => byId.get(id)).filter(pending) as JobRecord[];
   remaining.sort((a, b) => triageScore(b, now) - triageScore(a, now) || a.id.localeCompare(b.id));
-  return { day, ids, remaining, triaged: ids.length - remaining.length, size: ids.length, waiting: toReview.length - remaining.length };
+  return { day, ids, remaining, triaged: ids.length - remaining.length, size: ids.length, waiting: examined - remaining.length };
 }
 
 /** "Plus que 3", "Plus qu’une", or the size of a lot not started yet. */
