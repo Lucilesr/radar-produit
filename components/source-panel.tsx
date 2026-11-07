@@ -134,7 +134,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,onShowOffer
     if(addingSource!==null)return;
     const existing=settings?.find(item=>item.source===name);
     setAddingSource(name);setAddSourceError("");
-    try{const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:name,state:existing?.state??"not_configured",notes:existing?.notes??"",linkUrl:existing?.linkUrl??"",selected:true})});const data=await response.json() as {source?:SourceSetting;error?:string};if(!response.ok||!data.source)throw new Error(data.error??"Source non ajoutée.");onSourceSaved(data.source);notify({message:name==="Jobgether"?"Jobgether activé pour ce compte.":`${name} ajouté aux sources à configurer.`});if(name==="Jobgether"&&!demo)await sync();}
+    try{const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:name,notes:existing?.notes??"",linkUrl:existing?.linkUrl??"",selected:true})});const data=await response.json() as {source?:SourceSetting;error?:string};if(!response.ok||!data.source)throw new Error(data.error??"Source non ajoutée.");onSourceSaved(data.source);notify({message:name==="Jobgether"?"Jobgether activé pour ce compte.":`${name} ajouté aux sources suivies.`});if(name==="Jobgether"&&!demo)await sync();}
     catch(problem){setAddSourceError(problem instanceof Error?problem.message:"Source non ajoutée.");}
     finally{setAddingSource(null);}
   }
@@ -144,7 +144,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,onShowOffer
     if(!validSearchLink(url)){setAddSourceError("Saisissez une URL https valide.");return false;}
     setAddingSource("Mon site");
     try{
-      const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:"Mon site",state:"configured",notes:settings?.find(item=>item.source==="Mon site")?.notes??"",linkUrl:url,selected:true})});
+      const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:"Mon site",notes:settings?.find(item=>item.source==="Mon site")?.notes??"",linkUrl:url,selected:true})});
       const data=await response.json() as {source?:SourceSetting;error?:string};
       if(!response.ok||!data.source)throw new Error(data.error??"Site non ajouté.");
       onSourceSaved(data.source);notify({message:"Votre site est ajouté aux sources à consulter."});

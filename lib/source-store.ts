@@ -10,6 +10,7 @@ import { parseJobgetherPage } from "./jobgether-offers";
 import { readCandidateProfile } from "./profile-store";
 import { searchPreferences } from "./search-preferences";
 import { assessJob } from "./matching";
+import { hasSourceConfiguration } from "./source-status";
 import { showJobgetherOffer } from "./jobgether-match";
 
 export async function listSourceSettings(userId: string) { const rows = await getDb().select().from(sourceSettings).where(eq(sourceSettings.userId, userId)); return rows.map(row => ({ source: row.source, ...JSON.parse(row.data), updatedAt: row.updatedAt })); }
@@ -41,9 +42,21 @@ export async function saveSourceVisitRhythm(userId: string, value: unknown) {
 }
 
 export async function userSourceSetting(userId: string, value: unknown) {
-  const input = z.object({ source: z.string().refine(name => sourceCatalog.some(source => source.name === name)), state: z.enum(["not_configured", "action_needed", "configured", "paused"]), notes: z.string().max(1500).default(""), linkUrl: z.string().trim().max(2048).optional(), selected: z.boolean().optional() }).strict().parse(value);
+  const input = z.object({
+    source: z.string().refine(name => sourceCatalog.some(source => source.name === name)),
+    // Accept older clients; these declarations no longer determine configuration.
+    state: z.enum(["not_configured", "action_needed", "configured", "paused"]).optional(),
+    paused: z.boolean().optional(), notes: z.string().max(1500).optional(),
+    linkUrl: z.string().trim().max(2048).optional(), selected: z.boolean().optional(),
+  }).strict().parse(value);
   if (input.linkUrl && !validSearchLink(input.linkUrl)) throw new Error("Lien invalide");
-  return saveSourceSetting(userId, input.source, { state: input.state, notes: input.notes, ...(input.linkUrl !== undefined ? { linkUrl: input.linkUrl } : {}), ...(input.selected !== undefined ? { selected: input.selected } : {}), verification: "Déclarée dans le Radar" });
+  const source = sourceCatalog.find(source => source.name === input.source)!;
+  const previous = (await listSourceSettings(userId)).find(setting => setting.source === input.source);
+  const fields = { ...(input.notes !== undefined ? { notes: input.notes } : {}), ...(input.linkUrl !== undefined ? { linkUrl: input.linkUrl } : {}), ...(input.selected !== undefined ? { selected: input.selected } : {}) };
+  const canPause = source.mode === "api" || source.mode === "rss";
+  const paused = canPause && (input.paused ?? (input.state === "paused" || (input.state === undefined && previous?.state === "paused")));
+  const state = paused ? "paused" : hasSourceConfiguration({ ...previous, ...fields }, source.mode) ? "configured" : "not_configured";
+  return saveSourceSetting(userId, input.source, { ...fields, state });
 }
 /** Retire la carte du suivi sans effacer ses réglages ni les offres associées. */
 export async function removeUserSource(userId: string, value: unknown) {
@@ -75,7 +88,7 @@ export async function recordCollectiveAlert(userId: string, value: unknown) {
   }).strict().parse(value);
   const previous = (await listSourceSettings(userId)).find(source => source.source === "Collective") as { latestAlert?: typeof alert } | undefined;
   if (previous?.latestAlert && Date.parse(previous.latestAlert.notificationAt) > Date.parse(alert.notificationAt)) return previous;
-  return saveSourceSetting(userId, "Collective", { latestAlert: alert, verification: "Alerte email reçue ; annonces individuelles à vérifier sur Collective" });
+  return saveSourceSetting(userId, "Collective", { latestAlert: alert, state: "configured", verification: "Alerte email reçue ; annonces individuelles à vérifier sur Collective" });
 }
 export async function syncAuthorizedFeed(userId: string) {
   const previous = (await listSourceSettings(userId)).find(source => source.source === "We Work Remotely");

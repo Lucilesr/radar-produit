@@ -77,5 +77,21 @@ test("suppression des sources : confirmation, persistance, isolation et réajout
   await route.DELETE(req({source:"Collective",confirmed:true}));
   await store.recordCollectiveAlert("alice",{url:"https://app.collective.work/my-personal-space/jobs",notificationAt:"2026-11-03T10:00:00Z",label:"Nouvelle alerte fictive"});
   assert.equal(isSourceVisible("Collective",await store.listSourceSettings("alice"),new Set(["Collective"])),false);
+  // The API infers configuration and preserves other saved settings.
+  const post=body=>route.POST(new Request("https://radar.test/api/sources",{method:"POST",headers:{Origin:"https://radar.test"},body:JSON.stringify(body)}));
+  const saved=async body=>{const response=await post(body);assert.equal(response.status,200);return (await response.json()).source;};
+  assert.equal((await saved({source:"Apec",notes:"Note fictive seule"})).state,"not_configured");
+  assert.equal((await saved({source:"Apec",state:"configured"})).state,"not_configured","a declaration cannot configure a source");
+  assert.equal((await saved({source:"Apec",linkUrl:"https://example.test/alert"})).state,"configured");
+  const noted=await saved({source:"Apec",notes:"Autre note fictive"});
+  assert.equal(noted.state,"configured");assert.equal(noted.linkUrl,"https://example.test/alert");
+  assert.equal((await saved({source:"Apec",linkUrl:""})).state,"not_configured");
+  assert.equal((await post({source:"Apec",linkUrl:"ftp://example.test/alert"})).status,400);
+  assert.equal((await saved({source:"Collective",notes:"Alerte reçue conservée"})).state,"configured");
+  assert.equal((await saved({source:"Jobgether",selected:true})).state,"configured");
+  assert.equal((await saved({source:"Jobgether",paused:true})).state,"paused");
+  assert.equal((await saved({source:"Jobgether",notes:"Ne pas reprendre"})).state,"paused");
+  assert.equal((await saved({source:"Jobgether",paused:false})).state,"configured");
+  assert.equal((await store.listSourceSettings("bob")).some(item=>item.source==="Apec"),false);
   sqlite.close();
 });
