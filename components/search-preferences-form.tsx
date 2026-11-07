@@ -6,6 +6,7 @@ import { suggestedRoles } from "@/lib/role-suggestions";
 import type { CandidateProfile, SearchPreferences, JobRecord } from "@/lib/types";
 import { foldKeyword, maxDismissedRoleSuggestions, normalizeRoleTitles, payFloor, remoteForContract, searchPreferences } from "@/lib/search-preferences";
 import { contractLabels, missingCriteria } from "@/lib/search-criteria";
+import { levelLabels, levels } from "@/lib/seniority";
 import { criteriaEditGroups, mergeCriteriaDraft, type CriteriaFormPart, type CriteriaEditPart } from "@/lib/criteria-editor";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 export type { CriteriaFormPart } from "@/lib/criteria-editor";
@@ -23,7 +24,7 @@ import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, 
 
 const locationOptions = [...locationRegionOptions, ...countryOptions.filter(option => option.value).map(option => option.label)];
 
-const partTitles: Record<CriteriaFormPart, string> = { roles: "search-roles-title", conditions: "search-conditions-title", locations: "search-location-title", pay: "search-pay-title", keywords: "search-keywords-title", contracts:"search-conditions-title", presence:"search-conditions-title", tracks:"search-roles-title", salary:"search-pay-title", dailyRate:"search-pay-title", minimums:"search-pay-title", tolerance:"search-pay-title", boostKeywords:"search-keywords-title", excludeKeywords:"search-keywords-title" };
+const partTitles: Record<CriteriaFormPart, string> = { roles: "search-roles-title", level: "search-roles-title", conditions: "search-conditions-title", locations: "search-location-title", pay: "search-pay-title", keywords: "search-keywords-title", contracts:"search-conditions-title", presence:"search-conditions-title", tracks:"search-roles-title", salary:"search-pay-title", dailyRate:"search-pay-title", minimums:"search-pay-title", tolerance:"search-pay-title", boostKeywords:"search-keywords-title", excludeKeywords:"search-keywords-title" };
 export type CriteriaSaveStatus = { state: "idle"|"pending"|"saving"|"saved"|"error"; retry?:()=>void };
 
 /** The whole criteria form, or with `only` a single group of it (popover or table row). */
@@ -319,6 +320,12 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
         </div>:null}
         <WorkspaceFormError message={suggestionError}/></>,
  tracks:<><SearchTracksEditor profile={profile} onSave={onSave} roles={roles} disabled={savingRole || saving} /></>,
+ level:<>{table?null:<p className="search-field-label">Niveau visé</p>}
+        <div className="search-place-toggle search-level-toggle" role="group" aria-label="Niveau visé">
+          {([["", "Non précisé"], ...levels.map(level => [level, levelLabels[level]])] as const).map(([value, label]) => <button key={value || "none"} type="button" aria-pressed={(draft.targetLevel ?? "") === value} disabled={saving} onClick={() => scheduleSave({ ...latestDraft.current, targetLevel: (value || undefined) as SearchPreferences["targetLevel"], acceptLevelAbove: value ? latestDraft.current.acceptLevelAbove : undefined })}>{label}</button>)}
+        </div>
+        <div className="search-contract-options search-level-above"><label><input type="checkbox" checked={!!draft.acceptLevelAbove} disabled={saving || !draft.targetLevel} onChange={event => scheduleSave({ ...latestDraft.current, acceptLevelAbove: event.target.checked || undefined })} /><span>J’accepte un cran au-dessus</span></label></div>
+        <p className="search-criteria-help">Radar signale les offres trop junior ou trop senior, d’après l’intitulé, les années d’expérience demandées et l’encadrement. Le classement ne change pas.</p></>,
  contracts:<><fieldset className="search-contracts"><legend className={table?"sr-only":"search-field-label"}>Contrats</legend><div className="search-contract-options">{([["cdi", "CDI", ""], ["cdd", "CDD", ""], ["freelance", "Freelance", ""], ["portage", "Portage salarial", "comparé au TJM"], ["part_time", "Temps partagé", "rémunération à vérifier"]] as const).map(([value, label, hint]) => <label key={value}><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} /><span>{label}{hint ? <small>{hint}</small> : null}</span></label>)}</div></fieldset></>,
  presence:<><fieldset className="search-presence-rows"><legend className="sr-only">Présence acceptable par contrat</legend>
  {draft.contracts.map(contract=><div key={contract} className="search-presence-contract"><span>{contractLabels[contract]}</span><div className="search-place-toggle" role="group" aria-label={`Présence acceptable · ${contractLabels[contract]}`}>
@@ -376,7 +383,7 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
         {available.length?<Popover open={addMenuOpen} onOpenChange={setAddMenuOpen}><PopoverTrigger asChild><WorkspaceButton variant="quiet">+ Ajouter un critère</WorkspaceButton></PopoverTrigger><PopoverContent align="start" className="search-criteria-popover" onCloseAutoFocus={event=>{if(addedFocus.current){event.preventDefault();const part=addedFocus.current;addedFocus.current=null;requestAnimationFrame(()=>document.querySelector<HTMLElement>(`[data-part="${part}"] input`)?.focus());}}}><ul className="search-criteria-add-menu">{available.map(item=><li key={item.id}><button type="button" onClick={()=>{addedFocus.current=item.id==="searchTracks"?"tracks":item.id;setAdded(current=>[...current,item.id]);setAddMenuOpen(false);}}><strong>{item.label}</strong><span>{item.help}</span></button></li>)}</ul></PopoverContent></Popover>:null}
       </div>:<>
         {only&&!["roles","locations"].includes(only)&&only in controls?controls[only as CriteriaEditPart]:null}
-        {show("roles")?<section className="search-criteria-group" aria-labelledby="search-roles-title"><div className="search-criteria-group-heading"><h3 id="search-roles-title">Postes visés</h3></div>{controls.roles}{controls.tracks}</section>:null}
+        {show("roles")?<section className="search-criteria-group" aria-labelledby="search-roles-title"><div className="search-criteria-group-heading"><h3 id="search-roles-title">Postes visés</h3></div>{controls.roles}{controls.tracks}{controls.level}</section>:null}
         {show("conditions")?<section className="search-criteria-group" aria-labelledby="search-conditions-title"><div className="search-criteria-group-heading"><h3 id="search-conditions-title">Conditions de travail</h3></div>{controls.contracts}{controls.presence}</section>:null}
         {show("locations")?<section className="search-criteria-group" aria-labelledby="search-location-title"><div className="search-criteria-group-heading"><h3 id="search-location-title">Pays et régions des offres</h3></div>{controls.locations}</section>:null}
         {show("pay")?<section className="search-criteria-group" aria-labelledby="search-pay-title"><div className="search-criteria-group-heading"><h3 id="search-pay-title">Rémunération souhaitée</h3></div><div className="search-pay-grid">{controls.salary}{controls.dailyRate}</div>{controls.tolerance}</section>:null}

@@ -86,6 +86,8 @@ export type Assessment = {
   tier: MatchTier;
   reasons: string[];
   flags: string[];
+  /** Level or pay hints, also listed in `flags` so they show as points to check. */
+  signals?: string[];
 };
 
 /** One search track: a named group of job titles Radar looks for on the sources. */
@@ -117,4 +119,8 @@ export type SearchPreferences = {
   minimumMatchScore: number;
   /** 0 to 20: a known pay up to this % under the minimum stays visible as an exception. */
   payTolerancePercent?: number;
+  /** Seniority the account aims for; unset means offers are not compared on level. */
+  targetLevel?: "junior" | "confirmed" | "senior" | "lead" | "head";
+  /** An offer one level above the target is not flagged. */
+  acceptLevelAbove?: boolean;
 };

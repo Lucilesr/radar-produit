@@ -1,13 +1,14 @@
 import { remoteForContract } from "./search-preferences";
 import { searchTracksFor, trackKindLabels } from "./search-tracks";
 import type { SearchPreferences } from "./types";
+import { levelLabels } from "./seniority";
 
 /** Where a criterion is edited: a group of the criteria form, or the Jobgether card. */
-export type CriteriaTarget = "roles" | "conditions" | "locations" | "pay" | "keywords" | "jobgether";
+export type CriteriaTarget = "roles" | "level" | "conditions" | "locations" | "pay" | "keywords" | "jobgether";
 export type CriteriaTone = "include" | "exclude";
 
 export type CriteriaRow = {
-  id: "roles" | "searchTracks" | "contracts" | "remote" | "salary" | "dailyRate" | "payTolerance" | "matchScore" | "includedLocations" | "excludedLocations" | "boostKeywords" | "excludeKeywords";
+  id: "roles" | "searchTracks" | "level" | "contracts" | "remote" | "salary" | "dailyRate" | "payTolerance" | "matchScore" | "includedLocations" | "excludedLocations" | "boostKeywords" | "excludeKeywords";
   label: string;
   /** Set when several rows share an id, as with one presence row per contract. */
   key?: string;
@@ -74,6 +75,7 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
     { id: "role", title: "Le poste", rows: [
       { id: "roles", label: "Postes visés", values: preferences.roles.length ? preferences.roles : [noRoleChosen], tone: "include", target: "roles" },
       ...tracks,
+      ...(preferences.targetLevel ? [{ id: "level" as const, label: "Niveau visé", values: [levelLabels[preferences.targetLevel] + (preferences.acceptLevelAbove ? " · un cran au-dessus accepté" : "")], tokenValues: [levelLabels[preferences.targetLevel]], tone: "include" as const, target: "level" as const }] : []),
       { id: "contracts", label: "Contrats", values: contracts.map(contract => contractLabels[contract]), tone: "include", target: "conditions" },
     ] },
     { id: "presence", title: "La présence", rows: presenceRows(preferences) },
@@ -84,7 +86,7 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
 }
 
 const shortLabels: Partial<Record<CriteriaRow["id"], string>> = {
-  roles: "Poste", contracts: "Contrat", remote: "Présence", salary: "Salaire", dailyRate: "TJM",
+  roles: "Poste", level: "Niveau", contracts: "Contrat", remote: "Présence", salary: "Salaire", dailyRate: "TJM",
   matchScore: "Score Jobgether", includedLocations: "Lieux", searchTracks: "Pistes", payTolerance: "Tolérance", boostKeywords: "Mots-clés", excludeKeywords: "Sans",
 };
 
@@ -114,7 +116,7 @@ export function criteriaTokens(preferences: SearchPreferences, visible = 3): Cri
 }
 
 /** Criteria the account has not set yet, offered behind « + Critère ». */
-export type MissingCriterion = { id: "boostKeywords" | "excludeKeywords" | "payTolerance" | "searchTracks"; label: string; help: string; target: CriteriaTarget };
+export type MissingCriterion = { id: "boostKeywords" | "excludeKeywords" | "payTolerance" | "searchTracks" | "level"; label: string; help: string; target: CriteriaTarget };
 
 export function missingCriteria(preferences: SearchPreferences): MissingCriterion[] {
   const contracts = preferences.contracts;
@@ -124,6 +126,7 @@ export function missingCriteria(preferences: SearchPreferences): MissingCriterio
     ...((preferences.excludeKeywords ?? []).length ? [] : [{ id: "excludeKeywords" as const, label: "Mots-clés à écarter", help: "Les offres qui les contiennent sont masquées.", target: "keywords" as const }]),
     ...(paid && !(preferences.payTolerancePercent ?? 0) ? [{ id: "payTolerance" as const, label: "Tolérance sous le minimum", help: "Garder les offres un peu sous votre minimum.", target: "pay" as const }] : []),
     ...((preferences.searchTracks ?? []).length ? [] : [{ id: "searchTracks" as const, label: "Pistes de recherche", help: "Grouper les intitulés cherchés sur les sources.", target: "roles" as const }]),
+    ...(preferences.targetLevel ? [] : [{ id: "level" as const, label: "Niveau visé", help: "Repérer les offres trop junior ou trop senior.", target: "level" as const }]),
   ];
 }
 
@@ -132,6 +135,7 @@ export function changedCriteriaIds(before: SearchPreferences, after: SearchPrefe
   const fields: [CriteriaRow["id"], unknown, unknown][] = [
     ["roles", before.roles, after.roles],
     ["searchTracks", before.searchTracks ?? [], after.searchTracks ?? []],
+    ["level", [before.targetLevel ?? null, before.acceptLevelAbove ?? false], [after.targetLevel ?? null, after.acceptLevelAbove ?? false]],
     ["contracts", before.contracts, after.contracts],
     ["remote", before.contracts.map(contract => [contract, remoteForContract(before, contract)]), before.contracts.map(contract => [contract, remoteForContract(after, contract)])],
     ["salary", before.minimumSalary, after.minimumSalary],

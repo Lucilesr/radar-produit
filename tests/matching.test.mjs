@@ -18,7 +18,7 @@ const tracks = moduleUrl("search-tracks");
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations, "./search-tracks": tracks });
 const searchPreferencesModule = await import(preferences);
 const { searchPreferences } = searchPreferencesModule;
-const { assessJob: assessWith } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations }));
+const { assessJob: assessWith } = await import(moduleUrl("matching", { "./seniority": moduleUrl("seniority"), "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations }));
 const { assessLocation, normalizeLocationRules } = await import(locations);
 const payRange = moduleUrl("pay-range");
 const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement, "./pay-range": payRange }));
@@ -421,4 +421,20 @@ test("Score v2 S1 : le texte collé donne la fourchette, sans confondre TJM et s
   assert.equal(daily.dailyRateMin, 500); assert.equal(daily.dailyRateMax, 600); assert.equal(daily.annualSalary, null);
   const revenue = parseOfferText("Product Owner\nScale-up de 300 000 € de chiffre d'affaires", "Autre");
   assert.equal(revenue.annualSalary, null);
+});
+
+test("Score v2 S2 : niveau visé absent, aucun signal ; présent, un point à vérifier sans changer le score", () => {
+  const lead = { ...baseline, title: "Lead Product Owner", description: "10+ years of experience, you manage a team of 3 product owners." };
+  const without = assessJob(lead);
+  assert.deepEqual(without.signals, []);
+  const senior = searchPreferences({ ...poSearch, targetLevel: "senior" });
+  const flagged = assessWith(lead, senior);
+  assert.match(flagged.signals.join(" "), /un cran au-dessus de votre cible/);
+  assert.match(flagged.flags.join(" "), /un cran au-dessus de votre cible/);
+  assert.equal(flagged.score, without.score);
+  assert.equal(flagged.tier, without.tier);
+  assert.deepEqual(assessWith(lead, searchPreferences({ ...poSearch, targetLevel: "senior", acceptLevelAbove: true })).signals, []);
+  assert.match(assessWith({ ...baseline, title: "Head of Product" }, senior).signals.join(" "), /trop senior/);
+  assert.match(assessWith({ ...baseline, title: "Junior Product Owner" }, senior).signals.join(" "), /plus junior/);
+  assert.equal(searchPreferences({ targetLevel: "expert" }).targetLevel, undefined);
 });

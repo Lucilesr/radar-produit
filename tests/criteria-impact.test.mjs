@@ -16,11 +16,11 @@ const countries = moduleUrl("countries");
 const locations = moduleUrl("location-criteria", { "./countries": countries, "./market-scope": marketScope });
 const tracks = moduleUrl("search-tracks");
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations, "./search-tracks": tracks });
-const matching = moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations });
+const matching = moduleUrl("matching", { "./seniority": moduleUrl("seniority"), "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations });
 const views = moduleUrl("opportunity-views");
-const criteria = moduleUrl("search-criteria", { "./search-preferences": preferences, "./search-tracks": tracks });
+const criteria = moduleUrl("search-criteria", { "./search-preferences": preferences, "./search-tracks": tracks, "./seniority": moduleUrl("seniority") });
 const { searchPreferences } = await import(preferences);
-const { countToReview, describeCriteriaChanges, impactMessage } = await import(moduleUrl("criteria-impact", { "./search-preferences": preferences, "./matching": matching, "./opportunity-views": views, "./search-criteria": criteria }));
+const { countToReview, describeCriteriaChanges, impactMessage } = await import(moduleUrl("criteria-impact", { "./seniority": moduleUrl("seniority"), "./search-preferences": preferences, "./matching": matching, "./opportunity-views": views, "./search-criteria": criteria }));
 const nbsp = text => text.replace(/[  ]/g, " ");
 
 // Fictional offers only.
@@ -74,4 +74,9 @@ test("la confirmation couvre aussi la présence par contrat et les pistes",()=>{
  const before=searchPreferences({remoteByContract:{cdi:"hybrid"},searchTracks:[]});
  const after={...before,remoteByContract:{cdi:"full_remote"},searchTracks:[{id:"data",label:"Data",kind:"core",terms:["Data Analyst"]}]};
  assert.deepEqual(describeCriteriaChanges(before,after),["Présence CDI Hybride → Full remote","Pistes de recherche mises à jour"]);
+});
+
+test("Score v2 S2 : le changement de niveau visé est décrit", () => {
+  assert.deepEqual(describeCriteriaChanges(searchPreferences({ roles: ["Product Owner"] }), searchPreferences({ roles: ["Product Owner"], targetLevel: "senior" })), ["Niveau visé non précisé → Senior"]);
+  assert.deepEqual(describeCriteriaChanges(searchPreferences({ roles: ["Product Owner"], targetLevel: "senior" }), searchPreferences({ roles: ["Product Owner"], targetLevel: "senior", acceptLevelAbove: true })), ["Un cran au-dessus accepté"]);
 });

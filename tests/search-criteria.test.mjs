@@ -15,7 +15,7 @@ const locations = moduleUrl("location-criteria", { "./countries": countries, "./
 const tracks = moduleUrl("search-tracks");
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations, "./search-tracks": tracks });
 const { searchPreferences } = await import(preferences);
-const { changedCriteriaIds, criteriaGroups, criteriaTokens, missingCriteria } = await import(moduleUrl("search-criteria", { "./search-preferences": preferences, "./search-tracks": tracks }));
+const { changedCriteriaIds, criteriaGroups, criteriaTokens, missingCriteria } = await import(moduleUrl("search-criteria", { "./search-preferences": preferences, "./search-tracks": tracks, "./seniority": moduleUrl("seniority") }));
 const nbsp = text => text.replace(/[  ]/g, " ");
 
 test("les critères enregistrés donnent une étiquette par critère renseigné", () => {
@@ -92,14 +92,16 @@ test("la tolérance n'apparaît que si elle est réglée", () => {
 
 test("« + Critère » ne propose que ce qui n’est pas encore réglé", () => {
   const fresh = missingCriteria(searchPreferences({ contracts: ["cdi"], roles: ["Data Analyst"] })).map(item => item.id);
-  assert.deepEqual(fresh, ["boostKeywords", "excludeKeywords", "payTolerance", "searchTracks"]);
+  assert.deepEqual(fresh, ["boostKeywords", "excludeKeywords", "payTolerance", "searchTracks", "level"]);
   const filled = missingCriteria(searchPreferences({ contracts: ["cdi"], roles: ["Data Analyst"], boostKeywords: ["fintech"], payTolerancePercent: 5 })).map(item => item.id);
-  assert.deepEqual(filled, ["excludeKeywords", "searchTracks"]);
+  assert.deepEqual(filled, ["excludeKeywords", "searchTracks", "level"]);
+  const leveled = missingCriteria(searchPreferences({ contracts: ["cdi"], roles: ["Data Analyst"], targetLevel: "senior" })).map(item => item.id);
+  assert.ok(!leveled.includes("level"));
   const unpaid = missingCriteria(searchPreferences({ contracts: ["part_time"], roles: ["Data Analyst"] })).map(item => item.id);
   assert.ok(!unpaid.includes("payTolerance"));
 });
 
-const {criteriaEditParts,criterionParts,criteriaEditGroups,mergeCriteriaDraft}=await import(moduleUrl("criteria-editor",{"./search-criteria":moduleUrl("search-criteria",{"./search-preferences":preferences,"./search-tracks":tracks})}));
+const {criteriaEditParts,criterionParts,criteriaEditGroups,mergeCriteriaDraft}=await import(moduleUrl("criteria-editor",{"./search-criteria":moduleUrl("search-criteria",{"./search-preferences":preferences,"./search-tracks":tracks,"./seniority":moduleUrl("seniority")})}));
 test("chaque ligne de critères pointe vers un contrôle existant, sans doublons dans le tableau",()=>{
  const prefs=searchPreferences({contracts:["cdi","freelance","portage"],remoteByContract:{cdi:"onsite",freelance:"full_remote"},includedLocations:["Europe"],excludedLocations:["Roumanie"],boostKeywords:["SaaS"],excludeKeywords:["stage"],payTolerancePercent:10,searchTracks:[{id:"data",label:"Data",kind:"core",terms:["Data Analyst"]}]});
  for(const row of criteriaGroups(prefs).flatMap(group=>group.rows))assert.ok(criteriaEditParts.includes(criterionParts[row.id]),row.id);
@@ -138,4 +140,15 @@ test("une sauvegarde différée de rémunération conserve les suggestions écar
  const current={...base,dismissedRoleSuggestions:["Chef de produit"]};
  const result=mergeCriteriaDraft(base,{...base,minimumSalary:60000},current);
  assert.deepEqual(searchPreferences(JSON.parse(JSON.stringify(result))).dismissedRoleSuggestions,["Chef de produit"]);
+});
+
+test("Score v2 S2 : le niveau visé devient une ligne du poste une fois choisi", () => {
+  assert.ok(!criteriaGroups(searchPreferences({ contracts: ["cdi"], roles: ["Product Owner"] }))[0].rows.some(row => row.id === "level"));
+  const rows = criteriaGroups(searchPreferences({ contracts: ["cdi"], roles: ["Product Owner"], targetLevel: "senior", acceptLevelAbove: true }))[0].rows;
+  const level = rows.find(row => row.id === "level");
+  assert.deepEqual(level.values, ["Senior · un cran au-dessus accepté"]);
+  assert.equal(level.target, "level");
+  assert.ok(rows.findIndex(row => row.id === "level") < rows.findIndex(row => row.id === "contracts"));
+  assert.equal(criteriaTokens(searchPreferences({ contracts: ["cdi"], roles: ["Product Owner"], targetLevel: "lead" })).find(token => token.id === "level").value, "Lead");
+  assert.deepEqual(changedCriteriaIds(searchPreferences({ roles: ["PO"] }), searchPreferences({ roles: ["PO"], targetLevel: "senior" })), ["level"]);
 });
