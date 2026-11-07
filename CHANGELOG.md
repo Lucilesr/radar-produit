@@ -1,5 +1,11 @@
 ## 7 novembre 2026 — Q4, la portée de votre radar
 
+
+## Plan de semaine — Q5
+
+- Deux à quatre engagements, suggestions depuis le radar, horaires locaux et cases confirmées dans le compte. Report neutre, moment facultatif de nouvelle semaine et bilan de semaine tenue.
+- Brouillons privés, comparaison des conflits, historique des semaines et sauvegarde intégrale conservés, sans migration. Séries et jokers restent absents avant L2.
+
 - Dix crans calculés depuis vos critères, sources, visites, expériences et histoires déjà validées ; aucune fonction bloquée par la jauge.
 - Une seule prochaine action sur l’accueil, détail dans Mon profil et huit thèmes pour préparer des récits factuels privés. Les droits de réutilisation restent un choix séparé.
 - Brouillons récupérables, versions comparables, palier signalé une seule fois et dix crans stables ; mouvements réduits respectés. Aucune migration.

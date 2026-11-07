@@ -6,6 +6,7 @@ import { interviewThemes } from "./radar-reach";
 export async function ownsWorkspaceKey(userId: string, key: string) {
   // A first story has no experience item yet; each authenticated owner gets eight private drafts.
   if(key.startsWith("story:"))return !!userId&&interviewThemes.some(theme=>key===`story:${theme.id}`);
+  if(/^week-plan:\d{4}-W(?:0[1-9]|[1-4]\d|5[0-3])$/.test(key))return !!userId;
   const match = /^(note|review|schedule|offer|answer):([a-zA-Z0-9-]{1,100})$/.exec(key);
   if (!match) return false;
   const [,kind,id] = match, db = getDb();

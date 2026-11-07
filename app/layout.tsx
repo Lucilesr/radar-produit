@@ -28,6 +28,7 @@ import "./signal-motion.css";
 import "./signal-scan.css";
 import "./signal-session.css";
 import "./signal-reach.css";
+import "./signal-week-plan.css";
 import "./signin-page.css";
 
 export const metadata: Metadata = {
