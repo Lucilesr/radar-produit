@@ -30,7 +30,7 @@ export async function saveOffer(userId: string, value: unknown) {
   const inserted = await db.insert(jobs).values(record).onConflictDoNothing({
     target: [jobs.userId, jobs.fingerprint],
   }).returning();
-  if (inserted[0]) return { job: rowToJob(inserted[0]), deduplicated: false };
+  if (inserted[0]) return { job: { ...rowToJob(inserted[0]), ...scoreFields(assessment) }, deduplicated: false };
   const [existing] = await db.select().from(jobs).where(and(
     eq(jobs.userId, userId), eq(jobs.fingerprint, fingerprint),
   )).limit(1);
@@ -49,7 +49,7 @@ export async function saveOffer(userId: string, value: unknown) {
       .where(and(eq(jobs.id, existing.id), eq(jobs.userId, userId)));
   }
   return { job: { ...current, matchScore: updatedAssessment.score, matchTier: updatedAssessment.tier,
-    reasons: updatedAssessment.reasons, flags: updatedAssessment.flags }, deduplicated: true };
+    reasons: updatedAssessment.reasons, flags: updatedAssessment.flags, ...scoreFields(updatedAssessment) }, deduplicated: true };
 }
 
 export async function listOffers(userId: string, limit?: number, includeDeleted = false) {
