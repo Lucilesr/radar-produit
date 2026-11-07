@@ -36,7 +36,7 @@ Valeurs retenues : **20 offres** au plus dans le lot du jour, dont **5 fiches my
 
 ---
 
-## Lot Q1b — « Plus tard », réserve rangée et archivage à 21 jours
+## Lot Q1b — « Plus tard », réserve rangée et archivage à 21 jours (livré)
 
 **But.** Vider la liste sans tout lire : une décision par groupe, et des offres qui s'archivent seules.
 
@@ -45,13 +45,13 @@ Valeurs retenues : **20 offres** au plus dans le lot du jour, dont **5 fiches my
 **Réserve.** « Voir toutes les offres » devient « La réserve ». On y trouve les offres à examiner hors du lot et les offres « Plus tard ». Elles sont rangées en groupes exclusifs, dans cet ordre, et chacune va dans le premier groupe qui lui correspond :
 
 1. Gardées pour plus tard (`later`).
-2. Loin de votre recherche (`fitLabel` = `far`).
-3. Présence au-delà de votre rythme (point à vérifier sur la présence sur site).
+3. Loin de votre recherche (`fitLabel` = `far`).
+2. Hors de vos conditions (`conditions` = `excluded` : présence, contrat…). Plus large que « présence » seule, et déjà calculé par le score v2.
 4. Rémunération non communiquée.
 5. Publiées il y a plus de 21 jours.
 6. Les autres.
 
-Chaque groupe affiche son nombre d'offres, les trois premières et deux actions : « Voir le groupe » et « Écarter le groupe ». Ce dernier passe par la corbeille existante, avec confirmation et restauration possible. Un groupe vide ne s'affiche pas.
+Chaque groupe affiche son nombre d'offres et deux actions. « Voir le groupe » filtre la liste. « Écarter le groupe » demande une confirmation, puis passe par la corbeille existante (50 offres au plus par action, limite de l'API), avec restauration possible. Un groupe vide ne s'affiche pas. Code : `lib/reserve.ts`.
 
 **Archivage à 21 jours.** Une offre de la réserve sans décision depuis 21 jours (le plus récent de `createdAt` et `updatedAt`) est archivée. L'archive est un état **calculé à la lecture**, sans écriture. Elle sort de « À examiner », du lot et des compteurs, et apparaît dans « Archives (N) » en bas de la réserve. « Remettre à examiner » repasse l'offre en `to_review`, ce qui met à jour `updatedAt` et la sort donc de l'archive. Les offres sélectionnées, en candidature ou dans la corbeille ne sont jamais archivées.
 

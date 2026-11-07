@@ -7,7 +7,7 @@ export type SearchSection = "criteria" | "channels" | "outreach";
 export function readSearchSection(value: string | null): SearchSection {
   return value === "channels" || value === "outreach" ? value : "criteria";
 }
-export type RadarRoute = { tab: RadarTab; filter: "to_review" | "selected" | "good_matches" | "trash"; query: string; offer?: string; view: "offer" | "application" | "interviews" | "brief" };
+export type RadarRoute = { tab: RadarTab; filter: "to_review" | "selected" | "good_matches" | "trash" | "archived"; query: string; offer?: string; view: "offer" | "application" | "interviews" | "brief" };
 export const defaultRoute: RadarRoute = { tab: "dashboard", filter: "to_review", query: "", view: "offer" };
 export function readRadarRoute(search: string): RadarRoute {
   const params = new URLSearchParams(search);
@@ -15,7 +15,7 @@ export function readRadarRoute(search: string): RadarRoute {
   const view = valid(params.get("view"), ["offer", "application", "interviews", "brief"] as const, "offer");
   return {
     tab: valid(params.get("tab"), ["dashboard", "offers", "pipeline", "profile", "sources"] as const, params.has("offer") && view === "interviews" ? "pipeline" : "dashboard"),
-    filter: valid(params.get("filter"), ["to_review", "selected", "good_matches", "trash"] as const, "to_review"),
+    filter: valid(params.get("filter"), ["to_review", "selected", "good_matches", "trash", "archived"] as const, "to_review"),
     query: (params.get("q") || "").slice(0, 200), offer: params.get("offer") || undefined, view,
   };
 }

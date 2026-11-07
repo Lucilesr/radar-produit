@@ -38,7 +38,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       (!Object.hasOwn(body, "status") && !Object.hasOwn(body, "candidateNote") && !Object.hasOwn(body, "reviewState")) ||
       (Object.hasOwn(body, "status") && !isStatus(body.status)) ||
       (Object.hasOwn(body, "candidateNote") && (typeof body.candidateNote !== "string" || body.candidateNote.length > 2000)) ||
-      (Object.hasOwn(body, "reviewState") && !["to_review", "selected"].includes(String(body.reviewState)))) {
+      (Object.hasOwn(body, "reviewState") && !["to_review", "selected", "later"].includes(String(body.reviewState)))) {
       return Response.json({ error: "Statut ou note invalide" }, { status: 400 });
     }
     const db = getDb();

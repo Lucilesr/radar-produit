@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Tri, lot Q1b : « Plus tard », réserve et archives
+
+Nouvelle décision « Plus tard » sur une offre : elle sort du lot du jour (le compteur baisse) et rejoint la réserve. Hors du lot, « À examiner » devient la réserve, rangée en groupes (gardées pour plus tard, hors de vos conditions, loin de votre recherche, rémunération non communiquée, publiées il y a plus de 21 jours, les autres) qu’on peut voir ou écarter d’un coup, après confirmation. Une offre sans décision depuis 21 jours part aux archives : elle ne compte plus, reste consultable et peut être remise à examiner. L’archive est calculée à la lecture, sans migration.
+
 ## 7 novembre 2026 — Tri, lot Q1a : lot du jour
 
 « À examiner » s’ouvre sur un lot du jour : les 20 offres les mieux classées, dont cinq fiches mystère au plus, avec un compteur qui ne fait que descendre (« Plus que 18 offres ») et une barre d’avancement. Trier une offre ne fait jamais entrer une offre de plus ; le lot suit les nouvelles offres tant que rien n’est trié. « Voir toutes les offres » rend la liste complète. L’accueil reprend le compteur. Une offre jugée sur son seul intitulé ne passe plus devant une offre proche dans le classement. Sans migration : le lot est conservé dans le navigateur, un autre appareil le recalcule.

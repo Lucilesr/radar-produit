@@ -167,7 +167,7 @@ export async function purgeExpiredTrash(userId: string, now = new Date()) {
   return total;
 }
 
-export async function setOfferReviewState(userId: string, id: string, reviewState: "to_review" | "selected") {
+export async function setOfferReviewState(userId: string, id: string, reviewState: "to_review" | "selected" | "later") {
   const [row] = await getDb().update(jobs).set({ reviewState, updatedAt: new Date().toISOString() })
     .where(and(eq(jobs.userId, userId), eq(jobs.id, id), isNull(jobs.deletedAt)))
     .returning({ id: jobs.id });
