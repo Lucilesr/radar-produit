@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Adéquation visible dès la création
+
+Une nouvelle offre affiche immédiatement son libellé d’adéquation, la fiabilité de sa fiche et les informations manquantes. La réponse d’enregistrement et celle d’un import répété contiennent les mêmes mesures que la lecture suivante, sans recharger la page.
+
 ## 7 novembre 2026 — Fourchettes conservées au préremplissage
 
 Les propositions de salaire et de TJM affichent et transmettent leurs bornes avec le montant coché. La fourchette reste dans le brouillon, à l’enregistrement et lors d’une correction sans changement de rémunération. Un montant modifié à la main remplace la fourchette.
