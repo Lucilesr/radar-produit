@@ -18,7 +18,7 @@ const tracks = moduleUrl("search-tracks");
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations, "./search-tracks": tracks });
 const searchPreferencesModule = await import(preferences);
 const { searchPreferences } = searchPreferencesModule;
-const { assessJob: assessWith } = await import(moduleUrl("matching", { "./seniority": moduleUrl("seniority"), "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations }));
+const { assessJob: assessWith } = await import(moduleUrl("matching", { "./seniority": moduleUrl("seniority"), "./fit": moduleUrl("fit", { "./seniority": moduleUrl("seniority"), "./search-preferences": preferences }), "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations }));
 const { assessLocation, normalizeLocationRules } = await import(locations);
 const payRange = moduleUrl("pay-range");
 const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement, "./pay-range": payRange }));
@@ -424,7 +424,7 @@ test("Score v2 S1 : le texte collé donne la fourchette, sans confondre TJM et s
 });
 
 test("Score v2 S2 : niveau visé absent, aucun signal ; présent, un point à vérifier sans changer le score", () => {
-  const lead = { ...baseline, title: "Lead Product Owner", description: "10+ years of experience, you manage a team of 3 product owners." };
+  const lead = { ...baseline, title: "Lead Product Owner", description: "10+ years of experience in product management." };
   const without = assessJob(lead);
   assert.deepEqual(without.signals, []);
   const senior = searchPreferences({ ...poSearch, targetLevel: "senior" });
@@ -437,4 +437,57 @@ test("Score v2 S2 : niveau visé absent, aucun signal ; présent, un point à v�
   assert.match(assessWith({ ...baseline, title: "Head of Product" }, senior).signals.join(" "), /trop senior/);
   assert.match(assessWith({ ...baseline, title: "Junior Product Owner" }, senior).signals.join(" "), /plus junior/);
   assert.equal(searchPreferences({ targetLevel: "expert" }).targetLevel, undefined);
+});
+
+// Score v2 S3 — reference cases of docs/score-v2.md §4 (fictional account and offers).
+const v2Search = searchPreferences({ roles: ["Product Owner", "Product Manager"], contracts: ["cdi", "freelance"], remote: "full_remote", minimumSalary: 55000, minimumDailyRate: 500, targetLevel: "senior", boostKeywords: ["paiements", "SEPA"] });
+const v2 = job => assessWith({ company: "Fixture", contractType: "cdi", remoteMode: "full_remote", language: "fr", source: "Autre", ...job }, v2Search);
+const full = text => ({ description: text, contentCoverage: "full" });
+
+test("Score v2 S3 : les sept cas de référence", () => {
+  const payments = v2({ title: "Product Owner Paiements", annualSalary: 66000, salaryMin: 62000, salaryMax: 70000, ...full("Vous avez 5 ans d'expérience. Missions : paiements CB, SEPA, parcours de souscription.") });
+  assert.equal(payments.fit, 90); assert.equal(payments.confidence, "high"); assert.equal(payments.fitLabel, "very_close"); assert.equal(payments.conditions, "pass");
+  const lead = v2({ title: "Lead Product Owner", annualSalary: 100000, ...full("10+ years of experience. You manage a team of 3 product owners on paiements.") });
+  assert.equal(lead.fitParts.level, 0); // managing POs raises Lead to Head of
+  const leadOnly = v2({ title: "Lead Product Owner", annualSalary: 100000, ...full("Vous pilotez la roadmap paiements avec les équipes.") });
+  assert.deepEqual(leadOnly.fitParts, { role: 30, level: 15, pay: 0, domain: 12 }); assert.equal(leadOnly.fit, 57); assert.equal(leadOnly.fitLabel, "to_weigh");
+  assert.match(leadOnly.signals.join(" "), /un cran au-dessus/); assert.match(leadOnly.signals.join(" "), /très au-dessus de votre cible/);
+  const head = v2({ title: "Senior Product Manager", annualSalary: 120000, contractType: "cdi", language: "en", ...full("8+ years of experience. You manage a team of 3 PMs.") });
+  assert.equal(head.fitParts.level, 0); assert.equal(head.fitLabel, "far"); assert.match(head.signals.join(" "), /trop senior/);
+  const summary = v2({ title: "Product Owner", remoteMode: "unknown", language: "unknown", description: "Remote role, apply on the site.", contentCoverage: "summary" });
+  assert.deepEqual(summary.fitParts, { role: 30 }); assert.equal(summary.confidence, "low"); assert.equal(summary.fitLabel, undefined);
+  assert.deepEqual(summary.missing, ["description complète", "rémunération", "présence", "niveau", "langue"]);
+  const chef = v2({ title: "Chef de produit Paiements", annualSalary: 65000, ...full("Vous pilotez les paiements et la relation avec les équipes de développement.") });
+  assert.equal(chef.fit, 76); assert.equal(chef.fitLabel, "close");
+  const project = v2({ title: "Project Manager (PM)", annualSalary: 60000, ...full("Déploiement d'un ERP, gestion de projet, planning et coordination des chantiers.") });
+  assert.equal(project.fitParts.role, 0); assert.equal(project.fitLabel, "far");
+  const junior = v2({ title: "Junior Product Owner", ...full("Premier poste, accompagnement par un PO confirmé.") });
+  assert.equal(junior.fitParts.level, 0); assert.equal(junior.fitLabel, "far"); assert.match(junior.signals.join(" "), /plus junior/);
+});
+
+test("Score v2 S3 : une information manquante ne compte pas comme zéro", () => {
+  const withoutPay = v2({ title: "Product Owner", ...full("Vous avez 5 ans d'expérience sur les paiements et SEPA.") });
+  assert.equal(withoutPay.fitParts.pay, undefined);
+  assert.equal(withoutPay.fit, Math.round((30 + 25 + 20) / 85 * 100)); // 88, not (30 + 25 + 0 + 20) / 100 = 75
+  assert.equal(withoutPay.conditions, "check"); // the missing salary stays a point to check
+  assert.equal(assessWith({ title: "Product Owner", contractType: "cdi", remoteMode: "unknown", language: "unknown", source: "Autre" }, searchPreferences({ ...v2Search, roles: [] })).fit, null);
+});
+
+test("Score v2 S3 : la rémunération lue comme signal de niveau", () => {
+  const at = salary => v2({ title: "Product Owner", annualSalary: salary, ...full("Poste de PO, missions produit sans mot-clé particulier, équipe de six personnes.") });
+  assert.equal(at(74000).fitParts.pay, 15); // 1,35 × 55 000 = 74 250
+  assert.equal(at(80000).fitParts.pay, 8);
+  assert.equal(at(90000).fitParts.pay, 0);
+  // A detected level within the target: a high salary is simply a good salary.
+  const senior = v2({ title: "Senior Product Owner", annualSalary: 95000, ...full("Poste de PO senior.") });
+  assert.equal(senior.fitParts.pay, 15); assert.deepEqual(senior.signals, []);
+  const daily = v2({ title: "Product Owner freelance", contractType: "freelance", dailyRate: 900, ...full("Mission longue.") });
+  assert.equal(daily.fitParts.pay, 0);
+});
+
+test("Score v2 S3 : le tri classe par adéquation, la fraîcheur ne fait que départager", async () => {
+  const now = Date.parse("2026-11-07T12:00:00Z");
+  const offer = (id, fit, days) => ({ id, status: "new", reviewState: "to_review", title: id, matchScore: 0, matchTier: "match", flags: [], reasons: [], fit, publishedAt: new Date(now - days * 864e5).toISOString() });
+  const ranked = sortOffersForTriage([offer("fraiche-moyenne", 70, 1), offer("ancienne-forte", 90, 20), offer("fraiche-forte", 88, 2)], now).map(job => job.id);
+  assert.deepEqual(ranked, ["fraiche-forte", "ancienne-forte", "fraiche-moyenne"]);
 });

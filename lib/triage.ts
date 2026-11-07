@@ -12,6 +12,8 @@ export type TriageAction = {
 function offerRank(job: JobRecord, now: number) {
   const published = job.publishedAt ? Date.parse(job.publishedAt) : Number.NaN;
   const age = Number.isFinite(published) ? (now - published) / 86400000 : Number.POSITIVE_INFINITY;
+  // Score v2: fit decides, freshness only separates close offers. Older records keep the legacy rank.
+  if (job.fit !== undefined) return (job.fit ?? 0) + (age < 0 ? 0 : age <= 7 ? 5 : age <= 21 ? 2 : 0);
   const freshness = age < 0 ? 0 : age <= 7 ? 24 : age <= 21 ? 12 : age <= 45 ? 3 : 0;
   const detail = job.contentCoverage === "full" ? 6 : job.contentCoverage === "summary" ? 3 : 0;
   const eligibility = job.flags.some(flag => /pays de travail autorisés|anglais avancé|bilingue/i.test(flag)) ? -12 : 0;
