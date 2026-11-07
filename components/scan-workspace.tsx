@@ -16,7 +16,9 @@ function visitLabel(at:string|undefined,now:number){const time=Date.parse(at??""
 
 export function ScanWorkspace({busy,error,result,sources,sourcesKnown,knownCount,toReviewCount,simulated,now,onRun,onClose,onOffers,onSource}:{busy:boolean;error:string;result:ScanSummary|null;sources:SourceSetting[];sourcesKnown:boolean;knownCount:number;toReviewCount:number;simulated:boolean;now:number;onRun:(source?:AutomaticSource)=>void;onClose:()=>void;onOffers:()=>void;onSource:(source:string)=>void}){
   const heading=useRef<HTMLHeadingElement>(null);
+  const wasBusy=useRef(busy);
   useEffect(()=>{heading.current?.focus();},[]);
+  useEffect(()=>{if(wasBusy.current&&!busy&&document.activeElement===document.body)heading.current?.focus();wasBusy.current=busy;},[busy]);
   const manual=sourceCatalog.filter(source=>source.mode!=="api"&&source.mode!=="rss"&&source.mode!=="manual"&&isSourceVisible(source.name,sources,defaults));
   const activeCount=automaticSources.filter(name=>{const setting=sources.find(source=>source.source===name);return name==="We Work Remotely"?setting?.selected!==false&&setting?.state!=="paused":setting?.selected===true&&setting.state!=="paused";}).length;
   return <div className="scan-workspace">
