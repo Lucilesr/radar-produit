@@ -1,5 +1,16 @@
 # Workflow Radar Produit
 
+Ces consignes s’appliquent à tous les agents, dont Codex et Claude. `CLAUDE.md` renvoie vers ce fichier pour conserver une référence commune.
+
+## Déploiement : staging puis production
+
+- Chaque tâche applicative terminée est déployée sur le staging privé pour les tests et la validation de l’utilisatrice. Fournir le lien et les vérifications effectuées.
+- Passer en production uniquement après validation explicite par l’utilisatrice de la version testée sur staging. La fin d’une tâche, les tests ou la fusion d’une PR ne valent pas validation de production.
+- Promouvoir le code validé sans écraser, remplacer, réinitialiser ni supprimer les données ou fichiers de production. Conserver sa configuration et sa visibilité.
+- Le staging utilise sa propre base, son propre stockage et des données de test indépendantes. Ne jamais copier ses données vers la production.
+- Une modification documentaire seule ne nécessite pas de déploiement applicatif.
+- Chaque agent doit disposer de ses propres accès GitHub et Sites autorisés. Ces instructions ne donnent pas accès aux outils d’un autre agent ; signaler tout accès manquant sans annoncer une publication non effectuée.
+
 ## Règle de production : design system
 
 Pour chaque changement visible, réutiliser les composants, styles et variables du design system Signal. Examiner les composants existants et `audits/signal-design-system.md` avant de créer un contrôle ; éviter les sélecteurs natifs ou les styles isolés lorsqu’un composant du système couvre le besoin.
