@@ -901,3 +901,14 @@ Contradiction levée avec la maquette Portee : le titre « débloque » suggéra
 | état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
 | --- | --- | --- | --- | --- |
 | succès après annulation | Annuler depuis l’accusé d’envoi ou la fiche | statut courant restauré dans la fiche maintenue et dans la liste | candidater à nouveau ou poursuivre le tri | oui, correction ciblée après Q6 |
+
+### Réserve — rangement et annulation
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| vide / terminé | dernier groupe rangé | compteur, dernier choix et accès au lot conservés | Annuler ou revenir au lot | oui |
+| chargement | confirmation de groupe en cours | contrôles désactivés, ancien compteur conservé | attendre l’accusé | oui |
+| succès | écriture confirmée | groupe rangé et nombre d’offres effectivement sorties | Annuler le dernier rangement | oui |
+| erreur / conflit | réponse absente ou offre modifiée | message Signal ; aucune annulation d’un choix plus récent | Réessayer le même choix ou actualiser | oui |
+| beaucoup de données | plus de50offres dans le groupe | limite explicite des50premières | ranger par lots | oui |
+| clavier / mobile390 / réduit | navigation clavier ou petit écran | confirmations lisibles et actions44px ; aucun mouvement ajouté | Espace, Annuler, retour au titre si nécessaire | oui |
