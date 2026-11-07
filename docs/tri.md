@@ -4,7 +4,7 @@ Ce guide découpe le lot Q1 « Le tri qui avance » de la piste gamification en 
 
 Pourquoi : quand une source remonte 100 offres ou plus, une liste sans fin décourage. Une tâche courte et finie, avec un compteur qui ne fait que descendre, donne envie de la terminer (effet de gradient d'objectif). Le reste attend sans culpabiliser.
 
-Valeurs retenues : **20 offres** au plus dans le lot du jour, dont **5 fiches mystère** au plus ; **21 jours** avant l'archivage automatique.
+Valeurs retenues : **20 offres** au plus dans le lot du jour, dont **5 fiches mystère** au plus ; **21 jours depuis la publication** avant l'archivage automatique (date d’ajout si la publication est inconnue).
 
 ---
 
@@ -53,15 +53,15 @@ Valeurs retenues : **20 offres** au plus dans le lot du jour, dont **5 fiches my
 
 Chaque groupe affiche son nombre d'offres et deux actions. « Voir le groupe » filtre la liste. « Écarter le groupe » demande une confirmation, puis passe par la corbeille existante (50 offres au plus par action, limite de l'API), avec restauration possible. Un groupe vide ne s'affiche pas. Code : `lib/reserve.ts`.
 
-**Archivage à 21 jours.** Une offre de la réserve sans décision depuis 21 jours (le plus récent de `createdAt` et `updatedAt`) est archivée. L'archive est un état **calculé à la lecture**, sans écriture. Elle sort de « À examiner », du lot et des compteurs, et apparaît dans « Archives (N) » en bas de la réserve. « Remettre à examiner » repasse l'offre en `to_review`, ce qui met à jour `updatedAt` et la sort donc de l'archive. Les offres sélectionnées, en candidature ou dans la corbeille ne sont jamais archivées.
+**Archivage à 21 jours.** Une offre à examiner est archivée dès que sa publication (`publishedAt`) date d’au moins 21 jours, même si elle vient d’être ajoutée. Si cette date est inconnue ou invalide, `createdAt` sert de référence (`updatedAt` seulement pour un ancien enregistrement sans date d’ajout). Corriger les faits d’une annonce ne remet pas son âge à zéro. L'archive est un état **calculé à la lecture**, sans écriture. Elle sort de « À examiner », du lot et des compteurs, et apparaît dans « Archives (N) » en bas de la réserve. « Remettre à examiner » enregistre `reopened`, exposé dans l’interface comme une offre à examiner, et actualise `updatedAt` : la personne dispose d’un nouveau délai de 21 jours, conservé après rechargement. Le choix explicite « Plus tard » accorde lui aussi 21 jours à partir de `updatedAt`. Les deux états restent dans la colonne texte existante, sans migration. Les offres sélectionnées, en candidature ou dans la corbeille ne sont jamais archivées.
 
 **Acceptation.**
 
 - 138 offres à examiner donnent un lot de 20 et une réserve de 118 rangée en 6 groupes au plus.
 - « Plus tard » fait baisser le compteur.
-- Une offre de 22 jours sans décision n'est plus comptée, mais reste consultable et restaurable.
+- Une annonce publiée il y a 22 jours, ajoutée aujourd’hui, n’est plus comptée mais reste consultable et restaurable. Une annonce sans publication connue, ajoutée il y a 22 jours, suit la même règle.
 
-**Tests.** Groupes exclusifs et ordre ; « Plus tard » compté comme trié ; archivage à 21 jours et restauration ; écarter un groupe.
+**Tests.** Groupes exclusifs et ordre ; « Plus tard » compté comme trié ; archivage depuis la publication, secours sur la date d’ajout et restauration persistante ; écarter un groupe.
 
 ---
 

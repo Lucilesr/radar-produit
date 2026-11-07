@@ -37,8 +37,8 @@ export type JobRecord = JobInput & ScoreV2 & {
   id: string;
   signals?: string[];
   deletedAt?: string;
-  /** `later`: kept for later, out of the lot of the day (Tri Q1b). */
-  reviewState?: "to_review" | "selected" | "later";
+  /** `reopened`: explicitly returned to examine; `later`: kept outside the daily lot. */
+  reviewState?: "to_review" | "selected" | "later" | "reopened";
   dismissalReason?: DismissalReason;
   dismissalNote?: string;
   dismissalEvidence?: string;

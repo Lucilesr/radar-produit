@@ -10,7 +10,7 @@ import { readWorkspaceWrite, saveWorkspaceWrite } from "@/lib/workspace-write-st
 import { getOffer, updateOffer, setOfferDeleted } from "@/lib/job-store";
 import { readBoard } from "@/lib/personal-board-store";
 import { applicationColumn } from "@/lib/application-board";
-import { hasApplication } from "@/lib/opportunity-views";
+import { hasApplication, storedReviewDecision, type ReviewDecision } from "@/lib/opportunity-views";
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   const user = await getChatGPTUser();
@@ -74,7 +74,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       return saved ? Response.json({job:await getOffer(user.userId,id,true)}) : Response.json({error:"La note a changé dans un autre onglet."},{status:409});
     }
     const update = db.update(jobs).set({ boardColumnId, status: Object.hasOwn(body, "status") || body.reviewState ? status : undefined, appliedAt: cancellingApplication ? null : status === "applied" && !hasApplication(current) && !row.appliedAt ? now : undefined,
-      reviewState: typeof body.reviewState === "string" ? body.reviewState : undefined, matchScore: assessment.score, matchTier: assessment.tier,
+      reviewState: typeof body.reviewState === "string" ? storedReviewDecision(body.reviewState as ReviewDecision) : undefined, matchScore: assessment.score, matchTier: assessment.tier,
       reasons: JSON.stringify(assessment.reasons), flags: JSON.stringify(assessment.flags), updatedAt: now })
       .where(and(eq(jobs.id, id), eq(jobs.userId, user.userId), body.boardColumnId ? eq(jobs.status, current.status) : undefined, body.boardColumnId && Object.hasOwn(body,"expectedBoardColumnId") ? current.boardColumnId ? eq(jobs.boardColumnId,current.boardColumnId) : isNull(jobs.boardColumnId) : undefined)).returning();
     const changed = await update;

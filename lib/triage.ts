@@ -36,7 +36,7 @@ function firstQuestion(job: JobRecord) {
 }
 
 export function sortOffersForTriage(jobs: JobRecord[], now = Date.now()) {
-  return jobs.filter(job => inOpportunityView(job, "to_review"))
+  return jobs.filter(job => inOpportunityView(job, "to_review", now))
     .sort((a, b) => triageScore(b, now) - triageScore(a, now));
 }
 
