@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Niveau visé enregistré avec Terminé
+
+Le niveau visé et l’acceptation d’un cran au-dessus restent en cours de choix jusqu’au clic sur « Terminé », sur ordinateur, mobile, dans les critères détaillés et dans « Tout modifier ». Une fermeture sans validation ne les enregistre pas. Le panneau reste ouvert en cas d’échec pour permettre de réessayer.
+
 ## 7 novembre 2026 — Score v2, lot S4 : fiches mystère
 
 Une offre qui vise bien le poste mais dont la source ne donne qu’un aperçu devient une « Fiche mystère » : badge en pointillés sur la carte, cinq au plus en tête de « À examiner ». Sa fiche propose « Ouvrir l’annonce » et « Coller l’annonce ». Une fois le texte complet collé (600 caractères ou plus), la description est marquée complète et l’adéquation se révèle avec un message : « Bonne pioche » à partir de 80 sur 100. Le bouton « Écarter » reste le moyen de retirer une annonce introuvable.
