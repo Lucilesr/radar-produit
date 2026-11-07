@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { mkdtemp, readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -11,8 +11,8 @@ import { verifyBackup, restoreBackup, compareBackups } from "../scripts/verify-p
 const source = readFileSync(new URL("../lib/account-backup.ts", import.meta.url), "utf8");
 const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText.replace('"./account-backup-format.mjs"', JSON.stringify(new URL("../lib/account-backup-format.mjs", import.meta.url).href));
 const { createAccountBackup } = await import("data:text/javascript;base64," + Buffer.from(js).toString("base64"));
-function fixture() {
-  const sqlite = new DatabaseSync(":memory:");
+function fixture(path = ":memory:") {
+  const sqlite = new DatabaseSync(path);
   for (const name of ["0000_unusual_alex_power.sql", "0001_elite_robin_chapel.sql", "0002_sloppy_glorian.sql", "0003_first_marvel_apes.sql", "0004_nostalgic_terror.sql", "0005_clear_black_bird.sql", "0006_confused_ego.sql", "0007_easy_banshee.sql", "0008_friendly_guardsmen.sql", "0009_friendly_spencer_smythe.sql", "0010_messy_mac_gargan.sql", "0011_low_vanisher.sql", "0012_futuristic_slipstream.sql"]) sqlite.exec(readFileSync(new URL("../drizzle/" + name, import.meta.url), "utf8"));
   const long = "Texte privé complet avec accents et ".repeat(2000);
   const objects = new Map();
@@ -41,9 +41,12 @@ function fixture() {
   return { sqlite, db, bucket, objects, queries };
 }
 test("sauvegarde intégrale A/B : noms/contenus/offres identiques, aucune donnée croisée ni écriture", async () => {
-  const f = fixture();
+  const root = await mkdtemp(join(tmpdir(), "radar-backup-readonly-"));
+  const path = join(root, "accounts.sqlite");
+  const f = fixture(path);
   try {
-    const before = f.sqlite.serialize();
+    // Compare the actual database bytes, including on Node22 where serialize is absent.
+    const before = readFileSync(path);
     const [a, b] = await Promise.all([createAccountBackup(f.db, f.bucket, "alice"), createAccountBackup(f.db, f.bucket, "bob")]);
     assert.deepEqual(Object.keys(a.database.tables), BACKUP_TABLES);
     assert(a.database.tables.jobs[0].description.length > 50000);
@@ -59,9 +62,9 @@ test("sauvegarde intégrale A/B : noms/contenus/offres identiques, aucune donné
     const savedPlan=JSON.parse(a.database.tables.profiles[0].data);assert.equal(savedPlan.weekPlan.commitments[0].id,"plan-alice");assert.equal(savedPlan.weekPlans[0].commitments[0].id,"old-alice");assert.equal(savedPlan.weekPlanRevision,2);assert.deepEqual(savedPlan.searchPreferences.domainTerms,["SEPA","Paiements"]);
     await verifyBackup(a); await verifyBackup(b);
     compareBackups(a, await createAccountBackup(f.db, f.bucket, "alice"));
-    assert.deepEqual(f.sqlite.serialize(), before);
+    assert.deepEqual(readFileSync(path), before);
     assert(f.queries.every(q => q.startsWith("SELECT")));
-  } finally { f.sqlite.close(); }
+  } finally { f.sqlite.close(); await rm(root, { recursive: true, force: true }); }
 });
 test("restauration locale complète, relecture, refus d’écrasement et altération détectée", async () => {
   const f = fixture();

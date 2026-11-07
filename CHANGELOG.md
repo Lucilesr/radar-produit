@@ -1,3 +1,7 @@
+## 8 novembre 2026 — Vérification de la sauvegarde sur Node22
+
+- Le test d’isolation A/B compare le fichier SQLite octet par octet avant et après export. Il fonctionne aussi sans `sqlite.serialize`, sans ignorer le test ni affaiblir ses contrôles. Aucun changement applicatif.
+
 ## 7 novembre 2026 — Q4, la portée de votre radar
 
 
