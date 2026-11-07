@@ -14,6 +14,7 @@ import { SourceRemovalDialog } from "@/components/source-removal-dialog";
 import { isSourceVisible } from "@/lib/source-visibility";
 import { SourceCard, type SourceSetting } from "@/components/source-card";
 import { SourceList } from "@/components/source-list";
+import { sessionWrite } from "@/lib/session-write";
 import { SourceDetail } from "@/components/source-detail";
 import { SourceAddSheet, type AddFilter } from "@/components/source-add-sheet";
 import { followedSourcesSummary, needsAction, sourceStatus } from "@/lib/source-status";
@@ -33,7 +34,7 @@ const initialAlertSources = new Set(["Collective", "Apec", "Free-Work", "We Work
 const initialJobboardSources = new Set(["LinkedIn Jobs", "Welcome to the Jungle", "Wellfound", "Himalayas"]);
 const allInitialSources = new Set([...initialAlertSources, ...initialJobboardSources]);
 
-export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError="",syncedSettings,onSettingsChanged,onAddOffer,onQuitSession,active=true,headerTarget}:{jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSync:(quiet?:boolean)=>Promise<boolean>;syncBusy?:boolean;syncError?:string;syncedSettings?:SourceSetting[];onSettingsChanged:(sources:SourceSetting[])=>void;onAddOffer?:(url:string)=>void;onQuitSession?:()=>void;active?:boolean;headerTarget?:HTMLElement|null}) {
+export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError="",syncedSettings,onSettingsChanged,onAddOffer,onQuitSession,sessionWriting=false,active=true,headerTarget}:{jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSync:(quiet?:boolean)=>Promise<boolean>;syncBusy?:boolean;syncError?:string;syncedSettings?:SourceSetting[];onSettingsChanged:(sources:SourceSetting[])=>void;onAddOffer?:(url:string)=>void;onQuitSession?:()=>void;sessionWriting?:boolean;active?:boolean;headerTarget?:HTMLElement|null}) {
   const demo=useDemoMode();
   const notify=useWorkspaceFeedback();
   const [settings,setSettings]=useState<SourceSetting[]|null>(null);
@@ -100,12 +101,13 @@ export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError
 
   async function sync(quiet=false){return onSync(quiet);}
   async function visitSource(source:typeof sourceCatalog[number]){
+    const writeKey=crypto.randomUUID();sessionWrite(writeKey,true);
     try{
       const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,visited:true})});
       const data=await response.json() as {source?:SourceSetting;error?:string};
       if(!response.ok||!data.source)throw new Error(data.error??"Visite non enregistrée.");
       onSourceSaved(data.source);notify({message:`${source.name} marqué comme consulté.`});
-    }catch(problem){notify({message:requestError(problem, "Visite non enregistrée."),tone:"error"});}
+    }catch(problem){notify({message:requestError(problem, "Visite non enregistrée."),tone:"error"});}finally{sessionWrite(writeKey,false);}
   }
   const onSourceSaved=(updated:SourceSetting)=>{const next=[updated,...(settings??[]).filter(item=>item.source!==updated.source)];setSettings(next);onSettingsChanged(next);};
   const alertCatalog=sourceCatalog.filter(source=>source.mode==="email"||source.mode==="rss"||source.mode==="api");
@@ -180,7 +182,7 @@ export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError
     </div>
     </ExpandableSection>
     {settings?<SourceAddSheet open={addFilter!==null} initialFilter={addFilter??"all"} sources={[...jobboardCatalog,...alertCatalog]} followed={name=>sourceVisible(name,allInitialSources)} profile={profile} adding={addingSource} error={addSourceError} onAdd={async name=>{await addSource(name);}} onAddSite={addCustomSite} onClose={()=>{setAddFilter(null);setAddSourceError("");}}/>:null}
-    <SourceDetail onQuitSession={onQuitSession?()=>{setDetailSource(null);onQuitSession();}:undefined} key={detailSource?.name ?? "closed"} onReturnFocus={restoreDetailFocus} source={detailSource} setting={detailSource?settings?.find(item=>item.source===detailSource.name):undefined} jobs={jobs} profile={profile} onClose={()=>setDetailSource(null)} onSaveSearch={onSave} onSaved={onSourceSaved} onRemove={source=>{setDetailSource(null);setRemovingSource(source);}} onVisit={visitSource} onAddOffer={onAddOffer?url=>{setDetailSource(null);onAddOffer(url);}:undefined}/>
+    <SourceDetail sessionWriting={sessionWriting} onQuitSession={onQuitSession?()=>{setDetailSource(null);onQuitSession();}:undefined} key={detailSource?.name ?? "closed"} onReturnFocus={restoreDetailFocus} source={detailSource} setting={detailSource?settings?.find(item=>item.source===detailSource.name):undefined} jobs={jobs} profile={profile} onClose={()=>setDetailSource(null)} onSaveSearch={onSave} onSaved={onSourceSaved} onRemove={source=>{setDetailSource(null);setRemovingSource(source);}} onVisit={visitSource} onAddOffer={onAddOffer?url=>{setDetailSource(null);onAddOffer(url);}:undefined}/>
     <SourceRemovalDialog focusAfterCancel={restoreDetailFocus} source={removingSource} onClose={()=>setRemovingSource(null)} onRemoved={updated=>{onSourceSaved(updated);setRemovingSource(null);notify({message:`${updated.source} supprimé des sources suivies.`});}} focusAfterRemoval={()=>document.querySelector<HTMLElement>("#source-panel-channels button")?.focus()}/>
   </div>;
 }

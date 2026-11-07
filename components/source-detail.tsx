@@ -40,8 +40,8 @@ function sourceSearches(source: Source, setting: SourceSetting | undefined, prof
 }
 
 /** Everything about one source: what to open, when to come back, and what it brought. */
-export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSearch, onSaved, onRemove, onVisit, onAddOffer, onReturnFocus, onQuitSession }: {
-  onReturnFocus?: () => void; onQuitSession?:()=>void;
+export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSearch, onSaved, onRemove, onVisit, onAddOffer, onReturnFocus, onQuitSession, sessionWriting=false }: {
+  onReturnFocus?: () => void; onQuitSession?:()=>void; sessionWriting?:boolean;
   source: Source | null; setting?: SourceSetting; jobs: JobRecord[]; profile: CandidateProfile;
   onClose: () => void; onSaveSearch: (profile: CandidateProfile) => Promise<boolean>; onSaved: (setting: SourceSetting) => void;
   onRemove: (source: Source) => void; onVisit: (source: Source) => Promise<void>; onAddOffer?: (url: string) => void;
@@ -154,7 +154,7 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
       <div className="source-detail-footer">
         <WorkspaceButton variant="danger" onClick={() => onRemove(source)}><Trash2 size={15} aria-hidden />Supprimer la source</WorkspaceButton>
         <SheetClose asChild><WorkspaceButton variant="secondary">Fermer</WorkspaceButton></SheetClose>
-        {onQuitSession?<WorkspaceButton className="source-session-exit" onClick={onQuitSession}>Quitter la séance</WorkspaceButton>:null}
+        {onQuitSession?<WorkspaceButton className="source-session-exit" disabled={busy||sessionWriting} onClick={onQuitSession}>Quitter la séance</WorkspaceButton>:null}
       </div>
     </SheetContent>
   </Sheet>;

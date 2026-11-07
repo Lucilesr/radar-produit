@@ -6,6 +6,8 @@ La séance fige au plus quatre étapes non vides : lot, relances datées échues
 
 Le bilan compare un instantané de décisions, visites et validations aux données confirmées. Une note modifiée, une restauration, une étape passée ou un simple changement d’onglet n’ajoutent rien. Une offre arrivée pendant la séance ne compte qu’après une décision. Les validations du carnet sont communiquées seulement après la réponse d’écriture. Une pépite proche sélectionnée peut être ouverte depuis le bilan ; sinon, aucun emplacement vide. Les prochaines relances datées du lendemain sont réelles. Pas de bloc semaine avant Q5.
 
+Les commandes de passage et de clôture attendent les écritures en cours (offre, visite ou carnet), puis le bilan utilise leur réponse confirmée. Les erreurs déverrouillent le parcours sans ajouter d’action. Cette attente évite de quitter entre le clic de tri et sa réponse.
+
 ## Stockage et limites
 
 Aucune écriture de séance en base, aucune migration, aucun service tiers. Les actions ordinaires gardent leurs écritures existantes. La séance est en mémoire et sessionStorage, avec une copie locale limitée au jour pour le cas demandé d’un onglet fermé : uniquement identifiants, états et durées, aucun texte du CV ni note. À la réouverture, le parcours est en pause ; Reprendre est volontaire. Pagehide et la pause arrêtent la durée ; l’indisponibilité du stockage laisse le parcours courant en mémoire. Autre appareil : pas de reprise. Les données du bilan restent celles du navigateur jusqu’à L1.

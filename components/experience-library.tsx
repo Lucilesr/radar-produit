@@ -1,5 +1,6 @@
 "use client";
 
+import { sessionWrite } from "@/lib/session-write";
 import { ExpandableSection, revealCollapsibleAncestors } from "./experience-section";
 
 import { LoadingSkeleton } from "@/components/loading-skeleton";
@@ -144,6 +145,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary 
       setIssues(found);
       if (found.length) { setError("Validation non effectuée : corrigez les passages indiqués ci-dessous. Les limites réelles doivent rester documentées."); return false; }
     }
+    const writeKey=crypto.randomUUID();sessionWrite(writeKey,true);
     locked.current = true; setBusy(true); setError(""); setNotice("");
     const retryable = ["create", "edit", "review", "restore", "usage", "applicationConsent"].includes(String(body.action));
     const key = JSON.stringify(body);
@@ -189,7 +191,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary 
       if (e instanceof RequestError) setIssues(e.issues);
       setError(e instanceof Error && !["AbortError", "TypeError"].includes(e.name) ? e.message : "Enregistrement non confirmé. Réessayez : la même opération ne sera pas appliquée deux fois.");
       return false;
-    } finally { locked.current = false; setBusy(false); }
+    } finally { locked.current = false; setBusy(false); sessionWrite(writeKey,false); }
   }
 
   async function extract(doc: Document) {
