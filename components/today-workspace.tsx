@@ -17,7 +17,7 @@ import { lotHeadline, type DailyLot } from "@/lib/daily-lot";
 
 // Recalculate deadlines on entry and explicit data changes; keep the page stable while reading.
 function useNow(jobs: JobRecord[]) { const [now,setNow]=useState(()=>Date.now()); useEffect(()=>setNow(Date.now()),[jobs]);return now; }
-export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd, onOpen, onOpenSource }: {jobs:JobRecord[];lot?:DailyLot|null;sources?:{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onOpenSource?:(name:string)=>void}) {
+export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd, onOpen, onOpenSource, setupRequired=false, onConfigureSearch }: {setupRequired?:boolean;onConfigureSearch?:()=>void;jobs:JobRecord[];lot?:DailyLot|null;sources?:{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onOpenSource?:(name:string)=>void}) {
   const now=useNow(jobs);
   const count=jobs.filter(job=>inOpportunityView(job,"to_review")).length;
   const selected=jobs.filter(job=>inOpportunityView(job,"selected")).length;
@@ -33,12 +33,14 @@ export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd
   const triageCaption=lotLeft==null?"Comparez les missions et les conditions, puis sélectionnez les offres qui vous intéressent.":lotLeft?`Les mieux classées des ${count} à examiner. Le reste attend, sans urgence.`:`${count} autre${count>1?"s":""} offre${count>1?"s":""} attend${count>1?"ent":""}, sans urgence.`;
   const triageAction=lotLeft==null?"Examiner les offres":lotLeft?"Trier mon lot du jour":"Voir les autres offres";
   const openAction=(action:typeof actions[number])=>onOpen(action.job,action.kind.startsWith("interview")?"interviews":hasApplication(action.job)?"application":"brief");
+  const preparing=setupRequired&&!urgent;
   return <div className="today-layout">
     <div className="today-main">
       <section className="today-focus" aria-label="Action prioritaire">
-        <h2 className="today-focus-title">{urgent?urgent.title:count?triageTitle:selected?`${selected} offre${selected>1?"s":""} à préparer`:"Votre file d’offres est à jour"}</h2>
-        <p className="workspace-caption">{urgent?urgent.detail:count?triageCaption:selected?"Retrouvez les offres sélectionnées et préparez votre candidature.":"Ajoutez une annonce pour la retrouver dans votre radar."}</p>
-        <WorkspaceButton variant="primary" onClick={()=>urgent?openAction(urgent):count?onTriage():selected?onSelected():onAdd()}>{urgent?"Ouvrir le suivi":count?triageAction:selected?"Préparer ma sélection":"Ajouter une offre"}<ArrowRight size={17} aria-hidden /></WorkspaceButton>
+        <h2 className="today-focus-title">{preparing?"Préparez votre radar":urgent?urgent.title:count?triageTitle:selected?`${selected} offre${selected>1?"s":""} à préparer`:"Votre file d’offres est à jour"}</h2>
+        <p className="workspace-caption">{preparing?"Commencez par choisir le poste que vous cherchez pour classer vos offres.":urgent?urgent.detail:count?triageCaption:selected?"Retrouvez les offres sélectionnées et préparez votre candidature.":"Ajoutez une annonce pour la retrouver dans votre radar."}</p>
+        <WorkspaceButton variant="primary" onClick={()=>preparing?onConfigureSearch?.():urgent?openAction(urgent):count?onTriage():selected?onSelected():onAdd()}>{preparing?"Configurer ma recherche":urgent?"Ouvrir le suivi":count?triageAction:selected?"Préparer ma sélection":"Ajouter une offre"}<ArrowRight size={17} aria-hidden /></WorkspaceButton>
+        {preparing?<ol className="signal-help list-decimal pl-5 space-y-2"><li>Choisissez vos postes et vos critères.</li><li>Choisissez les sources à suivre dans Ma recherche.</li><li>Lancez une première actualisation, ou ajoutez une annonce à la main.</li></ol>:null}
         <RadarMark className="today-logo-watermark" watermark/>
       </section>
       <section className="today-next" aria-labelledby="today-next-title"><WorkspacePanelHeader id="today-next-title" title="À faire ensuite"/>

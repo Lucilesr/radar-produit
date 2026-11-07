@@ -1,5 +1,9 @@
 ## 7 novembre 2026 — Feuille de route gamification
 
+## 7 novembre 2026 — Première recherche depuis Aujourd’hui
+
+- Sans poste choisi, l’accueil explique les trois premières étapes et mène à Ma recherche. Un entretien urgent conserve sa priorité.
+
 ## 7 novembre 2026 — États du profil
 
 - Les documents distinguent lecture en cours, erreur et fichier réellement indisponible ; les attentes sont bornées.
