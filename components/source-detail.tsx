@@ -1,4 +1,5 @@
 "use client";
+import { requestError } from "@/lib/request-error";
 
 import { useState } from "react";
 import { ExternalLink, Trash2, X } from "lucide-react";
@@ -61,7 +62,7 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
     if (!source) return;
     setBusy(true);
     try {
-      const response = await fetch("/api/sources", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ source: source.name, rhythm: true, visitEveryDays: data.visitEveryDays ?? visitEvery(setting), remindInToday: data.remindInToday ?? remindsInToday(setting) }) });
+      const response = await fetch("/api/sources", {signal:AbortSignal.timeout(15000), method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ source: source.name, rhythm: true, visitEveryDays: data.visitEveryDays ?? visitEvery(setting), remindInToday: data.remindInToday ?? remindsInToday(setting) }) });
       const body = await response.json() as { source?: SourceSetting; error?: string };
       if (!response.ok || !body.source) throw new Error(body.error ?? "Rythme non enregistré");
       onSaved(body.source);
@@ -85,7 +86,7 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
     if (!source) return;
     setBusy(true);
     try {
-      const response = await fetch("/api/sources", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ source: source.name, role: searchId, links: {} }) });
+      const response = await fetch("/api/sources", {signal:AbortSignal.timeout(15000), method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ source: source.name, role: searchId, links: {} }) });
       const body = await response.json() as { source?: SourceSetting; error?: string };
       if (!response.ok || !body.source) throw new Error(body.error ?? "Recherche non retirée");
       onSaved(body.source);

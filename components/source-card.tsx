@@ -1,4 +1,5 @@
 "use client";
+import { requestError } from "@/lib/request-error";
 
 import { useId, useRef, useState, type ReactNode } from "react";
 import { ExternalLink, Save, Trash2 } from "lucide-react";
@@ -30,22 +31,22 @@ export function SourceCard({ source, setting, count, hidden, profile, onSaveSear
     if(locked.current)return;
     locked.current=true;setBusy(true);setError("");
     try{
-      const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,...current})});
+      const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,...current})});
       const data=await response.json() as {error?:string;source?:SourceSetting};
       if(!response.ok||!data.source)throw new Error(data.error??"Configuration non enregistrée.");
       onSaved(data.source);setDraft(null);notify({message:`Configuration de ${source.name} enregistrée.`});
-    }catch(problem){setError(problem instanceof Error?problem.message:"Configuration non enregistrée.");}
+    }catch(problem){setError(requestError(problem, "Configuration non enregistrée."));}
     finally{locked.current=false;setBusy(false);}
   }
   async function toggleCollection(){
     if(locked.current)return;
     locked.current=true;setBusy(true);setError("");
     try{
-      const response=await fetch("/api/sources",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,paused:savedState!=="paused"})});
+      const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,paused:savedState!=="paused"})});
       const data=await response.json() as {error?:string;source?:SourceSetting};
       if(!response.ok||!data.source)throw new Error(data.error??"État non enregistré.");
       onSaved(data.source);notify({message:`${source.name} ${savedState==="paused"?"repris":"mis en pause"}.`});
-    }catch(problem){setError(problem instanceof Error?problem.message:"État non enregistré.");}
+    }catch(problem){setError(requestError(problem, "État non enregistré."));}
     finally{locked.current=false;setBusy(false);}
   }
   if(source.mode==="api")return <section hidden={hidden} className={`signal-source-card signal-source-api-card${embedded ? " source-detail-settings" : ""}`} aria-label={embedded ? "Configurer cette source" : undefined} aria-labelledby={embedded ? undefined : title}>
@@ -105,7 +106,7 @@ function JobgetherScoreSetting({profile,onSave}:{profile:CandidateProfile;onSave
       const confirmed=await onSave({...profile,searchPreferences:{...preferences,minimumMatchScore:Number(value)}});
       if(!confirmed)throw new Error("Enregistrement non confirmé. Réessayez.");
       setDraft(null);setSuccess(`Seuil enregistré : ${value}/100.`);
-    } catch(problem){setError(problem instanceof Error?problem.message:"Enregistrement non confirmé. Réessayez.");}
+    } catch(problem){setError(requestError(problem, "Enregistrement non confirmé. Réessayez."));}
     finally{locked.current=false;setSaving(false);}
   }
   return <form className="jobgether-score-setting" onSubmit={event=>{event.preventDefault();void saveScore();}}>

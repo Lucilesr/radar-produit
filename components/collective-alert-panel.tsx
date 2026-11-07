@@ -1,4 +1,5 @@
 "use client";
+import { requestError } from "@/lib/request-error";
 import { useRef, useState } from "react";
 import { ExternalLink, Save } from "lucide-react";
 import { WorkspaceButton, WorkspaceFormError, WorkspacePanelHeader } from "@/components/workspace-form";
@@ -13,12 +14,12 @@ export function CollectiveAlertPanel({setting,onSaved}:{setting?:SourceSetting;o
   async function saveCollectiveAlert(){
     if(locked.current)return;locked.current=true;setOperation("alert");setAlertError("");
     try{
-      const response=await fetch("/api/sources/collective-alert",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:collectiveUrl.trim()})});
+      const response=await fetch("/api/sources/collective-alert",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:collectiveUrl.trim()})});
       const data=await response.json() as {error?:string;source?:SourceSetting};
       if(!response.ok||!data.source)throw new Error(data.error??"Alerte non enregistrée.");
       onSaved(data.source);
       setCollectiveUrl("");notify({message:"Alerte Collective enregistrée."});
-    }catch(problem){setAlertError(problem instanceof Error?problem.message:"Alerte non enregistrée.");}
+    }catch(problem){setAlertError(requestError(problem, "Alerte non enregistrée."));}
     finally{locked.current=false;setOperation(null);}
   }
 
