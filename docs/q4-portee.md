@@ -16,6 +16,8 @@ Les brouillons `story:<thème>` utilisent la table de sauvegarde de texte exista
 
 Le signal de palier est citron, une seule fois par progression dans ce navigateur. Le premier affichage crédite l’existant sans animation. Seul l’écran visible peut consommer ce signal : accueil compact ou portée détaillée. La préférence réduite coupe le mouvement. Les lectures partielles sont nommées, les valeurs sont celles des éléments disponibles et la prochaine action attend une relecture complète.
 
+La recette a montré que le titre pouvait être hors champ après une validation : le signal utilise aussi la notification Signal commune, sans CTA, avec fermeture de 44 px. Il n’est mémorisé qu’au moment où il est réellement affiché ; un écran quitté avant son affichage ne le consomme pas. Une seule annonce vive porte le message. Le passage à minuit a aussi révélé un écart de date serveur/navigateur sur l’accueil de Q3 : son libellé attend désormais l’horloge locale après hydratation.
+
 ## Écarts avec les maquettes
 
 - « Ce que chaque palier débloque » devient « Ce que vous préparez » : le §4.6 impose qu’aucune fonction ne soit verrouillée par la jauge.

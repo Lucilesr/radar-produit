@@ -5,7 +5,7 @@ import { ArrowRight, Check, CircleAlert, Info, X } from "lucide-react";
 
 export type WorkspaceFeedback = {
   message: string;
-  tone?: "success" | "info" | "error";
+  tone?: "success" | "info" | "error" | "milestone";
   action?: { label: string; onClick: () => void };
   secondaryAction?: { label: string; onClick: () => void };
 };
