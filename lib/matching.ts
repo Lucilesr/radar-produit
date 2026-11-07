@@ -36,6 +36,10 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   let score = 0;
   let exception = false;
   let excluded = false;
+  if ((search.excludeSources ?? []).some(source => foldKeyword(source) === foldKeyword(job.source))) {
+    excluded = true;
+    flags.push(`Source écartée de votre recherche : ${job.source}.`);
+  }
 
   const northAmericaRequested = !!search.includedLocations?.length && ["États-Unis", "Canada"].some(place => {
     const result = assessLocation(place, search.includedLocations ?? [], []);

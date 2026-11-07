@@ -11,3 +11,9 @@ La barre du lot utilise le composant Signal commun. La palette, les compteurs, l
 ## Un second regard le vendredi — Q1c
 
 Dans **Opportunités → Voir la réserve**, le repêchage propose trois offres proches écartées récemment, lorsqu’il en existe. **Restaurer** les remet dans vos offres ; **Laisser** les garde dans la corbeille et les masque pour cette visite. Le tirage reste stable sur la journée. Cette proposition est facultative et ne modifie jamais vos critères.
+
+## Affiner avec vos tris — Q1d
+
+Après plusieurs offres écartées présentant le même fait, Radar peut proposer **Ajuster mes critères**. Le dialogue est un brouillon : confirmez avec **Enregistrer le critère**, ou annulez. **Non merci** masque cette proposition trente jours, sans changer votre recherche. Une source écartée peut être réactivée dans les critères de **Ma recherche**.
+
+Dans une fiche ouverte, les touches **S**, **L** et **X** sélectionnent, gardent pour plus tard ou écartent. Elles restent sans effet pendant une saisie ou dans un dialogue. Le compteur attend l’enregistrement ; la fiche suivante s’ouvre ensuite. Un lot commencé ne se remplit plus, même s’il comptait moins de vingt offres.

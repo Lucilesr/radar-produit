@@ -41,10 +41,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const demo = !!(await cookies()).get("radar_demo_visitor")?.value;
-  const fridayDemo = demo && (await cookies()).get("radar_demo_mode")?.value === "friday";
+  const demoMode = demo ? (await cookies()).get("radar_demo_mode")?.value : undefined;
+  const fridayDemo = demoMode === "friday";
   return (
     <html lang="fr">
-      <body>{demo ? <div className="demo-notice"><span>Démo · données fictives isolées dans ce navigateur · aucune candidature réelle{fridayDemo ? " · repêchage simulé un vendredi" : ""}</span><a href="/demo?onboarding=1">Tester l’onboarding</a><a href="/demo">Recommencer</a><a href="/demo-exit">Quitter la démo</a></div> : null}{children}</body>
+      <body>{demo ? <div className="demo-notice"><span>Démo · données fictives isolées dans ce navigateur · aucune candidature réelle{fridayDemo ? " · repêchage simulé un vendredi" : demoMode === "triage" ? " · exemple de tris répétés" : ""}</span><a href="/demo?onboarding=1">Tester l’onboarding</a><a href="/demo">Recommencer</a><a href="/demo-exit">Quitter la démo</a></div> : null}{children}</body>
     </html>
   );
 }

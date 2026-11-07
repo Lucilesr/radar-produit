@@ -15,6 +15,7 @@ import { pinMysteryOffers } from "@/lib/fit";
 import { lotHeadline, type DailyLot } from "@/lib/daily-lot";
 import { SignalProgress } from "@/components/signal/signal-progress";
 import { FridayRescue } from "@/components/friday-rescue";
+import { triageShortcut } from "@/lib/triage-learning";
 import type { CandidateProfile, JobRecord, JobStatus } from "@/lib/types";
 
 const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"],["trash","Corbeille"]];
@@ -27,7 +28,7 @@ export function OpportunitiesWorkspace({lot,jobs,rescueOffers=[],counts,filter,o
   onStatus:(id:string,status:JobStatus)=>Promise<boolean>;onNote:(id:string,note:string)=>Promise<boolean>;onChange:(job:JobRecord)=>void;onApplication:(job:JobRecord)=>void;
   onViewChange:(job:JobRecord,view:WorkspaceView)=>void;trashBusy:boolean;
 }) {
-  const [selection,setSelection]=useState<string[]>([]),[selecting,setSelecting]=useState(false),[reviewingIds,setReviewingIds]=useState<string[]>([]),[error,setError]=useState("");
+  const [selection,setSelection]=useState<string[]>([]),[selecting,setSelecting]=useState(false),[reviewingIds,setReviewingIds]=useState<string[]>([]),[error,setError]=useState<{jobId:string;message:string}|null>(null);
   const [dateOrder,setDateOrder]=useState<"newest"|"oldest">("newest");
   // Score v2 S4: up to five mystery offers lead « À examiner », whatever the chosen order.
   // Tri Q1: « À examiner » opens on the lot of the day; « Toutes les offres » keeps the full list.
@@ -52,12 +53,12 @@ export function OpportunitiesWorkspace({lot,jobs,rescueOffers=[],counts,filter,o
   const active=displayJobs.find(job=>job.id===activeId)||kept?.job||displayJobs[0];
   const heldOutside=!!kept&&!jobs.some(job=>job.id===kept.job.id);
   const viewHelp=filter==="archived"?`Annonces publiées il y a au moins ${ARCHIVE_AFTER_DAYS} jours ; date d’ajout utilisée si la publication est inconnue. Une remise à examiner vous redonne ${ARCHIVE_AFTER_DAYS} jours.`:inReserve?"La réserve : les offres hors du lot du jour et celles gardées pour plus tard.":inLot?"Lot du jour : les offres les mieux classées, vingt au plus, dont cinq fiches mystère au plus. Il ne se remplit pas pendant que vous triez.":filter==="selected"?"Votre choix : les offres que vous avez sélectionnées, avant de candidater.":filter==="good_matches"?"Filtre automatique : les offres proches de vos critères selon Radar, sélectionnées ou non.":filter==="trash"?"Les offres restent restaurables pendant 10 jours. Après ce délai, elles sont supprimées définitivement à la prochaine ouverture du radar.":"Les offres qu’il vous reste à examiner.";
-  const currentScope=useRef({filter,query});
-  useEffect(()=>{currentScope.current={filter,query};},[filter,query]);
-  const viewIsCurrent=()=>currentScope.current.filter===filter&&currentScope.current.query===query;
+  const currentScope=useRef({filter,query,activeId});
+  useEffect(()=>{currentScope.current={filter,query,activeId};},[filter,query,activeId]);
+  const viewIsCurrent=()=>currentScope.current.filter===filter&&currentScope.current.query===query&&currentScope.current.activeId===activeId;
   const [readingScope,setReadingScope]=useState({filter,query});
   if(readingScope.filter!==filter||readingScope.query!==query){setReadingScope({filter,query});setRetained(null);}
-  function changeView(next:OpportunityView){setRetained(null);onFilter(next);setSelection([]);setSelecting(false);setError("");}
+  function changeView(next:OpportunityView){setRetained(null);onFilter(next);setSelection([]);setSelecting(false);setError(null);}
   function openListed(job:JobRecord){if(kept&&job.id!==kept.job.id)setRetained(null);onOpen(job);}
 
   const readingPane=useRef<HTMLDivElement>(null);
@@ -66,17 +67,23 @@ export function OpportunitiesWorkspace({lot,jobs,rescueOffers=[],counts,filter,o
     const pane=readingPane.current, viewport=pane?.closest<HTMLElement>(".radar-app");
     if(!pane||!viewport)return;
     const columns=window.matchMedia("(min-width:761px)");
+    let frame=0;
     const update=()=>{
-      if(columns.matches)pane.style.setProperty("--opportunity-reading-height",`${viewport.clientHeight}px`);
-      else pane.style.removeProperty("--opportunity-reading-height");
-      pane.dataset.readingPinned=String(columns.matches&&pane.getBoundingClientRect().top<=viewport.getBoundingClientRect().top+1);
+      if(frame)return;
+      frame=requestAnimationFrame(()=>{
+        frame=0;
+        const height=columns.matches?`${viewport.clientHeight}px`:"";
+        const pinned=String(columns.matches&&pane.getBoundingClientRect().top<=viewport.getBoundingClientRect().top+1);
+        if(pane.style.getPropertyValue("--opportunity-reading-height")!==height){if(height)pane.style.setProperty("--opportunity-reading-height",height);else pane.style.removeProperty("--opportunity-reading-height");}
+        if(pane.dataset.readingPinned!==pinned)pane.dataset.readingPinned=pinned;
+      });
     };
     const resize=new ResizeObserver(update);
     resize.observe(viewport);resize.observe(pane.parentElement!);
     viewport.addEventListener("scroll",update,{passive:true});
     window.addEventListener("resize",update);
     update();
-    return()=>{resize.disconnect();viewport.removeEventListener("scroll",update);window.removeEventListener("resize",update);};
+    return()=>{resize.disconnect();cancelAnimationFrame(frame);viewport.removeEventListener("scroll",update);window.removeEventListener("resize",update);};
   },[hasReadingPane]);
 
   const announcementUrl=active?.sourceUrl||active?.applicationUrl;
@@ -89,11 +96,29 @@ export function OpportunitiesWorkspace({lot,jobs,rescueOffers=[],counts,filter,o
   async function review(decision?:"to_review"|"selected"|"later"){
     if(!active||pendingReviews.current.has(active.id))return;
     const current=active,next=decision??(reviewState(current)==="selected"?"to_review":"selected");
-    pendingReviews.current.add(current.id);setReviewingIds(ids=>[...ids,current.id]);setError("");
-    setRetained(null);onClose();
-    requestAnimationFrame(()=>{(document.querySelector<HTMLElement>(".opportunity-list .opportunity-open")||document.getElementById("workspace-title"))?.focus({preventScroll:true});});
-    try{if(!await onReview(current.id,next) && viewIsCurrent())setError("Votre choix n’a pas été enregistré. L’offre est revenue dans sa liste.");}finally{pendingReviews.current.delete(current.id);setReviewingIds(ids=>ids.filter(id=>id!==current.id));}
+    pendingReviews.current.add(current.id);setReviewingIds(ids=>[...ids,current.id]);setError(null);
+    const index=displayJobs.findIndex(job=>job.id===current.id),following=displayJobs[index+1]??displayJobs[index-1];
+    try{
+      const saved=await onReview(current.id,next);
+      if(viewIsCurrent()){
+        if(!saved)setError({jobId:current.id,message:"Votre choix n’a pas été enregistré. L’offre reste ouverte et le compteur est inchangé."});
+        else {setRetained(null);if(following)onOpen(following);else close();}
+      }
+    }catch{if(viewIsCurrent())setError({jobId:current.id,message:"Votre choix n’a pas été enregistré. Réessayez ; la fiche et le compteur restent conservés."});}
+    finally{pendingReviews.current.delete(current.id);setReviewingIds(ids=>ids.filter(id=>id!==current.id));}
   }
+  useEffect(()=>{
+    const handle=(event:KeyboardEvent)=>{
+      const target=event.target instanceof Element?event.target:null;
+      const action=triageShortcut(event.key,{open:!!activeId&&!!active&&!active.deletedAt&&!hasApplication(active),editing:!!target?.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="combobox"],[role="textbox"],[role="dialog"],[role="alertdialog"],[role="listbox"],[role="menu"]'),disabled:profile.preferences?.triageShortcuts===false||reviewing||trashBusy,modifier:event.altKey||event.metaKey||event.ctrlKey,repeat:event.repeat});
+      if(!action||event.defaultPrevented||!active)return;
+      event.preventDefault();
+      if(action==="discard"){const index=displayJobs.findIndex(job=>job.id===active.id);onDelete(active,displayJobs[index+1]??displayJobs[index-1]);}
+      else void review(action);
+    };
+    window.addEventListener("keydown",handle);
+    return()=>window.removeEventListener("keydown",handle);
+  },[activeId,active,profile.preferences?.triageShortcuts,reviewing,trashBusy,displayJobs,onDelete,review]);
   const emptyAction: ReactNode=query?<button className="secondary-button" onClick={onClearSearch}>Effacer la recherche</button>:filter!=="to_review"?<button className="secondary-button" onClick={()=>{changeView("to_review");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Voir les offres à examiner</button>:null;
   return <div className={"opportunities-workspace "+(activeId?"has-open-offer":"")}>
     <div className="opportunities-controls">
@@ -111,7 +136,7 @@ export function OpportunitiesWorkspace({lot,jobs,rescueOffers=[],counts,filter,o
       <div className="review-toolbar-actions"><button type="button" className="review-radar-filter" aria-pressed={filter==="good_matches"} onClick={()=>changeView(filter==="good_matches"?"to_review":"good_matches")}>Correspondances Radar <span>{counts.good_matches}</span></button>{orderedJobs.length>0&&filter!=="trash"?<button type="button" className="secondary-button" aria-pressed={selecting} onClick={()=>{setRetained(null);setSelecting(!selecting);setSelection([]);}}>{selecting?"Terminer les actions groupées":"Actions groupées"}</button>:null}</div>
     </div>
     {selecting&&orderedJobs.length?<div className="opportunities-batch" role="group" aria-label="Actions sur les offres cochées"><span role="status">{selected.length} offre{selected.length>1?"s":""} cochée{selected.length>1?"s":""}</span><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>setSelection(orderedJobs.slice(0,50).map(job=>job.id))}>Cocher {jobs.length>50?"les 50 premières":"tout"}</button>{selected.length?<><button type="button" className="secondary-button" onClick={()=>setSelection([])}>Tout décocher</button><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>onDeleteMany(selected)}><Trash2 size={15} aria-hidden />Mettre à la corbeille</button></>:null}</div>:null}
-    {error?<WorkspaceState error title="Choix non enregistré">{error}</WorkspaceState>:null}
+    {error&&error.jobId===active?.id?<WorkspaceState error title="Choix non enregistré">{error.message}</WorkspaceState>:null}
     </div>
     {!displayJobs.length&&inLot?null:!displayJobs.length?<WorkspaceState title={query?"Aucune offre ne correspond à cette recherche":filter==="archived"?"Aucune offre archivée":filter==="trash"?"La corbeille est vide":inReserve?"Aucune offre dans la réserve":filter==="to_review"?"Tout est examiné pour l’instant":filter==="selected"?"Votre sélection est encore vide":"Aucune offre dans cette vue"} action={emptyAction}>{query?"Effacez la recherche pour retrouver les offres de cette vue.":inReserve?"Votre lot du jour reste accessible au-dessus. Les offres gardées pour plus tard apparaîtront ici.":filter==="to_review"?"Retrouvez les offres sélectionnées dans Ma sélection.":filter==="archived"?`Les annonces de plus de ${ARCHIVE_AFTER_DAYS} jours arriveront ici.`:filter==="trash"?"Les offres écartées pourront être restaurées ici.":"Ajoutez une annonce ou consultez une autre vue."}</WorkspaceState>:<div className="opportunities-split" ref={readingPane}>
       <div className="opportunity-list" tabIndex={0} role="region" aria-label="Liste des opportunités">{displayJobs.map(job=><article key={job.id} className={"opportunity-list-row "+(active?.id===job.id?"is-current":"")}>
@@ -121,6 +146,7 @@ export function OpportunitiesWorkspace({lot,jobs,rescueOffers=[],counts,filter,o
       {active?<section tabIndex={0} className="opportunity-detail" aria-labelledby="opportunity-detail-title" key={active.id}>
         <button type="button" className="secondary-button opportunity-back" onClick={close}><ArrowLeft size={16} aria-hidden />Retour aux offres</button>
         <header className="opportunity-detail-header reading-detail-heading"><div className="reading-heading-text"><h2 id="opportunity-detail-title" ref={title} tabIndex={-1}>{active.title}</h2><div className="reading-company-line"><span>{active.company||"Entreprise à confirmer"}</span><OfferSourceBadge job={active}/></div></div>{!active.deletedAt?<ApplicationTrackingAction job={active} onStatus={async(id,status)=>{const saved=await onStatus(id,status);if(saved&&viewIsCurrent()){const updated={...active,status};setRetained({job:updated,filter,query,index:displayJobs.findIndex(job=>job.id===id)});onOpen(updated);}return saved;}} onOpenApplication={()=>onApplication(active)}/>:null}</header>
+        {profile.preferences?.triageShortcuts!==false&&activeId&&!active.deletedAt&&!hasApplication(active)?<p className="triage-shortcuts">Clavier : <kbd>S</kbd> sélectionner · <kbd>L</kbd> plus tard · <kbd>X</kbd> écarter</p>:null}
         <div className="opportunity-decision signal-opportunity-actions">
           <div className="opportunity-action-main">{hasApplication(active)&&!active.deletedAt?<span className="workspace-badge is-success">Candidature suivie</span>:active.deletedAt?<button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>{onRestore(active);close();}}><Undo2 size={16}/>Restaurer l’offre</button>:<>
           {reviewState(active)!=="selected"?<button type="button" className="radar-add-button" aria-pressed="false" disabled={reviewing||trashBusy} onClick={()=>void review()}>{reviewing?<LoaderCircle size={16} className="animate-spin"/>:<Bookmark size={16} aria-hidden/>}Sélectionner</button>:<button type="button" className="signal-selected-button" aria-pressed="true" title="Retirer de ma sélection" disabled={reviewing||trashBusy} onClick={()=>void review()}><Check size={16} aria-hidden/>Sélectionnée</button>}

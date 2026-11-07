@@ -24,7 +24,7 @@ import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, 
 
 const locationOptions = [...locationRegionOptions, ...countryOptions.filter(option => option.value).map(option => option.label)];
 
-const partTitles: Record<CriteriaFormPart, string> = { roles: "search-roles-title", level: "search-roles-title", conditions: "search-conditions-title", locations: "search-location-title", pay: "search-pay-title", keywords: "search-keywords-title", contracts:"search-conditions-title", presence:"search-conditions-title", tracks:"search-roles-title", salary:"search-pay-title", dailyRate:"search-pay-title", minimums:"search-pay-title", tolerance:"search-pay-title", boostKeywords:"search-keywords-title", excludeKeywords:"search-keywords-title" };
+const partTitles: Record<CriteriaFormPart, string> = { roles: "search-roles-title", level: "search-roles-title", conditions: "search-conditions-title", locations: "search-location-title", pay: "search-pay-title", keywords: "search-keywords-title", contracts:"search-conditions-title", presence:"search-conditions-title", tracks:"search-roles-title", salary:"search-pay-title", dailyRate:"search-pay-title", minimums:"search-pay-title", tolerance:"search-pay-title", boostKeywords:"search-keywords-title", excludeKeywords:"search-keywords-title", excludeSources:"search-keywords-title" };
 export type CriteriaSaveStatus = { state: "idle"|"draft"|"pending"|"saving"|"saved"|"error"; retry?:()=>void };
 
 export type CriteriaFormHandle = { commit: () => Promise<boolean> };
@@ -106,6 +106,8 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
   const [boostInput, setBoostInput] = useState("");
   const [excludeInput, setExcludeInput] = useState("");
   const [savingKeywords, setSavingKeywords] = useState(false);
+  const [savingSources,setSavingSources]=useState(false);
+  const excludedSources=searchPreferences(profile.searchPreferences).excludeSources??[];
   const [keywordMessage, setKeywordMessage] = useState("");
   const keywordSaveInFlight = useRef(false);
   const roleSaveInFlight = useRef(false);
@@ -390,6 +392,7 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
           : "Toute rémunération connue sous votre minimum est masquée dans « À examiner », même si le contrat est à confirmer."}</p></>,
  boostKeywords:keywordControl("boostKeywords"),
  excludeKeywords:keywordControl("excludeKeywords"),
+ excludeSources:<fieldset className="triage-learning-contracts"><legend>Sources écartées</legend><p className="signal-help">Décochez une source pour revoir ses offres. Les alertes sur les sites externes restent inchangées.</p>{excludedSources.map(source=><label key={source}><input type="checkbox" checked disabled={savingSources} onChange={async()=>{setSavingSources(true);try{await onSave({...profile,searchPreferences:{...searchPreferences(profile.searchPreferences),excludeSources:excludedSources.filter(name=>name!==source)}});}finally{setSavingSources(false);}}}/>{source}</label>)}</fieldset>,
  minimums:null,
  jobgether:<WorkspaceButton variant="secondary" onClick={onOpenJobgether}>Régler le score Jobgether</WorkspaceButton>,
  };
@@ -411,7 +414,7 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
         {show("conditions")?<section className="search-criteria-group" aria-labelledby="search-conditions-title"><div className="search-criteria-group-heading"><h3 id="search-conditions-title">Conditions de travail</h3></div>{controls.contracts}{controls.presence}</section>:null}
         {show("locations")?<section className="search-criteria-group" aria-labelledby="search-location-title"><div className="search-criteria-group-heading"><h3 id="search-location-title">Pays et régions des offres</h3></div>{controls.locations}</section>:null}
         {show("pay")?<section className="search-criteria-group" aria-labelledby="search-pay-title"><div className="search-criteria-group-heading"><h3 id="search-pay-title">Rémunération souhaitée</h3></div><div className="search-pay-grid">{controls.salary}{controls.dailyRate}</div>{controls.tolerance}</section>:null}
-        {show("keywords")?<section className="search-criteria-group" aria-labelledby="search-keywords-title"><div className="search-criteria-group-heading"><h3 id="search-keywords-title">L’annonce</h3></div>{controls.boostKeywords}{controls.excludeKeywords}</section>:null}
+        {show("keywords")?<section className="search-criteria-group" aria-labelledby="search-keywords-title"><div className="search-criteria-group-heading"><h3 id="search-keywords-title">L’annonce</h3></div>{controls.boostKeywords}{controls.excludeKeywords}{excludedSources.length?controls.excludeSources:null}</section>:null}
       </>}
       {!table&&(show("conditions") || show("pay")) ? <footer className="search-criteria-actions"><span role="status" className="search-form-status" data-state={saveState}>{statusText}</span>{saveState === "error" ? <button type="button" className="secondary-button" disabled={saving} onClick={() => void persistDraft()}>Réessayer</button> : null}</footer> : null}
     </form>

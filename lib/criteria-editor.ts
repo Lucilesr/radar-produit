@@ -1,11 +1,11 @@
 import { criteriaGroups, type CriteriaRow } from "./search-criteria";
 import type { SearchPreferences } from "./types";
 
-export const criteriaEditParts = ["roles", "tracks", "level", "contracts", "presence", "salary", "dailyRate", "minimums", "tolerance", "locations", "boostKeywords", "excludeKeywords", "jobgether"] as const;
+export const criteriaEditParts = ["roles", "tracks", "level", "contracts", "presence", "salary", "dailyRate", "minimums", "tolerance", "locations", "boostKeywords", "excludeKeywords", "excludeSources", "jobgether"] as const;
 export type CriteriaEditPart = typeof criteriaEditParts[number];
 export type CriteriaFormPart = Exclude<CriteriaEditPart,"jobgether"> | "conditions" | "pay" | "keywords";
 export const criterionParts: Record<CriteriaRow["id"], CriteriaEditPart> = {
-  roles:"roles",searchTracks:"tracks",level:"level",contracts:"contracts",remote:"presence",salary:"minimums",dailyRate:"minimums",payTolerance:"tolerance",matchScore:"jobgether",includedLocations:"locations",excludedLocations:"locations",boostKeywords:"boostKeywords",excludeKeywords:"excludeKeywords",
+  roles:"roles",searchTracks:"tracks",level:"level",contracts:"contracts",remote:"presence",salary:"minimums",dailyRate:"minimums",payTolerance:"tolerance",matchScore:"jobgether",includedLocations:"locations",excludedLocations:"locations",boostKeywords:"boostKeywords",excludeKeywords:"excludeKeywords",excludeSources:"excludeSources",
 };
 
 /** A single control for shared criteria (presence, zones); optional empty rows open on request. */

@@ -61,7 +61,7 @@ export function isArchived(job: JobRecord, now = Date.now()) {
   return Number.isFinite(reference) && now - reference >= ARCHIVE_AFTER_DAYS * 86400000;
 }
 
-const outOfSearch = (job: JobRecord) => job.matchTier === "excluded" && job.flags?.some(flag => flag.startsWith("Lieu annoncé hors de votre recherche") || flag.startsWith("Marché limité aux États-Unis") || flag.startsWith("Salaire sous votre seuil") || flag.startsWith("TJM sous votre seuil") || flag.startsWith("Contient "));
+const outOfSearch = (job: JobRecord) => job.matchTier === "excluded" && job.flags?.some(flag => flag.startsWith("Lieu annoncé hors de votre recherche") || flag.startsWith("Source écartée de votre recherche") || flag.startsWith("Marché limité aux États-Unis") || flag.startsWith("Salaire sous votre seuil") || flag.startsWith("TJM sous votre seuil") || flag.startsWith("Contient "));
 
 /** In « À examiner » and still without any decision: the pool of the lot of the day. */
 export function awaitingDecision(job: JobRecord, now = Date.now()) {

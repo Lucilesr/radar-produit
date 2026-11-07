@@ -1,3 +1,9 @@
+## 7 novembre 2026 — Q1d, vos tris affinent le radar
+
+- Après quatre écartements partageant un fait connu en sept jours, proposition facultative de critère : brouillon à confirmer et Non merci pendant trente jours. Sources écartées modifiables dans Ma recherche.
+- Raccourcis S/L/X sur une fiche ouverte, offre suivante après confirmation, quatre raisons au plus. Le compteur attend la réponse et le lot entamé reste figé, même incomplet.
+- Défilement : les changements de taille sont regroupés pour éviter la boucle de redimensionnement à l’ouverture d’un dialogue.
+
 ## 7 novembre 2026 — Q1c, repêchage du vendredi
 
 - La réserve propose jusqu’à trois offres proches écartées depuis sept jours, avec Restaurer ou Laisser, sans modifier les critères.
