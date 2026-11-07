@@ -62,12 +62,12 @@ test("Tri Q1 : tant que rien n'est trié, le lot suit les nouvelles offres du ma
   assert.equal(refreshed.size, 20);
 });
 
-test("Tri Q1 : un lot entamé et incomplet est complété par les nouvelles offres", () => {
+test("Tri Q1 : un lot entamé même incomplet ne se remplit pas avec de nouvelles offres", () => {
   const small = many(3);
   const first = buildDailyLot(small, null, now);
   const sorted = [{ ...small[0], reviewState: "selected" }, small[1], small[2], ...many(4, "n", 70)];
   const next = buildDailyLot(sorted, { day, ids: first.ids }, now);
-  assert.equal(next.size, 7); assert.equal(next.triaged, 1); assert.equal(next.remaining.length, 6);
+  assert.equal(next.size, 3); assert.equal(next.triaged, 1); assert.equal(next.remaining.length, 2);
 });
 
 test("Tri Q1 : nouveau jour, autre compte ou offres disparues : le lot est choisi à nouveau", () => {
@@ -84,4 +84,14 @@ test("Tri Q1 : lot bouclé et libellés", () => {
   assert.equal(lotHeadline(done), "Lot du jour bouclé");
   assert.equal(lotHeadline({ remaining: [jobs[0]], triaged: 1, size: 2 }), "Plus qu’une offre");
   assert.equal(lotHeadline({ remaining: [], triaged: 0, size: 0 }), "Aucune offre à trier aujourd’hui");
+});
+
+test("Tri Q1d : le premier choix verrouille exactement les identifiants affichés avant la réponse", () => {
+ const jobs = many(3);
+ const first = buildDailyLot(jobs, null, now);
+ const pending = buildDailyLot([...jobs, offer("nouvelle", 100)], {day, ids:first.ids, locked:true}, now);
+ assert.deepEqual(pending.ids, first.ids); assert.equal(pending.triaged, 0);
+ const confirmed = buildDailyLot([...jobs.map(j => j.id===first.ids[0]?{...j,reviewState:"later"}:j),offer("nouvelle",100)],{day,ids:first.ids,locked:true},now);
+ assert.equal(confirmed.size,3);assert.equal(confirmed.triaged,1);assert.equal(confirmed.remaining.length,2);
+ assert.equal(lotHeadline(confirmed),"Plus que 2 offres");
 });

@@ -64,6 +64,8 @@ export type InterviewRecord = {
 };
 
 export type CandidateProfile = {
+  triageDismissals?: Record<string, string>;
+  preferences?: { reducedMotion?: boolean; celebrations?: boolean; triageShortcuts?: boolean };
   searchPreferences?: SearchPreferences;
   headline: string;
   summary: string;
@@ -130,6 +132,8 @@ export type SearchPreferences = {
   /** Words that make an offer stand out, and words that rule it out. */
   boostKeywords?: string[];
   excludeKeywords?: string[];
+  /** Explicitly confirmed source exclusions; selections/applications remain accessible. */
+  excludeSources?: string[];
   minimumMatchScore: number;
   /** 0 to 20: a known pay up to this % under the minimum stays visible as an exception. */
   payTolerancePercent?: number;

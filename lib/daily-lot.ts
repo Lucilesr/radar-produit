@@ -8,7 +8,7 @@ export const DAILY_LOT_SIZE = 20;
 /** Mystery offers may take up to this many places in the lot (Score v2 S4). */
 export const DAILY_LOT_MYSTERY_SLOTS = 5;
 
-export type StoredLot = { day: string; ids: string[] };
+export type StoredLot = { day: string; ids: string[]; locked?: boolean };
 export type DailyLot = StoredLot & {
   /** Offers of the lot still to sort, best ranked first. */
   remaining: JobRecord[];
@@ -46,7 +46,7 @@ export function pickLot(toReview: readonly JobRecord[], now: number, size = DAIL
 /**
  * Lot of the day. It is chosen again as long as nothing in it was sorted (offers found by the
  * morning refresh still get in), then it is frozen: sorting an offer never brings a new one in,
- * so the counter only goes down. A lot smaller than the size is topped up with new offers.
+ * so the counter only goes down. A started lot, even small, is never topped up.
  */
 export function buildDailyLot(jobs: readonly JobRecord[], stored: StoredLot | null | undefined, now: number, size = DAILY_LOT_SIZE): DailyLot {
   const day = lotDay(now);
@@ -59,14 +59,12 @@ export function buildDailyLot(jobs: readonly JobRecord[], stored: StoredLot | nu
   const kept = stored?.day === day ? [...new Set(stored.ids)].filter(id => byId.has(id)).slice(0, size) : [];
   const started = kept.some(id => !pending(byId.get(id)));
   let ids: string[];
-  if (!started) ids = pickLot(toReview, now, size).map(job => job.id);
-  else {
-    const inLot = new Set(kept);
-    ids = [...kept, ...pickLot(toReview.filter(job => !inLot.has(job.id)), now, size - kept.length).map(job => job.id)];
-  }
+  const locked = kept.length > 0 && (stored?.locked === true || started);
+  if (!locked) ids = pickLot(toReview, now, size).map(job => job.id);
+  else ids = kept;
   const remaining = ids.map(id => byId.get(id)).filter(pending) as JobRecord[];
   remaining.sort((a, b) => triageScore(b, now) - triageScore(a, now) || a.id.localeCompare(b.id));
-  return { day, ids, remaining, triaged: ids.length - remaining.length, size: ids.length, waiting: examined - remaining.length };
+  return { day, ids, locked, remaining, triaged: ids.length - remaining.length, size: ids.length, waiting: examined - remaining.length };
 }
 
 /** "Plus que 3", "Plus qu’une", or the size of a lot not started yet. */

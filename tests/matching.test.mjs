@@ -517,3 +517,12 @@ test("Score v2 S4 : message de révélation", () => {
   assert.equal(revealMessage({ fit: 64, fitLabel: "close" }), "Fiche complétée : Proche (64 sur 100).");
   assert.match(revealMessage({ fit: 100 }), /Il manque encore/);
 });
+
+test("Q1d : une source explicitement écartée est filtrée, sans changer les autres critères", () => {
+  const preferences=searchPreferences({...poSearch,excludeSources:["  Source fictive très longue de recette  ","source fictive très longue de recette",42]});
+  assert.equal(preferences.excludeSources.length,1);
+  const assessed=assessJob({...baseline,source:"Source fictive très longue de recette"},preferences);
+  assert.equal(assessed.tier,"excluded");assert.equal(assessed.conditions,"excluded");
+  assert.ok(assessed.flags.some(flag=>flag.startsWith("Source écartée de votre recherche")));
+  assert.notEqual(assessJob(baseline,preferences).tier,"excluded");
+});

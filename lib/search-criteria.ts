@@ -8,7 +8,7 @@ export type CriteriaTarget = "roles" | "level" | "conditions" | "locations" | "p
 export type CriteriaTone = "include" | "exclude";
 
 export type CriteriaRow = {
-  id: "roles" | "searchTracks" | "level" | "contracts" | "remote" | "salary" | "dailyRate" | "payTolerance" | "matchScore" | "includedLocations" | "excludedLocations" | "boostKeywords" | "excludeKeywords";
+  id: "roles" | "searchTracks" | "level" | "contracts" | "remote" | "salary" | "dailyRate" | "payTolerance" | "matchScore" | "includedLocations" | "excludedLocations" | "boostKeywords" | "excludeKeywords" | "excludeSources";
   label: string;
   /** Set when several rows share an id, as with one presence row per contract. */
   key?: string;
@@ -55,6 +55,7 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
   const boost = preferences.boostKeywords ?? [];
   const avoid = preferences.excludeKeywords ?? [];
   const announcement: CriteriaRow[] = [
+    ...((preferences.excludeSources?.length ?? 0) ? [{ id: "excludeSources" as const, label: "Sources écartées", values: preferences.excludeSources!, tone: "exclude" as const, target: "keywords" as const }] : []),
     ...(boost.length ? [{ id: "boostKeywords" as const, label: "Mettre en avant", values: boost, tone: "include" as const, target: "keywords" as const }] : []),
     ...(avoid.length ? [{ id: "excludeKeywords" as const, label: "Écarter si l’annonce contient", values: avoid, tone: "exclude" as const, target: "keywords" as const }] : []),
   ];

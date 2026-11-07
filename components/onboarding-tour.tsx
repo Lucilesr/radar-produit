@@ -21,7 +21,7 @@ const setup: Step[] = [
 ];
 const tour = (demo: boolean): Step[] => [
   { target: "nav-dashboard", title: "Aujourd’hui", detail: "Votre point de départ : priorités, actions à faire et prochains entretiens.", action: "click" },
-  { target: "nav-offers", title: "Opportunités", detail: "Triez votre lot du jour : sélectionnez, gardez pour plus tard ou écartez. La barre indique les décisions prises ; le lot ne se remplit pas pendant le tri. Le vendredi, la réserve peut proposer un second regard sur trois offres écartées.", action: "click" },
+  { target: "nav-offers", title: "Opportunités", detail: "Triez votre lot du jour, sans ajout pendant le tri. Sur une fiche ouverte : S sélectionne, L garde pour plus tard et X écarte. Le vendredi, la réserve propose parfois un repêchage. Vos tris peuvent suggérer un critère : vous décidez toujours de l’enregistrer.", action: "click" },
   { target: "nav-pipeline", title: "Candidatures", detail: "Suivez vos candidatures en Tableau ou en Kanban. Déplacez une carte pour mettre à jour son étape, puis ouvrez-la pour préparer une relance ou un entretien.", action: "click" },
   { target: "nav-profile", title: "Mon profil", detail: "Importez votre CV dans Mes documents et enrichissez votre Carnet d’expériences pour préparer vos candidatures.", action: "click" },
   { target: "nav-sources", title: "Ma recherche", detail: demo ? "Définissez vos critères et découvrez les sources d’offres fictives." : "Définissez vos critères, choisissez vos sources de veille et contrôlez leur actualisation.", action: "click" },

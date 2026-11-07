@@ -26,13 +26,13 @@ Valeurs retenues : **20 offres** au plus dans le lot du jour, dont **5 fiches my
 
 - Classement : `triageScore` (`lib/triage.ts`). C'est l'adéquation, plus 5 points sous 7 jours et 2 points sous 21 jours. Une offre sans libellé (« Fiche incomplète » ou « Fiche mystère ») est plafonnée à **55** : un intitulé seul ne passe plus devant une offre proche.
 - Composition : les 20 mieux classées des offres à examiner, avec 5 fiches mystère au plus, placées à leur rang. Sans assez d'offres ordinaires, d'autres fiches mystère complètent le lot.
-- Stabilité : tant que rien n'est trié, le lot est recalculé, ce qui fait entrer les offres de l'actualisation du matin. Dès qu'une offre du lot quitte « À examiner » (sélectionnée, écartée, candidature), le lot est figé : trier ne fait jamais entrer une offre, donc le compteur ne fait que descendre. Un lot de moins de 20 offres est complété par les nouvelles.
-- Jour : jour civil local. Les ids sont conservés dans `localStorage` (`radar:lot-du-jour`), à titre de confort. Sans stockage, ou sur un autre appareil, le lot est simplement recalculé.
+- Stabilité : avant le premier choix, le lot suit l'actualisation du matin. Q1d verrouille les identifiants affichés **avant** la première requête de décision. Le compteur attend ensuite la confirmation. Un lot entamé, même de moins de vingt offres, ne reçoit aucun complément ; les nouvelles offres et les restaurations restent dans la réserve. Cette règle remplace l'ancien complément d'un lot incomplet, contradictoire avec le §4.3 de la feuille de route.
+- Jour : jour civil local. Les ids et le verrou sont conservés dans `localStorage` (`radar:lot-du-jour:<compte>`), à titre de confort et séparés par compte. Sans stockage, le lot reste en mémoire pendant la visite ; un rechargement ou un autre appareil le recalcule.
 - Recherche texte active : pas de lot, la liste filtrée s'affiche comme avant.
 
 **Limite connue.** Sur un autre appareil, le compteur repart des offres restantes. Un lot partagé entre appareils demandera le journal d'activité (L1).
 
-**Tests.** `tests/daily-lot.test.mjs` : composition (20, dont 5 fiches mystère au plus), plafond 55, compteur qui ne remonte pas, entrée des offres du matin, complément d'un lot incomplet, jour ou compte différent, libellés.
+**Tests.** `tests/daily-lot.test.mjs` : composition (20, dont 5 fiches mystère au plus), plafond 55, compteur qui ne remonte pas, entrée des offres avant le premier choix, absence de complément après verrouillage, jour ou compte différent, libellés.
 
 ---
 

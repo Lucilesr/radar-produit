@@ -168,3 +168,13 @@
 .friday-rescue-identity { min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px;overflow-wrap:anywhere; }
 .friday-rescue-actions { display:flex;gap:8px;flex:none; }
 @media(max-width:640px){.friday-rescue{padding:16px}.friday-rescue li{align-items:flex-start;flex-direction:column}.friday-rescue-actions{width:100%}.friday-rescue-actions button{min-height:44px;flex:1}}
+
+/* Q1d — optional suggestions and the existing keyboard navigation. */
+.triage-learning{border:1px solid var(--signal-line);border-radius:5px;background:var(--signal-paper);padding:16px;margin-bottom:16px}
+.triage-learning>p{margin:0 0 10px;overflow-wrap:anywhere}
+.triage-learning-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.triage-learning-contracts{border:0;padding:0;margin:12px 0;display:grid;gap:8px}
+.triage-learning-contracts label{display:flex;gap:8px;align-items:center;min-height:44px;overflow-wrap:anywhere}
+.triage-learning-contracts input{width:18px;height:18px;flex:none}
+.triage-shortcuts{margin:0 0 12px;color:var(--signal-muted);font-size:13px}
+.triage-shortcuts kbd{font:600 12px/1 var(--font-sans);padding:3px 5px;border:1px solid var(--signal-input);border-radius:4px;background:var(--signal-paper)}

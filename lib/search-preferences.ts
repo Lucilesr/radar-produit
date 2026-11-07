@@ -103,6 +103,7 @@ export function searchPreferences(value: unknown): SearchPreferences {
       : undefined,
     boostKeywords: normalizeKeywords(raw.boostKeywords),
     excludeKeywords: normalizeKeywords(raw.excludeKeywords),
+    excludeSources: Array.isArray(raw.excludeSources) ? [...new Map(raw.excludeSources.filter((name):name is string=>typeof name==="string").map(name=>name.trim()).filter(name=>name.length>=2&&name.length<=80).map(name=>[foldKeyword(name),name])).values()].slice(0,30) : [],
     minimumSalary: amount(raw.minimumSalary, defaultSearchPreferences.minimumSalary),
     minimumDailyRate: amount(raw.minimumDailyRate, defaultSearchPreferences.minimumDailyRate),
     payTolerancePercent: typeof raw.payTolerancePercent === "number" && Number.isInteger(raw.payTolerancePercent) && raw.payTolerancePercent >= 0 && raw.payTolerancePercent <= 20 ? raw.payTolerancePercent : 0,
