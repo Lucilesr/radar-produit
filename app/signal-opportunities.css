@@ -118,3 +118,17 @@
 .offer-mystery{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;margin:0 0 12px;padding:16px;border:1px dashed var(--primary);border-radius:5px;background:var(--card)}
 .offer-mystery p{margin:4px 0 0;color:var(--muted-foreground);font-size:14px;line-height:1.5;max-width:56ch}
 .offer-mystery-actions{display:flex;flex-wrap:wrap;gap:8px}
+
+/* Tri Q1 — lot du jour: a finite batch with a counter that only goes down. */
+.daily-lot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;margin:0 0 14px;padding:16px 18px;border:1px solid var(--signal-line);border-left:4px solid var(--signal-petrol);border-radius:5px;background:var(--card)}
+.daily-lot.is-done{border-left-color:#a7b528;background:linear-gradient(120deg,#fbfde6,var(--card) 60%)}
+.daily-lot-text{flex:1 1 280px;min-width:0}
+.daily-lot-headline{margin:0;color:var(--foreground);font-size:15px;line-height:1.35}
+.daily-lot-headline strong{font-size:22px;font-weight:700;letter-spacing:-.01em;color:var(--signal-petrol-dark)}
+.daily-lot-caption{margin:4px 0 10px;color:var(--muted-foreground);font-size:13px;line-height:1.45}
+.daily-lot-bar{height:8px;max-width:420px;overflow:hidden;border-radius:999px;background:var(--signal-soft)}
+.daily-lot-bar>span{display:block;height:100%;border-radius:inherit;background:var(--signal-petrol);transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.daily-lot.is-done .daily-lot-bar>span{background:#a7b528}
+.daily-lot-switch{flex:none}
+.daily-lot-order{color:var(--muted-foreground);font-size:13px}
+@media(max-width:760px){.has-open-offer>.daily-lot{display:none}.daily-lot{padding:14px}.daily-lot-headline strong{font-size:20px}.daily-lot-switch{width:100%;justify-content:center}}

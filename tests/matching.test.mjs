@@ -487,7 +487,7 @@ test("Score v2 S3 : la rémunération lue comme signal de niveau", () => {
 
 test("Score v2 S3 : le tri classe par adéquation, la fraîcheur ne fait que départager", async () => {
   const now = Date.parse("2026-11-07T12:00:00Z");
-  const offer = (id, fit, days) => ({ id, status: "new", reviewState: "to_review", title: id, matchScore: 0, matchTier: "match", flags: [], reasons: [], fit, publishedAt: new Date(now - days * 864e5).toISOString() });
+  const offer = (id, fit, days) => ({ id, status: "new", reviewState: "to_review", title: id, matchScore: 0, matchTier: "match", flags: [], reasons: [], fit, fitLabel: fit >= 80 ? "very_close" : "close", publishedAt: new Date(now - days * 864e5).toISOString() });
   const ranked = sortOffersForTriage([offer("fraiche-moyenne", 70, 1), offer("ancienne-forte", 90, 20), offer("fraiche-forte", 88, 2)], now).map(job => job.id);
   assert.deepEqual(ranked, ["fraiche-forte", "ancienne-forte", "fraiche-moyenne"]);
 });
