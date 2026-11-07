@@ -11,3 +11,5 @@ L’annulation vérifie tous les états courants et restaure seulement les champ
 Signal réutilisé : boutons, erreur de formulaire, cartes et compteur annoncé poliment ; actions44px et focus au titre quand le groupe disparaît. Tests purs et SQLite : proposition de poste, isolation, refus des candidatures/sélections, atomicité, reprise, archives, annulation concurrente et absence d’écrasement de données ultérieures. Recette staging ajoutée après déploiement.
 
 Le passage fiche→réserve ferme la fiche, rend les groupes visibles sur mobile et place le focus au titre ; le retour au lot fait de même.
+
+Après une erreur, Actualiser relit la réserve et recommence les compteurs de cette visite ; une ancienne annulation potentiellement périmée est retirée. Les décisions enregistrées restent conservées.
