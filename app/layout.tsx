@@ -26,6 +26,7 @@ import "./demo-notice.css";
 import "./signal-micro-motion.css";
 import "./signal-motion.css";
 import "./signal-scan.css";
+import "./signal-session.css";
 import "./signin-page.css";
 
 export const metadata: Metadata = {

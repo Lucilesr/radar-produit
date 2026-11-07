@@ -86,6 +86,12 @@ test("démo recruteurs : deux visiteurs isolés, relance sans doublon ni résurr
     await assert.rejects(()=>syncDemoSources("owner","scan"),/compte fictif/);
   }finally{globalThis.fetch=originalFetch;}
 
+  await ensureRecruiterDemo("demo:session",{sessionDemo:true});
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM experience_items WHERE user_id=? AND validation='proposed'").get("demo:session").n,1);
+  const review=sqlite.prepare("SELECT state,data FROM interviews WHERE user_id=?").get("demo:session");assert.equal(review.state,"reviewed");assert.ok(Date.parse(JSON.parse(review.data).followUpAt)<Date.now());
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM source_settings WHERE user_id=?").get("demo:session").n,2);
+  await ensureRecruiterDemo("demo:session-empty",{sessionEmpty:true});
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM jobs WHERE user_id=? AND review_state='to_review'").get("demo:session-empty").n,0);
   const trashedId = alice[0].id;
   sqlite.prepare("UPDATE jobs SET deleted_at=? WHERE user_id=? AND id=?").run("2026-10-28T00:00:00Z", "demo:alice", trashedId);
   await ensureRecruiterDemo("demo:alice");

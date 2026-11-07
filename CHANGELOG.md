@@ -1,3 +1,9 @@
+## 7 novembre 2026 — Q3, une séance à votre rythme
+
+- L’accueil propose une séance facultative avec seulement les étapes utiles : lot, relances datées, source à visiter et bloc à valider. La priorité d’un entretien proche reste visible.
+- Reprise proposée le même jour, sortie toujours accessible et bilan des actions confirmées ; passer une étape ne compte pas comme un progrès. Les pauses ne gonflent pas les minutes.
+- Quatre compteurs, pépite éventuelle et prochaines échéances, avec les composants Signal et les mouvements réduits. Aucune migration ni écriture de séance en base à ce stade.
+
 ## 7 novembre 2026 — Q2, le radar travaille
 
 - Actualiser lance un balayage avec un bilan réel : offres parcourues, adéquation, nouvelles fiches et doublons, puis accès au lot à examiner.
