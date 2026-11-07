@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Défilement des opportunités
+
+Sur ordinateur et tablette en deux colonnes, la page Opportunités reste dans l’écran : la liste et la fiche défilent indépendamment, sans prolonger la page par du blanc. Les commandes restent accessibles, y compris dans la réserve et sur un écran peu haut. Sur mobile, la lecture sur toute la largeur et le retour à la liste sont conservés.
+
 ## 7 novembre 2026 — Archives depuis la publication de l’annonce
 
 Les offres à examiner passent aux archives 21 jours après leur publication, même si elles viennent d’être importées. Si la publication est inconnue, la date d’ajout sert de référence. Une correction des faits ne rajeunit pas l’annonce. « Remettre à examiner » et « Plus tard » accordent un nouveau délai de 21 jours ; ce choix reste enregistré après rechargement. Les sélections et candidatures sont conservées. Aucun changement de schéma.
