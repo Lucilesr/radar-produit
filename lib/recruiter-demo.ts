@@ -45,13 +45,14 @@ const experience = [
   { title: "Product Manager · SaaS", organization: "Ligne Claire (fictif)", role: "Product Manager", period: "2020–2023", context: "Développement fictif d’une plateforme SaaS utilisée par plusieurs équipes métiers.", contribution: "Discovery, cadrage de la roadmap et coordination avec design, data et ingénierie.", result: "Livraisons mieux séquencées et retours utilisateurs intégrés aux décisions.", claimKey: "saas-discovery" },
 ];
 
-export async function ensureRecruiterDemo(userId: string, emptyProfile = false): Promise<void> {
+export async function ensureRecruiterDemo(userId: string, emptyProfile = false, fridayDemo = false): Promise<void> {
   if (!userId.startsWith("demo:")) throw new Error("La démo exige une session fictive.");
   const db = getDb();
   const existing = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.userId, userId)).limit(1);
   if (existing.length) return;
   const now = new Date();
   const nowIso = now.toISOString();
+  const demoProfile: CandidateProfile = fridayDemo ? { ...profile, searchPreferences: { ...demoSearchPreferences, targetLevel: "senior" } } : profile;
   const daysAgo = (days: number) => new Date(now.getTime() - days * 86400000).toISOString();
   const rows = examples.map((example, index) => {
     const input = normalizeJobInput({ ...example, language: "fr", contentCoverage: "summary" });
@@ -65,8 +66,13 @@ export async function ensureRecruiterDemo(userId: string, emptyProfile = false):
       createdAt: daysAgo(9 - index), updatedAt: nowIso,
     };
   });
-  if (!emptyProfile) await db.insert(profiles).values({ userId, data: JSON.stringify(profile), updatedAt: nowIso }).onConflictDoNothing();
+  if (!emptyProfile) await db.insert(profiles).values({ userId, data: JSON.stringify(demoProfile), updatedAt: nowIso }).onConflictDoNothing();
   for (const row of rows) await db.insert(jobs).values(row).onConflictDoNothing({ target: [jobs.userId, jobs.fingerprint] });
+  if (fridayDemo) for (const [index, company] of ["Atelier Signal", "Maison Boréale", "Studio Nacre", "Équipe Horizon"].entries()) {
+    const input = normalizeJobInput({ title: "Product Owner senior · Plateforme B2B", company: `${company} · repêchage fictif`, contractType: "cdi", annualSalary: 65000, remoteMode: "full_remote", language: "fr", source: "Exemple fictif", contentCoverage: "full", description: "Exemple entièrement fictif pour la recette du repêchage. Vous pilotez une plateforme B2B, menez la discovery, priorisez le backlog et mesurez l’adoption avec les équipes design, data et ingénierie. Le poste est ouvert en télétravail complet en France et demande une expérience senior en Product Ownership. Salaire annuel de 65 000 euros, contrat CDI, sans management hiérarchique." });
+    const assessment = assessJob(input, demoSearchPreferences);
+    await db.insert(jobs).values({ id: crypto.randomUUID(), userId, fingerprint: createFingerprint(input), ...input, status: "new", reviewState: "to_review", deletedAt: daysAgo(index + 2), createdAt: daysAgo(index + 3), updatedAt: nowIso, matchScore: assessment.score, matchTier: assessment.tier, reasons: JSON.stringify(assessment.reasons), flags: JSON.stringify(assessment.flags) }).onConflictDoNothing({ target: [jobs.userId, jobs.fingerprint] });
+  }
   const [interviewJob] = await db.select({ id: jobs.id }).from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.fingerprint, rows[5].fingerprint))).limit(1);
   const interviewStart = new Date(now.getTime() + 4 * 86400000);
   interviewStart.setUTCHours(9, 0, 0, 0);
@@ -93,6 +99,6 @@ export async function ensureRecruiterDemo(userId: string, emptyProfile = false):
       await db.insert(documents).values({ id, userId, originalName: file.name, objectKey, contentType: "text/markdown; charset=utf-8", size: new TextEncoder().encode(file.text).byteLength, createdAt: nowIso }).onConflictDoNothing();
       links[file.slot] = id;
     }
-    await db.update(profiles).set({ data: JSON.stringify({ ...profile, ...links }) }).where(eq(profiles.userId, userId));
+    await db.update(profiles).set({ data: JSON.stringify({ ...demoProfile, ...links }) }).where(eq(profiles.userId, userId));
   }
 }
