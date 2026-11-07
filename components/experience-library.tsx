@@ -24,6 +24,7 @@ type Command = Record<string, unknown>;
 type RightsKey = "applicationAllowed" | "publicProfileAllowed";
 type FocusTarget = ReviewIssue & { nonce: number };
 class RequestError extends Error { constructor(message: string, public issues: ReviewIssue[] = []) { super(message); } }
+const scrollBehavior=():ScrollBehavior=>window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth";
 const inputClass = "w-full rounded-xl border border-border bg-white/80 p-2 text-sm";
 const fieldNames: Record<keyof Fields, string> = { title: "Titre", organization: "Entreprise", role: "Poste", period: "Période", context: "Contexte / détails documentés", contribution: "Ma contribution personnelle", result: "Résultats et limites documentés", claimKey: "Sujet comparable (facultatif)" };
 const fieldsOnly = (data: ItemData): Fields => Object.fromEntries(Object.keys(fieldNames).map(k => [k, data[k as keyof Fields]])) as Fields;
@@ -41,6 +42,7 @@ async function read<T = Library>(path: string, body?: unknown): Promise<T> {
 
 export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary }: { documentId?: string; onOpenDocuments?: () => void; initialLibrary?: Library }) {
   const documentHistory = useRef<HTMLDivElement>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<Library>(initialLibrary ?? { items: [], conflicts: [], extractions: [] });
   const [docs, setDocs] = useState<Document[]>([]), [loading, setLoading] = useState(!initialLibrary), [busy, setBusy] = useState(false);
   const initialLibraryRef = useRef(initialLibrary ? { key: documentId ?? "", library: initialLibrary } : null);
@@ -73,10 +75,10 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary 
   useEffect(()=>{
     if(!navigation||consentPrompt.length)return;
     const frame=requestAnimationFrame(()=>{
-      if(navigation.id===null){document.getElementById("experience-title")?.focus({preventScroll:true});window.scrollTo({top:0,behavior:"smooth"});return;}
+      if(navigation.id===null){document.getElementById("experience-title")?.focus({preventScroll:true});window.scrollTo({top:0,behavior:scrollBehavior()});return;}
       const element=document.getElementById("experience-"+navigation.id)??document.getElementById("review-"+navigation.id);
       revealCollapsibleAncestors(element);
-      requestAnimationFrame(()=>{(element?.querySelector<HTMLElement>("[data-slot=collapsible-trigger]")??element)?.focus({preventScroll:true});element?.scrollIntoView({block:"start",behavior:"smooth"});});
+      requestAnimationFrame(()=>{(element?.querySelector<HTMLElement>("[data-slot=collapsible-trigger]")??element)?.focus({preventScroll:true});element?.scrollIntoView({block:"start",behavior:scrollBehavior()});});
     });
     return()=>cancelAnimationFrame(frame);
   },[navigation,consentPrompt.length]);
@@ -111,7 +113,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary 
           let work = extractionInFlight.current.get(reference.id);
           if (!work) {
             work = (async () => {
-              const r = await fetch("/api/documents/" + reference.id);
+              const r = await fetch("/api/documents/" + reference.id,{signal:AbortSignal.timeout(15000)});
               if (!r.ok) throw new Error("Le dernier document est indisponible. L’historique est conservé.");
               const extraction = await extractDocument(reference.originalName, await r.arrayBuffer());
               const state = await read("/api/experiences", { action: "extract", extraction: { documentId: reference.id, ...extraction } });
@@ -194,7 +196,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary 
     if (locked.current) return;
     locked.current = true; setBusy(true); setError(""); setNotice("Lecture privée de " + doc.originalName + "…");
     try {
-      const r = await fetch("/api/documents/" + doc.id); if (!r.ok) throw new Error("Original indisponible.");
+      const r = await fetch("/api/documents/" + doc.id,{signal:AbortSignal.timeout(15000)}); if (!r.ok) throw new Error("Original indisponible.");
       const extraction = await extractDocument(doc.originalName, await r.arrayBuffer());
       setState(await read("/api/experiences", { action: "extract", extraction: { documentId: doc.id, ...extraction } }));
       setNotice(extraction.status === "extracted" ? "Lecture terminée. Vos corrections et décisions précédentes sont conservées." : extraction.issue);
@@ -325,11 +327,11 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary 
     {!selection.length ? errorMessage : null}
     {analyzing ? <LoadingSkeleton label="Analyse du nouveau document…" /> : null}
     {adding ? <ManualForm busy={busy} onCancel={()=>setAdding(false)} onSave={async body => { if (await act(body,true)) setAdding(false); }} /> : null}
-    <div className="experience-filters"><ChoiceSelect label="Afficher" value={filter} onChange={value=>{setFilter(value);setSelected([]);setConfirm(null);}} options={[{value:"active",label:"Tout le parcours"},{value:"proposed",label:`À relire${reviewCount?` (${reviewCount})`:""}`},{value:"approved",label:"Validés"},{value:"rejected",label:`Masqués${hiddenCount?` (${hiddenCount})`:""}`}]} /><label className="experience-search"><span>Rechercher</span><input className={inputClass} value={search} onChange={e => setSearch(e.target.value)} placeholder="Entreprise, mission, réalisation…" /></label></div>
+    <div className="experience-filters"><ChoiceSelect label="Afficher" value={filter} onChange={value=>{setFilter(value);setSelected([]);setConfirm(null);}} options={[{value:"active",label:"Tout le parcours"},{value:"proposed",label:`À relire${reviewCount?` (${reviewCount})`:""}`},{value:"approved",label:"Validés"},{value:"rejected",label:`Masqués${hiddenCount?` (${hiddenCount})`:""}`}]} /><label className="experience-search"><span>Rechercher</span><input ref={searchInput} className={inputClass} value={search} onChange={e => setSearch(e.target.value)} placeholder="Entreprise, mission, réalisation…" /></label></div>
     <div className="space-y-4">{groups.filter(g => sectionType(g) === "experience").map(group)}</div>
     {groups.some(g => sectionType(g) === "knowledge" && visible(g)) ? <ExpandableSection className="experience-secondary" title={<>Compétences, formation et langues</>}><div className="mt-4 space-y-4">{groups.filter(g => sectionType(g) === "knowledge").map(group)}</div></ExpandableSection> : null}
     {ungrouped.some(visible) ? <ExpandableSection className="experience-secondary" title={<>Compléments personnels non rattachés à une expérience</>}>{ungrouped.filter(visible).map(card)}</ExpandableSection> : null}
-    {!groups.some(visible) && !loading ? <p className="my-6 text-sm text-muted-foreground">Aucune expérience dans cette vue. Essayez « Tout le parcours » ou « Masqués ».</p> : null}
+    {!groups.some(visible) && !ungrouped.some(visible) && !loading ? <div className="my-6"><p className="text-sm text-muted-foreground">{search.trim()?"Aucune expérience ne correspond à cette recherche.":"Aucune expérience dans cette vue. Essayez « Tout le parcours » ou « Masqués », ou ajoutez une expérience."}</p>{search.trim()?<WorkspaceButton onClick={()=>{setSearch("");searchInput.current?.focus();}}>Effacer la recherche</WorkspaceButton>:null}</div> : null}
     <ExpandableSection ref={documentHistory} id="experience-document-history" className="experience-secondary" title={<>Historique des documents</>}>{docs.map(d => <div key={d.id} className="experience-document"><div><a className="text-sm underline" href={"/api/documents/" + d.id} target="_blank" rel="noreferrer">{d.originalName}</a><p className="text-xs">{d.id === state.reference?.documentId ? "Référence courante" : "Document secondaire / ancienne version — conservé"}{d.createdAt ? " · " + d.createdAt.slice(0, 10) : ""}</p></div>{d.id === state.reference?.documentId ? <button className="secondary-button" disabled={busy || loading} onClick={() => extract(d)}>Relire sans doublon</button> : null}</div>)}<ExpandableSection className="mt-4" title={<>Blocs des anciennes versions et résumés ({historical.length})</>}>{historical.map(i => <HistoricalItem key={i.id} item={i} />)}</ExpandableSection></ExpandableSection>
     {conflicts.length ? <ExpandableSection className="experience-secondary" title={<>Points à comparer dans la version courante ({conflicts.filter(c => c.state === "open").length} ouverts)</>}><p className="my-3 text-xs">Les CV et les anciennes versions ne sont pas des contradictions : le dernier document détaillé est prioritaire.</p>{conflicts.map(c => <ConflictCard key={c.id} conflict={c} items={active} busy={busy} onSave={act} />)}</ExpandableSection> : null}
   </section>;
@@ -406,10 +408,10 @@ function ItemForm({ initial, item, example=false, focusTarget, busy, onSubmit, o
   const problems = item ? reviewIssues({...item, data:{...initial,...data,reviewModel:1,reviewPoints:points}}) : [];
   useEffect(() => {
     if (!focusTarget) return;
-    if(focusTarget.field==="reviewPoints"){const input=form.current?.querySelectorAll<HTMLElement>("[data-review-point]")[focusTarget.start];const control=Array.from(input?.querySelectorAll<HTMLElement>("button")??[]).find(element=>element.getClientRects().length>0);(control??input)?.focus();input?.scrollIntoView({block:"center",behavior:"smooth"});return;}
+    if(focusTarget.field==="reviewPoints"){const input=form.current?.querySelectorAll<HTMLElement>("[data-review-point]")[focusTarget.start];const control=Array.from(input?.querySelectorAll<HTMLElement>("button")??[]).find(element=>element.getClientRects().length>0);(control??input)?.focus();input?.scrollIntoView({block:"center",behavior:scrollBehavior()});return;}
     const inputs = Array.from(form.current?.querySelectorAll<HTMLTextAreaElement>("textarea[data-field]") || []);
     const input = inputs.find(el => focusTarget.field === "context" && el.dataset.contextRanges ? JSON.parse(el.dataset.contextRanges).some(([start,end]:number[])=>start<=focusTarget.start&&end>=focusTarget.end) : el.dataset.field === focusTarget.field && (focusTarget.field !== "context" || (Number(el.dataset.start) <= focusTarget.start && Number(el.dataset.end) >= focusTarget.end)));
-    if (input) { input.focus(); input.scrollIntoView({block:"center",behavior:"smooth"}); const offset=Number(input.dataset.start || 0); input.setSelectionRange(focusTarget.start-offset,focusTarget.end-offset); }
+    if (input) { input.focus(); input.scrollIntoView({block:"center",behavior:scrollBehavior()}); const offset=Number(input.dataset.start || 0); input.setSelectionRange(focusTarget.start-offset,focusTarget.end-offset); }
   }, [focusTarget]);
   const help: Partial<Record<keyof Fields,string>> = {
     context: "Le produit, la situation et les exemples décrits. Corrigez un passage sans réécrire les autres.",

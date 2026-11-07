@@ -1,5 +1,11 @@
 ## 7 novembre 2026 — Feuille de route gamification
 
+## 7 novembre 2026 — États du profil
+
+- Les documents distinguent lecture en cours, erreur et fichier réellement indisponible ; les attentes sont bornées.
+- Une recherche sans résultat propose de l’effacer et rend le focus au champ.
+- Les déplacements dans le carnet respectent le mouvement réduit demandé par le système.
+
 ## 7 novembre 2026 — Attentes bornées des sources
 
 - Les lectures et réglages des sources se terminent après 15 s maximum avec reprise. L’actualisation réserve 45 s au flux puis 15 s à la relecture, sans effacer les données connues.
