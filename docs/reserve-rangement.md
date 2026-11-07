@@ -8,7 +8,7 @@ L’API authentifiée de même origine vérifie le propriétaire, l’absence de
 
 L’annulation vérifie tous les états courants et restaure seulement les champs touchés. Un ajout de rôle modifie seulement le chemin JSON des rôles ; son annulation conserve les autres champs du profil et refuse si les rôles ont changé entre-temps. Aucun document, note ou entretien n’est remplacé. Les écartements restent dans la Corbeille ; les archives restent restaurables.
 
-Signal réutilisé : boutons, erreur de formulaire, cartes et compteur annoncé poliment ; actions44px et focus au titre quand le groupe disparaît. Tests purs et SQLite : proposition de poste, isolation, refus des candidatures/sélections, atomicité, reprise, archives, annulation concurrente et absence d’écrasement de données ultérieures. Recette staging ajoutée après déploiement.
+Signal réutilisé : boutons, erreur de formulaire, cartes et compteur annoncé poliment ; actions44px et focus au titre quand le groupe disparaît. Tests purs et SQLite : proposition de poste, isolation, refus des candidatures/sélections, atomicité, reprise, archives, annulation concurrente et absence d’écrasement de données ultérieures. Recette staging38et39 effectuée sur1360et390px : chaque action et annulation, confirmation/Espace/focus44px, vraie restauration concurrente409 et reprise à0, console nominale propre. Voir [les preuves](reserve-rangement/README.md).
 
 Le passage fiche→réserve ferme la fiche, rend les groupes visibles sur mobile et place le focus au titre ; le retour au lot fait de même.
 
