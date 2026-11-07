@@ -878,7 +878,7 @@ Contradiction levée avec la maquette Portee : le titre « débloque » suggéra
 
 ### Défaut supplémentaire repéré pendant Q6
 
-**Gênant — Opportunités, après annulation d’une candidature.** L’offre revient bien dans les comptes à examiner, mais le volet de lecture sur ordinateur peut conserver son ancien objet et afficher « Voir dans Candidatures ». Une réouverture de l’offre relit son état. Correction prévue en PR ciblée après S5 ; conserver le comportement de lecture après une candidature réellement enregistrée. Aucun changement de production.
+**Gênant — Opportunités, après annulation d’une candidature.** L’offre revient bien dans les comptes à examiner, mais le volet de lecture sur ordinateur peut conserver son ancien objet et afficher « Voir dans Candidatures ». Une réouverture de l’offre relit son état. Corrigé dans la PR #233 après S5 : relecture de l’objet courant, vérifiée sur staging37 en1360et390px. Le maintien de lecture après un envoi confirmé reste disponible. [Preuves](correction-annulation-fiche/README.md). Aucun changement de production.
 
 ## Termes du domaine S5
 
