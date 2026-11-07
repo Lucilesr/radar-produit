@@ -875,3 +875,7 @@ Contradiction levée avec la maquette Portee : le titre « débloque » suggéra
 | Mobile 390 px | Petite fenêtre | Cases 44 px et paragraphes sur une colonne | Mêmes choix | oui |
 | Refus / offre écartée | Décision négative | Aucun encouragement surprise | Continuer ou revenir plus tard | oui |
 | Dialogue, saisie ou erreur | Action confirmée pendant une autre lecture | Surprise différée ou supprimée, erreur préservée | Terminer la saisie | oui |
+
+### Défaut supplémentaire repéré pendant Q6
+
+**Gênant — Opportunités, après annulation d’une candidature.** L’offre revient bien dans les comptes à examiner, mais le volet de lecture sur ordinateur peut conserver son ancien objet et afficher « Voir dans Candidatures ». Une réouverture de l’offre relit son état. Correction prévue en PR ciblée après S5 ; conserver le comportement de lecture après une candidature réellement enregistrée. Aucun changement de production.
