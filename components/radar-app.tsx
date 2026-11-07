@@ -132,7 +132,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
     const optimisticUpdatedAt = new Date().toISOString();
     if (changes.reviewState) setJobs(current => current.map(job => job.id === id ? { ...job, reviewState: optimisticReviewState, updatedAt: optimisticUpdatedAt } : job));
     try {
-      const response = await fetch(`/api/jobs/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) });
+      const response = await fetch(`/api/jobs/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes), signal: AbortSignal.timeout(15000) });
       if (!response.ok) throw new Error("Mise à jour impossible");
       const { job } = (await response.json()) as { job: JobRecord };
       setJobs(current => current.map(item => item.id === id ? changes.reviewState ? { ...item, reviewState: job.reviewState, updatedAt: job.updatedAt ?? item.updatedAt } : { ...job, candidateNote: changes.candidateNote === undefined ? item.candidateNote : job.candidateNote } : item));

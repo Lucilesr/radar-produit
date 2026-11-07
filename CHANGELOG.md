@@ -1,5 +1,10 @@
 ## 7 novembre 2026 — Feuille de route gamification
 
+## 7 novembre 2026 — États fiables des candidatures
+
+- Une réponse confirmée reste dans son éditeur ; une seconde validation ne revient plus à l’ancienne valeur.
+- Questions, brief, colonnes, tags, statuts et entretiens sortent de l’attente après 15 s ; erreurs et reprise conservent la saisie.
+
 Ajout de `docs/feuille-de-route.md` : ordre des lots restants, design system « radar vivant » (jetons, typographie, mouvement, composants), écrans détaillés avec leurs états, onglet Candidatures à auditer, points d’attention. Les sept maquettes de référence sont dans `docs/maquettes/`, avec des données fictives.
 
 ## 7 novembre 2026 — Défilement jusqu’à la zone de lecture

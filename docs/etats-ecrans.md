@@ -670,7 +670,7 @@ Les photos indexées couvrent les vues principales, les formulaires prêts et d�
 
 | ID | Écran | Défaut confirmé | Correction attendue | Suivi |
 | --- | --- | --- | --- | --- |
-| B-C1 | Candidatures / questions | Après validation, la réponse de 90 caractères est conservée côté serveur mais revient à sa valeur initiale dans le formulaire (vide lors du premier essai, formulaire à nouveau sale). Une seconde validation pourrait écraser la réponse avec du vide. | Conserver dans le brouillon la question, la limite et la réponse effectivement confirmées ; vérifier sauvegarde puis réouverture. | PR Candidatures à créer. |
+| B-C1 | Candidatures / questions | Après validation, la réponse de 90 caractères est conservée côté serveur mais revient à sa valeur initiale dans le formulaire (vide lors du premier essai, formulaire à nouveau sale). Une seconde validation pourrait écraser la réponse avec du vide. | Conserver dans le brouillon la question, la limite et la réponse effectivement confirmées ; vérifier sauvegarde puis réouverture. | Correctif Candidatures préparé ; recette après déploiement. |
 
 Preuve : `questions-apres-validation-defaut`, après une confirmation réelle. La lecture de contrôle API retrouve la réponse fictive et sa version 2 ; aucun contenu privé n’est inclus dans cette vérification. Un export ou une suppression définitive de compte n’a pas été exécuté pour l’audit.
 
@@ -680,7 +680,7 @@ Preuve : `questions-apres-validation-defaut`, après une confirmation réelle. L
 | --- | --- | --- | --- | --- |
 | G-O1 | Opportunités | Lien Archives uniquement dans la réserve ; si aucune offre n’attend hors du lot, il peut être inaccessible. | Accès indépendant du nombre d’offres dans la réserve, y compris lot vide. | PR par écran à créer. |
 | G-S1 | Sources | Lectures et écritures non bornées ; une requête qui ne répond pas peut laisser des commandes occupées indéfiniment. | Délai maximum, fin de chargement, erreur compréhensible et reprise ; 60 s maximum pour l’actualisation. | PR Sources à créer. |
-| G-C1 | Candidatures / entretiens | Colonnes, tags, statuts et écritures d’entretien ont des requêtes sans borne cohérente. | Délai, sortie de l’état occupé, reprise et saisie conservée. | PR Candidatures à créer. |
+| G-C1 | Candidatures / entretiens | Colonnes, tags, statuts et écritures d’entretien ont des requêtes sans borne cohérente. | Délai, sortie de l’état occupé, reprise et saisie conservée. | Correctif Candidatures préparé ; recette après déploiement. |
 | G-P1 | Mon profil / documents | Un fichier lié est déclaré indisponible pendant sa lecture initiale. | Squelette ou lecture en cours avant de conclure à l’absence ; erreur de lecture distincte. | PR Mon profil à créer. |
 | G-P2 | Mon profil / carnet | Recherche sans résultat : conseil de changer de filtre mais pas de commande pour effacer la recherche. | Message adapté et Effacer la recherche, avec retour du focus. | Même PR Mon profil. |
 | G-P3 | Mon profil / carnet | Défilements JavaScript smooth non soumis à la préférence système. | Positionnement instantané si le mouvement réduit est demandé. | Même PR Mon profil. |

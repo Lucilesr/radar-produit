@@ -1,4 +1,5 @@
 "use client";
+import { requestError } from "@/lib/request-error";
 import { useEffect, useRef, useState } from "react";
 import { Dialog } from "radix-ui";
 import { defaultBoard, personalColumn, type PersonalBoard, type PersonalColumn } from "@/lib/personal-board";
@@ -15,14 +16,14 @@ export function usePersonalBoard(jobs: JobRecord[] = []) {
   const lock = useRef(false);
   async function load() {
     try {
-      const response = await fetch("/api/application-board", { cache: "no-store" });
+      const response = await fetch("/api/application-board", { cache: "no-store", signal: AbortSignal.timeout(15000) });
       if (!response.ok) throw new Error();
       setBoard(((await response.json()) as {board:PersonalBoard}).board); setReady(true); setError("");
     } catch { setError("Impossible de charger les colonnes. Réessayez avant de modifier le tableau."); }
   }
   useEffect(() => {
     const controller=new AbortController();
-    fetch("/api/application-board",{cache:"no-store",signal:controller.signal})
+    fetch("/api/application-board",{cache:"no-store",signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)])})
       .then(async response=>{if(!response.ok)throw new Error();return await response.json() as {board:PersonalBoard};})
       .then(result=>{if(!controller.signal.aborted){setBoard(result.board);setReady(true);setError("");}})
       .catch(()=>{if(!controller.signal.aborted)setError("Impossible de charger les colonnes. Réessayez avant de modifier le tableau.");});
@@ -33,24 +34,24 @@ export function usePersonalBoard(jobs: JobRecord[] = []) {
     if (lock.current || !editor) return;
     lock.current = true; setSaving(true); setError("");
     try {
-      const response = await fetch("/api/application-board", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: editor === "new" ? "add" : "rename", id: editor === "new" ? undefined : editor.id, label, stage, version: board.version }) });
+      const response = await fetch("/api/application-board", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: editor === "new" ? "add" : "rename", id: editor === "new" ? undefined : editor.id, label, stage, version: board.version }), signal: AbortSignal.timeout(15000) });
       const result = await response.json() as {board?:PersonalBoard;error?:string};
       if (result.board) setBoard(result.board);
       if (!response.ok) throw new Error(result.error ?? "Colonne non enregistrée. Votre saisie est conservée.");
       setEditor(null);
-    } catch (problem) { setError(problem instanceof Error ? problem.message : "Colonne non enregistrée."); }
+    } catch (problem) { setError(requestError(problem, "Colonne non enregistrée.")); }
     finally { lock.current = false; setSaving(false); }
   }
   async function remove() {
     if (lock.current || !editor || editor === "new" || !editor.id.startsWith("custom-")) return;
     lock.current = true; setSaving(true); setError("");
     try {
-      const response = await fetch("/api/application-board", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete", id: editor.id, version: board.version }) });
+      const response = await fetch("/api/application-board", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete", id: editor.id, version: board.version }), signal: AbortSignal.timeout(15000) });
       const result = await response.json() as {board?:PersonalBoard;error?:string};
       if (result.board) setBoard(result.board);
       if (!response.ok) throw new Error(result.error ?? "Colonne non supprimée. Réessayez.");
       setEditor(null); setConfirmDelete(false);
-    } catch (problem) { setError(problem instanceof Error ? problem.message : "Colonne non supprimée."); }
+    } catch (problem) { setError(requestError(problem, "Colonne non supprimée.")); }
     finally { lock.current = false; setSaving(false); }
   }
   const custom = editor !== null && editor !== "new" && editor.id.startsWith("custom-");
