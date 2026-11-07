@@ -45,7 +45,7 @@ test('préremplissage : inconnues, négations et pays non attribuables restent a
 test('préremplissage : seuls les champs cochés sont appliqués',()=>{
  const list=suggestOfferFields('CDI\nSalaire : 65k € brut annuel\nFull remote');
  const current={contractType:'freelance',dailyRate:700,language:'fr'};
- assert.deepEqual({...current,...selectedSuggestions(list,['annualSalary'])},{...current,annualSalary:65000});
+ assert.deepEqual({...current,...selectedSuggestions(list,['annualSalary'])},{...current,annualSalary:65000,salaryMin:65000,salaryMax:65000});
  assert.deepEqual(selectedSuggestions(list,[]),{});
 });
 test('offres : fréquences et pays normalisés, valeurs invalides refusées',()=>{
@@ -83,4 +83,28 @@ test('enregistrement automatique : les montants ambigus ou étrangers restent à
  const range=normalizeJobInput({...base,description:'Notification Free-Work : TJM affiché 550–650 €, politique exacte de télétravail non précisée.'});
  assert.equal(range.dailyRateMin,550);assert.equal(range.dailyRateMax,650);assert.equal(range.dailyRate,600);
  assert.equal(normalizeJobInput({...base,description:'English lessons available'}).language,'unknown');
+});
+
+
+test('préremplissage : les bornes de salaire et de TJM suivent uniquement le montant coché',()=>{
+ const base={title:'Product Owner fictif',source:'Ajout manuel',contractType:'cdi',remoteMode:'full_remote',language:'fr'};
+ for(const [text,field,low,high,min,max,mid] of [
+  ['Salaire : 62–70 k€ brut annuel','annualSalary','salaryMin','salaryMax',62000,70000,66000],
+  ['TJM : 550–650 € HT/jour','dailyRate','dailyRateMin','dailyRateMax',550,650,600],
+  ['Salaire : jusqu’à 70 k€ brut annuel','annualSalary','salaryMin','salaryMax',null,70000,70000],
+  ['TJM : à partir de 550 € HT/jour','dailyRate','dailyRateMin','dailyRateMax',550,null,550],
+ ]) {
+  const suggestions=suggestOfferFields(text);
+  const patch=selectedSuggestions(suggestions,[field]);
+  assert.deepEqual(patch,{[field]:mid,[low]:min,[high]:max});
+  const saved=normalizeJobInput({...base,description:text,...patch});
+  assert.equal(saved[low],min);assert.equal(saved[high],max);assert.equal(saved[field],mid);
+  assert.deepEqual(selectedSuggestions(suggestions,[]),{});
+ }
+ const both=suggestOfferFields('Salaire : 62–70 k€ brut annuel\nTJM : 550–650 € HT/jour');
+ assert.equal(selectedSuggestions(both,['annualSalary']).dailyRateMin,undefined);
+ assert.equal(selectedSuggestions(both,['dailyRate']).salaryMin,undefined);
+ const replacement=selectedSuggestions(suggestOfferFields('Salaire : 72 k€ brut annuel'),['annualSalary']);
+ const saved=normalizeJobInput({...base,annualSalary:66000,salaryMin:62000,salaryMax:70000,...replacement});
+ assert.equal(saved.annualSalary,72000);assert.equal(saved.salaryMin,72000);assert.equal(saved.salaryMax,72000);
 });
