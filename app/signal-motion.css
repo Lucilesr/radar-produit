@@ -1,0 +1,43 @@
+@keyframes radar-sweep { to { transform: rotate(360deg); } }
+@keyframes radar-blip { from { opacity: .25; r: 2; } to { opacity: 1; r: 4; } }
+@keyframes signal-pop { 0% { transform: scale(.9); } 65% { transform: scale(1.05); } 100% { transform: scale(1); } }
+.signal-radar { color: var(--signal-petrol-mid); flex: none; }
+.signal-radar-sweep { transform-origin: 50px 50px; animation: radar-sweep 2.4s linear infinite; }
+.signal-radar-blip { animation: radar-blip 900ms ease-out both; }
+.signal-pop { animation: signal-pop 260ms ease-out both; }
+.signal-number { color: inherit; }
+.signal-counter-value { display: block; font: 700 clamp(2rem, 5vw, 3.5rem)/1.05 var(--font-display); font-optical-sizing: auto; font-variant-numeric: tabular-nums; }
+.signal-counter-label { display: block; margin-top: .4rem; font-size: .875rem; }
+.signal-progress { height: 6px; overflow: hidden; border-radius: 99px; background: var(--signal-line); }
+.signal-progress > span { display: block; height: 100%; border-radius: inherit; background: var(--signal-petrol-mid); }
+.daily-lot-bar.signal-progress { height: 8px; }
+.daily-lot.is-done .signal-progress > span { background: var(--signal-energy); }
+.signal-progress-energy > span, .signal-progress-finished > span { background: var(--signal-energy); }
+.signal-progress-energy, .signal-progress-finished { background: var(--signal-petrol-ink); }
+.signal-stepper { display: flex; flex-wrap: wrap; gap: 1rem; padding: 0; margin: 0; list-style: none; font-size: .875rem; color: var(--signal-muted); }
+.signal-stepper li { display: flex; align-items: center; gap: .5rem; min-width: 0; overflow-wrap: anywhere; }
+.signal-stepper .is-current { color: var(--signal-petrol-ink); font-weight: 700; }
+.signal-stepper-number { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--signal-input); }
+.signal-stepper .is-current .signal-stepper-number, .signal-stepper .is-done .signal-stepper-number { background: var(--signal-energy); border-color: var(--signal-petrol); color: var(--signal-petrol-ink); }
+.signal-moment-overlay { position: fixed; inset: 0; z-index: 1000; background: #193f5080; }
+.signal-moment { position: fixed; inset: 0; z-index: 1001; overflow-y: auto; overscroll-behavior: contain; background: var(--signal-petrol-ink); color: var(--signal-paper); padding: 72px 32px 40px; }
+.signal-moment-body { width: min(100%, 880px); min-height: 100%; margin: auto; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 24px; overflow-wrap: anywhere; }
+.signal-moment h2 { font: 700 clamp(2rem, 6vw, 4.5rem)/1.08 var(--font-display); font-optical-sizing: auto; margin: 0; letter-spacing: -.035em; }
+.signal-moment h2:focus { outline: none; }
+.signal-moment h2:focus-visible { outline: 3px solid var(--signal-energy); outline-offset: 6px; }
+.signal-moment p { color: inherit; margin: 0; }
+.signal-moment-close { position: absolute; top: 16px; right: 16px; display: grid; place-items: center; min-width: 44px; min-height: 44px; border: 1px solid currentColor; border-radius: 5px; color: inherit; background: transparent; }
+.signal-moment .signal-moment-action { min-height: 44px; background: var(--signal-energy); color: var(--signal-petrol-ink); border-color: var(--signal-energy); }
+.signal-moment button:focus-visible { outline: 3px solid var(--signal-energy); outline-offset: 5px; }
+.signal-moment .signal-radar { color: var(--signal-energy); }
+@media (max-width: 640px) {
+  .signal-moment { padding: 76px 24px max(32px, env(safe-area-inset-bottom)); }
+  .signal-moment-action { width: 100%; }
+  .signal-stepper { gap: .75rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; scroll-behavior: auto !important; }
+}
+html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-motion="reduced"] *::after {
+  animation-duration: 0s !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; scroll-behavior: auto !important;
+}

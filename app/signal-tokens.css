@@ -1,3 +1,11 @@
+/* Hosted locally: no request to a font service. License in public/fonts. */
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/fonts/bricolage-grotesque-variable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
 /* Signal — shared foundations, after the existing workspace styles. */
 :root {
   color-scheme: light;
@@ -11,6 +19,16 @@
   --signal-petrol: #24566b;
   --signal-petrol-dark: #193f50;
   --signal-citron: #e6ee53;
+  --signal-petrol-ink: #193f50;
+  --signal-petrol-deep: #203743;
+  --signal-petrol-mid: #24566b;
+  --signal-energy: #e6ee53;
+  --signal-celebration: #ff8a65;
+  --signal-success-ink: #176947;
+  --signal-mist: #eaf0f3;
+  /* Decorative borders on white; not body text (insufficient contrast). */
+  --signal-ash: #7b8e99;
+  --font-display: "Bricolage Grotesque", var(--font-sans);
   --signal-success: #176947;
   --signal-success-bg: #edf5f0;
   --signal-warning: #80551a;
