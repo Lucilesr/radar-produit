@@ -87,7 +87,7 @@ export function SourceList({ sources, settings, jobs, profile, onOpen, onVisit }
 function rowMeta(status: SourceStatus, setting: SourceSetting | undefined, count: number) {
   const offers = `${count} offre${count > 1 ? "s" : ""}`;
   if (status === "error") return setting?.lastAttemptAt ? `Dernière tentative le ${formatDate(setting.lastAttemptAt, "Indian/Mauritius", true)}` : "Collecte interrompue";
-  if (status === "to_configure") return "Réglage à terminer";
+  if (status === "to_configure") return null;
   if (status === "paused") return "Ignorée par les scans";
   if (status === "new") return `Jamais visitée · ${offers}`;
   if (setting?.lastVisitedAt) return `Vu le ${formatDate(setting.lastVisitedAt, "Indian/Mauritius")} · ${offers}`;
