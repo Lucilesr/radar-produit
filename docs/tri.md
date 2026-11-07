@@ -45,8 +45,8 @@ Valeurs retenues : **20 offres** au plus dans le lot du jour, dont **5 fiches my
 **Réserve.** « Voir toutes les offres » devient « La réserve ». On y trouve les offres à examiner hors du lot et les offres « Plus tard ». Elles sont rangées en groupes exclusifs, dans cet ordre, et chacune va dans le premier groupe qui lui correspond :
 
 1. Gardées pour plus tard (`later`).
-3. Loin de votre recherche (`fitLabel` = `far`).
 2. Hors de vos conditions (`conditions` = `excluded` : présence, contrat…). Plus large que « présence » seule, et déjà calculé par le score v2.
+3. Loin de votre recherche (`fitLabel` = `far`).
 4. Rémunération non communiquée.
 5. Publiées il y a plus de 21 jours.
 6. Les autres.

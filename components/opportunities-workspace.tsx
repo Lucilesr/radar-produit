@@ -29,8 +29,8 @@ export function OpportunitiesWorkspace({lot,jobs,counts,filter,onFilter,query,on
   // Score v2 S4: up to five mystery offers lead « À examiner », whatever the chosen order.
   // Tri Q1: « À examiner » opens on the lot of the day; « Toutes les offres » keeps the full list.
   const [allOffers,setAllOffers]=useState(false);
-  const lotShown=filter==="to_review"&&!query&&!!lot&&lot.size>0;
-  const inLot=lotShown&&!allOffers;
+  const lotShown=filter==="to_review"&&!query&&!!lot&&(lot.size>0||counts.to_review>0||counts.archived>0);
+  const inLot=lotShown&&lot!.size>0&&!allOffers;
   // Tri Q1b: outside the lot, « À examiner » is the reserve, sorted into groups decided in one go.
   const inReserve=lotShown&&!inLot;
   const [reserveGroupId,setReserveGroupId]=useState<ReserveGroupId|null>(null);
@@ -91,7 +91,7 @@ export function OpportunitiesWorkspace({lot,jobs,counts,filter,onFilter,query,on
   const emptyAction: ReactNode=query?<button className="secondary-button" onClick={onClearSearch}>Effacer la recherche</button>:filter!=="to_review"?<button className="secondary-button" onClick={()=>{changeView("to_review");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Voir les offres à examiner</button>:null;
   return <div className={"opportunities-workspace "+(activeId?"has-open-offer":"")}>
     <nav className="workspace-tabs" aria-label="Vues des opportunités">{views.map(([id,label])=><span className="opportunity-tab" key={id}><button type="button" aria-pressed={filter===id} onClick={()=>changeView(id)}>{label}<span>{counts[id]}</span></button>{id==="trash"?<HelpTooltip label="Corbeille">Les offres restent restaurables pendant 10 jours. Après ce délai, elles sont supprimées définitivement à la prochaine ouverture du radar.</HelpTooltip>:null}</span>)}</nav>
-    {lotShown?<DailyLotBanner lot={lot!} total={counts.to_review} inLot={inLot} onToggle={()=>{setRetained(null);setSelection([]);setReserveGroupId(null);setAllOffers(inLot);}}/>:null}
+    {lotShown&&lot!.size>0?<DailyLotBanner lot={lot!} total={counts.to_review} inLot={inLot} onToggle={()=>{setRetained(null);setSelection([]);setReserveGroupId(null);setAllOffers(inLot);}}/>:null}
     {inReserve?<ReserveGroups groups={groups} shown={reserveGroupId} total={reserveJobs.length} archived={counts.archived??0} busy={trashBusy} onShow={id=>{setRetained(null);setSelection([]);setReserveGroupId(id);}} onDiscard={group=>{setRetained(null);setReserveGroupId(null);onDeleteMany(group.slice(0,50));}} onArchives={()=>changeView("archived")}/>:null}
     {filter==="archived"?<div className="reserve-archive-head"><p><Archive size={16} aria-hidden/>Offres restées sans décision pendant {ARCHIVE_AFTER_DAYS} jours. Elles ne comptent plus dans « À examiner ».</p><button type="button" className="secondary-button" onClick={()=>changeView("to_review")}><ArrowLeft size={15} aria-hidden/>Retour à « À examiner »</button></div>:null}
     <div className="opportunities-toolbar">

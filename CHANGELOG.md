@@ -1,6 +1,6 @@
 ## 7 novembre 2026 — Tri, lot Q1b : « Plus tard », réserve et archives
 
-Nouvelle décision « Plus tard » sur une offre : elle sort du lot du jour (le compteur baisse) et rejoint la réserve. Hors du lot, « À examiner » devient la réserve, rangée en groupes (gardées pour plus tard, hors de vos conditions, loin de votre recherche, rémunération non communiquée, publiées il y a plus de 21 jours, les autres) qu’on peut voir ou écarter d’un coup, après confirmation. Une offre sans décision depuis 21 jours part aux archives : elle ne compte plus, reste consultable et peut être remise à examiner. L’archive est calculée à la lecture, sans migration.
+Nouvelle décision « Plus tard » sur une offre : elle sort du lot du jour (le compteur baisse) et rejoint la réserve. Hors du lot, « À examiner » devient la réserve, rangée en groupes (gardées pour plus tard, hors de vos conditions, loin de votre recherche, rémunération non communiquée, publiées il y a plus de 21 jours, les autres) qu’on peut voir ou écarter d’un coup, après confirmation. Une offre sans décision depuis 21 jours part aux archives : elle ne compte plus, reste consultable et peut être remise à examiner. L’archive est calculée à la lecture, sans migration. La réserve et les archives restent accessibles même lorsqu’aucune offre ne peut former un lot du jour.
 
 ## 7 novembre 2026 — Tri, lot Q1a : lot du jour
 

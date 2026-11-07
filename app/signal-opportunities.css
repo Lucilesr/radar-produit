@@ -146,7 +146,7 @@
 .reserve-group-count{color:var(--signal-petrol-dark);font-size:20px;font-weight:700;line-height:1}
 .reserve-group-text small{grid-column:1/-1;color:var(--muted-foreground);font-size:12px;line-height:1.4}
 .reserve-group-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
-.reserve-group-actions .secondary-button,.reserve-group-actions .signal-quiet-button,.reserve-group-actions .signal-danger-button{min-height:36px;padding:6px 10px;font-size:13px}
+.reserve-group-actions .secondary-button,.reserve-group-actions .signal-quiet-button,.reserve-group-actions .signal-danger-button{min-height:42px;padding:6px 10px;font-size:13px}
 .reserve-archives{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:4px 0;border:0;background:none;color:var(--signal-petrol);font:600 13px/1.4 var(--font-sans);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .reserve-archives:focus-visible{outline:2px solid var(--ring);outline-offset:3px;border-radius:3px}
 .reserve-archive-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 14px;padding:12px 16px;border:1px dashed var(--signal-input);border-radius:5px;background:var(--card)}
