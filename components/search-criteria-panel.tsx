@@ -40,7 +40,7 @@ function storeView(view: View) {
 }
 
 /** Criteria read at a glance, expanded on demand, and edited with the existing form. */
-export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, onShowOffers, active = true }: { profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void; onShowOffers:()=>void; active?:boolean }) {
+export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, active = true }: { profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void; active?:boolean }) {
   // A first visit keeps the form open so the onboarding step can save the first criteria.
   const firstSetup = !profile.searchPreferences;
   const [resting, setResting] = useState(readView);
@@ -78,13 +78,11 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
   }
   const previousSaved=useRef(profile.searchPreferences);
   const wasActive=useRef(active);
-  // Also cover changes made in a source's detail (Jobgether) and one-step undo.
+  // Also cover changes made in a source's detail (Jobgether).
   useEffect(()=>{
     if(active&&wasActive.current)recordChanges(searchPreferences(previousSaved.current),preferences);
     previousSaved.current=profile.searchPreferences;wasActive.current=active;
   },[profile.searchPreferences,active]); // eslint-disable-line react-hooks/exhaustive-deps
-  // Remounts the form after an undo so its fields show the restored values.
-  const [formRevision, setFormRevision] = useState(0);
   const [openToken, setOpenToken] = useState<string | null>(null);
   const [editingRow, setEditingRow] = useState<string | null>(null);
   // « + Critère » : the menu first, then the chosen criterion's own control, in the same panel.
@@ -108,7 +106,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
     if (id) requestAnimationFrame(() => tokenButtons.current.get(id)?.focus());
   }
 
-  /** Every save says what changed and how many offers it leaves to review, with one-step undo. */
+  /** Every save confirms what changed and how many offers it leaves to review. */
   async function saveWithImpact(next: CandidateProfile) {
     const previous = profile;
     const before = searchPreferences(previous.searchPreferences);
@@ -117,15 +115,8 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
     const changes = saved ? describeCriteriaChanges(before, after) : [];
     if (changes.length) notify({
       message: impactMessage(changes, countToReview(jobs, before), countToReview(jobs, after)),
-      action: previous.searchPreferences ? { label: "Annuler", onClick: () => void undo(previous) } : undefined,
-      secondaryAction:{label:"Voir les offres",onClick:onShowOffers},
     });
     return saved;
-  }
-  async function undo(previous: CandidateProfile) {
-    const restored = await onSave(previous);
-    if (restored) setFormRevision(value => value + 1);
-    notify(restored ? { message: "Modification annulée.", tone: "info" } : { message: "Annulation non enregistrée. Réessayez.", tone: "error" });
   }
 
   useEffect(() => {
@@ -181,7 +172,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
               <button type="button" className="search-criteria-token" data-tone={token.tone} title={token.fullValue} aria-label={label}>{content}</button>
             </PopoverTrigger>
             <PopoverContent align="start" collisionPadding={{ top: 12, right: 12, left: 12, bottom: 96 }} className="search-criteria-popover" onInteractOutside={keepOpenForNestedMenus} onFocusOutside={keepOpenForNestedMenus}>
-              <SearchPreferencesForm commitRef={formCommit} jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(token.target)} />
+              <SearchPreferencesForm commitRef={formCommit} jobs={jobs} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(token.target)} />
               <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" busy={committing} onClick={() => void finishEditor(() => setOpenToken(null))}>Terminé</WorkspaceButton></div>
             </PopoverContent>
           </Popover>
@@ -198,7 +189,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
           <PopoverContent align="start" collisionPadding={{ top: 12, right: 12, left: 12, bottom: 96 }} className="search-criteria-popover" onInteractOutside={keepOpenForNestedMenus} onFocusOutside={keepOpenForNestedMenus}>
             {addTarget
               ? <>
-                <SearchPreferencesForm commitRef={formCommit} jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(addTarget.target)} />
+                <SearchPreferencesForm commitRef={formCommit} jobs={jobs} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(addTarget.target)} />
                 <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" busy={committing} onClick={() => void finishEditor(closeAdd)}>Terminé</WorkspaceButton></div>
               </>
               : <ul className="search-criteria-add-menu">{missing.map(item => <li key={item.id}>
@@ -211,7 +202,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
     {view === "summary" && mobile && adding ? <div id="search-criteria-add-inline" className="search-criteria-inline-editor">
       {addTarget
         ? <>
-          <SearchPreferencesForm commitRef={formCommit} jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(addTarget.target)} />
+          <SearchPreferencesForm commitRef={formCommit} jobs={jobs} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(addTarget.target)} />
           <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" busy={committing} onClick={() => void finishEditor(closeAdd)}>Terminé</WorkspaceButton></div>
         </>
         : <ul className="search-criteria-add-menu">{missing.map(item => <li key={item.id}>
@@ -219,7 +210,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
         </li>)}</ul>}
     </div> : null}
     {view === "summary" && inlineToken ? <div id="search-criteria-inline" ref={inlineEditor} className="search-criteria-inline-editor">
-      <SearchPreferencesForm commitRef={formCommit} jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(inlineToken.target)} />
+      <SearchPreferencesForm commitRef={formCommit} jobs={jobs} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(inlineToken.target)} />
       <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" busy={committing} onClick={() => void finishEditor(closeInline)}>Terminé</WorkspaceButton></div>
     </div> : null}
 
@@ -231,7 +222,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
           <dd><ul className="search-criteria-values">{row.values.map(value => <li key={value} data-tone={row.tone}>{value}</li>)}</ul></dd>
           <dd className="search-criteria-row-action">{editingRow === (row.key ?? row.id) ? null : <WorkspaceButton variant="quiet" aria-label={`Modifier : ${row.label}`} aria-expanded={false} onClick={() => row.target === "jobgether" ? onOpenJobgether() : setEditingRow(row.key ?? row.id)}>Modifier</WorkspaceButton>}</dd>
           {editingRow === (row.key ?? row.id) ? <dd className="search-criteria-row-editor">
-            <SearchPreferencesForm commitRef={formCommit} jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(row.target)} />
+            <SearchPreferencesForm commitRef={formCommit} jobs={jobs} profile={profile} onSave={saveWithImpact} showIntro={false} only={formPart(row.target)} />
             <div className="search-criteria-popover-actions"><WorkspaceButton variant="primary" busy={committing} onClick={() => void finishEditor(() => setEditingRow(null))}>Terminé</WorkspaceButton></div>
           </dd> : null}
         </div>)}</dl>
@@ -239,6 +230,6 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, on
       </section>)}
     </div> : null}
 
-    {view === "edit" ? <SearchPreferencesForm commitRef={formCommit} jobs={jobs} key={formRevision} profile={profile} onSave={saveWithImpact} showIntro={false} table onStatusChange={reportStatus} onOpenJobgether={onOpenJobgether} /> : null}
+    {view === "edit" ? <SearchPreferencesForm commitRef={formCommit} jobs={jobs} profile={profile} onSave={saveWithImpact} showIntro={false} table onStatusChange={reportStatus} onOpenJobgether={onOpenJobgether} /> : null}
   </section>;
 }
