@@ -22,6 +22,7 @@ import { useRadarClock, refreshRadarClock } from "@/components/use-radar-clock";
 import { OpportunitiesWorkspace } from "@/components/opportunities-workspace";
 import { useRadarScan } from "@/components/use-radar-scan";
 import { useSessionJourney } from "@/components/use-session-journey";
+import { DomainTermsPanel } from "@/components/domain-terms";
 import { ProgressCelebrations } from "@/components/progress-celebrations";
 import { confirmedProgress, cancelEncouragement } from "@/lib/progress-event";
 import type { RadarPreferences } from "@/lib/celebrations";
@@ -43,7 +44,7 @@ import { OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/componen
 import { ApplicationTagEditor } from "@/components/application-tags";
 import { activeStatuses, terminalStatuses } from "@/lib/application-workflow";
 import { profileTemplate } from "@/lib/profile-template";
-import { hasSearchedRole, searchPreferences } from "@/lib/search-preferences";
+import { hasSearchedRole, searchPreferences, normalizeDomainTerms } from "@/lib/search-preferences";
 import { OnboardingTour } from "@/components/onboarding-tour";
 import { SidebarSignOut } from "@/components/account-settings";
 import { DemoModeProvider } from "@/components/demo-mode";
@@ -252,6 +253,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
       setProfile(result.profile); setToast("Profil enregistré dans votre espace privé."); return true;
     } catch { setToast("Le profil n’a pas été enregistré. Vos modifications restent disponibles à l’écran.", true); return false; }
   }
+  function acceptDomainTerms(terms:string[]){if(JSON.stringify(normalizeDomainTerms(profile.searchPreferences?.domainTerms))===JSON.stringify(normalizeDomainTerms(terms)))return;setProfile(current=>({...current,searchPreferences:{...searchPreferences(current.searchPreferences),domainTerms:terms}}));void refreshOffers({silent:true});}
   async function saveSearch(next: CandidateProfile) {
     const saved = await saveProfile(next);
     if (!saved) return false;
@@ -336,7 +338,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
         {!loading && !loadErrors.jobs && tab === "offers" && (!profileLoaded || roleChosen) ? <OpportunitiesWorkspace enabled={!scanOpen} onReload={()=>refreshOffers({silent:true})} rescueOffers={rescueOffers} currentJob={selectedJob} jobs={shownJobs} lot={dailyLot} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>{setJobs(current=>current.map(job=>job.id===updated.id?updated:job));setToast("Offre mise à jour.");}} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing||scan.busy} /> : null}
         {tab === "pipeline" ? <ApplicationsWorkspace placeholder={loading?<WorkspaceLoading/>:loadErrors.jobs?loadNotice:undefined} notice={!loading&&!loadErrors.jobs?loadNotice:undefined} jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
         {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace onPreferencesSaved={acceptPreferences} reachContent={reachContent} account={{ ownerId: ownerId ?? "", userName, email: userEmail, demo: !!ownerId?.startsWith("demo:"), signOutPath }} active={tab === "profile"} initialSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} profile={profile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
-        {profileLoaded && (tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel sessionWriting={journey.writing} onQuitSession={journey.session&&!journey.session.paused?journey.finish:undefined} headerTarget={sourceHeaderTarget} active={tab==="sources"} jobs={jobs} profile={profile} onSave={saveSearch} onSync={quiet=>runScan(undefined,quiet)} syncBusy={scan.busy} syncError={scan.error} syncedSettings={sourceSettings} onSettingsChanged={acceptSources} onAddOffer={url=>{setJobDialogUrl(url);setJobDialogOpen(true);}} /></Suspense></WorkspaceBoundary></div> : null}
+        {profileLoaded && (tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel domainContent={<DomainTermsPanel active={tab==="sources"} knownTerms={profile.searchPreferences?.domainTerms} referenceKey={profile.detailedExperienceDocumentId||profile.cvFrDocumentId||profile.cvEnDocumentId||""} onSaved={acceptDomainTerms} onCarnet={()=>openProfileSection("experiences")}/>} sessionWriting={journey.writing} onQuitSession={journey.session&&!journey.session.paused?journey.finish:undefined} headerTarget={sourceHeaderTarget} active={tab==="sources"} jobs={jobs} profile={profile} onSave={saveSearch} onSync={quiet=>runScan(undefined,quiet)} syncBusy={scan.busy} syncError={scan.error} syncedSettings={sourceSettings} onSettingsChanged={acceptSources} onAddOffer={url=>{setJobDialogUrl(url);setJobDialogOpen(true);}} /></Suspense></WorkspaceBoundary></div> : null}
         {tab !== "profile" && tab !== "offers" ? <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span></footer> : null}
         </div>
         </div>

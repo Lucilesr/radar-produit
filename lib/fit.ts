@@ -1,4 +1,4 @@
-import { foldKeyword } from "./search-preferences";
+import { foldKeyword, domainKeywords } from "./search-preferences";
 import { levelGap, type DetectedLevel } from "./seniority";
 import type { JobInput, SearchPreferences } from "./types";
 
@@ -33,7 +33,7 @@ function payPart(job: JobInput, search: SearchPreferences, level: DetectedLevel 
 }
 
 function domainPart(job: JobInput, search: SearchPreferences) {
-  const terms = search.boostKeywords ?? [];
+  const terms = domainKeywords(search);
   if (!terms.length || !hasReadableDescription(job)) return undefined;
   const haystack = foldKeyword(job.description ?? "");
   const found = [...new Set(terms.filter(term => haystack.includes(foldKeyword(term))))];

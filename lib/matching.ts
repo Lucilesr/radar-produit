@@ -1,5 +1,5 @@
 import type { Assessment, JobInput, JobStatus, SearchPreferences } from "./types";
-import { foldKeyword, payFloor, remoteForContract, searchPreferences } from "./search-preferences";
+import { foldKeyword, payFloor, remoteForContract, searchPreferences, domainKeywords } from "./search-preferences";
 import { detectWorkArrangement } from "./work-arrangement";
 import { activeStatuses } from "./application-workflow";
 import { isNorthAmericaRestricted } from "./market-scope";
@@ -190,7 +190,7 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
 
   const haystack = foldKeyword(`${text} ${job.company ?? ""}`);
   const found = (words?: string[]) => (words ?? []).filter(word => haystack.includes(foldKeyword(word)));
-  const boosted = found(search.boostKeywords);
+  const boosted = found(domainKeywords(search));
   if (boosted.length) {
     score += Math.min(12, 6 * boosted.length);
     reasons.push(`Mentionne ${boosted.join(", ")}.`);

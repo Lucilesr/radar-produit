@@ -29,13 +29,13 @@ export async function POST(request: Request) {
     const current = stored ? parseProfile(JSON.parse(stored.data)) : profileTemplate;
     // Document links and job notes have dedicated writes; a stale profile form
     // must not undo an upload or overwrite another candidature's private note.
-    const profile = { ...incoming, searchPreferences: searchPreferences(incoming.searchPreferences), ...documentLinks(current), applicationNotes: current.applicationNotes,
+    const profile = { ...incoming, searchPreferences: {...searchPreferences(incoming.searchPreferences),domainTerms:searchPreferences(current.searchPreferences).domainTerms}, ...documentLinks(current), applicationNotes: current.applicationNotes,
       triageDismissals: normalizeTriageDismissals({...current.triageDismissals,...incoming.triageDismissals}) };
     const now = new Date().toISOString();
     await getDb()
       .insert(profiles)
       .values({ userId: user.userId, data: JSON.stringify(profile), updatedAt: now })
-      .onConflictDoUpdate({ target: profiles.userId, set: { data: sql`json_set(${JSON.stringify(profile)}, '$.weekPlan', json_extract(${profiles.data}, '$.weekPlan'), '$.weekPlans', json_extract(${profiles.data}, '$.weekPlans'), '$.weekPlanRevision', coalesce(json_extract(${profiles.data}, '$.weekPlanRevision'),0), '$.preferences', json_extract(${profiles.data}, '$.preferences'), '$.celebrationState', json_extract(${profiles.data}, '$.celebrationState'))`, updatedAt: now } });
+      .onConflictDoUpdate({ target: profiles.userId, set: { data: sql`json_set(${JSON.stringify(profile)}, '$.weekPlan', json_extract(${profiles.data}, '$.weekPlan'), '$.weekPlans', json_extract(${profiles.data}, '$.weekPlans'), '$.weekPlanRevision', coalesce(json_extract(${profiles.data}, '$.weekPlanRevision'),0), '$.preferences', json_extract(${profiles.data}, '$.preferences'), '$.celebrationState', json_extract(${profiles.data}, '$.celebrationState'), '$.searchPreferences.domainTerms', json_extract(${profiles.data}, '$.searchPreferences.domainTerms'))`, updatedAt: now } });
     return Response.json({ profile: await readCandidateProfile(user.userId) });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Erreur inattendue" }, { status: 400 });

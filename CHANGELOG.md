@@ -1,6 +1,12 @@
 ## 7 novembre 2026 — Q4, la portée de votre radar
 
 
+## Termes du domaine — S5
+
+- Propositions depuis les expériences validées et autorisées, avec source et confirmation individuelle. Quarante termes au plus, retirables et sans doublons avec les mots-clés manuels.
+- Domaine du score enrichi sans changement de poids ; droits et versions revérifiés à la confirmation, critères protégés des anciens formulaires, sans migration ni tiers.
+
+
 ## Encouragements et confort — Q6
 
 - Courts encouragements corail après certaines actions confirmées, au plus un par heure pour le compte. Aucun après un refus ou un écartement ; aucune erreur ni action utile remplacée.

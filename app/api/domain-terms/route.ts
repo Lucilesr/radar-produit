@@ -1,0 +1,6 @@
+import {getChatGPTUser} from "@/app/chatgpt-auth";
+import {ensureSameOrigin} from "@/lib/server";
+import {readDomainTerms,writeDomainTerm,DomainTermConflict} from "@/lib/domain-terms-store";
+const headers={"Cache-Control":"private, no-store"};
+export async function GET(){const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401,headers});try{return Response.json(await readDomainTerms(user.userId),{headers});}catch{return Response.json({error:"Les termes du carnet ne peuvent pas être relus. Vos critères confirmés restent conservés."},{status:503,headers});}}
+export async function POST(request:Request){const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401,headers});if(!ensureSameOrigin(request))return Response.json({error:"Origine non autorisée"},{status:403,headers});try{return Response.json(await writeDomainTerm(user.userId,await request.json()),{headers});}catch(error){const message=error instanceof Error&&!/SQL|D1|constraint/i.test(error.message)?error.message:"Enregistrement non confirmé. Vos critères précédents restent conservés.";return Response.json({error:message},{status:error instanceof DomainTermConflict?409:400,headers});}}

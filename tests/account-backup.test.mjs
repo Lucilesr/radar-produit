@@ -19,7 +19,7 @@ function fixture() {
   for (const user of ["alice", "bob"]) {
     const key = `users/${user}/same-name.md`;
     const content = Buffer.from(long + user);
-    sqlite.prepare("INSERT INTO profiles(user_id,data) VALUES(?,?)").run(user, JSON.stringify({ notes: long + user, weekPlan: {week:"2026-W45",timeZone:"Europe/Paris",rhythm:"calm",commitments:[{id:"plan-"+user,when:"2026-11-04T10:00",action:"review",label:"Bilan privé "+user,doneAt:"2026-11-04T10:10:00Z"}]}, weekPlanRevision:2,weekPlans:[{week:"2026-W44",commitments:[{id:"old-"+user,label:"Engagement précédent "+user,doneAt:"2026-10-28T10:00:00Z"}]}] }));
+    sqlite.prepare("INSERT INTO profiles(user_id,data) VALUES(?,?)").run(user, JSON.stringify({ notes: long + user, searchPreferences:{domainTerms:["SEPA","Paiements"]}, weekPlan: {week:"2026-W45",timeZone:"Europe/Paris",rhythm:"calm",commitments:[{id:"plan-"+user,when:"2026-11-04T10:00",action:"review",label:"Bilan privé "+user,doneAt:"2026-11-04T10:10:00Z"}]}, weekPlanRevision:2,weekPlans:[{week:"2026-W44",commitments:[{id:"old-"+user,label:"Engagement précédent "+user,doneAt:"2026-10-28T10:00:00Z"}]}] }));
     sqlite.prepare("INSERT INTO documents(id,user_id,original_name,object_key,content_type,size) VALUES(?,?,?,?,?,?)").run("doc-" + user, user, "same-name.md", key, "text/markdown", content.length);
     sqlite.prepare("INSERT INTO jobs(id,user_id,fingerprint,title,description) VALUES(?,?,?,?,?)").run("job-" + user, user, "identical", "Même offre", long + user);
     sqlite.prepare("INSERT INTO application_boards(user_id,data) VALUES(?,?)").run(user, JSON.stringify({ columns: ["Entretien RH"] }));
@@ -56,7 +56,7 @@ test("sauvegarde intégrale A/B : noms/contenus/offres identiques, aucune donné
     assert(a.files.every(o => o.key.startsWith("users/alice/")));
     assert.doesNotMatch(JSON.stringify(a), /job-bob|doc-bob|users\/bob/);
     assert.equal(b.database.tables.profiles[0].user_id, "bob");
-    const savedPlan=JSON.parse(a.database.tables.profiles[0].data);assert.equal(savedPlan.weekPlan.commitments[0].id,"plan-alice");assert.equal(savedPlan.weekPlans[0].commitments[0].id,"old-alice");assert.equal(savedPlan.weekPlanRevision,2);
+    const savedPlan=JSON.parse(a.database.tables.profiles[0].data);assert.equal(savedPlan.weekPlan.commitments[0].id,"plan-alice");assert.equal(savedPlan.weekPlans[0].commitments[0].id,"old-alice");assert.equal(savedPlan.weekPlanRevision,2);assert.deepEqual(savedPlan.searchPreferences.domainTerms,["SEPA","Paiements"]);
     await verifyBackup(a); await verifyBackup(b);
     compareBackups(a, await createAccountBackup(f.db, f.bucket, "alice"));
     assert.deepEqual(f.sqlite.serialize(), before);
