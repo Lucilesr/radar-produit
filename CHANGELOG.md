@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Alignement des actions des critères
+
+« Tout modifier » reste aligné à droite lorsque l’en-tête passe sur plusieurs lignes, ainsi que dans les vues détaillée et édition. Les boutons et le focus Signal existants sont conservés.
+
 ## 7 novembre 2026 — Statut automatique des sources
 
 Le sélecteur d’état du suivi disparaît : la configuration se déduit des liens et recherches enregistrés ou d’une alerte reçue. Une note seule ne configure pas une source. Les collecteurs intégrés sont prêts sans réglage manuel ; la pause reste une action explicite. Le tag rejoint la croix en haut à droite du panneau. Replier la configuration libère immédiatement la place pour les offres trouvées.

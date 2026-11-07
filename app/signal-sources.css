@@ -196,7 +196,7 @@
 .search-criteria-panel-header>div:first-child{min-width:0;max-width:640px}
 .search-criteria-panel-header h2{margin:0}
 .search-criteria-panel-header p{margin-top:6px;color:var(--muted-foreground);font-size:14px;line-height:1.6}
-.search-criteria-panel-actions{display:flex;flex-wrap:wrap;gap:8px}
+.search-criteria-panel-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin-inline-start:auto}
 .search-criteria-tokens{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:14px;border:1px solid var(--border);border-radius:5px;background:var(--card);list-style:none}
 .search-criteria-tokens li{display:flex;max-width:100%}
 .search-criteria-token{display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px 6px;max-width:100%;min-height:32px;padding:5px 10px;border:1px solid var(--signal-soft);border-radius:4px;background:var(--signal-soft);color:var(--foreground);font:400 13px/1.45 var(--font-sans);text-align:left;cursor:pointer}
