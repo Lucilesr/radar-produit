@@ -1,5 +1,7 @@
 # Inventaire des états de Radar
 
+Complément **Q2, staging v28** : le [bilan du balayage](q2-balayage.md) distingue maintenant chargement borné, nouvelles fiches, absence de nouveauté, cache, pause, panne partielle avec reprise par source et panne complète conservant les offres. Captures fictives ordinateur et mobile, retour clavier et préférence de mouvement réduit réellement exécutée sont documentés dans ce lot. Cela complète les tableaux historiques ci-dessous ; le hors ligne réseau réel reste à reproduire.
+
 Relevé du 7 novembre 2026, commencé après la fusion documentaire de [#207](https://github.com/Lucilesr/radar-produit/pull/207) sur le staging v13. L’inventaire initial a été publié sans code dans [#212](https://github.com/Lucilesr/radar-produit/pull/212). Les tableaux sont actualisés pour le **staging privé v22** ; les anomalies observées avant correction restent décrites dans le classement historique et leur résolution dans le journal final. Les correctifs applicatifs passent par des PR séparées par écran ou sous-vue.
 
 ## Lecture et périmètre

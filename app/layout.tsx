@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { demoScenarioNotice } from "@/lib/demo-scenarios";
 import "./globals.css";
 import "./radar-theme.css";
 import "./workspace.css";
@@ -24,6 +25,7 @@ import "./onboarding-tour.css";
 import "./demo-notice.css";
 import "./signal-micro-motion.css";
 import "./signal-motion.css";
+import "./signal-scan.css";
 import "./signin-page.css";
 
 export const metadata: Metadata = {
@@ -42,10 +44,10 @@ export default async function RootLayout({
 }>) {
   const demo = !!(await cookies()).get("radar_demo_visitor")?.value;
   const demoMode = demo ? (await cookies()).get("radar_demo_mode")?.value : undefined;
-  const fridayDemo = demoMode === "friday";
+  const scenarioNotice = demoScenarioNotice(demoMode);
   return (
     <html lang="fr">
-      <body>{demo ? <div className="demo-notice"><span>Démo · données fictives isolées dans ce navigateur · aucune candidature réelle{fridayDemo ? " · repêchage simulé un vendredi" : demoMode === "triage" ? " · exemple de tris répétés" : ""}</span><a href="/demo?onboarding=1">Tester l’onboarding</a><a href="/demo">Recommencer</a><a href="/demo-exit">Quitter la démo</a></div> : null}{children}</body>
+      <body>{demo ? <div className="demo-notice"><span>Démo · données fictives isolées dans ce navigateur · aucune candidature réelle{scenarioNotice?` · ${scenarioNotice}`:""}</span><a href="/demo?onboarding=1">Tester l’onboarding</a><a href="/demo">Recommencer</a><a href="/demo-exit">Quitter la démo</a></div> : null}{children}</body>
     </html>
   );
 }

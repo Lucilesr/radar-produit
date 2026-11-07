@@ -7,6 +7,7 @@ import { library as readExperienceLibrary } from "@/lib/experience-store";
 import { readRadarRoute, readProfileSection } from "@/lib/radar-navigation";
 import { ensureOnboardingDemo } from "@/lib/onboarding-demo";
 import { ensureRecruiterDemo } from "@/lib/recruiter-demo";
+import { syncDemoSources } from "@/lib/demo-scan";
 import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,10 @@ export const dynamic = "force-dynamic";
 export default async function Home({searchParams}: {searchParams: Promise<Record<string, string | string[] | undefined>>}) {
   const user = await requireChatGPTUser("/");
   const demoMode = user.userId.startsWith("demo:") ? (await cookies()).get("radar_demo_mode")?.value : undefined;
-  if (user.userId.startsWith("demo:")) await ensureRecruiterDemo(user.userId, demoMode === "onboarding", demoMode === "friday", demoMode === "triage");
+  if (user.userId.startsWith("demo:")) {
+    const fresh=await ensureRecruiterDemo(user.userId,{emptyProfile:demoMode==="onboarding",fridayDemo:demoMode==="friday",triageDemo:demoMode==="triage",scanDemo:demoMode?.startsWith("scan"),reducedMotion:demoMode==="scan-reduced"});
+    if(fresh&&demoMode==="scan-empty")await syncDemoSources(user.userId,"scan");
+  }
   else await ensureOnboardingDemo(user.userId).catch(() => undefined);
   // Cleanup is maintenance: a failure must not take down the entire workspace.
   await purgeExpiredTrash(user.userId).catch(error => console.error("Trash cleanup failed:", String(error)));

@@ -59,6 +59,33 @@ test("démo recruteurs : deux visiteurs isolés, relance sans doublon ni résurr
   assert.equal(sqlite.prepare("SELECT COUNT(*) AS total FROM profiles WHERE user_id=?").get("demo:carole").total, 0);
   assert.equal(sqlite.prepare("SELECT COUNT(*) AS total FROM experience_items WHERE user_id=?").get("demo:carole").total, 0);
 
+  // The scan adapter must exercise real per-owner writes without calling external feeds.
+  await ensureRecruiterDemo("demo:scan",{scanDemo:true,reducedMotion:true});
+  const scanProfile=JSON.parse(sqlite.prepare("SELECT data FROM profiles WHERE user_id=?").get("demo:scan").data);
+  assert.equal(scanProfile.searchPreferences.targetLevel,"senior");assert.equal(scanProfile.preferences.reducedMotion,true);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM source_settings WHERE user_id=?").get("demo:scan").n,4);
+  const {syncDemoSources}=await import(moduleUrl("lib/demo-scan.ts"));
+  const originalFetch=globalThis.fetch;let externalCalls=0;
+  globalThis.fetch=async()=>{externalCalls++;throw new Error("Un flux externe ne doit jamais être contacté en démo");};
+  try{
+    const first=await syncDemoSources("demo:scan","scan");
+    assert.equal(first.total,4);assert.equal(first.imported,3);assert.equal(first.deduplicated,1);assert.equal(first.matching,3);
+    const repeated=await syncDemoSources("demo:scan","scan");
+    assert.equal(repeated.imported,0);assert.equal(repeated.deduplicated,4);assert.equal(repeated.matching,3);
+    assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM jobs WHERE user_id=?").get("demo:scan").n,11);
+    await ensureRecruiterDemo("demo:partial",{scanDemo:true});
+    const partial=await syncDemoSources("demo:partial","scan-partial");
+    assert.equal(partial.partialFailure,true);assert.equal(partial.imported,1);
+    const retry=await syncDemoSources("demo:partial","scan-partial","Jobgether");
+    assert.equal(retry.partialFailure,false);assert.equal(retry.imported,2);
+    const failed=await syncDemoSources("demo:partial","scan-error");assert.equal(failed.allFailed,true);
+    assert.equal(externalCalls,0);
+    for(const source of ["We Work Remotely","Jobgether"])sqlite.prepare("UPDATE source_settings SET data=? WHERE user_id=? AND source=?").run(JSON.stringify({selected:true,state:"paused"}),"demo:scan",source);
+    const paused=await syncDemoSources("demo:scan","scan");assert.equal(paused.inactive,true);assert.equal(paused.imported,0);
+    const pausedSetting=JSON.parse(sqlite.prepare("SELECT data FROM source_settings WHERE user_id=? AND source=?").get("demo:scan","Jobgether").data);assert.equal(pausedSetting.state,"paused");
+    await assert.rejects(()=>syncDemoSources("owner","scan"),/compte fictif/);
+  }finally{globalThis.fetch=originalFetch;}
+
   const trashedId = alice[0].id;
   sqlite.prepare("UPDATE jobs SET deleted_at=? WHERE user_id=? AND id=?").run("2026-10-28T00:00:00Z", "demo:alice", trashedId);
   await ensureRecruiterDemo("demo:alice");

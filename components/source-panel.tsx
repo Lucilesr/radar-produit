@@ -19,13 +19,13 @@ import { SourceAddSheet, type AddFilter } from "@/components/source-add-sheet";
 import { followedSourcesSummary, needsAction, sourceStatus } from "@/lib/source-status";
 import { sourceDrift } from "@/lib/search-drift";
 import { suggestedSources } from "@/lib/source-suggestions";
-import { searchPreferences } from "@/lib/search-preferences";
+import { hasSearchedRole, searchPreferences } from "@/lib/search-preferences";
 import { sourceCatalog } from "@/lib/source-catalog";
 import { validSearchLink } from "@/lib/web-discovery";
 import type { JobRecord } from "@/lib/types";
 import type { CandidateProfile } from "@/lib/types";
 import { SearchCriteriaPanel } from "@/components/search-criteria-panel";
-import { lastRefreshAt, refreshMode, refreshModeLabels, refreshedAgo, shouldRefreshOnOpen } from "@/lib/refresh-schedule";
+import { lastRefreshAt, refreshMode, refreshModeLabels, refreshedAgo } from "@/lib/refresh-schedule";
 import { useDemoMode } from "@/components/demo-mode";
 import { readSearchSection, type SearchSection } from "@/lib/radar-navigation";
 
@@ -33,10 +33,11 @@ const initialAlertSources = new Set(["Collective", "Apec", "Free-Work", "We Work
 const initialJobboardSources = new Set(["LinkedIn Jobs", "Welcome to the Jungle", "Wellfound", "Himalayas"]);
 const allInitialSources = new Set([...initialAlertSources, ...initialJobboardSources]);
 
-export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true,headerTarget}:{jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSynced:()=>Promise<boolean>;onAddOffer?:(url:string)=>void;active?:boolean;headerTarget?:HTMLElement|null}) {
+export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError="",syncedSettings,onSettingsChanged,onAddOffer,active=true,headerTarget}:{jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSync:(quiet?:boolean)=>Promise<boolean>;syncBusy?:boolean;syncError?:string;syncedSettings?:SourceSetting[];onSettingsChanged:(sources:SourceSetting[])=>void;onAddOffer?:(url:string)=>void;active?:boolean;headerTarget?:HTMLElement|null}) {
   const demo=useDemoMode();
   const notify=useWorkspaceFeedback();
   const [settings,setSettings]=useState<SourceSetting[]|null>(null);
+  const [seenSettings,setSeenSettings]=useState(syncedSettings);
   useEffect(()=>{const restore=()=>{if(active){const requested=new URLSearchParams(window.location.search).get("sources");if(requested)selectSection(readSearchSection(requested));}};restore();window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);},[active]);
   // « Aujourd'hui » links to one source: open its panel, then drop the parameter.
   useEffect(()=>{
@@ -61,8 +62,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
     requestAnimationFrame(()=>document.querySelector<HTMLElement>('[data-source="Jobgether"]')?.scrollIntoView({block:"center"}));
   }
   const [loading,setLoading]=useState(true),[loadError,setLoadError]=useState("");
-  const [operation,setOperation]=useState<"sync"|null>(null);
-  const [syncError,setSyncError]=useState("");
+
   const [addingSource,setAddingSource]=useState<string|null>(null),[addSourceError,setAddSourceError]=useState("");
   const suggestionTrigger=useRef<HTMLElement|null>(null);
   useEffect(()=>{
@@ -84,41 +84,21 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
     if(trigger?.isConnected&&trigger!==document.body)trigger.focus();
     else document.querySelector<HTMLElement>("#source-panel-channels button")?.focus();
   }
-  const locked=useRef(false);
-  const busy=operation!==null;
+  const busy=syncBusy;
+  if(syncedSettings&&syncedSettings!==seenSettings){setSeenSettings(syncedSettings);setSettings(syncedSettings);setLoadError("");setLoading(false);}
   async function load(){
     setLoading(true);
-    try{const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),cache:"no-store"});if(!response.ok)throw new Error();setSettings(((await response.json()) as {sources:SourceSetting[]}).sources);setLoadError("");return true;}
+    try{const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),cache:"no-store"});if(!response.ok)throw new Error();const sources=((await response.json()) as {sources:SourceSetting[]}).sources;setSettings(sources);onSettingsChanged(sources);setLoadError("");return true;}
     catch{setLoadError("Impossible de lire la configuration des sources.");return false;}
     finally{setLoading(false);}
   }
-  useEffect(()=>{let active=true;fetch("/api/sources",{signal:AbortSignal.timeout(15000),cache:"no-store"}).then(async response=>{if(!response.ok)throw new Error();const data=await response.json() as {sources:SourceSetting[]};if(active){setSettings(data.sources);setLoadError("");}}).catch(()=>{if(active)setLoadError("Impossible de lire la configuration des sources.");}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[]);
-  // One attempt per visit: the caches of each source still decide what is really fetched.
-  const autoRefreshed=useRef(false);
-  useEffect(()=>{
-    if(!active||demo||!settings||autoRefreshed.current)return;
-    if(!shouldRefreshOnOpen(refreshMode(profile.refreshMode),lastRefreshAt(settings)))return;
-    autoRefreshed.current=true;
-    void sync(true);
-  },[active,demo,settings,profile.refreshMode]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  useEffect(()=>{let active=true;fetch("/api/sources",{signal:AbortSignal.timeout(15000),cache:"no-store"}).then(async response=>{if(!response.ok)throw new Error();const data=await response.json() as {sources:SourceSetting[]};if(active){setSettings(data.sources);onSettingsChanged(data.sources);setLoadError("");}}).catch(()=>{if(active)setLoadError("Impossible de lire la configuration des sources.");}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[]);
   async function saveRefreshMode(mode:string){
     const saved=await onSave({...profile,refreshMode:mode==="manual"?"manual":"on_open"});
     notify(saved?{message:mode==="manual"?"Radar n’actualisera plus tout seul.":"Radar actualisera vos flux à l’ouverture."}:{message:"Choix non enregistré. Réessayez.",tone:"error"});
   }
 
-  async function sync(quiet=false){
-    if(locked.current)return;locked.current=true;setOperation("sync");setSyncError("");
-    try{
-      const response=await fetch("/api/sources/sync",{signal:AbortSignal.timeout(45000),method:"POST"});
-      const data=await response.json() as {error?:string;imported?:number;deduplicated?:number;partialFailure?:boolean};
-      if(!response.ok)throw new Error(data.error??"Actualisation non confirmée.");
-      const [sourcesRead,jobsRead]=await Promise.all([load(),onSynced()]);
-      if(!sourcesRead||!jobsRead)throw new Error("Le flux a répondu, mais les données affichées n’ont pas toutes pu être actualisées. Vos dernières données sont conservées.");
-      if(!quiet||data.imported)notify({message:`${data.imported} nouvelles fiches et ${data.deduplicated} fiches déjà présentes.${data.partialFailure?" Une source est indisponible : voir son état ci-dessous.":""}`,tone:data.partialFailure?"info":"success"});
-    }catch(problem){setSyncError(requestError(problem, "Actualisation non confirmée."));}
-    finally{locked.current=false;setOperation(null);}
-  }
+  async function sync(quiet=false){return onSync(quiet);}
   async function visitSource(source:typeof sourceCatalog[number]){
     try{
       const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,visited:true})});
@@ -127,7 +107,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
       onSourceSaved(data.source);notify({message:`${source.name} marqué comme consulté.`});
     }catch(problem){notify({message:requestError(problem, "Visite non enregistrée."),tone:"error"});}
   }
-  const onSourceSaved=(updated:SourceSetting)=>setSettings(current=>[updated,...(current??[]).filter(item=>item.source!==updated.source)]);
+  const onSourceSaved=(updated:SourceSetting)=>{const next=[updated,...(settings??[]).filter(item=>item.source!==updated.source)];setSettings(next);onSettingsChanged(next);};
   const alertCatalog=sourceCatalog.filter(source=>source.mode==="email"||source.mode==="rss"||source.mode==="api");
   const jobboardCatalog=sourceCatalog.filter(source=>source.mode==="web"||source.mode==="research");
   const sourceVisible=(name:string,defaults:Set<string>)=>isSourceVisible(name,settings??[],defaults);
@@ -168,7 +148,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
   return <div className="source-workspace signal-sources-workspace">
     {active&&headerTarget?createPortal(<div className="source-refresh-actions">
       <span className="signal-help" role="status">{refreshedAgo(lastRefreshAt(settings??[]))}</span>
-      <WorkspaceButton variant="primary" busy={operation==="sync"} disabled={demo||busy||!settings} onClick={()=>void sync()}><RefreshCw size={14} aria-hidden/>Actualiser maintenant</WorkspaceButton>
+      <WorkspaceButton variant="primary" busy={syncBusy} disabled={busy||!settings||!hasSearchedRole(searchPreferences(profile.searchPreferences))} onClick={()=>void sync()}><RefreshCw size={14} aria-hidden/>Actualiser maintenant</WorkspaceButton>
       <Popover><PopoverTrigger asChild><WorkspaceButton variant="quiet" aria-label="Réglages d’actualisation"><MoreHorizontal size={18} aria-hidden/></WorkspaceButton></PopoverTrigger><PopoverContent align="end"><ChoiceSelect label="Actualisation" value={refreshMode(profile.refreshMode)} options={[{value:"on_open",label:refreshModeLabels.on_open},{value:"manual",label:refreshModeLabels.manual}]} onChange={mode=>void saveRefreshMode(mode)} disabled={demo||busy}/></PopoverContent></Popover>
     </div>,headerTarget):null}
     <div id="source-panel-criteria" className="source-subpanel">
@@ -176,7 +156,7 @@ export function SourcePanel({jobs,profile,onSave,onSynced,onAddOffer,active=true
     </div>
     <div id="source-panel-channels" className="source-subpanel">
       <WorkspacePanelHeader id="source-settings-title" title={<span className="source-title-line"><span>Sources suivies</span>{summary?<span className="source-summary">{summary}</span>:null}</span>} actions={<WorkspaceButton variant="secondary" aria-haspopup="dialog" disabled={!settings} onClick={()=>setAddFilter("all")}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>
-      {demo?<p className="signal-help">L’actualisation des flux externes et l’ajout d’alertes Collective sont désactivés dans la démo.</p>:null}
+      {demo?<p className="signal-help">Les balayages sont fictifs : aucun flux externe n’est contacté. L’ajout d’alertes Collective reste désactivé dans la démo.</p>:null}
       <WorkspaceFormError message={syncError}/><WorkspaceFormError message={loadError}/>
       {settings&&!followedSources.length?<section className="source-empty" aria-labelledby="source-empty-title">
         <h2 id="source-empty-title">Où Radar doit-il chercher ?</h2>

@@ -1,3 +1,9 @@
+## 7 novembre 2026 — Q2, le radar travaille
+
+- Actualiser lance un balayage avec un bilan réel : offres parcourues, adéquation, nouvelles fiches et doublons, puis accès au lot à examiner.
+- Chaque source garde son résultat ; une source en erreur peut être reprise séparément. Les attentes sont bornées, les offres restent conservées et les sources à visiter indiquent leur dernière visite.
+- Radar fixe et chiffres immédiats en mouvement réduit. Scénarios fictifs isolés pour vérifier la panne, sa reprise et les doublons sans contacter de flux externe.
+
 ## 7 novembre 2026 — Q1d, vos tris affinent le radar
 
 - Après quatre écartements partageant un fait connu en sept jours, proposition facultative de critère : brouillon à confirmer et Non merci pendant trente jours. Sources écartées modifiables dans Ma recherche.

@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { env } from "cloudflare:workers";
 import { getDb } from "@/db";
-import { documents, experienceItems, interviews, jobs, profiles } from "@/db/schema";
+import { documents, experienceItems, interviews, jobs, profiles, sourceSettings } from "@/db/schema";
 import { assessJob, createFingerprint } from "./matching";
 import { normalizeJobInput } from "./server";
 import type { CandidateProfile, JobStatus, SearchPreferences } from "./types";
@@ -45,14 +45,16 @@ const experience = [
   { title: "Product Manager · SaaS", organization: "Ligne Claire (fictif)", role: "Product Manager", period: "2020–2023", context: "Développement fictif d’une plateforme SaaS utilisée par plusieurs équipes métiers.", contribution: "Discovery, cadrage de la roadmap et coordination avec design, data et ingénierie.", result: "Livraisons mieux séquencées et retours utilisateurs intégrés aux décisions.", claimKey: "saas-discovery" },
 ];
 
-export async function ensureRecruiterDemo(userId: string, emptyProfile = false, fridayDemo = false, triageDemo = false): Promise<void> {
+type DemoOptions={emptyProfile?:boolean;fridayDemo?:boolean;triageDemo?:boolean;scanDemo?:boolean;reducedMotion?:boolean};
+export async function ensureRecruiterDemo(userId: string, options: DemoOptions|boolean = {}): Promise<boolean> {
+  const {emptyProfile=false,fridayDemo=false,triageDemo=false,scanDemo=false,reducedMotion=false}=typeof options==="boolean"?{emptyProfile:options}:options;
   if (!userId.startsWith("demo:")) throw new Error("La démo exige une session fictive.");
   const db = getDb();
   const existing = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.userId, userId)).limit(1);
-  if (existing.length) return;
+  if (existing.length) return false;
   const now = new Date();
   const nowIso = now.toISOString();
-  const demoProfile: CandidateProfile = fridayDemo || triageDemo ? { ...profile, searchPreferences: { ...demoSearchPreferences, targetLevel: "senior" } } : profile;
+  const demoProfile: CandidateProfile = fridayDemo || triageDemo || scanDemo ? { ...profile, preferences:{reducedMotion}, searchPreferences: { ...demoSearchPreferences, targetLevel: "senior" } } : profile;
   const daysAgo = (days: number) => new Date(now.getTime() - days * 86400000).toISOString();
   const rows = examples.map((example, index) => {
     const input = normalizeJobInput({ ...example, language: "fr", contentCoverage: "summary" });
@@ -86,6 +88,12 @@ export async function ensureRecruiterDemo(userId: string, emptyProfile = false, 
     createdAt: nowIso, updatedAt: nowIso,
   }))).onConflictDoNothing({ target: [experienceItems.userId, experienceItems.importKey] });
   const bucket = env.BUCKET;
+  if(scanDemo)for(const source of ["We Work Remotely","Jobgether"]){
+    await db.insert(sourceSettings).values({id:crypto.randomUUID(),userId,source,data:JSON.stringify({selected:true,state:"configured"}),updatedAt:nowIso}).onConflictDoNothing({target:[sourceSettings.userId,sourceSettings.source]});
+  }
+  if(scanDemo)for(const source of ["Collective","Malt"]){
+    await db.insert(sourceSettings).values({id:crypto.randomUUID(),userId,source,data:JSON.stringify({selected:true,state:"not_configured",lastVisitedAt:daysAgo(8),remindInToday:true,visitEveryDays:7}),updatedAt:nowIso}).onConflictDoNothing({target:[sourceSettings.userId,sourceSettings.source]});
+  }
   if (bucket && !emptyProfile) {
     const files = [
       { slot: "cvFrDocumentId", name: "CV-Camille-exemple.md", text: "# Camille · profil fictif\n\nProduct Manager / Product Owner. Exemple de document, sans coordonnées personnelles.\n\nCompétences : discovery, priorisation, delivery, analyse de données.\n" },
@@ -101,4 +109,5 @@ export async function ensureRecruiterDemo(userId: string, emptyProfile = false, 
     }
     await db.update(profiles).set({ data: JSON.stringify({ ...demoProfile, ...links }) }).where(eq(profiles.userId, userId));
   }
+  return true;
 }
