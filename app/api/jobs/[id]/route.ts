@@ -1,3 +1,5 @@
+import {activityDb,activityStatement} from "@/lib/activity-store";
+import {jobActivity} from "@/lib/activity";
 import { and, eq, isNull } from "drizzle-orm";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { getDb } from "@/db";
@@ -73,15 +75,22 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       const saved=await saveWorkspaceWrite(user.userId,key,body.candidateNote,before.version,before.value);
       return saved ? Response.json({job:await getOffer(user.userId,id,true)}) : Response.json({error:"La note a changé dans un autre onglet."},{status:409});
     }
+    const nextAppliedAt=cancellingApplication?undefined:status==="applied"&&!hasApplication(current)&&!row.appliedAt?now:current.appliedAt;
+    const nextReview=typeof body.reviewState==="string"?storedReviewDecision(body.reviewState as ReviewDecision):current.reviewState;
+    const activity=jobActivity(current,{status,appliedAt:nextAppliedAt,reviewState:nextReview});
+    if(!activity&&status===current.status&&nextReview===current.reviewState&&(boardColumnId===undefined||boardColumnId===(current.boardColumnId??null)))return Response.json({job:await getOffer(user.userId,id,true)});
     const update = db.update(jobs).set({ boardColumnId, status: Object.hasOwn(body, "status") || body.reviewState ? status : undefined, appliedAt: cancellingApplication ? null : status === "applied" && !hasApplication(current) && !row.appliedAt ? now : undefined,
       reviewState: typeof body.reviewState === "string" ? storedReviewDecision(body.reviewState as ReviewDecision) : undefined, matchScore: assessment.score, matchTier: assessment.tier,
       reasons: JSON.stringify(assessment.reasons), flags: JSON.stringify(assessment.flags), updatedAt: now })
-      .where(and(eq(jobs.id, id), eq(jobs.userId, user.userId), body.boardColumnId ? eq(jobs.status, current.status) : undefined, body.boardColumnId && Object.hasOwn(body,"expectedBoardColumnId") ? current.boardColumnId ? eq(jobs.boardColumnId,current.boardColumnId) : isNull(jobs.boardColumnId) : undefined)).returning();
-    const changed = await update;
+      .where(and(eq(jobs.id,id),eq(jobs.userId,user.userId),eq(jobs.status,row.status),row.reviewState===null?isNull(jobs.reviewState):eq(jobs.reviewState,row.reviewState),row.appliedAt===null?isNull(jobs.appliedAt):eq(jobs.appliedAt,row.appliedAt),eq(jobs.updatedAt,row.updatedAt),row.boardColumnId===null?isNull(jobs.boardColumnId):eq(jobs.boardColumnId,row.boardColumnId),row.deletedAt===null?isNull(jobs.deletedAt):eq(jobs.deletedAt,row.deletedAt))).returning().toSQL();
+    const guard="EXISTS(SELECT 1 FROM jobs WHERE id=? AND user_id=? AND status IS ? AND review_state IS ? AND applied_at IS ? AND updated_at IS ? AND board_column_id IS ? AND deleted_at IS ?)";
+    const statements=activity?[activityStatement(user.userId,{action:activity.action,objectType:"job",objectId:id,createdAt:now,data:{...activity.data,source:current.source,fit:assessment.fit??null,fitLabel:assessment.fitLabel??null}},guard,[id,user.userId,row.status,row.reviewState,row.appliedAt,row.updatedAt,row.boardColumnId,row.deletedAt])]:[];
+    statements.push(activityDb().prepare(update.sql).bind(...update.params));
+    const changed=(await activityDb().batch(statements)).at(-1)?.results??[];
     if (!changed.length) return Response.json({ error: "La candidature a changé. Actualisez." }, { status: 409 });
     return Response.json({ job: await getOffer(user.userId, id, true) });
-  } catch (error) {
-    return Response.json({ error: error instanceof Error ? error.message : "Erreur inattendue" }, { status: 400 });
+  } catch {
+    return Response.json({error:"Enregistrement non confirmé. Relisez le dossier avant de réessayer."},{status:400});
   }
 }
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {

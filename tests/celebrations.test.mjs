@@ -70,6 +70,8 @@ test("Q6 SQLite : quota entre appareils, preuve propriétaire, refus exclus et r
  assert.equal((await store.claimCelebration("alice",{kind:"interview_review",objectId:"interview",stamp:event().stamp},now+7200000,0)).accepted,false,"pas de surprise après un refus");
  sqlite.prepare("UPDATE interviews SET data=? WHERE id='interview'").run(JSON.stringify({summary:"Un apprentissage",outcome:"waiting",followUpAt:event().stamp}));
  assert.equal((await store.claimCelebration("alice",{kind:"interview_review",objectId:"interview",stamp:event().stamp},now+7200000,0)).accepted,true);
+ assert.equal((await store.claimCelebration("alice",{kind:"followup_done",objectId:"interview",stamp:event().stamp},now+10800000,0)).accepted,false,"une relance non notée ne déclenche pas de surprise");
+ sqlite.prepare("UPDATE interviews SET data=json_set(data,'$.followUpDoneAt',?,'$.followUpDoneFor',?) WHERE id='interview'").run(new Date(now+10800000).toISOString(),event().stamp);
  assert.equal((await store.claimCelebration("alice",{kind:"followup_done",objectId:"interview",stamp:event().stamp},now+10800000,0)).accepted,true);
  assert.equal((await store.claimCelebration("alice",{kind:"week_held",objectId:plan.week,stamp:plan.week},now+14400000,0)).accepted,true);
  const route=await import(moduleUrl("app/api/preferences/route.ts"));globalThis.__trashUser=null;assert.equal((await route.GET()).status,401);globalThis.__trashUser="alice";assert.equal((await route.PATCH(new Request("https://radar.test/api/preferences",{method:"PATCH",headers:{Origin:"https://evil.test"},body:"{}"}))).status,403);

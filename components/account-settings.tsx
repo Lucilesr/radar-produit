@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Dialog } from "radix-ui";
 import { Download, LogOut, Trash2, X } from "lucide-react";
+import {ActivityJournal} from "@/components/activity-journal";
 import { RadarPreferencesSettings } from "@/components/radar-preferences";
 import type { RadarPreferences } from "@/lib/celebrations";
 import { WorkspaceButton, WorkspaceFormError, WorkspaceFormSection } from "@/components/workspace-form";
@@ -30,6 +31,7 @@ export function AccountSettings({ ownerId, userName, email, demo, signOutPath, p
   const [deleted, setDeleted] = useState(false);
   return <div className="account-settings">
     <RadarPreferencesSettings initial={preferences} onSaved={onPreferences}/>
+    <ActivityJournal/>
     <WorkspaceFormSection title="Connexion" description={demo ? "Vous utilisez la démo : les données sont fictives et isolées dans ce navigateur." : "Radar vous identifie avec votre compte ChatGPT. Vos données ne sont visibles que par vous."}>
       <div className="account-identity">
         <span className="avatar" aria-hidden>{userName.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase() || "RP"}</span>
@@ -42,10 +44,10 @@ export function AccountSettings({ ownerId, userName, email, demo, signOutPath, p
       </div>
     </WorkspaceFormSection>
     {demo ? null : <>
-      <WorkspaceFormSection title="Vos données" description="Téléchargez l’intégralité de votre compte : offres, candidatures, notes, carnet d’expériences et fichiers originaux.">
+      <WorkspaceFormSection title="Vos données" description="Téléchargez l’intégralité de votre compte : offres, candidatures, notes, carnet d’expériences, journal d’activité et fichiers originaux.">
         <div className="account-actions"><a className="secondary-button signal-form-button" href="/sauvegarde"><Download size={15} aria-hidden />Exporter mes données</a></div>
       </WorkspaceFormSection>
-      <WorkspaceFormSection className="account-danger" title="Supprimer mon compte" description="Efface définitivement vos critères, sources, offres, candidatures, entretiens, notes, réponses, carnet d’expériences et documents (CV compris). Votre compte ChatGPT n’est pas concerné.">
+      <WorkspaceFormSection className="account-danger" title="Supprimer mon compte" description="Efface définitivement vos critères, sources, offres, candidatures, entretiens, notes, réponses, carnet d’expériences, journal d’activité et documents (CV compris). Votre compte ChatGPT n’est pas concerné.">
         {deleted ? <p role="status" className="account-deleted">Votre compte Radar a été supprimé. Déconnexion…</p> : <div className="account-actions"><WorkspaceButton ref={deleteTrigger} variant="danger" onClick={() => setOpen(true)}><Trash2 size={15} aria-hidden />Supprimer mon compte</WorkspaceButton></div>}
       </WorkspaceFormSection>
       <AccountDeletionDialog open={open} onReturnFocus={()=>deleteTrigger.current?.focus({preventScroll:true})} onClose={() => setOpen(false)} onDeleted={() => {

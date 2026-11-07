@@ -12,7 +12,7 @@ async function confirmedProgress(userId:string,event:ProgressEvent,profile:Recor
  const interview=await db().prepare("SELECT i.state,i.data,i.updated_at,j.status FROM interviews i JOIN jobs j ON j.id=i.job_id AND j.user_id=i.user_id WHERE i.user_id=? AND i.id=?").bind(userId,event.objectId).first<{state:string;data:string;updated_at:string;status:string}>();
  if(!interview||interview.state!=="reviewed"||["rejected","withdrawn","closed"].includes(interview.status))return false;
  const data=JSON.parse(interview.data);
- return event.kind==="followup_done"?data.followUpAt===event.stamp:interview.updated_at===event.stamp&&data.outcome!=="rejected"&&[data.summary,data.strengths,data.weaknesses].some(value=>typeof value==="string"&&value.trim());
+ return event.kind==="followup_done"?data.followUpAt===event.stamp&&data.followUpDoneFor===event.stamp&&typeof data.followUpDoneAt==="string":interview.updated_at===event.stamp&&data.outcome!=="rejected"&&[data.summary,data.strengths,data.weaknesses].some(value=>typeof value==="string"&&value.trim());
 }
 /** The CAS covers the account quota and receipt together, including two devices. */
 export async function claimCelebration(userId:string,event:ProgressEvent,now=Date.now(),draw=Math.random()){

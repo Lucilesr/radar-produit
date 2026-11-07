@@ -29,16 +29,16 @@ function moduleUrl(file) {
 
 test("corbeille SQLite : isolation A/B, relance, réimport, rappels et restauration sans perte", async () => {
   const sqlite = new DatabaseSync(":memory:");
-  let queryCount = 0;
+  let queryCount = 0, batchCount = 0;
   for (const file of readdirSync(resolve(root, "drizzle")).filter(name => name.endsWith(".sql")).sort()) sqlite.exec(readFileSync(resolve(root, "drizzle", file), "utf8"));
   function prepare(sql) { let args = []; return {
     bind(...values) { assert(values.length <= 100, "limite de 100 paramètres D1 dépassée"); args = values; return this; },
-    async all() { return { results: sqlite.prepare(sql).all(...args) }; },
+    async all() { queryCount++;return { results: sqlite.prepare(sql).all(...args) }; },
     async raw() { queryCount++; const stmt = sqlite.prepare(sql); stmt.setReturnArrays(true); return stmt.all(...args); },
     async run() { return sqlite.prepare(sql).run(...args); },
   }; }
   globalThis.__trashEnv = { DB: { prepare, async batch(statements) {
-    sqlite.exec("BEGIN");
+    batchCount++;sqlite.exec("BEGIN");
     try { const results = []; for (const statement of statements) results.push(await statement.all()); sqlite.exec("COMMIT"); return results; }
     catch (error) { sqlite.exec("ROLLBACK"); throw error; }
   } } };
@@ -122,9 +122,11 @@ test("corbeille SQLite : isolation A/B, relance, réimport, rappels et restaurat
   assert.equal((await store.listOffers("bob")).length, 1);
   const ids = [a.id];
   for (let i = 1; i < 50; i++) ids.push((await store.saveOffer("alice", { ...input, company: `Fictif ${i}` })).job.id);
-  const beforeBatch = queryCount;
+  const beforeBatch = queryCount,beforeTransactions=batchCount,eligible=sqlite.prepare("SELECT count(*) n FROM jobs WHERE user_id='alice' AND deleted_at IS NULL").get().n,beforeEvents=sqlite.prepare("SELECT count(*) n FROM activity_events WHERE user_id='alice' AND action='offer_sorted'").get().n;
   const results = await store.setOffersDeleted("alice", ids, true);
-  assert.equal(queryCount - beforeBatch, 1, "50 offres supprimées en UNE requête SQL");
+  assert.equal(queryCount-beforeBatch,2,"mutation et journal bornés à deux requêtes, sans N+1");
+  assert.equal(batchCount-beforeTransactions,1,"un seul batch atomique");
+  assert.equal(sqlite.prepare("SELECT count(*) n FROM activity_events WHERE user_id='alice' AND action='offer_sorted'").get().n-beforeEvents,eligible,"un reçu pour chaque changement réel uniquement");
   assert.equal(results.length, 50);
   assert.deepEqual(await store.setOffersDeleted("alice", ids, true), results, "relance sans réécriture des dates");
   assert.equal((await store.listOffers("alice")).length, 0);

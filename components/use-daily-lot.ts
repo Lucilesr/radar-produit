@@ -1,5 +1,6 @@
 "use client";
-import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import {useRadarContinuity,saveAccountLot} from "@/components/use-radar-continuity";
 import { buildDailyLot, type DailyLot, type StoredLot } from "@/lib/daily-lot";
 import type { JobRecord } from "@/lib/types";
 
@@ -41,23 +42,20 @@ const clockStep = 5 * 60 * 1000;
 function subscribeClock(listener: () => void) { const timer = window.setInterval(listener, 60 * 1000); return () => window.clearInterval(timer); }
 const readClock = () => Math.floor(Date.now() / clockStep) * clockStep;
 
-/**
- * Lot of the day, kept in this browser so a reload does not reshuffle it. Without storage the
- * lot is simply chosen again: it is a reading aid, never the only copy of a decision.
- */
-export function useDailyLot(jobs: JobRecord[], ready: boolean, owner = "") {
-  const storageKey = "radar:lot-du-jour:" + owner;
-  // `undefined` until hydration: no lot yet, so a stored lot is never replaced by a fresh one.
-  const read = useCallback(() => readRaw(storageKey), [storageKey]);
-  const raw = useSyncExternalStore(subscribe, read, () => undefined);
-  const now = useSyncExternalStore(subscribeClock, readClock, () => 0);
-  const lot = useMemo(() => !ready || raw === undefined || !now ? null : buildDailyLot(jobs, parse(raw), now), [jobs, raw, now, ready]);
-  useEffect(() => {
-    if (!lot) return;
-    const stored = parse(raw ?? null);
-    if (stored?.day !== lot.day || stored.ids.join() !== lot.ids.join() || stored.locked !== lot.locked) write(storageKey, { day: lot.day, ids: lot.ids, locked: lot.locked });
-  }, [lot, raw, storageKey]);
-  // Capture the displayed batch before the first request can change the input pool.
-  const lock = () => { if (lot) write(storageKey, { day: lot.day, ids: lot.ids, locked: true }); };
-  return { lot, lock };
+/** Canonical lot in the account; the old browser snapshot is migrated once and kept as a reading fallback. */
+export function useDailyLot(jobs:JobRecord[],ready:boolean,owner=""){
+ const storageKey="radar:lot-du-jour:"+owner,remote=useRadarContinuity(owner,ready),pending=useRef<string|null>(null);
+ const read=useCallback(()=>readRaw(storageKey),[storageKey]);
+ const raw=useSyncExternalStore(subscribe,read,()=>undefined),now=useSyncExternalStore(subscribeClock,readClock,()=>0);
+ const canonical=remote.state?.lot??null;
+ const lot=useMemo(()=>!ready||raw===undefined||!now?null:buildDailyLot(jobs,canonical??parse(raw),now),[jobs,canonical,raw,now,ready]);
+ const matches=!!lot&&canonical?.day===lot.day&&canonical.ids.join()===lot.ids.join()&&canonical.locked===lot.locked;
+ useEffect(()=>{
+  if(!ready||!owner||!lot||!remote.ready||remote.reading||remote.busy||remote.error||matches)return;
+  const value={day:lot.day,ids:lot.ids,locked:lot.locked},signature=JSON.stringify(value);if(pending.current===signature)return;
+  const frame=requestAnimationFrame(()=>{pending.current=signature;void saveAccountLot(owner,value).finally(()=>{pending.current=null;});});return()=>cancelAnimationFrame(frame);
+ },[ready,owner,lot,remote.ready,remote.reading,remote.busy,remote.error,matches]);
+ useEffect(()=>{if(canonical&&raw!==undefined&&JSON.stringify(canonical)!==raw)write(storageKey,canonical);},[canonical,raw,storageKey]);
+ const lock=async()=>{if(!lot||!matches||!remote.ready)return false;const saved=await saveAccountLot(owner,{day:lot.day,ids:lot.ids,locked:true});return !!saved?.lot&&saved.lot.day===lot.day&&saved.lot.ids.join()===lot.ids.join();};
+ return {lot:matches?lot:null,lock,ready:matches,error:remote.error,reload:remote.reload};
 }

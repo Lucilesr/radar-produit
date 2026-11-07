@@ -1,0 +1,6 @@
+import {getChatGPTUser} from "@/app/chatgpt-auth";
+import {ensureSameOrigin} from "@/lib/server";
+import {declareActivity,readActivity} from "@/lib/activity-store";
+const headers={"Cache-Control":"private, no-store"};
+export async function GET(request:Request){const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401,headers});try{return Response.json(await readActivity(user.userId,new URL(request.url).searchParams.get("cursor")),{headers});}catch{return Response.json({error:"Le journal n’a pas pu être relu. Vos autres données restent accessibles."},{status:503,headers});}}
+export async function POST(request:Request){const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401,headers});if(!ensureSameOrigin(request))return Response.json({error:"Origine non autorisée"},{status:403,headers});try{const text=await request.text();if(text.length>2000)return Response.json({error:"Action trop volumineuse"},{status:413,headers});return Response.json(await declareActivity(user.userId,JSON.parse(text)),{headers});}catch{return Response.json({error:"Action non confirmée. Relisez la candidature ou réessayez la fin de séance."},{status:409,headers});}}

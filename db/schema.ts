@@ -143,3 +143,14 @@ export const applicationAnswerProposals = sqliteTable("application_answer_propos
   language: text("language").notNull(), contextDigest: text("context_digest").notNull(),
   createdAt: text("created_at").notNull(),
 }, t => [index("application_proposals_user_question_idx").on(t.userId, t.questionId, t.createdAt)]);
+
+// Private, additive activity journal. No notes, CV text or third-party telemetry.
+export const activityEvents = sqliteTable("activity_events", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  action: text("action").notNull(),
+  objectType: text("object_type").notNull(),
+  objectId: text("object_id").notNull(),
+  createdAt: text("created_at").notNull(),
+  data: text("data", { mode: "json" }).$type<Record<string, unknown>>().notNull().default({}),
+}, table => [index("activity_events_user_date").on(table.userId, table.createdAt, table.id)]);
