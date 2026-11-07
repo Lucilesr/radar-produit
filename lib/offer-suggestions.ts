@@ -2,7 +2,7 @@ import type { JobInput } from "./types";
 import { parseOfferText } from "./offer-parser";
 import { countryCodes, countryLabel } from "./countries";
 export type SuggestedField="title"|"company"|"contractType"|"annualSalary"|"dailyRate"|"remoteMode"|"language"|"onsiteDaysPerWeek"|"onsiteDaysPerMonth"|"remoteCountry";
-export type OfferSuggestion={field:SuggestedField;value:string|number;quote:string};
+export type OfferSuggestion={field:SuggestedField;value:string|number;quote:string;payRange?:{min:number|null;max:number|null}};
 const fold=(text:string)=>text.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 export function suggestOfferFields(text:string):OfferSuggestion[] {
   const parsed=parseOfferText(text.slice(0,12000),"Ajout manuel"), result:OfferSuggestion[]=[];
@@ -10,7 +10,8 @@ export function suggestOfferFields(text:string):OfferSuggestion[] {
   function add(field:SuggestedField,value:string|number|undefined|null,pattern:RegExp) {
     const quote=lines.find(line=>pattern.test(line));
     if((field==="annualSalary"||field==="dailyRate")&&quote&&!/€|\bEUR\b|euros?/i.test(quote))return;
-    if(quote&&value!==undefined&&value!==null&&value!==""&&value!=="unknown"&&value!=="other")result.push({field,value,quote});
+    if(quote&&value!==undefined&&value!==null&&value!==""&&value!=="unknown"&&value!=="other")result.push({field,value,quote,
+      ...(field==="annualSalary"?{payRange:{min:parsed.salaryMin??null,max:parsed.salaryMax??null}}:field==="dailyRate"?{payRange:{min:parsed.dailyRateMin??null,max:parsed.dailyRateMax??null}}:{})});
   }
   const titleLine=lines.find(line=>/^(?:intitulé|titre|poste|job title|title)\s*:/i.test(line));
   const header=titleLine?.replace(/^(?:intitulé|titre|poste|job title|title)\s*:\s*/i,"")??(/^(?:(?:senior|lead|junior|staff)\s+)?(?:product owner|product manager|product builder|product ops|product lead)\b/i.test(lines[0]??"")?lines[0]:undefined);
@@ -49,5 +50,8 @@ export function suggestOfferFields(text:string):OfferSuggestion[] {
   return result;
 }
 export function selectedSuggestions(suggestions:OfferSuggestion[],fields:SuggestedField[]):Partial<JobInput> {
-  return Object.fromEntries(suggestions.filter(item=>fields.includes(item.field)).map(item=>[item.field,item.value]));
+  return Object.fromEntries(suggestions.filter(item=>fields.includes(item.field)).flatMap(item=>[
+    [item.field,item.value],
+    ...(item.field==="annualSalary"?[["salaryMin",item.payRange?.min??null],["salaryMax",item.payRange?.max??null]]:item.field==="dailyRate"?[["dailyRateMin",item.payRange?.min??null],["dailyRateMax",item.payRange?.max??null]]:[]),
+  ]));
 }

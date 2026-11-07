@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Fourchettes conservées au préremplissage
+
+Les propositions de salaire et de TJM affichent et transmettent leurs bornes avec le montant coché. La fourchette reste dans le brouillon, à l’enregistrement et lors d’une correction sans changement de rémunération. Un montant modifié à la main remplace la fourchette.
+
 ## 7 novembre 2026 — Score v2, lot S3 : adéquation et fiabilité de la fiche
 
 Chaque offre reçoit une adéquation sur 100 (poste, niveau, rémunération lue comme signal de niveau, domaine des missions), calculée uniquement sur ce qui est connu : une information absente ne compte jamais comme zéro. La fiabilité de la fiche dit ce qu’on sait vraiment (description, rémunération, présence, niveau, langue). Les cartes et la fiche affichent un libellé (Très proche, Proche, À jauger, Loin) ou « Fiche incomplète » quand ni le niveau ni les missions ne sont connus ; le chiffre reste au survol. Une rémunération très au-dessus du minimum devient un point à vérifier. « Correspondances Radar » et le classement du tri utilisent l’adéquation ; la fraîcheur ne fait plus que départager. L’ancien score reste calculé pour le filtre Jobgether.
