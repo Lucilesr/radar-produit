@@ -52,6 +52,7 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
   if (!source) return null;
   const preferences = searchPreferences(profile.searchPreferences);
   const kind = sourceKind(source.mode);
+  const visitable = kind === "manual" || source.mode === "email";
   const status = sourceStatus(setting, source.mode);
   const searches = sourceSearches(source, setting, profile);
   const drift = sourceDrift(setting, preferences);
@@ -101,7 +102,7 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
         <span className="source-detail-logo"><SourceLogo name={source.name} compact /></span>
         <SheetTitle>{source.name}</SheetTitle>
         <SheetDescription>
-          {kind === "manual" ? "Source à consulter" : kind === "automatic" ? "Collecte automatique" : "Autre piste"}
+          {visitable ? "Source à consulter" : kind === "automatic" ? "Collecte automatique" : "Autre piste"}
         </SheetDescription>
         <div className="source-detail-head-actions">
           <span className="signal-source-pill" data-tone={statusTones[status]}>{statusLabels[status]}</span>
@@ -116,12 +117,12 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
             <a className="secondary-button" href={setting?.linkUrl || source.url} target="_blank" rel="noopener noreferrer">
               Ouvrir le site<ExternalLink size={14} aria-hidden />
             </a>
-            {kind === "manual" ? <WorkspaceButton variant="secondary" disabled={busy} onClick={async () => { setBusy(true); try { await onVisit(source); } finally { setBusy(false); } }}>J’ai fait le tour</WorkspaceButton> : null}
+            {visitable ? <WorkspaceButton variant="secondary" disabled={busy} onClick={async () => { setBusy(true); try { await onVisit(source); } finally { setBusy(false); } }}>J’ai fait le tour</WorkspaceButton> : null}
           </div>
-          {kind === "manual" ? <p className="signal-help">Ouvrez une recherche puis marquez la visite comme terminée.</p> : <p className="signal-help">{source.note}</p>}
+          {visitable ? <p className="signal-help">Ouvrez une recherche puis marquez la visite comme terminée.</p> : <p className="signal-help">{source.note}</p>}
         </section>
 
-        {kind === "manual" ? <section aria-label="Recherches">
+        {visitable ? <section aria-label="Recherches">
           <ul className="source-detail-searches">{searches.map(search => <li key={search.id}>
             <span><strong>{search.label}</strong><span className="signal-help">{search.detail}</span></span>
             <a className="secondary-button" href={search.url} target="_blank" rel="noopener noreferrer">Ouvrir<ExternalLink size={13} aria-hidden /></a>
@@ -129,7 +130,7 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
           {drift.map(item => <DriftNotice key={`${item.searchId}-${item.value}`} drift={item} busy={busy} onKeep={() => void keepTerm(item.value)} onDrop={() => void dropSearch(item.searchId)} />)}
         </section> : null}
 
-        <SourceCard key={source.name} embedded source={source} setting={setting} count={found.length} profile={profile} onSaveSearch={onSaveSearch} onSaved={onSaved} settingsExtra={kind === "manual" ? <section aria-label="Rythme de visite">
+        <SourceCard key={source.name} embedded source={source} setting={setting} count={found.length} profile={profile} onSaveSearch={onSaveSearch} onSaved={onSaved} settingsExtra={visitable ? <section aria-label="Rythme de visite">
           <ChoiceSelect label="Rythme de visite" value={String(visitEvery(setting))} disabled={busy} options={visitRhythms.map(([days, label]) => ({ value: String(days), label }))} onChange={days => void save({ visitEveryDays: Number(days) })} />
           <label className="source-detail-switch">
             <Switch checked={remindsInToday(setting)} disabled={busy} onCheckedChange={checked => void save({ remindInToday: checked })} />

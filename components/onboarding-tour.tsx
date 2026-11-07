@@ -20,7 +20,7 @@ const setup: Step[] = [
   { target: "experience-library", title: "Relisez votre première expérience", detail: "Ouvrez une expérience ou une réalisation, puis touchez le crayon pour relire les champs. Enregistrer valide les faits relus. L’autorisation d’usage en candidature reste un choix séparé.", mobileDetail: "Ouvrez une réalisation, touchez le crayon, puis Enregistrer pour valider les faits relus. Sans CV : Ajouter une expérience.", action: "verify" },
 ];
 const tour = (demo: boolean): Step[] => [
-  { target: "nav-dashboard", title: "Aujourd’hui", detail: "Votre point de départ : priorités, actions à faire et prochains entretiens.", action: "click" },
+  { target: "nav-dashboard", title: "Aujourd’hui", detail: "Votre point de départ : priorités, actions à faire et prochains entretiens. Actualiser ouvre le balayage ; son bilan distingue les nouvelles offres et les doublons. Une source en erreur se reprend séparément, sans perdre les autres résultats.", action: "click" },
   { target: "nav-offers", title: "Opportunités", detail: "Triez votre lot du jour, sans ajout pendant le tri. Sur une fiche ouverte : S sélectionne, L garde pour plus tard et X écarte. Le vendredi, la réserve propose parfois un repêchage. Vos tris peuvent suggérer un critère : vous décidez toujours de l’enregistrer.", action: "click" },
   { target: "nav-pipeline", title: "Candidatures", detail: "Suivez vos candidatures en Tableau ou en Kanban. Déplacez une carte pour mettre à jour son étape, puis ouvrez-la pour préparer une relance ou un entretien.", action: "click" },
   { target: "nav-profile", title: "Mon profil", detail: "Importez votre CV dans Mes documents et enrichissez votre Carnet d’expériences pour préparer vos candidatures.", action: "click" },

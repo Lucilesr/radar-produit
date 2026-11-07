@@ -15,7 +15,7 @@ import type { CandidateProfile } from "@/lib/types";
 import { hasSourceConfiguration } from "@/lib/source-status";
 import { sourceGuidance } from "@/lib/source-guidance";
 
-export type SourceSetting = { source: string; state?: string; notes?: string; linkUrl?: string; selected?: boolean; verification?: string; lastSyncedAt?: string; lastAttemptAt?: string; lastVisitedAt?: string; visitEveryDays?: number; remindInToday?: boolean; health?: string; error?: string; updatedAt?: string; searchLinks?: Record<string, import("@/lib/web-discovery").SearchLinks>; latestAlert?: { url: string; notificationAt: string; label: string } };
+export type SourceSetting = { source: string; lastCount?:number; state?: string; notes?: string; linkUrl?: string; selected?: boolean; verification?: string; lastSyncedAt?: string; lastAttemptAt?: string; lastVisitedAt?: string; visitEveryDays?: number; remindInToday?: boolean; health?: string; error?: string; updatedAt?: string; searchLinks?: Record<string, import("@/lib/web-discovery").SearchLinks>; latestAlert?: { url: string; notificationAt: string; label: string } };
 
 export function SourceCard({ source, setting, count, hidden, profile, onSaveSearch, onSaved, onRemove, embedded = false, settingsExtra }: { embedded?: boolean; settingsExtra?: ReactNode; source: typeof sourceCatalog[number]; setting?: SourceSetting; count: number; hidden?: boolean; profile: CandidateProfile; onSaveSearch: (profile: CandidateProfile) => Promise<boolean>; onSaved: (setting: SourceSetting) => void; onRemove?: () => void }) {
   const title=useId();

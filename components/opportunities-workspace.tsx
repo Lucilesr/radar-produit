@@ -20,8 +20,8 @@ import type { CandidateProfile, JobRecord, JobStatus } from "@/lib/types";
 
 const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"],["trash","Corbeille"]];
 const remote={full_remote:"Full remote",exceptional:"Présence ponctuelle",hybrid:"Hybride",onsite:"Sur site",unknown:"Remote à confirmer"};
-export function OpportunitiesWorkspace({lot,jobs,rescueOffers=[],counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
-  rescueOffers?:JobRecord[];
+export function OpportunitiesWorkspace({enabled=true,onReload,lot,jobs,rescueOffers=[],counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
+  enabled?:boolean;onReload?:()=>Promise<boolean>;rescueOffers?:JobRecord[];
   lot?:DailyLot|null; currentJob?:JobRecord|null; jobs:JobRecord[];counts:Record<OpportunityView,number>;filter:OpportunityView;onFilter:(view:OpportunityView)=>void;query:string;onClearSearch:()=>void;
   activeId?:string;view:WorkspaceView;onOpen:(job:JobRecord)=>void;onClose:()=>void;profile:CandidateProfile;
   onReview:(id:string,state:"to_review"|"selected"|"later")=>Promise<boolean>;onDelete:(job:JobRecord,next?:JobRecord)=>void;onDeleteMany:(jobs:JobRecord[])=>void;onRestore:(job:JobRecord)=>Promise<boolean>;
@@ -110,7 +110,7 @@ export function OpportunitiesWorkspace({lot,jobs,rescueOffers=[],counts,filter,o
   useEffect(()=>{
     const handle=(event:KeyboardEvent)=>{
       const target=event.target instanceof Element?event.target:null;
-      const action=triageShortcut(event.key,{open:!!activeId&&!!active&&!active.deletedAt&&!hasApplication(active),editing:!!target?.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="combobox"],[role="textbox"],[role="dialog"],[role="alertdialog"],[role="listbox"],[role="menu"]'),disabled:profile.preferences?.triageShortcuts===false||reviewing||trashBusy,modifier:event.altKey||event.metaKey||event.ctrlKey,repeat:event.repeat});
+      const action=triageShortcut(event.key,{open:enabled&&!!activeId&&!!active&&!active.deletedAt&&!hasApplication(active),editing:!!target?.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="combobox"],[role="textbox"],[role="dialog"],[role="alertdialog"],[role="listbox"],[role="menu"]'),disabled:profile.preferences?.triageShortcuts===false||reviewing||trashBusy,modifier:event.altKey||event.metaKey||event.ctrlKey,repeat:event.repeat});
       if(!action||event.defaultPrevented||!active)return;
       event.preventDefault();
       if(action==="discard"){const index=displayJobs.findIndex(job=>job.id===active.id);onDelete(active,displayJobs[index+1]??displayJobs[index-1]);}
@@ -118,7 +118,7 @@ export function OpportunitiesWorkspace({lot,jobs,rescueOffers=[],counts,filter,o
     };
     window.addEventListener("keydown",handle);
     return()=>window.removeEventListener("keydown",handle);
-  },[activeId,active,profile.preferences?.triageShortcuts,reviewing,trashBusy,displayJobs,onDelete,review]);
+  },[enabled,activeId,active,profile.preferences?.triageShortcuts,reviewing,trashBusy,displayJobs,onDelete,review]);
   const emptyAction: ReactNode=query?<button className="secondary-button" onClick={onClearSearch}>Effacer la recherche</button>:filter!=="to_review"?<button className="secondary-button" onClick={()=>{changeView("to_review");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Voir les offres à examiner</button>:null;
   return <div className={"opportunities-workspace "+(activeId?"has-open-offer":"")}>
     <div className="opportunities-controls">
@@ -146,7 +146,7 @@ export function OpportunitiesWorkspace({lot,jobs,rescueOffers=[],counts,filter,o
         <button type="button" className="secondary-button opportunity-back" onClick={close}><ArrowLeft size={16} aria-hidden />Retour aux offres</button>
         <header className="opportunity-detail-header reading-detail-heading"><div className="reading-heading-text"><h2 id="opportunity-detail-title" ref={title} tabIndex={-1}>{active.title}</h2><div className="reading-company-line"><span>{active.company||"Entreprise à confirmer"}</span><OfferSourceBadge job={active}/></div></div>{!active.deletedAt?<ApplicationTrackingAction job={active} onStatus={async(id,status)=>{const saved=await onStatus(id,status);if(saved&&viewIsCurrent()){const updated={...active,status};setRetained({job:updated,filter,query,index:displayJobs.findIndex(job=>job.id===id)});onOpen(updated);}return saved;}} onOpenApplication={()=>onApplication(active)}/>:null}</header>
         {profile.preferences?.triageShortcuts!==false&&activeId&&!active.deletedAt&&!hasApplication(active)?<p className="triage-shortcuts">Clavier : <kbd>S</kbd> sélectionner · <kbd>L</kbd> plus tard · <kbd>X</kbd> écarter</p>:null}
-        {error&&error.jobId===active.id?<WorkspaceState error title="Choix non enregistré">{error.message}</WorkspaceState>:null}
+        {error&&error.jobId===active.id?<WorkspaceState error title="Choix non enregistré" action={onReload?<button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>void onReload()}>Relire les offres pour vérifier</button>:undefined}>{error.message}</WorkspaceState>:null}
         <div className="opportunity-decision signal-opportunity-actions">
           <div className="opportunity-action-main">{hasApplication(active)&&!active.deletedAt?<span className="workspace-badge is-success">Candidature suivie</span>:active.deletedAt?<button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>{onRestore(active);close();}}><Undo2 size={16}/>Restaurer l’offre</button>:<>
           {reviewState(active)!=="selected"?<button type="button" className="radar-add-button" aria-pressed="false" disabled={reviewing||trashBusy} onClick={()=>void review()}>{reviewing?<LoaderCircle size={16} className="animate-spin"/>:<Bookmark size={16} aria-hidden/>}Sélectionner</button>:<button type="button" className="signal-selected-button" aria-pressed="true" title="Retirer de ma sélection" disabled={reviewing||trashBusy} onClick={()=>void review()}><Check size={16} aria-hidden/>Sélectionnée</button>}

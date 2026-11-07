@@ -17,3 +17,9 @@ Dans **Opportunités → Voir la réserve**, le repêchage propose trois offres 
 Après plusieurs offres écartées présentant le même fait, Radar peut proposer **Ajuster mes critères**. Le dialogue est un brouillon : confirmez avec **Enregistrer le critère**, ou annulez. **Non merci** masque cette proposition trente jours, sans changer votre recherche. Une source écartée peut être réactivée dans les critères de **Ma recherche**.
 
 Dans une fiche ouverte, les touches **S**, **L** et **X** sélectionnent, gardent pour plus tard ou écartent. Elles restent sans effet pendant une saisie ou dans un dialogue. Le compteur attend l’enregistrement ; la fiche suivante s’ouvre ensuite. Un lot commencé ne se remplit plus, même s’il comptait moins de vingt offres.
+
+## Actualiser le radar — Q2
+
+**Actualiser** ouvre le balayage des sources automatiques. Le bilan distingue les annonces parcourues, celles selon vos critères, les nouvelles fiches et les doublons déjà présents. **Voir les offres à examiner** revient au tri ; un lot déjà entamé reste figé.
+
+Si une source échoue, ses voisines gardent leurs résultats. **Réessayer** sur sa ligne reprend seulement cette source. Vous pouvez revenir à votre radar pendant la lecture ; une panne conserve vos offres. Une source en pause ou une lecture récente en cache est indiquée séparément. Les sources à visiter, dont Collective et Malt, affichent leur dernière visite : ouvrez la source puis **J’ai fait le tour**. Rien n’est envoyé à un service de mesure.

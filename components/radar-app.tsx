@@ -7,7 +7,7 @@ import { OfferForm } from "@/components/offer-form";
 // request a removed, versioned profile chunk after a deployment.
 import { ProfileWorkspace } from "@/components/profile-workspace";
 
-import { lazy, Suspense, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CircleHelp, RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, Plus, Search, SlidersHorizontal, Trash2, Undo2, UserRound, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
@@ -18,6 +18,11 @@ import { TodayWorkspace, ApplicationsWorkspace } from "@/components/today-worksp
 import { useDailyLot } from "@/components/use-daily-lot";
 import { useRadarClock, refreshRadarClock } from "@/components/use-radar-clock";
 import { OpportunitiesWorkspace } from "@/components/opportunities-workspace";
+import { useRadarScan } from "@/components/use-radar-scan";
+import { ScanWorkspace, ScanStatusLine } from "@/components/scan-workspace";
+import { mergeSourceSettings, type AutomaticSource } from "@/lib/source-sync";
+import { lastRefreshAt, refreshMode, shouldRefreshOnOpen } from "@/lib/refresh-schedule";
+import type { SourceSetting } from "@/components/source-card";
 import { TriageLearning } from "@/components/triage-learning";
 import { OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/components/offer-workspace";
 import { ApplicationTagEditor } from "@/components/application-tags";
@@ -67,7 +72,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
     return () => cancelAnimationFrame(frame);
   }, [tab]);
   const setFilter = (filter: OfferFilter) => navigate({ filter, offer: undefined });
-  const setQuery = (query: string) => navigate({ query, tab: "offers", offer: undefined }, route.tab === "offers" && !!route.query);
+  const setQuery = (query: string) => {setScanOpen(false);navigate({ query, tab: "offers", offer: undefined }, route.tab === "offers" && !!route.query);};
   const searchRef = useRef<HTMLInputElement>(null);
   const [allJobs, setJobs] = useState<JobRecord[]>(initialState?.jobs ?? []);
   const rescueClock = useRadarClock();
@@ -85,16 +90,24 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   const [jobDialogOpen, setJobDialogOpen] = useState(false);
   const [jobDialogUrl, setJobDialogUrl] = useState("");
   // Read once for the « Sources à consulter » reminder; Ma recherche keeps its own copy.
-  const [sourceSettings, setSourceSettings] = useState<{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[]>([]);
-  const selectedJob = allJobs.find(job => job.id === route.offer) || null;
   const [loadErrors, setLoadErrors] = useState(initialState?.errors ?? { jobs: false, profile: false });
+  const [sourceSettings, setSourceSettings] = useState<SourceSetting[]>([]);
+  const [sourcesLoaded,setSourcesLoaded]=useState(false);
+  const [scanOpen,setScanOpen]=useState(false);
+  const scanOpener=useRef<HTMLElement|null>(null),autoScanned=useRef(false);
+  const acceptSources=useCallback((incoming:SourceSetting[])=>{setSourceSettings(current=>mergeSourceSettings(current,incoming));setSourcesLoaded(true);},[setSourceSettings,setSourcesLoaded]);
+  const acceptOffers=useCallback((incoming:JobRecord[])=>{setJobs(incoming);setLoadErrors(current=>({...current,jobs:false}));refreshRadarClock();},[setJobs,setLoadErrors]);
+  const scan=useRadarScan({onOffers:acceptOffers,onSources:acceptSources});
+  useEffect(()=>{document.documentElement.dataset.motion=profile.preferences?.reducedMotion?"reduced":"full";return()=>{delete document.documentElement.dataset.motion;};},[profile.preferences?.reducedMotion]);
+  const selectedJob = allJobs.find(job => job.id === route.offer) || null;
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [visited, setVisited] = useState({profile:false,sources:false});
   useEffect(()=>{if(tab==="profile"||tab==="sources")setVisited(current=>({...current,[tab]:true}));},[tab]);
   // The reminder needs the sources; Ma recherche loads and writes its own copy.
-  useEffect(()=>{let alive=true;fetch("/api/sources",{signal:AbortSignal.timeout(15000),cache:"no-store"}).then(async response=>{if(!response.ok)return;const data=await response.json() as {sources:typeof sourceSettings};if(alive)setSourceSettings(data.sources??[]);}).catch(()=>{});return()=>{alive=false;};},[]);
+  useEffect(()=>{let alive=true;fetch("/api/sources",{signal:AbortSignal.timeout(15000),cache:"no-store"}).then(async response=>{if(!response.ok)return;const data=await response.json() as {sources:typeof sourceSettings};if(alive)acceptSources(data.sources??[]);}).catch(()=>{});return()=>{alive=false;};},[acceptSources]);
   /** Opens « Ma recherche » on one source, which reads these parameters when it appears. */
   const openSource = (name: string) => {
+    setScanOpen(false);
     const url = new URL(window.location.href);
     url.searchParams.set("sources", "channels");
     url.searchParams.set("source", name);
@@ -106,6 +119,22 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   const notify = useWorkspaceFeedback();
   const setToast = (message: string | null, error = false, action?: WorkspaceFeedback["action"]) => { if (message) notify({message, tone: error ? "error" : "success", action}); };
   const roleChosen = hasSearchedRole(searchPreferences(profile.searchPreferences));
+  function closeScan(){setScanOpen(false);requestAnimationFrame(()=>{const previous=scanOpener.current;(previous?.isConnected&&previous.getClientRects().length?previous:document.getElementById("workspace-title"))?.focus({preventScroll:true});});}
+  async function runScan(source?:AutomaticSource,quiet=false){
+    if(trashLock.current)return false;
+    if(!roleChosen){navigate({tab:"sources",offer:undefined});setToast("Choisissez d’abord le poste que vous cherchez dans Ma recherche.",true);return false;}
+    autoScanned.current=true;
+    if(!quiet){scanOpener.current=document.activeElement instanceof HTMLElement?document.activeElement:null;setScanOpen(true);}
+    const saved=await scan.run(source);
+    if(quiet&&!saved)setToast("Actualisation non confirmée. Consultez Ma recherche pour réessayer ; vos offres restent conservées.",true);
+    return saved;
+  }
+  useEffect(()=>{
+    if(!profileLoaded||!sourcesLoaded||!roleChosen||ownerId?.startsWith("demo:")||autoScanned.current)return;
+    if(shouldRefreshOnOpen(refreshMode(profile.refreshMode),lastRefreshAt(sourceSettings)))void runScan(undefined,true);
+  },[profileLoaded,sourcesLoaded,roleChosen,ownerId,profile.refreshMode,sourceSettings,runScan]);
+  useEffect(()=>{if(!scanOpen)return;const key=(event:KeyboardEvent)=>{if(event.key==="Escape"&&!document.querySelector('[role="dialog"]'))closeScan();};window.addEventListener("keydown",key);return()=>window.removeEventListener("keydown",key);},[scanOpen]);
+
   const initials = userName.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase() || "RP";
 
   useEffect(() => {
@@ -212,7 +241,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   const searchedJobs = allJobs.filter(job => `${job.title} ${job.company} ${job.source}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
   const viewCounts = Object.fromEntries((["to_review", "selected", "good_matches", "trash", "archived"] as OfferFilter[]).map(view => [view, searchedJobs.filter(job => inOpportunityView(job, view)).length])) as Record<OfferFilter, number>;
   const shownJobs = filter === "to_review" ? sortOffersForTriage(searchedJobs) : searchedJobs.filter(job => inOpportunityView(job, filter));
-  function selectTab(next: Tab) { navigate({ tab: next, offer: undefined }); }
+  function selectTab(next: Tab) { setScanOpen(false);navigate({ tab: next, offer: undefined }); }
 
   async function refreshOffers({silent=false}:{silent?:boolean}={}) {
     if (trashLock.current) return false;
@@ -252,22 +281,25 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
       <section className="radar-content">
 
         <div className="radar-page">
-        {tab!=="pipeline"?<PageHeader title={tabs.find(item => item.id === tab)?.label || "Radar Produit"}><div className="page-tools"><span className="page-header-privacy"><PrivateLabel /></span>{tab==="sources"?<div id="source-refresh-header" ref={setSourceHeaderTarget}/>:<button type="button" onClick={() => void refreshOffers()} disabled={refreshing} className="secondary-button page-refresh-action" aria-label="Actualiser les offres"><RefreshCw size={15} className={refreshing ? "animate-spin" : ""} aria-hidden /><span className="page-refresh-label">Actualiser</span></button>}</div></PageHeader>:null}
+        {scanOpen||tab!=="pipeline"?<PageHeader title={scanOpen?"Balayage":tabs.find(item => item.id === tab)?.label || "Radar Produit"}><div className="page-tools"><span className="page-header-privacy"><PrivateLabel /></span>{tab==="sources"&&!scanOpen?<div id="source-refresh-header" ref={setSourceHeaderTarget}/>:<button type="button" onClick={() => void runScan()} disabled={refreshing||scan.busy||!roleChosen} aria-busy={scan.busy||undefined} className="secondary-button page-refresh-action" aria-label="Actualiser les offres"><RefreshCw size={15} className={scan.busy ? "animate-spin" : ""} aria-hidden /><span className="page-refresh-label">Actualiser</span></button>}</div></PageHeader>:null}
+        {scanOpen?<ScanWorkspace sourcesKnown={sourcesLoaded} busy={scan.busy} error={scan.error} result={scan.result} sources={sourceSettings} knownCount={jobs.length} toReviewCount={viewCounts.to_review} simulated={!!ownerId?.startsWith("demo:")} now={rescueClock} onRun={source=>void runScan(source)} onClose={closeScan} onOffers={()=>{setScanOpen(false);navigate({tab:"offers",filter:"to_review",query:"",offer:undefined});requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}} onSource={openSource}/>:null}
+        <div hidden={scanOpen}>
         {tab!=="pipeline"&&loading ? <WorkspaceLoading /> : null}
         {tab!=="pipeline"?loadNotice:null}
-        {!loading && !loadErrors.jobs && tab === "dashboard" ? <TodayWorkspace setupRequired={profileLoaded&&!roleChosen} onConfigureSearch={()=>navigate({tab:"sources",offer:undefined})} jobs={allJobs} lot={dailyLot} sources={sourceSettings} onOpenSource={openSource} onTriage={() => navigate({tab:"offers",filter:"to_review",query:"",offer:undefined})} onSelected={() => navigate({tab:"offers",filter:"selected",query:"",offer:undefined})} onAdd={()=>setJobDialogOpen(true)} onOpen={openJob} /> : null}
+        {!loading && !loadErrors.jobs && tab === "dashboard" ? <TodayWorkspace radarLine={<ScanStatusLine sources={sourceSettings} busy={scan.busy} hasResult={!!scan.result} onOpen={()=>{if(scan.result){scanOpener.current=document.activeElement instanceof HTMLElement?document.activeElement:null;setScanOpen(true);}else void runScan();}}/>} setupRequired={profileLoaded&&!roleChosen} onConfigureSearch={()=>navigate({tab:"sources",offer:undefined})} jobs={allJobs} lot={dailyLot} sources={sourceSettings} onOpenSource={openSource} onTriage={() => navigate({tab:"offers",filter:"to_review",query:"",offer:undefined})} onSelected={() => navigate({tab:"offers",filter:"selected",query:"",offer:undefined})} onAdd={()=>setJobDialogOpen(true)} onOpen={openJob} /> : null}
         {trashError ? <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">{trashError}<button className="ml-3 underline" onClick={() => { setTrashError(null); void refreshOffers(); }}>Actualiser pour vérifier</button></div> : null}
         {!loading && !loadErrors.jobs && tab === "offers" && profileLoaded && !roleChosen ? <WorkspaceState title="Quel poste cherchez-vous ?" action={<button type="button" className="secondary-button" onClick={() => navigate({ tab: "sources" })}>Choisir mon poste</button>}>Radar classe les offres selon le poste que vous visez. Indiquez-le dans Ma recherche pour voir vos opportunités.</WorkspaceState> : null}
         {!loading && !loadErrors.jobs && tab === "offers" && filter === "to_review" && !query && roleChosen ? <TriageLearning jobs={allJobs} profile={profile} now={rescueClock} onSaveProfile={saveProfile} onSaveSearch={saveSearch}/> : null}
-        {!loading && !loadErrors.jobs && tab === "offers" && (!profileLoaded || roleChosen) ? <OpportunitiesWorkspace rescueOffers={rescueOffers} currentJob={selectedJob} jobs={shownJobs} lot={dailyLot} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>{setJobs(current=>current.map(job=>job.id===updated.id?updated:job));setToast("Offre mise à jour.");}} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing} /> : null}
+        {!loading && !loadErrors.jobs && tab === "offers" && (!profileLoaded || roleChosen) ? <OpportunitiesWorkspace enabled={!scanOpen} onReload={()=>refreshOffers({silent:true})} rescueOffers={rescueOffers} currentJob={selectedJob} jobs={shownJobs} lot={dailyLot} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>{setJobs(current=>current.map(job=>job.id===updated.id?updated:job));setToast("Offre mise à jour.");}} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing||scan.busy} /> : null}
         {tab === "pipeline" ? <ApplicationsWorkspace placeholder={loading?<WorkspaceLoading/>:loadErrors.jobs?loadNotice:undefined} notice={!loading&&!loadErrors.jobs?loadNotice:undefined} jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
         {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace account={{ ownerId: ownerId ?? "", userName, email: userEmail, demo: !!ownerId?.startsWith("demo:"), signOutPath }} active={tab === "profile"} initialSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} profile={profile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
-        {profileLoaded && (tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel headerTarget={sourceHeaderTarget} active={tab==="sources"} jobs={jobs} profile={profile} onSave={saveSearch} onSynced={()=>refreshOffers({silent:true})} onAddOffer={url=>{setJobDialogUrl(url);setJobDialogOpen(true);}} /></Suspense></WorkspaceBoundary></div> : null}
+        {profileLoaded && (tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel headerTarget={sourceHeaderTarget} active={tab==="sources"} jobs={jobs} profile={profile} onSave={saveSearch} onSync={quiet=>runScan(undefined,quiet)} syncBusy={scan.busy} syncError={scan.error} syncedSettings={sourceSettings} onSettingsChanged={acceptSources} onAddOffer={url=>{setJobDialogUrl(url);setJobDialogOpen(true);}} /></Suspense></WorkspaceBoundary></div> : null}
         {tab !== "profile" && tab !== "offers" ? <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span></footer> : null}
+        </div>
         </div>
       </section>
     </div>
-    {profileLoaded ? <OnboardingTour ownerId={ownerId ?? ""} profile={profile} activeTab={tab} onNavigate={selectTab} initialHasFact={initialExperienceLibrary?.items.some(item => item.validation === "approved")} /> : null}
+    {profileLoaded&&!scanOpen ? <OnboardingTour ownerId={ownerId ?? ""} profile={profile} activeTab={tab} onNavigate={selectTab} initialHasFact={initialExperienceLibrary?.items.some(item => item.validation === "approved")} /> : null}
     {jobDialogOpen ? <JobDialog initialUrl={jobDialogUrl} onClose={() => { setJobDialogOpen(false); setJobDialogUrl(""); }} onCreated={onJobCreated} /> : null}
     {selectedJob && tab !== "offers" ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} headerActions={<>{(selectedJob.sourceUrl || selectedJob.applicationUrl) ? <a href={selectedJob.sourceUrl || selectedJob.applicationUrl} target="_blank" rel="noopener noreferrer" className="signal-quiet-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : null}{selectedJob.deletedAt ? <button type="button" className="signal-quiet-button" disabled={!!trashBusy || refreshing} onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={15} aria-hidden />Restaurer</button> : null}{tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? <ApplicationTagEditor key={selectedJob.id} jobId={selectedJob.id}/> : null}</>} meta={<OfferSourceBadge job={selectedJob} />} onClose={closeJob}><OfferWorkspace key={selectedJob.id + ":" + tab} onViewChange={view => navigate({ view })} job={selectedJob} profile={profile} initialView={workspaceView} showAnnouncement={false} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => navigate({ tab: "pipeline", offer: selectedJob.id, view: "application" })} onCancelApplication={() => cancelApplication(selectedJob.id)} onChange={(updated, message) => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setToast(message ?? "Dossier enregistré."); }} /></Modal> : null}
   </main>;
