@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Défilement jusqu’à la zone de lecture
+
+La page Opportunités défile d’abord dans son ensemble. Quand la liste et la fiche atteignent le haut de l’écran, la page s’arrête et chaque colonne peut défiler séparément. En remontant depuis le début d’une colonne, les commandes réapparaissent. La réserve défile avec le reste de la page ; aucune zone blanche ne prolonge la lecture. Le mobile conserve son affichage sur toute la largeur.
+
 ## 7 novembre 2026 — Défilement des opportunités
 
 Sur ordinateur et tablette en deux colonnes, la page Opportunités reste dans l’écran : la liste et la fiche défilent indépendamment, sans prolonger la page par du blanc. Les commandes restent accessibles, y compris dans la réserve et sur un écran peu haut. Le contour de focus des deux colonnes reste visible à l’intérieur du cadre. Sur mobile, la lecture sur toute la largeur et le retour à la liste sont conservés.

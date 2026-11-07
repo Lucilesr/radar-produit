@@ -57,6 +57,25 @@ export function OpportunitiesWorkspace({lot,jobs,counts,filter,onFilter,query,on
   function changeView(next:OpportunityView){setRetained(null);onFilter(next);setSelection([]);setSelecting(false);setError("");}
   function openListed(job:JobRecord){if(kept&&job.id!==kept.job.id)setRetained(null);onOpen(job);}
 
+  const readingPane=useRef<HTMLDivElement>(null);
+  const hasReadingPane=displayJobs.length>0;
+  useEffect(()=>{
+    const pane=readingPane.current, viewport=pane?.closest<HTMLElement>(".radar-app");
+    if(!pane||!viewport)return;
+    const columns=window.matchMedia("(min-width:761px)");
+    const update=()=>{
+      if(columns.matches)pane.style.setProperty("--opportunity-reading-height",`${viewport.clientHeight}px`);
+      else pane.style.removeProperty("--opportunity-reading-height");
+      pane.dataset.readingPinned=String(columns.matches&&pane.getBoundingClientRect().top<=viewport.getBoundingClientRect().top+1);
+    };
+    const resize=new ResizeObserver(update);
+    resize.observe(viewport);resize.observe(pane.parentElement!);
+    viewport.addEventListener("scroll",update,{passive:true});
+    window.addEventListener("resize",update);
+    update();
+    return()=>{resize.disconnect();viewport.removeEventListener("scroll",update);window.removeEventListener("resize",update);};
+  },[hasReadingPane]);
+
   const announcementUrl=active?.sourceUrl||active?.applicationUrl;
   const title=useRef<HTMLHeadingElement>(null);
   const opener=useRef<HTMLButtonElement|null>(null);
@@ -89,7 +108,7 @@ export function OpportunitiesWorkspace({lot,jobs,counts,filter,onFilter,query,on
     {selecting&&orderedJobs.length?<div className="opportunities-batch" role="group" aria-label="Actions sur les offres cochées"><span role="status">{selected.length} offre{selected.length>1?"s":""} cochée{selected.length>1?"s":""}</span><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>setSelection(orderedJobs.slice(0,50).map(job=>job.id))}>Cocher {jobs.length>50?"les 50 premières":"tout"}</button>{selected.length?<><button type="button" className="secondary-button" onClick={()=>setSelection([])}>Tout décocher</button><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>onDeleteMany(selected)}><Trash2 size={15} aria-hidden />Mettre à la corbeille</button></>:null}</div>:null}
     {error?<WorkspaceState error title="Choix non enregistré">{error}</WorkspaceState>:null}
     </div>
-    {!displayJobs.length&&inLot?null:!displayJobs.length?<WorkspaceState title={query?"Aucune offre ne correspond à cette recherche":filter==="archived"?"Aucune offre archivée":filter==="trash"?"La corbeille est vide":filter==="to_review"?"Tout est examiné pour l’instant":filter==="selected"?"Votre sélection est encore vide":"Aucune offre dans cette vue"} action={emptyAction}>{query?"Effacez la recherche pour retrouver les offres de cette vue.":filter==="to_review"?"Retrouvez les offres sélectionnées dans Ma sélection.":filter==="archived"?`Les annonces de plus de ${ARCHIVE_AFTER_DAYS} jours arriveront ici.`:filter==="trash"?"Les offres écartées pourront être restaurées ici.":"Ajoutez une annonce ou consultez une autre vue."}</WorkspaceState>:<div className="opportunities-split">
+    {!displayJobs.length&&inLot?null:!displayJobs.length?<WorkspaceState title={query?"Aucune offre ne correspond à cette recherche":filter==="archived"?"Aucune offre archivée":filter==="trash"?"La corbeille est vide":filter==="to_review"?"Tout est examiné pour l’instant":filter==="selected"?"Votre sélection est encore vide":"Aucune offre dans cette vue"} action={emptyAction}>{query?"Effacez la recherche pour retrouver les offres de cette vue.":filter==="to_review"?"Retrouvez les offres sélectionnées dans Ma sélection.":filter==="archived"?`Les annonces de plus de ${ARCHIVE_AFTER_DAYS} jours arriveront ici.`:filter==="trash"?"Les offres écartées pourront être restaurées ici.":"Ajoutez une annonce ou consultez une autre vue."}</WorkspaceState>:<div className="opportunities-split" ref={readingPane}>
       <div className="opportunity-list" tabIndex={0} role="region" aria-label="Liste des opportunités">{displayJobs.map(job=><article key={job.id} className={"opportunity-list-row "+(active?.id===job.id?"is-current":"")}>
         {selecting?<label className="opportunity-check"><input type="checkbox" aria-label={"Cocher "+job.title+" · "+job.company} checked={selected.some(item=>item.id===job.id)} disabled={trashBusy||(selected.length>=50&&!selection.includes(job.id))} onChange={()=>setSelection(ids=>ids.includes(job.id)?ids.filter(id=>id!==job.id):[...selected.map(item=>item.id),job.id])}/><span className="sr-only">Cocher cette offre</span></label>:null}
         <button type="button" className="opportunity-open" aria-pressed={active?.id===job.id} onClick={event=>{opener.current=event.currentTarget;openListed(job);}}><strong>{job.title}</strong><span>{job.company||"Entreprise à confirmer"} · {job.contractType==="cdi"?"CDI":job.contractType==="cdd"?"CDD":job.contractType==="freelance"?"Freelance":job.contractType==="portage"?"Portage salarial":job.contractType==="part_time"?"Temps partagé":"Contrat à confirmer"}</span><span className="opportunity-conditions"><b>{job.dailyRate?formatPayRangeShort(job.dailyRateMin,job.dailyRateMax,"daily")??`${formatEuro(job.dailyRate)} / jour`:job.annualSalary?formatPayRangeShort(job.salaryMin,job.salaryMax,"annual")??`${formatEuro(job.annualSalary)} / an`:"Rémunération non communiquée"}</b><span>{remote[job.remoteMode]}</span></span><span className="opportunity-evidence">{!job.deletedAt?<FitBadge job={job}/>:null}<span className={"workspace-badge "+(job.flags.length?"is-warning":"")}>{job.deletedAt?"En corbeille":job.flags.length?`${job.flags.length} point${job.flags.length>1?"s":""} à vérifier`:"Critères renseignés"}</span>{!job.deletedAt&&job.flags.some(flag=>flag.startsWith("Sous votre minimum"))?<span className="workspace-badge is-warning">Sous votre minimum</span>:null}<small className="review-list-origin"><span>{job.source}</span>{!job.deletedAt&&reviewState(job)==="selected"?<span className="review-kept-label"><Check size={12}/>Sélectionnée</span>:null}</small></span></button>

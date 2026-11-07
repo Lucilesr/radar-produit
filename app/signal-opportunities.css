@@ -67,22 +67,17 @@
 .workspace-dialog:has(.signal-offer-workspace) { max-width: 870px; }
 .radar-app .application-age { min-height: 26px; padding: 4px 8px; border-radius: 4px; font: 500 12px/16px var(--font-sans); text-align: center; }
 @media(min-width:761px) {
-  /* Keep the shell in the viewport; only the reading panes scroll. */
+  /* Scroll the whole workspace up to the reading panes, then scroll each pane. */
   body:has(.opportunities-workspace) { position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
   body:has(.opportunities-workspace) > .demo-notice { flex: none; }
-  .radar-app:has(.opportunities-workspace) { flex: 1; min-height: 0; padding-bottom: 0; overflow: hidden; }
-  .radar-shell:has(.opportunities-workspace) { height: 100%; min-height: 0; grid-template-rows: minmax(0,1fr); }
-  .radar-shell:has(.opportunities-workspace) > .radar-sidebar { height: 100%; min-height: 0; overscroll-behavior-y: contain; }
-  .radar-content:has(> .radar-page > .opportunities-workspace) { display: flex; flex-direction: column; min-height: 0; }
-  .radar-page:has(> .opportunities-workspace) { display: flex; flex-direction: column; flex: 1; min-height: 0; padding-bottom: 20px; }
-  .radar-page:has(> .opportunities-workspace) > .workspace-page-header { flex: none; }
-  .opportunities-workspace { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; }
-  .opportunities-controls { flex: none; }
-  .opportunities-workspace:has(> .opportunities-split) { overflow: hidden; }
-  .opportunities-workspace:has(> .opportunities-split) > .opportunities-controls { max-height: 50%; overflow-y: auto; overscroll-behavior-y: contain; }
+  .radar-app:has(.opportunities-workspace) { flex: 1; min-height: 0; padding-bottom: 0; overflow-y: auto; overscroll-behavior-y: contain; }
+  .radar-shell:has(.opportunities-workspace) { min-height: 100%; }
+  .radar-shell:has(.opportunities-workspace) > .radar-sidebar { min-height: 0; }
+  .radar-page:has(> .opportunities-workspace) { padding-bottom: 0; }
   .opportunities-workspace > .opportunity-reading-notes { margin-bottom: 20px; }
-  .opportunities-split { flex: 1; min-height: 0; grid-template-columns: clamp(280px,28vw,360px) minmax(0,1fr); grid-template-rows: minmax(0,1fr); align-items: stretch; overflow: hidden; }
-  .opportunity-list, .opportunity-detail { height: 100%; min-height: 0; max-height: none; overflow-y: auto; overscroll-behavior-y: contain; }
+  .opportunities-split { height: var(--opportunity-reading-height,100dvh); min-height: 0; grid-template-columns: clamp(280px,28vw,360px) minmax(0,1fr); grid-template-rows: minmax(0,1fr); align-items: stretch; overflow: hidden; }
+  .opportunity-list, .opportunity-detail { height: 100%; min-height: 0; max-height: none; overflow-y: hidden; }
+  .opportunities-split[data-reading-pinned=true] > :is(.opportunity-list,.opportunity-detail) { overflow-y: auto; overscroll-behavior-y: auto; }
   .opportunities-split > :is(.opportunity-list,.opportunity-detail):focus-visible { outline-offset: -3px; }
   .opportunity-detail .review-criteria-grid { grid-template-columns: repeat(2,minmax(0,1fr)); column-gap: 20px; }
   .opportunity-detail .review-condition-row { display: grid; grid-template-columns: minmax(90px,.9fr) minmax(0,1.1fr); align-items: baseline; gap: 10px; padding-block: 7px; }
@@ -90,9 +85,6 @@
   .opportunity-detail .review-dates .review-condition-row { display: block; }
 }
 @media(min-width:761px) and (max-width:1023px) {
-  .radar-shell:has(.opportunities-workspace) { display: flex; flex-direction: column; }
-  .radar-shell:has(.opportunities-workspace) > .radar-sidebar { flex: none; align-self: stretch; height: auto; }
-  .radar-content:has(> .radar-page > .opportunities-workspace) { flex: 1; }
   .opportunities-split { grid-template-columns: clamp(250px,35%,310px) minmax(0,1fr); }
   .opportunity-detail { padding-inline: 16px; }
   .opportunity-detail .review-criteria-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
