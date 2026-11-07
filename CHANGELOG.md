@@ -1,5 +1,9 @@
 ## 7 novembre 2026 — Feuille de route gamification
 
+## 7 novembre 2026 — Reprise de l’éditeur d’offre
+
+- L’ajout et la lecture de fiche employeur sortent de l’attente après 15 s, en conservant la saisie et les erreurs Signal.
+
 ## 7 novembre 2026 — Guide synchronisé avec la page
 
 - Une ouverture de Ma recherche ou Mon profil par une action contextuelle fait avancer le guide comme une ouverture par la navigation.

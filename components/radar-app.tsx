@@ -265,7 +265,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
 
 function JobDialog({ initialUrl = "", onClose, onCreated }: { initialUrl?: string; onClose: () => void; onCreated: (job: JobRecord, deduplicated?: boolean) => void }) {
   return <Modal title="Ajouter une opportunité" description="Complétez les faits de l’annonce." onClose={onClose}><OfferForm draftKey={initialUrl?`offer-from-source`:""} job={initialUrl?{title:"",contractType:"other",remoteMode:"unknown",language:"fr",source:"Autre",sourceUrl:initialUrl}:undefined} onCancel={onClose} onSave={async input=>{
-    const response=await fetch("/api/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input)});
+    const response=await fetch("/api/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input),signal:AbortSignal.timeout(15000)});
     const result=await response.json() as {job?:JobRecord;deduplicated?:boolean;error?:string};
     if(!response.ok||!result.job)throw new Error(result.error??"Enregistrement non confirmé. Votre saisie est conservée.");
     onCreated(result.job,result.deduplicated);
