@@ -75,10 +75,12 @@ test('enregistrement automatique : les conditions explicites du résumé complè
 test('enregistrement automatique : les montants ambigus ou étrangers restent à confirmer',()=>{
  const base={title:'Product Owner',source:'Free-Work',contractType:'freelance',remoteMode:'unknown',language:'unknown'};
  for(const description of [
-  'Notification Free-Work : TJM affiché 550–650 €, politique exacte de télétravail non précisée.',
   'Tarif journalier initial : selon profil, sans montant communiqué.',
   'TJM 650 USD/jour',
  ]) assert.equal(normalizeJobInput({...base,description}).dailyRate,null);
  assert.equal(normalizeJobInput({...base,description:'TJM : 620 € HT/jour'}).dailyRate,620);
+ // Score v2, lot S1: an announced range is read, and its midpoint stays the comparable figure.
+ const range=normalizeJobInput({...base,description:'Notification Free-Work : TJM affiché 550–650 €, politique exacte de télétravail non précisée.'});
+ assert.equal(range.dailyRateMin,550);assert.equal(range.dailyRateMax,650);assert.equal(range.dailyRate,600);
  assert.equal(normalizeJobInput({...base,description:'English lessons available'}).language,'unknown');
 });

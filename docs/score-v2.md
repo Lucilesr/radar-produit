@@ -50,7 +50,7 @@ Ordre conseillé : **S1 → S2 → S3**, puis le lot du jour (gamification), pui
   export function parsePayRange(text: string): { kind: "annual" | "daily"; min: number | null; max: number | null } | null;
   ```
 
-- Formats reconnus : « 62–70 k€ », « 60-70k », « 60 000 – 70 000 € », « €60,000–70,000 », « 62 k€ », « jusqu'à 70 k€ » (max seul), « à partir de 60 k€ » (min seul), « 500–600 €/jour », « TJM 550 € ». Les montants en USD ou GBP restent ignorés, comme aujourd'hui.
+- Formats reconnus : « 62–70 k€ », « 60-70k », « 60 000 – 70 000 € », « €60,000–70,000 », « 62 k€ », « jusqu'à 70 k€ » (max seul), « à partir de 60 k€ » (min seul), « 500–600 €/jour », « TJM 550 € ». Les montants en USD ou GBP et les montants mensuels restent ignorés.
 - Les quatre parseurs cités au §1 utilisent ce module au lieu de leur propre expression.
 - Migration additive (`npm run db:generate`) : colonnes nullables `salary_min`, `salary_max`, `daily_rate_min`, `daily_rate_max` sur `jobs`. `JobInput`, `JobRecord` et le contrat d'import (`lib/import-contract.ts`) gagnent les champs optionnels correspondants.
 - `annualSalary` et `dailyRate` restent remplis pour la compatibilité : valeur seule, ou milieu de la fourchette.
@@ -58,7 +58,7 @@ Ordre conseillé : **S1 → S2 → S3**, puis le lot du jour (gamification), pui
 
 **Intitulés.**
 
-- « PM » n'est accepté que si « product » apparaît dans l'intitulé ou dans les 600 premiers caractères de la description.
+- « PM » est refusé quand l'intitulé ou les 600 premiers caractères de la description parlent de gestion de projet (« project manager », « chef de projet », « gestion de projet », ERP, BTP…) sans parler de produit. Un « PM » sans contexte reste accepté, pour ne pas perdre les alertes aux intitulés abrégés.
 - « Chef de produit » est reconnu sous toutes ses formes. « Chef de projet » ne l'est jamais comme Product Manager.
 
 **Acceptation.** Le même poste a le même salaire quelle que soit la source. « Project Manager (PM) » sur un ERP n'est plus reconnu comme Product Manager. « Chef de produit paiements » est reconnu.

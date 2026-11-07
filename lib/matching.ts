@@ -6,11 +6,21 @@ import { isNorthAmericaRestricted } from "./market-scope";
 import { announcedLocationFor, assessLocation } from "./location-criteria";
 
 const ownerRoles = [/\bproduct owner\b/i, /\bpo\b/i];
-const managerRoles = [/\bproduct manager\b/i, /\bpm\b/i, /chef de produit (?:digital|numerique|numérique)\b/i];
+const managerRoles = [/\bproduct manager\b/i, /\bchef(?:fe)? de produits?\b/i, /\bresponsable produit\b/i];
+// "PM" also means Project Manager: it is refused when the offer speaks of project management and not of product.
+const ambiguousManager = /\bpm\b/i;
+const projectRole = /\b(?:project manager|chef(?:fe)? de projets?|program(?:me)? manager)\b/i;
+const projectWork = /\b(?:project manager|project management|gestion de projets?|chef(?:fe)? de projets?|pmo|pmp|prince2|maîtrise d['’]œuvre|moa|erp|btp|chantiers?)\b/i;
+const productWork = /\bproduct\b|\bproduit\b/i;
 
-function matchesSearchedRole(title: string, role: string) {
+function matchesSearchedRole(title: string, role: string, description = "") {
   if (role === "Product Owner") return ownerRoles.some(pattern => pattern.test(title));
-  if (role === "Product Manager") return managerRoles.some(pattern => pattern.test(title));
+  if (role === "Product Manager") {
+    if (managerRoles.some(pattern => pattern.test(title))) return true;
+    if (!ambiguousManager.test(title) || projectRole.test(title)) return false;
+    const context = `${title} ${description.slice(0, 600)}`;
+    return productWork.test(context) || !projectWork.test(context);
+  }
   const normalized = (value: string) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("fr").replace(/[^a-z0-9]+/g, " ").trim();
   return (` ${normalized(title)} `).includes(` ${normalized(role)} `);
 }
@@ -43,7 +53,7 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     flags.push("Lieu annoncé à vérifier selon vos critères géographiques.");
   }
 
-  const matchedRole = search.roles.find(role => matchesSearchedRole(job.title, role));
+  const matchedRole = search.roles.find(role => matchesSearchedRole(job.title, role, job.description ?? ""));
   if (!search.roles.length) {
     exception = true;
     flags.push("Aucun poste choisi : indiquez le poste que vous cherchez dans Ma recherche.");
@@ -91,17 +101,21 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   }
 
   const tolerance = search.payTolerancePercent ?? 0;
-  if (job.contractType !== "part_time" && (job.annualSalary != null || job.contractType === "cdi" || job.contractType === "cdd")) {
-    if (job.annualSalary == null) {
+  const salaryHigh = job.salaryMax ?? job.annualSalary ?? null;
+  const salaryLow = job.salaryMin ?? job.annualSalary ?? null;
+  if (job.contractType !== "part_time" && (salaryHigh != null || job.contractType === "cdi" || job.contractType === "cdd")) {
+    if (salaryHigh == null) {
       // Without a minimum, a missing salary blocks nothing: no flag to check.
       if (search.minimumSalary > 0) {
         exception = true;
         flags.push("Salaire non communiqué");
       }
-    } else if (job.annualSalary >= search.minimumSalary) {
+    } else if (salaryHigh >= search.minimumSalary) {
       score += 20;
-      reasons.push(`Rémunération annoncée à ${formatEuro(job.annualSalary)} brut/an.`);
-    } else if (tolerance && job.annualSalary >= payFloor(search.minimumSalary, tolerance)) {
+      reasons.push(`Rémunération annoncée ${payLabel(job.salaryMin, job.salaryMax, job.annualSalary, "brut/an")}.`);
+      // Only the top of the range must reach the minimum; the bottom is worth knowing before applying.
+      if (salaryLow != null && salaryLow < search.minimumSalary) flags.push(`Bas de fourchette sous votre minimum de ${formatEuro(search.minimumSalary)} brut/an.`);
+    } else if (tolerance && salaryHigh >= payFloor(search.minimumSalary, tolerance)) {
       exception = true;
       flags.push(`Sous votre minimum de ${formatEuro(search.minimumSalary)} brut/an (dans votre tolérance de ${tolerance} %).`);
     } else {
@@ -110,16 +124,19 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     }
   }
 
-  if (job.dailyRate != null || job.contractType === "freelance" || job.contractType === "portage") {
-    if (job.dailyRate == null) {
+  const rateHigh = job.dailyRateMax ?? job.dailyRate ?? null;
+  const rateLow = job.dailyRateMin ?? job.dailyRate ?? null;
+  if (rateHigh != null || job.contractType === "freelance" || job.contractType === "portage") {
+    if (rateHigh == null) {
       if (search.minimumDailyRate > 0) {
         exception = true;
         flags.push("TJM non communiqué");
       }
-    } else if (job.dailyRate >= search.minimumDailyRate) {
+    } else if (rateHigh >= search.minimumDailyRate) {
       score += 20;
-      reasons.push(`TJM annoncé à ${formatEuro(job.dailyRate)} HT/jour.`);
-    } else if (tolerance && job.dailyRate >= payFloor(search.minimumDailyRate, tolerance)) {
+      reasons.push(`TJM annoncé ${payLabel(job.dailyRateMin, job.dailyRateMax, job.dailyRate, "HT/jour")}.`);
+      if (rateLow != null && rateLow < search.minimumDailyRate) flags.push(`Bas de fourchette sous votre minimum de ${formatEuro(search.minimumDailyRate)} HT/jour.`);
+    } else if (tolerance && rateHigh >= payFloor(search.minimumDailyRate, tolerance)) {
       exception = true;
       flags.push(`Sous votre minimum de ${formatEuro(search.minimumDailyRate)} HT/jour (dans votre tolérance de ${tolerance} %).`);
     } else {
@@ -201,4 +218,11 @@ export function formatEuro(value: number) {
     currency: "EUR",
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+/** "à 55 000 € brut/an", or "entre 62 000 € et 70 000 € brut/an" for an announced range. */
+export function payLabel(min: number | null | undefined, max: number | null | undefined, value: number | null | undefined, unit: string) {
+  if (min != null && max != null && min !== max) return `entre ${formatEuro(min)} et ${formatEuro(max)} ${unit}`;
+  const single = value ?? max ?? min;
+  return single == null ? unit : `à ${formatEuro(single)} ${unit}`;
 }
