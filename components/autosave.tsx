@@ -50,8 +50,9 @@ export function AutosaveStatus({save,draft=false}:{save:ReturnType<typeof useAut
 }
 export function NoteHistory({jobId}:{jobId:string}) {
   const [history,setHistory]=useState<Array<SavedText&{createdAt:string}>>([]),[error,setError]=useState("");
-  async function load(){try{const response=await fetch(`/api/workspace-drafts/${encodeURIComponent(`note:${jobId}`)}?history=1`,{cache:"no-store"});if(!response.ok)throw new Error();setHistory(((await response.json()) as {history:typeof history}).history);setError("");}catch{setError("Historique indisponible. Réessayez en rouvrant ce volet.");}}
-  return <details className="autosave-history" onToggle={event=>{if(event.currentTarget.open)void load();}}><summary>Historique des notes</summary>{error?<p role="alert">{error}</p>:!history.length?<p>Les prochaines versions seront conservées ici.</p>:history.map(item=><article key={item.version}><p>Version {item.version} · {new Date(item.createdAt).toLocaleString("fr-FR")}</p><NoteText value={item.value||"Note vide"}/></article>)}</details>;
+  const [loading,setLoading]=useState(false);
+  async function load(){setLoading(true);setError("");try{const response=await fetch(`/api/workspace-drafts/${encodeURIComponent(`note:${jobId}`)}?history=1`,{cache:"no-store",signal:AbortSignal.timeout(15000)});if(!response.ok)throw new Error();setHistory(((await response.json()) as {history:typeof history}).history);}catch{setError("Historique indisponible. Vos notes restent conservées.");}finally{setLoading(false);}}
+  return <details className="autosave-history" onToggle={event=>{if(event.currentTarget.open)void load();}}><summary>Historique des notes</summary>{loading?<p role="status">Lecture de l’historique…</p>:error?<><p role="alert">{error}</p><WorkspaceButton onClick={()=>void load()}>Réessayer</WorkspaceButton></>:!history.length?<p>Les prochaines versions seront conservées ici.</p>:history.map(item=><article key={item.version}><p>Version {item.version} · {new Date(item.createdAt).toLocaleString("fr-FR")}</p><NoteText value={item.value||"Note vide"}/></article>)}</details>;
 }
 
 export function useSavedForm<T extends object>(key:string,initial:T) {

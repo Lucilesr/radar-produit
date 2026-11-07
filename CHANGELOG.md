@@ -1,5 +1,9 @@
 ## 7 novembre 2026 — Feuille de route gamification
 
+## 7 novembre 2026 — Lecture de l’historique des notes
+
+- Le suivi distingue chargement, historique vide et erreur ; une reprise est possible après 15 s sans modifier la note.
+
 ## 7 novembre 2026 — Reprise de l’éditeur d’offre
 
 - L’ajout et la lecture de fiche employeur sortent de l’attente après 15 s, en conservant la saisie et les erreurs Signal.
