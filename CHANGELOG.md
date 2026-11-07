@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Derniers logos des sources
+
+Les logos Mindquest, FreelanceRepublik, HelloWork et Indeed utilisent les quatre nouveaux fichiers fournis. Ils reprennent le composant commun SourceLogo et ses dimensions existantes dans les listes, fiches et le catalogue, sans recadrage ni dépendance ajoutée.
+
 ## 6 novembre 2026 — Aide de la tolérance raccourcie
 
 La phrase de tolérance conserve les seuils calculés et le masquage sous le seuil, sans la mention de badge ni la phrase sur le montant manquant.

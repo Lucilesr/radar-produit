@@ -6,8 +6,10 @@ import ts from "typescript";
 const code = ts.transpileModule(readFileSync(new URL("../lib/source-logos.ts", import.meta.url), "utf8"), { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
 const { sourceLogoPath } = await import("data:text/javascript;base64," + Buffer.from(code).toString("base64"));
 
-test("les douze logos fournis correspondent aux sources et existent dans les assets publics", () => {
+test("les logos fournis correspondent aux sources et existent dans les assets publics", () => {
   const supplied = {
+    FreelanceRepublik: "freelancerepublik.png",
+    Mindquest: "mindquest.png", HelloWork: "hellowork.png", Indeed: "indeed.jpg",
     Apec: "apec.jpeg", Collective: "collective.png", "Free-Work": "free-work.png",
     Himalayas: "himalayas.jpeg", Jobgether: "jobgether.jpeg", "LinkedIn Jobs": "linkedin.jpeg",
     Malt: "malt.png", "Remote OK": "remote-ok.png", Remotive: "remotive.png",
@@ -22,10 +24,10 @@ test("les douze logos fournis correspondent aux sources et existent dans les ass
   }
 });
 
-test("les alias et les sources sans fichier fourni conservent leur logo ou le repli générique", () => {
+test("les alias restent reconnus et les sources personnalisées gardent le repli générique", () => {
   assert.equal(sourceLogoPath("Post LinkedIn"), sourceLogoPath("LinkedIn Jobs"));
   assert.equal(sourceLogoPath("Freework"), sourceLogoPath("Free-Work"));
-  for (const source of ["Indeed", "HelloWork", "FreelanceRepublik", "Mindquest", "Mon site", "Autre"]) {
+  for (const source of ["Mon site", "Autre"]) {
     assert.ok(readFileSync(new URL(`../public${sourceLogoPath(source)}`, import.meta.url)).length > 0);
   }
   assert.equal(sourceLogoPath("Mon site"), "/source-logos/source-generic.svg");
