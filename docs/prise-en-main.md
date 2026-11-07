@@ -39,3 +39,11 @@ L’accueil indique votre portée et une seule prochaine action. **Voir ma port�
 Les huit thèmes d’entretien ouvrent un récit : contexte, contribution personnelle, effets observés et limites. Un chiffre inconnu ne doit pas être inventé. Le brouillon se conserve ; **Valider cette histoire** confirme les faits dans le carnet, sans autoriser leur usage en candidature ou sur un profil public. Vous pouvez relire une histoire et ouvrir le carnet pour ses droits. Après modification, la réutilisation est suspendue jusqu’à un nouveau choix de ces droits, comme pour les autres blocs du carnet.
 
 Un conflit garde votre texte et le récit enregistré. Comparez les versions avant de choisir laquelle enregistrer. Le changement de palier est signalé discrètement une seule fois dans ce navigateur ; les points déjà présents à votre première visite ne déclenchent aucune animation.
+
+## Votre plan de semaine — Q5
+
+Sur Aujourd’hui, **Poser mon plan** permet de choisir un rythme Tranquille (2 engagements), Régulier (3) ou Intense (4). Pour chaque engagement, choisissez quand, l’action et sa cible, ou écrivez un engagement personnel. Trois pistes reprennent les candidatures, sources et thèmes disponibles dans votre radar. Elles remplissent une place vide, sans rien envoyer ni cocher. **Enregistrer mon plan** confirme le plan ; fermer garde seulement le brouillon.
+
+Après l’action, cochez l’engagement. Le compteur attend la confirmation du compte ; lorsque tous sont cochés, un petit bilan signale la semaine tenue. Une date passée affiche **À replanifier**, sans alerte rouge : **Déplacer** permet de changer l’horaire. Déplacer une action déjà tenue conserve sa coche ; changer son action ou sa cible la retire. La semaine et les horaires suivent le fuseau de votre appareil, affiché dans le formulaire.
+
+La première visite de la semaine propose « Nouvelle semaine, page blanche ». **Plus tard** revient à l’accueil, où le rappel reste discret. Le moment attend la fin d’un dialogue, du guide ou d’une séance. Les semaines précédentes et le plan sont conservés dans le compte et la sauvegarde intégrale ; un autre appareil peut relire le plan. En cas de conflit entre onglets, comparez le plan enregistré avant de sauvegarder votre brouillon. Séries et jokers seront ajoutés par L2.

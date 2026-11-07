@@ -1,0 +1,5 @@
+import {getChatGPTUser} from "@/app/chatgpt-auth";
+import {ensureSameOrigin} from "@/lib/server";
+import {readWeekPlan,writeWeekPlan,WeekPlanConflict} from "@/lib/week-plan-store";
+export async function GET(){const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401});try{return Response.json(await readWeekPlan(user.userId));}catch{return Response.json({error:"Plan indisponible. Les autres données restent accessibles."},{status:500});}}
+export async function PUT(request:Request){const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401});if(!ensureSameOrigin(request))return Response.json({error:"Origine non autorisée"},{status:403});try{return Response.json(await writeWeekPlan(user.userId,await request.json()));}catch(error){return Response.json({error:error instanceof Error?error.message:"Enregistrement non confirmé.",...(error instanceof WeekPlanConflict?{state:error.state}:{})},{status:error instanceof WeekPlanConflict?409:400});}}

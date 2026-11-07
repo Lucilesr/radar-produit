@@ -64,6 +64,9 @@ export type InterviewRecord = {
 };
 
 export type CandidateProfile = {
+  weekPlan?: import("./week-plan").WeekPlan | null;
+  weekPlans?: import("./week-plan").WeekPlan[];
+  weekPlanRevision?: number;
   triageDismissals?: Record<string, string>;
   preferences?: { reducedMotion?: boolean; celebrations?: boolean; triageShortcuts?: boolean };
   searchPreferences?: SearchPreferences;

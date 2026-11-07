@@ -840,3 +840,21 @@ L’application du staging v22 correspond au code de `main` après #221 (commit 
 | Mobile à 390 px | Fenêtre mobile. | Paliers et thèmes en une colonne, champs de 16 px, dialogue défilant, contrôles Signal. | Mêmes actions que sur ordinateur. | oui |
 
 Contradiction levée avec la maquette Portee : le titre « débloque » suggérait des accès conditionnels, alors que le §4.6 impose toutes les fonctions disponibles. Les paliers décrivent désormais ce que les informations préparent. Ouvrir le premier choix ne gagne aucun point sans enregistrement réel. Les preuves de staging, leurs dimensions et les limites de simulation réseau figurent dans [la recette du lot](q4-portee.md).
+
+## Plan de semaine Q5
+
+| État | Ce qui le déclenche | Ce que voit la personne | Action proposée | Existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Compte neuf | Aucun poste choisi | Configuration de recherche prioritaire, pas de moment semaine | Choisir son poste | oui |
+| Vide | Pas de plan cette semaine | Rappel compact facultatif | Poser mon plan | oui |
+| Chargement | Relecture du compte | Lecture du plan, écriture désactivée | Attendre | oui |
+| Erreur API / hors ligne | Lecture ou écriture non confirmée | Dernier plan et brouillon conservés, erreur explicite | Relire / réessayer | partiel : réseau non émulé en recette |
+| Succès | Plan ou coche confirmé | Compteur réel ; moment si tout est tenu | Continuer | oui |
+| Partiel | Source indisponible | Plan existant utilisable ; pistes depuis données disponibles | Engagement personnel possible | oui |
+| En retard | Horaire passé, case vide | À replanifier, sans rouge | Déplacer | oui |
+| Conflit | Autre onglet a changé le plan | Brouillon conservé et version enregistrée | Comparer avant enregistrement | oui |
+| Beaucoup de données | Nombreuses offres disponibles | Deux à quatre engagements seulement, liste de cibles | Choisir une cible | partiel : sélecteur bureau sans recherche |
+| Textes longs | Libellé jusqu’à 300 caractères | Retour à la ligne sans débordement | Ouvrir ou modifier | oui |
+| Mouvement réduit | Préférence système ou compte | Progression et moment sans animation | Mêmes actions | oui |
+| Clavier seul | Tab / Entrée / Échap | Contrôles Signal, focus dans le dialogue puis retour | Enregistrer ou fermer | oui |
+| Mobile 390 px | Petite fenêtre | Plan et engagements sur une colonne, tiroirs de choix | Mêmes actions | oui |

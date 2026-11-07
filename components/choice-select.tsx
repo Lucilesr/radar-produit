@@ -33,7 +33,7 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
   return <div className="choice-select min-w-0">
     <p id={labelId} className="mb-1.5 text-xs font-semibold text-muted-foreground">{label}</p>
     <div className="hidden sm:block">
-      <Select value={"option:"+value} onValueChange={next => onChange(next.slice(7) as T)} disabled={disabled}>
+      <Select value={"option:"+value} onValueChange={next => { if(next.startsWith("option:")&&options.some(option=>option.value===next.slice(7)))onChange(next.slice(7) as T); }} disabled={disabled}>
         <SelectTrigger aria-labelledby={`${labelId} ${desktopValueId}`} className="choice-select-trigger h-11 w-full rounded-xl border-border bg-white px-3 text-left text-sm text-foreground shadow-none focus-visible:ring-ring">
           <SelectValue id={desktopValueId} placeholder="Choisir">{displayValue??selected}</SelectValue>
         </SelectTrigger>
