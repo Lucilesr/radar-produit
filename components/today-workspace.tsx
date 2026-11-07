@@ -40,7 +40,7 @@ export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd
         <h2 className="today-focus-title">{preparing?"Préparez votre radar":urgent?urgent.title:count?triageTitle:selected?`${selected} offre${selected>1?"s":""} à préparer`:"Votre file d’offres est à jour"}</h2>
         <p className="workspace-caption">{preparing?"Commencez par choisir le poste que vous cherchez pour classer vos offres.":urgent?urgent.detail:count?triageCaption:selected?"Retrouvez les offres sélectionnées et préparez votre candidature.":"Ajoutez une annonce pour la retrouver dans votre radar."}</p>
         <WorkspaceButton variant="primary" onClick={()=>preparing?onConfigureSearch?.():urgent?openAction(urgent):count?onTriage():selected?onSelected():onAdd()}>{preparing?"Configurer ma recherche":urgent?"Ouvrir le suivi":count?triageAction:selected?"Préparer ma sélection":"Ajouter une offre"}<ArrowRight size={17} aria-hidden /></WorkspaceButton>
-        {preparing?<ol className="signal-help list-decimal pl-5 space-y-2"><li>Choisissez vos postes et vos critères.</li><li>Choisissez les sources à suivre dans Ma recherche.</li><li>Lancez une première actualisation, ou ajoutez une annonce à la main.</li></ol>:null}
+        {preparing?<ol className="workspace-caption list-decimal pl-5 space-y-2"><li>Choisissez vos postes et vos critères.</li><li>Choisissez les sources à suivre dans Ma recherche.</li><li>Lancez une première actualisation, ou ajoutez une annonce à la main.</li></ol>:null}
         <RadarMark className="today-logo-watermark" watermark/>
       </section>
       <section className="today-next" aria-labelledby="today-next-title"><WorkspacePanelHeader id="today-next-title" title="À faire ensuite"/>
