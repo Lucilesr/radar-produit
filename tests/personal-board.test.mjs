@@ -30,8 +30,8 @@ function moduleUrl(file) {
 test("tableau personnel SQLite : isolation, version, déplacements et conservation", async () => {
   const sqlite=new DatabaseSync(":memory:");
   for(const file of readdirSync(resolve(root,"drizzle")).filter(f=>f.endsWith(".sql")).sort())sqlite.exec(readFileSync(resolve(root,"drizzle",file),"utf8"));
-  function prepare(sql){let args=[];return {bind(...values){args=values;return this;},async all(){return {results:sqlite.prepare(sql).all(...args)};},async raw(){const stmt=sqlite.prepare(sql);stmt.setReturnArrays(true);return stmt.all(...args);},async run(){return sqlite.prepare(sql).run(...args);}};}
-  globalThis.__trashEnv={DB:{prepare}};
+  function prepare(sql){let args=[];return {bind(...values){args=values;return this;},execute(){const results=sqlite.prepare(sql).all(...args);return {success:true,results};},async all(){return {results:sqlite.prepare(sql).all(...args)};},async raw(){const stmt=sqlite.prepare(sql);stmt.setReturnArrays(true);return stmt.all(...args);},async run(){return sqlite.prepare(sql).run(...args);}};}
+  globalThis.__trashEnv={DB:{prepare,async batch(statements){sqlite.exec("BEGIN");try{const results=statements.map(statement=>statement.execute());sqlite.exec("COMMIT");return results;}catch(error){sqlite.exec("ROLLBACK");throw error;}}}};
   const route=await import(moduleUrl("app/api/application-board/route.ts"));
   const jobs=await import(moduleUrl("app/api/jobs/[id]/route.ts"));
   const store=await import(moduleUrl("lib/job-store.ts"));

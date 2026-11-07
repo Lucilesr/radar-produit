@@ -187,7 +187,7 @@ test("migration additive : les autorisations existantes restent accordées",()=>
 
 test("stockage réel SQLite : versions, validation groupée, arbitrage, isolation, idempotence et conservation",async()=>{
   const sqlite=new DatabaseSync(":memory:");
-  for(const migration of ["0000_unusual_alex_power.sql","0001_elite_robin_chapel.sql","0002_sloppy_glorian.sql","0005_clear_black_bird.sql"])sqlite.exec(readFileSync(new URL("../drizzle/"+migration,import.meta.url),"utf8"));
+  for(const migration of ["0000_unusual_alex_power.sql","0001_elite_robin_chapel.sql","0002_sloppy_glorian.sql","0005_clear_black_bird.sql","0015_activity_events.sql"])sqlite.exec(readFileSync(new URL("../drizzle/"+migration,import.meta.url),"utf8"));
   sqlite.prepare("INSERT INTO profiles(user_id,data) VALUES(?,?)").run("alice",JSON.stringify({evidence:[{title:"Ancien",context:"Fait historique non personnellement approuvé"}],applicationNotes:{x:"SECRET_NOTE"}}));
   const bytes=new TextEncoder().encode("## Atlas\n### Recette\nJ’ai documenté le parcours de recette fictif pour Atlas.").buffer;
   sqlite.prepare("INSERT INTO documents(id,user_id,original_name,object_key,content_type,size) VALUES(?,?,?,?,?,?)").run("11111111-1111-4111-8111-111111111111","alice","fictif.md","private/fictif","text/markdown",bytes.byteLength);

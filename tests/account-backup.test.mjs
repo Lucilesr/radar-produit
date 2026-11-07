@@ -1,19 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import ts from "typescript";
-import { BACKUP_TABLES, BACKUP_FORMAT, V2_BACKUP_FORMAT, V2_BACKUP_TABLES, LEGACY_BACKUP_TABLES, LEGACY_BACKUP_FORMAT, canonical, sha256 } from "../lib/account-backup-format.mjs";
+import { BACKUP_TABLES, BACKUP_FORMAT, V3_BACKUP_FORMAT, V3_BACKUP_TABLES, V2_BACKUP_FORMAT, V2_BACKUP_TABLES, LEGACY_BACKUP_TABLES, LEGACY_BACKUP_FORMAT, canonical, sha256 } from "../lib/account-backup-format.mjs";
 import { verifyBackup, restoreBackup, compareBackups } from "../scripts/verify-private-backup.mjs";
 const source = readFileSync(new URL("../lib/account-backup.ts", import.meta.url), "utf8");
 const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText.replace('"./account-backup-format.mjs"', JSON.stringify(new URL("../lib/account-backup-format.mjs", import.meta.url).href));
 const { createAccountBackup } = await import("data:text/javascript;base64," + Buffer.from(js).toString("base64"));
 function fixture(path = ":memory:") {
   const sqlite = new DatabaseSync(path);
-  for (const name of ["0000_unusual_alex_power.sql", "0001_elite_robin_chapel.sql", "0002_sloppy_glorian.sql", "0003_first_marvel_apes.sql", "0004_nostalgic_terror.sql", "0005_clear_black_bird.sql", "0006_confused_ego.sql", "0007_easy_banshee.sql", "0008_friendly_guardsmen.sql", "0009_friendly_spencer_smythe.sql", "0010_messy_mac_gargan.sql", "0011_low_vanisher.sql", "0012_futuristic_slipstream.sql"]) sqlite.exec(readFileSync(new URL("../drizzle/" + name, import.meta.url), "utf8"));
+  for (const name of readdirSync(new URL("../drizzle/",import.meta.url)).filter(name=>/^\d+.*\.sql$/.test(name)).sort()) sqlite.exec(readFileSync(new URL("../drizzle/" + name, import.meta.url), "utf8"));
   const long = "Texte privé complet avec accents et ".repeat(2000);
   const objects = new Map();
   for (const user of ["alice", "bob"]) {
@@ -22,6 +22,8 @@ function fixture(path = ":memory:") {
     sqlite.prepare("INSERT INTO profiles(user_id,data) VALUES(?,?)").run(user, JSON.stringify({ notes: long + user, searchPreferences:{domainTerms:["SEPA","Paiements"]}, weekPlan: {week:"2026-W45",timeZone:"Europe/Paris",rhythm:"calm",commitments:[{id:"plan-"+user,when:"2026-11-04T10:00",action:"review",label:"Bilan privé "+user,doneAt:"2026-11-04T10:10:00Z"}]}, weekPlanRevision:2,weekPlans:[{week:"2026-W44",commitments:[{id:"old-"+user,label:"Engagement précédent "+user,doneAt:"2026-10-28T10:00:00Z"}]}] }));
     sqlite.prepare("INSERT INTO documents(id,user_id,original_name,object_key,content_type,size) VALUES(?,?,?,?,?,?)").run("doc-" + user, user, "same-name.md", key, "text/markdown", content.length);
     sqlite.prepare("INSERT INTO jobs(id,user_id,fingerprint,title,description) VALUES(?,?,?,?,?)").run("job-" + user, user, "identical", "Même offre", long + user);
+    sqlite.prepare("UPDATE jobs SET review_state='later',salary_min=62000,salary_max=70000,announced_location='Lieu fictif' WHERE user_id=?").run(user);
+    sqlite.prepare("INSERT INTO activity_events(id,user_id,action,object_type,object_id,created_at,data) VALUES(?,?,?,?,?,?,?)").run("activity-"+user,user,"offer_sorted","job","job-"+user,"2026-11-07T10:00:00Z",JSON.stringify({decision:"later",source:"Apec"}));
     sqlite.prepare("INSERT INTO application_boards(user_id,data) VALUES(?,?)").run(user, JSON.stringify({ columns: ["Entretien RH"] }));
     sqlite.prepare("INSERT INTO workspace_writes(user_id,key,version,value,created_at) VALUES(?,?,?,?,?)").run(user,"draft:job-"+user,1,"Note sauvegardée", "now");
     sqlite.prepare("INSERT INTO application_questions(id,user_id,job_id,question,answer,created_at,updated_at) VALUES(?,?,?,?,?,?,?)")
@@ -51,6 +53,7 @@ test("sauvegarde intégrale A/B : noms/contenus/offres identiques, aucune donné
     assert.deepEqual(Object.keys(a.database.tables), BACKUP_TABLES);
     assert(a.database.tables.jobs[0].description.length > 50000);
     assert.equal(a.manifest.files.length, 1);
+    assert.equal(a.database.tables.activity_events[0].user_id,"alice");assert.equal(a.database.tables.activity_events[0].object_id,"job-alice");assert.equal(a.database.tables.jobs[0].review_state,"later");assert.equal(a.database.tables.jobs[0].salary_min,62000);assert.equal(a.database.tables.jobs[0].salary_max,70000);assert.equal(a.database.tables.jobs[0].daily_rate_min,null);assert.equal(a.database.tables.jobs[0].daily_rate_max,null);assert.equal(a.database.tables.jobs[0].announced_location,"Lieu fictif");
     assert.equal(a.manifest.format,BACKUP_FORMAT);
     assert.equal(a.database.tables.application_questions[0].answer,"Brouillon privé alice");
     assert.equal(a.database.tables.application_answer_proposals[0].answer,"Variante fictive alice");
@@ -76,6 +79,7 @@ test("restauration locale complète, relecture, refus d’écrasement et altéra
     const proof = await restoreBackup(file, join(root, "restore"));
     assert(proof.fullRowComparison && proof.fullFileReadback);
     assert.equal(proof.counts.jobs, 1);
+    assert.equal(proof.counts.activity_events,1);
     assert.equal(proof.counts.application_answer_proposals,1);
     assert.equal(proof.counts.workspace_writes,1);
     assert.equal(proof.counts.application_boards,1);
@@ -126,6 +130,15 @@ test("une sauvegarde v2 reste restaurable après l’ajout des colonnes Kanban e
     assert.equal(proof.format,V2_BACKUP_FORMAT);assert.equal(proof.counts.jobs,1);
     assert.equal(proof.fullRowComparison,true);
   } finally {f.sqlite.close();}
+});
+test("une sauvegarde v3 avec fourchettes reste restaurable après le journal L1",async()=>{
+ const f=fixture();try{
+  const previous=structuredClone(await createAccountBackup(f.db,f.bucket,"alice"));previous.manifest.format=V3_BACKUP_FORMAT;
+  for(const table of BACKUP_TABLES.filter(name=>!V3_BACKUP_TABLES.includes(name))){delete previous.database.tables[table];delete previous.manifest.tables[table];}
+  previous.database.schema=previous.database.schema.filter(row=>V3_BACKUP_TABLES.includes(row.tbl_name));previous.manifest.databaseSha256=await sha256(canonical(previous.database));
+  await verifyBackup(previous);const root=await mkdtemp(join(tmpdir(),"radar-backup-v3-test-")),file=join(root,"backup-v3.json");const {writeFile}=await import("node:fs/promises");await writeFile(file,JSON.stringify(previous),{mode:0o600});
+  const proof=await restoreBackup(file,join(root,"restore-v3"));assert.equal(proof.format,V3_BACKUP_FORMAT);assert(proof.fullRowComparison);assert.equal(proof.counts.workspace_writes,1);assert.equal(proof.counts.jobs,1);
+ }finally{f.sqlite.close();}
 });
 test("refus complet si original manquant, namespace incorrect, fichier changeant, table inconnue ou identité absente", async () => {
   const f = fixture();

@@ -1,3 +1,4 @@
+import {activityStatement} from "./activity-store";
 import {env} from "cloudflare:workers";
 import {archivePlan,carryDone,validateWeekPlan,weekKey,type WeekPlanState,type WeekPlan} from "./week-plan";
 import {profileTemplate} from "./profile-template";
@@ -18,7 +19,10 @@ export async function writeWeekPlan(userId:string,command:{version:number;plan?:
   plan={...state.plan,commitments:state.plan.commitments.map(item=>item.id===command.id?{...item,doneAt:command.done?now.toISOString():undefined}:item)};
  }
  if(command.version!==state.version)throw new WeekPlanConflict(state);
- const result=await db().prepare("UPDATE profiles SET data=json_set(data,'$.weekPlan',json(?),'$.weekPlans',json(?),'$.weekPlanRevision',?),updated_at=? WHERE user_id=? AND data=?").bind(JSON.stringify(plan),JSON.stringify(history),state.version+1,now.toISOString(),userId,row.data).run();
- if(!result.meta.changes)throw new WeekPlanConflict(await readWeekPlan(userId));
+ const operations:D1PreparedStatement[]=[];
+ if(command.plan===undefined&&command.id){const item=plan.commitments.find(item=>item.id===command.id)!;operations.push(activityStatement(userId,{action:command.done?"commitment_checked":"commitment_unchecked",objectType:"commitment",objectId:`${plan.week}:${item.id}`,createdAt:now.toISOString(),data:{week:plan.week,action:item.action}},"EXISTS(SELECT 1 FROM profiles WHERE user_id=? AND data=?)",[userId,row.data]));}
+ operations.push(db().prepare("UPDATE profiles SET data=json_set(data,'$.weekPlan',json(?),'$.weekPlans',json(?),'$.weekPlanRevision',?),updated_at=? WHERE user_id=? AND data=? RETURNING user_id").bind(JSON.stringify(plan),JSON.stringify(history),state.version+1,now.toISOString(),userId,row.data));
+ const result=await db().batch(operations);
+ if(!result.at(-1)?.results?.length)throw new WeekPlanConflict(await readWeekPlan(userId));
  return {version:state.version+1,plan,history};
 }

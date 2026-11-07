@@ -1,3 +1,5 @@
+import {activityDb,activityStatement,jobActivityStatement} from "./activity-store";
+import {jobActivity} from "./activity";
 import { and, desc, eq, isNull, inArray, isNotNull, like, lt, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { jobs, profiles, interviews, applicationQuestions, applicationAnswerRevisions, applicationAnswerProposals, workspaceWrites } from "@/db/schema";
@@ -108,13 +110,11 @@ export async function setOffersDeleted(userId: string, ids: string[], deleted: b
   if (!ids.length || ids.length > 50 || ids.some(id => typeof id !== "string" || !id || id.length > 100)) throw new Error("Sélection invalide : 1 à 50 offres.");
   if (reason !== undefined && !["filled", "applications_closed", "not_interested", "other"].includes(reason)) throw new Error("Motif de corbeille invalide.");
   if (note && note.length > 500) throw new Error("Commentaire trop long.");
-  // One bounded atomic write + returning, instead of SELECT / UPDATE / SELECT per offer.
-  // COALESCE preserves the original timestamp on retries; owner scope stays server-side.
-  return getDb().update(jobs).set({ deletedAt: deleted ? sql`coalesce(${jobs.deletedAt}, ${new Date().toISOString()})` : null,
-    dismissalReason: deleted ? sql`coalesce(${jobs.dismissalReason}, ${reason ?? null})` : null,
-    dismissalNote: deleted ? sql`coalesce(${jobs.dismissalNote}, ${note?.trim() || null})` : null })
-    .where(and(eq(jobs.userId, userId), inArray(jobs.id, [...new Set(ids)])))
-    .returning({ id: jobs.id, deletedAt: jobs.deletedAt, dismissalReason: jobs.dismissalReason, dismissalNote: jobs.dismissalNote });
+  const unique=[...new Set(ids)],at=new Date().toISOString();
+  const event=jobActivityStatement(userId,deleted?"offer_sorted":"offer_restored",unique,at,deleted?"deleted_at IS NULL":"deleted_at IS NOT NULL",[],deleted?"discarded":null);
+  const update=activityDb().prepare(`UPDATE jobs SET deleted_at=${deleted?"coalesce(deleted_at,?)":"NULL"},dismissal_reason=${deleted?"coalesce(dismissal_reason,?)":"NULL"},dismissal_note=${deleted?"coalesce(dismissal_note,?)":"NULL"} WHERE user_id=? AND id IN (${unique.map(()=>"?").join(",")}) RETURNING id,deleted_at AS deletedAt,dismissal_reason AS dismissalReason,dismissal_note AS dismissalNote`).bind(...(deleted?[at,reason??null,note?.trim()||null]:[]),userId,...unique);
+  const result=await activityDb().batch([event,update]);
+  return result[1].results as {id:string;deletedAt:string|null;dismissalReason:string|null;dismissalNote:string|null}[];
 }
 
 // D1 accepts at most 100 bound parameters per statement. Nested cleanup
@@ -169,10 +169,15 @@ export async function purgeExpiredTrash(userId: string, now = new Date()) {
 }
 
 export async function setOfferReviewState(userId: string, id: string, reviewState: "to_review" | "selected" | "later") {
-  const [row] = await getDb().update(jobs).set({ reviewState: storedReviewDecision(reviewState), updatedAt: new Date().toISOString() })
-    .where(and(eq(jobs.userId, userId), eq(jobs.id, id), isNull(jobs.deletedAt)))
-    .returning({ id: jobs.id });
-  return row ? getOffer(userId, id) : null;
+  const current=await getOffer(userId,id);if(!current)return null;
+  const next=storedReviewDecision(reviewState),status=current.status==="closed"?"new":current.status;
+  if(current.reviewState===next&&status===current.status)return current;
+  const at=new Date().toISOString(),where="id=? AND user_id=? AND status IS ? AND review_state IS ? AND updated_at IS ? AND deleted_at IS NULL",args=[id,userId,current.status,current.reviewState??null,current.updatedAt??null];
+  const action=jobActivity(current,{...current,status,reviewState:next});
+  const operations=action?[activityStatement(userId,{action:action.action,objectType:"job",objectId:id,createdAt:at,data:{...action.data,source:current.source,fit:current.fit??null,fitLabel:current.fitLabel??null}},`EXISTS(SELECT 1 FROM jobs WHERE ${where})`,args)]:[];
+  operations.push(activityDb().prepare(`UPDATE jobs SET review_state=?,status=?,updated_at=? WHERE ${where} RETURNING id`).bind(next,status,at,...args));
+  const result=await activityDb().batch(operations);
+  return result.at(-1)?.results.length?getOffer(userId,id):null;
 }
 
 const closureSchema = z.object({ id: z.string().min(1).max(100), reason: z.enum(["filled", "applications_closed"]), source: z.string().min(1).max(80), sourceUrl: z.string().url(), evidence: z.string().trim().min(12).max(500) }).strict();

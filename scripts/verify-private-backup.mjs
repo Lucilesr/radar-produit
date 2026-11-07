@@ -4,9 +4,9 @@ import { readFile, writeFile, mkdir, chmod } from "node:fs/promises";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
-import { BACKUP_FORMAT, BACKUP_TABLES, V2_BACKUP_FORMAT, V2_BACKUP_TABLES, LEGACY_BACKUP_FORMAT, LEGACY_BACKUP_TABLES, canonical, sha256 } from "../lib/account-backup-format.mjs";
+import { BACKUP_FORMAT, BACKUP_TABLES, V3_BACKUP_FORMAT, V3_BACKUP_TABLES, V2_BACKUP_FORMAT, V2_BACKUP_TABLES, LEGACY_BACKUP_FORMAT, LEGACY_BACKUP_TABLES, canonical, sha256 } from "../lib/account-backup-format.mjs";
 
-const tablesFor = format => format === BACKUP_FORMAT ? BACKUP_TABLES : format === V2_BACKUP_FORMAT ? V2_BACKUP_TABLES : format === LEGACY_BACKUP_FORMAT ? LEGACY_BACKUP_TABLES : null;
+const tablesFor = format => format === BACKUP_FORMAT ? BACKUP_TABLES : format === V3_BACKUP_FORMAT ? V3_BACKUP_TABLES : format === V2_BACKUP_FORMAT ? V2_BACKUP_TABLES : format === LEGACY_BACKUP_FORMAT ? LEGACY_BACKUP_TABLES : null;
 
 export async function verifyBackup(backup) {
   const tables = tablesFor(backup.manifest.format);
@@ -73,8 +73,11 @@ export async function restoreBackup(backupPath, outputDirectory) {
     const jobSchema = backup.database.schema.find(row => row.name === "jobs")?.sql ?? "";
     if (jobSchema.includes("onsite_days_per_week")) migrations.push("0009_friendly_spencer_smythe.sql");
     if (jobSchema.includes("applied_at")) migrations.push("0010_messy_mac_gargan.sql");
-    if (jobSchema.includes("board_column_id") || backup.manifest.format === BACKUP_FORMAT) migrations.push("0011_low_vanisher.sql");
-    if (backup.manifest.format === BACKUP_FORMAT) migrations.push("0012_futuristic_slipstream.sql");
+    if (jobSchema.includes("board_column_id") || tables.includes("application_boards")) migrations.push("0011_low_vanisher.sql");
+    if (tables.includes("workspace_writes")) migrations.push("0012_futuristic_slipstream.sql");
+    if (jobSchema.includes("announced_location")) migrations.push("0013_steady_morg.sql");
+    if (jobSchema.includes("salary_min")) migrations.push("0014_pay_ranges.sql");
+    if (tables.includes("activity_events")) migrations.push("0015_activity_events.sql");
     for (const migration of migrations) db.exec(await readFile(join(root, "drizzle", migration), "utf8"));
     db.exec("BEGIN");
     try {
@@ -102,7 +105,7 @@ export async function restoreBackup(backupPath, outputDirectory) {
       interviewsWithoutJob: db.prepare("SELECT COUNT(*) AS n FROM interviews i LEFT JOIN jobs j ON i.job_id=j.id AND i.user_id=j.user_id WHERE j.id IS NULL").get().n,
       realizationsWithoutParent: db.prepare("SELECT COUNT(*) AS n FROM experience_items i LEFT JOIN experience_items p ON i.parent_id=p.id AND i.user_id=p.user_id WHERE i.parent_id IS NOT NULL AND p.id IS NULL").get().n,
       revisionsWithoutItem: db.prepare("SELECT COUNT(*) AS n FROM experience_revisions r LEFT JOIN experience_items i ON r.item_id=i.id AND r.user_id=i.user_id WHERE i.id IS NULL").get().n,
-      ...(backup.manifest.format === BACKUP_FORMAT ? {
+      ...(tables.includes("application_questions") ? {
         questionsWithoutJob: db.prepare("SELECT COUNT(*) AS n FROM application_questions q LEFT JOIN jobs j ON q.job_id=j.id AND q.user_id=j.user_id WHERE j.id IS NULL").get().n,
         answerRevisionsWithoutQuestion: db.prepare("SELECT COUNT(*) AS n FROM application_answer_revisions r LEFT JOIN application_questions q ON r.question_id=q.id AND r.user_id=q.user_id WHERE q.id IS NULL").get().n,
         proposalsWithoutQuestion: db.prepare("SELECT COUNT(*) AS n FROM application_answer_proposals p LEFT JOIN application_questions q ON p.question_id=q.id AND p.user_id=q.user_id WHERE q.id IS NULL").get().n,

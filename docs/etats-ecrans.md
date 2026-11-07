@@ -918,3 +918,17 @@ Contradiction levée avec la maquette Portee : le titre « débloque » suggéra
 Recette staging39 : exactement 1 000 offres et 50 candidatures fictives, tableau et Kanban à1360/390px, conflit réel de déplacement409, refus consultable, titre180 et note2000 conservés, lot3 stable, groupe101 borné à50 et annulation845→895. [Audit](candidatures.md) et [captures](candidatures/README.md). Console nominale propre. Les dates14/30jours sont relues dans le code, sans capture temporelle inventée.
 
 **Gênant — fiche de candidature mobile, titre long.** Les outils d’en-tête occupent une rangée trop large à390px ; le titre180caractères se replie dans une colonne très étroite. Le corps et la note restent accessibles par défilement. Correction prévue dans C4, avec avant/après. Aucun blocage ni perte de texte observé.
+
+## Complément L1 — journal et continuité du compte
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Journal neuf | aucun événement depuis l’activation | explication sans historique inventé | poursuivre sa recherche | oui |
+| Chargement | lecture paginée du journal | Lecture du journal, contrôles désactivés | attendre | oui |
+| Succès et volume | actions confirmées | vingt actions par page, date et libellé | pages anciennes/récentes, actualiser | oui |
+| Erreur / hors ligne | lecture non confirmée | erreur et dernière page conservée | Réessayer la lecture | oui |
+| Autre appareil | point de reprise disponible | reprise volontaire depuis l’accueil, même lot verrouillé | Reprendre la séance | oui |
+| Conflit | ancienne version d’une séance | point de reprise à relire, pas d’écrasement | Réessayer | oui |
+| Mobile / clavier / mouvement réduit | 390 px, Tab, préférence appareil | dates sous le texte, boutons Signal, focus conservé, aucune animation du journal | mêmes actions | oui |
+
+Les notes longues restent dans leur dossier : elles ne sont pas reproduites dans les événements. La fermeture hors ligne ne promet pas une synchronisation ; le dernier point confirmé du compte reste la référence.

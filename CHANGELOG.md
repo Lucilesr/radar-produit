@@ -1,3 +1,9 @@
+## 8 novembre 2026 — Journal privé d’activité L1
+
+- Actions confirmées conservées dans le compte, sans notes ni textes de CV : tri, candidature, entretien noté, relance déclarée, histoire validée, engagement et fin de séance. Lecture paginée dans Mon profil → Mon compte.
+- Lot et point de reprise de séance partagés entre appareils, avec confirmation des écritures et protection contre les anciennes pages. Une relance faite reste marquée après rechargement.
+- Migration additive `0015_activity_events` et sauvegarde intégrale v4, compatible avec les sauvegardes v1–v3. Aucun historique reconstruit, aucun service tiers.
+
 ## 8 novembre 2026 — Audit C0 des candidatures
 
 - Inventaire du suivi existant, des limites temporelles et mobiles, et des lots C1–C4/L3 retenus. Documentation seule ; le comportement applicatif reste celui du staging39.

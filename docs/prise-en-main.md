@@ -73,3 +73,13 @@ Dans **Voir la réserve**, le compteur indique les groupes traités pendant ce r
 ### Suivre une candidature — état après la phase1
 
 **J’ai postulé** ouvre le suivi dans Candidatures. Le tableau distingue En cours, Closes et Toutes ; le Kanban regroupe les étapes et permet les colonnes personnelles. Un refus conserve le dossier, ses notes et ses entretiens dans Closes. Une erreur de déplacement demande une relecture ; ne répétez pas un choix sans vérifier son résultat. [L’audit C0](candidatures.md) distingue les fonctions présentes des lots C1–C4 à venir.
+
+## Journal privé et reprise entre appareils — L1
+
+Dans **Mon profil → Mon compte → Journal privé d’activité**, relisez vos actions confirmées, vingt par page. **Actualiser le journal**, **Voir les actions plus anciennes** et **Actions plus récentes** permettent de parcourir la liste au clavier comme sur mobile. Le journal commence à son activation ; les actions passées ne sont pas reconstituées. Une erreur laisse la dernière page lisible et propose de réessayer.
+
+Le journal conserve des repères (action, objet, date), pas le contenu des notes, bilans, CV ou histoires. Il reste dans votre compte, sans transmission à un service tiers, et figure dans la sauvegarde intégrale. Les droits de réutilisation des expériences restent indépendants.
+
+Le lot verrouillé et le point de reprise d’une séance sont désormais conservés dans le compte. Sur un autre appareil ou après rechargement, **Reprendre la séance** est volontaire. Une ancienne page ne peut pas remettre une séance terminée ni écraser une étape plus récente. Si le point de reprise a changé, **Réessayer** le relit avant de poursuivre ; vos décisions déjà confirmées restent enregistrées. La fermeture d’une page tente une pause, sans garantir une transmission hors ligne.
+
+Dans une séance, **J’ai fait cette relance** enregistre votre déclaration et retire ce rappel, y compris après rechargement. Radar n’envoie aucun message. Une nouvelle date explicitement posée pour cette relance crée un nouveau rappel. **Terminer la séance** attend la confirmation du compte avant d’afficher son bilan.

@@ -18,6 +18,7 @@ function fixture({ failDelete = false } = {}) {
   for (const name of migrations) sqlite.exec(readFileSync(new URL("../drizzle/" + name, import.meta.url), "utf8"));
   const objects = new Map();
   for (const user of ["alice", "bob"]) {
+    sqlite.prepare("INSERT INTO activity_events(id,user_id,action,object_type,object_id,created_at,data) VALUES(?,?,?,?,?,?,?)").run("event-"+user,user,"application_sent","job","job-"+user,"2026-11-07T10:00:00Z","{}");
     sqlite.prepare("INSERT INTO profiles(user_id,data) VALUES(?,?)").run(user, JSON.stringify({ headline: "Profil " + user }));
     sqlite.prepare("INSERT INTO jobs(id,user_id,fingerprint,title) VALUES(?,?,?,?)").run("job-" + user, user, "meme-offre", "Même offre");
     sqlite.prepare("INSERT INTO documents(id,user_id,original_name,object_key,content_type,size) VALUES(?,?,?,?,?,?)").run("doc-" + user, user, "cv.pdf", `users/${user}/cv.pdf`, "application/pdf", 3);
@@ -58,7 +59,7 @@ test("suppression : tout le compte A est effacé, le compte B et un préfixe voi
   const bobBefore = count("bob");
   const result = await deleteAccount(db, bucket, "alice");
   assert.equal(count("alice"), 0);
-  assert.equal(result.rows, 8);
+  assert.equal(result.rows, 9);
   assert.equal(result.files, 3);
   assert.equal(count("bob"), bobBefore);
   assert.deepEqual([...objects.keys()].sort(), ["demo/bob/exemple.md", "users/alice2/cv.pdf", "users/bob/autre.md", "users/bob/cv.pdf"]);
@@ -68,11 +69,11 @@ test("suppression : relancer après une panne termine le travail sans rien laiss
   const { db, bucket, objects, count, state } = fixture({ failDelete: true });
   await assert.rejects(deleteAccount(db, bucket, "alice"));
   // The D1 batch rolled back as a whole: no half-deleted rows. Files go first, so no CV outlives its record.
-  assert.equal(count("alice"), 8);
+  assert.equal(count("alice"), 9);
   assert.equal(objects.has("users/alice/cv.pdf"), false);
   state.failDelete = false;
   const retry = await deleteAccount(db, bucket, "alice");
-  assert.equal(retry.rows, 8);
+  assert.equal(retry.rows, 9);
   assert.equal(count("alice"), 0);
   assert.equal((await deleteAccount(db, bucket, "alice")).rows, 0);
 });

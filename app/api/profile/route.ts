@@ -34,8 +34,8 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
     await getDb()
       .insert(profiles)
-      .values({ userId: user.userId, data: JSON.stringify(profile), updatedAt: now })
-      .onConflictDoUpdate({ target: profiles.userId, set: { data: sql`json_set(${JSON.stringify(profile)}, '$.weekPlan', json_extract(${profiles.data}, '$.weekPlan'), '$.weekPlans', json_extract(${profiles.data}, '$.weekPlans'), '$.weekPlanRevision', coalesce(json_extract(${profiles.data}, '$.weekPlanRevision'),0), '$.preferences', json_extract(${profiles.data}, '$.preferences'), '$.celebrationState', json_extract(${profiles.data}, '$.celebrationState'), '$.searchPreferences.domainTerms', json_extract(${profiles.data}, '$.searchPreferences.domainTerms'))`, updatedAt: now } });
+      .values({ userId: user.userId, data: sql`json_remove(${JSON.stringify(profile)}, '$.radarContinuity')`, updatedAt: now })
+      .onConflictDoUpdate({ target: profiles.userId, set: { data: sql`json_set(${JSON.stringify(profile)}, '$.weekPlan', json_extract(${profiles.data}, '$.weekPlan'), '$.weekPlans', json_extract(${profiles.data}, '$.weekPlans'), '$.weekPlanRevision', coalesce(json_extract(${profiles.data}, '$.weekPlanRevision'),0), '$.preferences', json_extract(${profiles.data}, '$.preferences'), '$.celebrationState', json_extract(${profiles.data}, '$.celebrationState'), '$.searchPreferences.domainTerms', json_extract(${profiles.data}, '$.searchPreferences.domainTerms'), '$.radarContinuity', json_extract(${profiles.data}, '$.radarContinuity'))`, updatedAt: now } });
     return Response.json({ profile: await readCandidateProfile(user.userId) });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Erreur inattendue" }, { status: 400 });

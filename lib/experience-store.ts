@@ -41,14 +41,18 @@ const revision=(userId:string,item:ExperienceItem,action:string)=>db().prepare("
 function insert(userId:string,item:ExperienceItem,importKey:string) {
   return db().prepare("INSERT INTO experience_items (id,user_id,kind,parent_id,data,validation,application_allowed,application_consent,public_profile_allowed,version,import_key,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(item.id,userId,item.kind,item.parentId,JSON.stringify(item.data),item.validation,+item.applicationAllowed,item.applicationConsent||"pending",+item.publicProfileAllowed,item.version,importKey,item.createdAt,item.updatedAt);
 }
-function changeStatements(userId:string,items:ExperienceItem[],action:string) {
-  return items.flatMap(item=>[
+function changeStatements(userId:string,items:ExperienceItem[],action:string,approval=false) {
+  const statements=items.flatMap(item=>[
     db().prepare("UPDATE experience_items SET parent_id=?,data=?,validation=?,application_allowed=?,application_consent=?,public_profile_allowed=?,version=?,updated_at=? WHERE user_id=? AND id=? AND version=?").bind(item.parentId,JSON.stringify(item.data),item.validation,+item.applicationAllowed,item.applicationConsent||"pending",+item.publicProfileAllowed,item.version,item.updatedAt,userId,item.id,item.version-1),
     // Unique revision rolls the entire transaction back on a concurrent stale update.
     revision(userId,item,action),
   ]);
+  if(approval&&items.length){const entries=items.map(item=>({id:item.id,version:item.version,kind:item.kind,theme:item.data.claimKey.startsWith("interview-story:")?item.data.claimKey.slice(16):"",at:item.updatedAt}));
+    statements.unshift(db().prepare("INSERT INTO activity_events(id,user_id,action,object_type,object_id,created_at,data) SELECT lower(hex(randomblob(16))),?,CASE WHEN json_extract(s.value,'$.theme')<>'' THEN 'story_validated' ELSE 'fact_validated' END,'experience',x.id,json_extract(s.value,'$.at'),json_object('theme',json_extract(s.value,'$.theme'),'version',json_extract(s.value,'$.version'),'kind',json_extract(s.value,'$.kind')) FROM json_each(?) s JOIN experience_items x ON x.id=json_extract(s.value,'$.id') WHERE x.user_id=? AND x.version=json_extract(s.value,'$.version')-1").bind(userId,JSON.stringify(entries),userId));
+  }
+  return statements;
 }
-async function commitChanges(userId:string,items:ExperienceItem[],action:string) {const statements=changeStatements(userId,items,action);if(statements.length)await db().batch(statements);}
+async function commitChanges(userId:string,items:ExperienceItem[],action:string,approval=false) {const statements=changeStatements(userId,items,action,approval);if(statements.length)await db().batch(statements);}
 async function recordConflict(userId:string,a:string,b:string,reason:string) {
   const [left,right]=[a,b].sort();
   await db().prepare("INSERT INTO experience_conflicts (id,user_id,left_id,right_id,reason,state,created_at) VALUES (?,?,?,?,?,'open',?) ON CONFLICT(user_id,left_id,right_id) DO NOTHING").bind(crypto.randomUUID(),userId,left,right,reason,new Date().toISOString()).run();
@@ -93,7 +97,7 @@ export async function mutateLibrary(userId:string,input:unknown) {
       const issues=reviewIssues(updated);if(issues.length)throw new ReviewBlockedError(issues);
       updated.validation="approved";
     }
-    const statements=changeStatements(userId,[updated],receipt || (c.validate?"edit_and_approve":"edit"));
+    const statements=changeStatements(userId,[updated],receipt || (c.validate?"edit_and_approve":"edit"),c.validate===true);
     if(JSON.stringify(item.data)!==JSON.stringify(updated.data)||item.parentId!==updated.parentId)statements.push(db().prepare("UPDATE experience_conflicts SET state='open',resolved_at=NULL WHERE user_id=? AND (left_id IN (?,?,?) OR right_id IN (?,?,?))").bind(userId,item.id,item.parentId,updated.parentId,item.id,item.parentId,updated.parentId));
     await db().batch(statements);
   }else if(c.action==="usage"){
@@ -113,7 +117,7 @@ export async function mutateLibrary(userId:string,input:unknown) {
     const target=c.reason==="duplicate"?requireItem(c.duplicateOf||""):null;
     if(target&&(items.some(i=>i.id===target.id)||target.validation==="rejected"||target.validation==="superseded"))throw new Error("Choisissez un bloc conservé, hors de la sélection à masquer.");
     if(c.validation==="approved") { const issues=items.flatMap(i=>reviewIssues({...i,data:structuredReview(i.data)})); if(issues.length) throw new ReviewBlockedError(issues); }
-    await commitChanges(userId,items.map(i=>({...i,data:{...(c.validation==="approved"?structuredReview(i.data):i.data),disposition:c.validation==="rejected"?{reason:c.reason||"hidden",...(target?{targetId:target.id,targetTitle:target.data.title}:{})}:undefined},validation:c.validation,version:i.version+1,updatedAt:new Date().toISOString()})),receipt||"human_"+c.validation);
+    await commitChanges(userId,items.map(i=>({...i,data:{...(c.validation==="approved"?structuredReview(i.data):i.data),disposition:c.validation==="rejected"?{reason:c.reason||"hidden",...(target?{targetId:target.id,targetTitle:target.data.title}:{})}:undefined},validation:c.validation,version:i.version+1,updatedAt:new Date().toISOString()})),receipt||"human_"+c.validation,c.validation==="approved");
   }else if(c.action==="restore"){
     if(new Set(c.selection.map(s=>s.id)).size!==c.selection.length)throw new Error("Sélection répétée.");
     for(const selected of c.selection){const i=requireItem(selected.id,selected.version);if(i.parentId&&requireItem(i.parentId).validation==="rejected"&&!c.selection.some(p=>p.id===i.parentId))throw new Error("Restaurez l’expérience et ses détails ensemble.");}

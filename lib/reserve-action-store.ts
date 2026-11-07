@@ -1,3 +1,4 @@
+import {activityStatement,jobActivityStatement} from "./activity-store";
 import {env} from "cloudflare:workers";
 import {ARCHIVE_AFTER_DAYS,hasApplication} from "./opportunity-views";
 import {neighboringRole} from "./reserve";
@@ -56,6 +57,8 @@ async function commit(userId:string,key:string,r:Receipt,now:Date,undo:boolean){
  const operations=[insert];
  if(r.action==="role")operations.push(db().prepare(`UPDATE profiles SET data=json_set(data,'$.searchPreferences.roles',json(?)),updated_at=? WHERE user_id=? AND ${marker}`).bind(JSON.stringify(undo?r.rolesBefore:r.rolesAfter),now.toISOString(),userId,...markerArgs));
  else operations.push(db().prepare(`UPDATE jobs SET ${["reviewState","updatedAt","deletedAt","dismissalReason","dismissalNote"].map(key=>`${fields[key as keyof typeof fields]}=(SELECT json_extract(s.value,'$.${key}') FROM json_each(?) s WHERE json_extract(s.value,'$.id')=jobs.id)`).join(",")} WHERE user_id=? AND id IN(SELECT json_extract(value,'$.id') FROM json_each(?)) AND ${marker}`).bind(...Array(5).fill(JSON.stringify(target)),userId,JSON.stringify(target),...markerArgs));
+ if(r.action==="role")operations.push(activityStatement(userId,{action:undo?"search_role_removed":"search_role_added",objectType:"search",objectId:"roles",createdAt:now.toISOString(),data:{role:r.role??""}},marker,markerArgs));
+ else operations.push(jobActivityStatement(userId,undo?"offer_restored":r.action==="archive"?"offer_archived":"offer_sorted",r.before.map(item=>item.id),now.toISOString(),marker,markerArgs,r.action==="discard"?"discarded":r.action==="keep"?"later":null));
  const result=await db().batch(operations);
  if(!result[0].meta.changes)throw new ReserveConflict();
 }

@@ -59,7 +59,7 @@ export type InterviewRecord = {
   id: string; jobId: string; label: string; startAt: string; endAt: string; timeZone: string;
   format: "video" | "phone" | "onsite" | "other"; state: "planned" | "reviewed" | "cancelled";
   outcome?: "waiting" | "next_step" | "rejected" | "withdrawn" | "offer";
-  summary?: string; strengths?: string; weaknesses?: string; nextAction?: string; followUpAt?: string;
+  summary?: string; strengths?: string; weaknesses?: string; nextAction?: string; followUpAt?: string; followUpDoneAt?:string; followUpDoneFor?:string;
   remindedAt?: string; updatedAt?: string;
 };
 
