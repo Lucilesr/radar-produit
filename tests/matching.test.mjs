@@ -491,3 +491,28 @@ test("Score v2 S3 : le tri classe par adéquation, la fraîcheur ne fait que dé
   const ranked = sortOffersForTriage([offer("fraiche-moyenne", 70, 1), offer("ancienne-forte", 90, 20), offer("fraiche-forte", 88, 2)], now).map(job => job.id);
   assert.deepEqual(ranked, ["fraiche-forte", "ancienne-forte", "fraiche-moyenne"]);
 });
+
+const { isMysteryOffer, pinMysteryOffers, revealMessage } = await import(moduleUrl("fit", { "./seniority": moduleUrl("seniority"), "./search-preferences": preferences }));
+
+test("Score v2 S4 : une fiche mystère vise le poste mais reste trop courte pour être jugée", () => {
+  const summary = v2({ title: "Product Owner", remoteMode: "unknown", language: "unknown", description: "Remote role, apply on the site.", contentCoverage: "summary" });
+  assert.ok(isMysteryOffer(summary));
+  assert.ok(!isMysteryOffer(v2({ title: "Data Analyst", remoteMode: "unknown", language: "unknown", description: "Short.", contentCoverage: "summary" })));
+  assert.ok(!isMysteryOffer(v2({ title: "Product Owner Paiements", annualSalary: 66000, ...full("Vous avez 5 ans d'expérience. Missions : paiements CB, SEPA.") })));
+  assert.ok(!isMysteryOffer({ ...summary, deletedAt: "2026-11-07" }));
+  assert.ok(!isMysteryOffer({ ...summary, conditions: "excluded" }));
+});
+
+test("Score v2 S4 : cinq fiches mystère au plus passent en tête, le reste garde son ordre", () => {
+  const mystery = id => ({ id, conditions: "check", fitParts: { role: 30 }, confidence: "low" });
+  const plain = id => ({ id, conditions: "pass", fitParts: { role: 30, level: 25 }, confidence: "high" });
+  const list = [plain("a"), mystery("m1"), plain("b"), mystery("m2"), mystery("m3"), mystery("m4"), mystery("m5"), mystery("m6")];
+  assert.deepEqual(pinMysteryOffers(list).map(job => job.id), ["m1", "m2", "m3", "m4", "m5", "a", "b", "m6"]);
+  assert.deepEqual(pinMysteryOffers([plain("a"), plain("b")]).map(job => job.id), ["a", "b"]);
+});
+
+test("Score v2 S4 : message de révélation", () => {
+  assert.equal(revealMessage({ fit: 88, fitLabel: "very_close" }), "Bonne pioche : Très proche (88 sur 100).");
+  assert.equal(revealMessage({ fit: 64, fitLabel: "close" }), "Fiche complétée : Proche (64 sur 100).");
+  assert.match(revealMessage({ fit: 100 }), /Il manque encore/);
+});

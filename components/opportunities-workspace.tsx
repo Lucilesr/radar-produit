@@ -10,6 +10,7 @@ import { hasApplication, reviewState, sortOpportunitiesByDate, type OpportunityV
 import { formatDate } from "@/lib/application-workflow";
 import { formatEuro } from "@/lib/matching";
 import { formatPayRangeShort } from "@/lib/pay-range";
+import { pinMysteryOffers } from "@/lib/fit";
 import type { CandidateProfile, JobRecord, JobStatus } from "@/lib/types";
 
 const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"],["trash","Corbeille"]];
@@ -23,7 +24,8 @@ export function OpportunitiesWorkspace({jobs,counts,filter,onFilter,query,onClea
 }) {
   const [selection,setSelection]=useState<string[]>([]),[selecting,setSelecting]=useState(false),[reviewingIds,setReviewingIds]=useState<string[]>([]),[error,setError]=useState("");
   const [dateOrder,setDateOrder]=useState<"newest"|"oldest">("newest");
-  const orderedJobs=sortOpportunitiesByDate(jobs,filter,dateOrder);
+  // Score v2 S4: up to five mystery offers lead « À examiner », whatever the chosen order.
+  const orderedJobs=filter==="to_review"?pinMysteryOffers(sortOpportunitiesByDate(jobs,filter,dateOrder)):sortOpportunitiesByDate(jobs,filter,dateOrder);
   const [retained,setRetained]=useState<{job:JobRecord;filter:OpportunityView;query:string;index:number}|null>(null);
   const kept=retained?.filter===filter&&retained.query===query?retained:null;
   const retainedJob=kept&&currentJob?.id===kept.job.id?currentJob:kept?.job;

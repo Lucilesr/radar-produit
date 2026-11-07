@@ -114,3 +114,7 @@
 .offer-fit-detail{color:var(--muted-foreground);font-size:13px;line-height:1.4}
 .opportunity-evidence .offer-fit-badge{margin-right:6px}
 .offer-fit-badge:not(.is-success):not(.is-warning){box-shadow:inset 0 0 0 1px var(--border)}
+.offer-fit-badge[data-fit=mystery]{background:var(--card);box-shadow:none;border:1px dashed var(--primary);color:var(--primary)}
+.offer-mystery{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;margin:0 0 12px;padding:16px;border:1px dashed var(--primary);border-radius:5px;background:var(--card)}
+.offer-mystery p{margin:4px 0 0;color:var(--muted-foreground);font-size:14px;line-height:1.5;max-width:56ch}
+.offer-mystery-actions{display:flex;flex-wrap:wrap;gap:8px}

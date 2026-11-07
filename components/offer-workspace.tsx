@@ -17,7 +17,7 @@ import { ApplicationQuestions } from "@/components/application-questions";
 import { ApplicationTagBadges } from "@/components/application-tags";
 import { formatDate, fromZonedInput, reviewDue, statusLabels, zonedInput } from "@/lib/application-workflow";
 import { formatPay } from "@/lib/pay-range";
-import { fitLabels } from "@/lib/fit";
+import { fitLabels, isMysteryOffer, revealMessage } from "@/lib/fit";
 import { hasApplication, workspaceSections } from "@/lib/opportunity-views";
 import type { CandidateProfile, InterviewRecord, JobRecord, JobStatus } from "@/lib/types";
 
@@ -64,6 +64,8 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   onStatus: (id: string, status: JobStatus) => Promise<boolean>; onNote: (id: string, note: string) => Promise<boolean>; onOpenApplication: () => void; onCancelApplication?: () => Promise<boolean>;
 }) {
   const editTrigger=useRef<HTMLButtonElement>(null);
+  const notify=useWorkspaceFeedback();
+  const mystery=isMysteryOffer(job);
   const finishEditing=()=>{setEditing(false);requestAnimationFrame(()=>{editTrigger.current?.focus({preventScroll:true});editTrigger.current?.scrollIntoView({block:"nearest"});});};
   const [view, updateView] = useState<WorkspaceView>(initialView);
   const setView = (next: WorkspaceView) => { updateView(next); onViewChange?.(next); };
@@ -100,7 +102,12 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
         </dl>
 
       </section>
-      <FitSummary job={job} />
+      {mystery ? <section className="offer-mystery" aria-labelledby={`mystery-${job.id}`}>
+        <div><h3 id={`mystery-${job.id}`} className="offer-section-title">Fiche mystère</h3>
+        <p>Cette offre vise votre poste, mais la source n’en donne qu’un aperçu. Collez l’annonce complète : Radar révèle alors son adéquation.</p></div>
+        <div className="offer-mystery-actions">{sourceUrl ? <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} aria-hidden />Ouvrir l’annonce</a> : null}
+        <WorkspaceButton variant="primary" onClick={() => setEditing(true)}>Coller l’annonce</WorkspaceButton></div>
+      </section> : <FitSummary job={job} />}
       <div className="grid gap-3 sm:grid-cols-2"><Signals title="Pourquoi c’est pertinent" items={job.reasons} tone="positive" /><Signals title="Points à vérifier" items={job.flags} tone="caution" /></div>
       <section className="reading-description"><div className="reading-description-heading"><div><h3 className="offer-section-title">Description, missions et exigences</h3><p className="review-coverage">{coverage}</p></div>{!job.deletedAt ? <button ref={editTrigger} onClick={() => setEditing(true)} className="secondary-button"><Pencil size={13} /> Compléter / corriger</button> : null}</div><p className="offer-description-read">{job.description || "Aucune description fournie. Ajoutez le contenu de l’annonce ou d’une alerte autorisée."}</p>{coverage !== "Description complète fournie" ? <p className="mt-2 text-xs leading-5 text-muted-foreground">{coverage} : les informations absentes restent à confirmer.{!job.deletedAt ? " Vous pouvez coller une description complète ici, sans recréer une fiche." : " Restaurez l’offre pour compléter sa description."}</p> : null}</section>
       <section className="review-offer-dates" aria-label="Dates de l’offre">
@@ -109,7 +116,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
       {!job.publishedAt ? <div className="inline-help"><span>Date de publication non précisée</span><HelpTooltip label="Date de publication">La date d’import ou de notification ne remplace pas la date réelle de publication.</HelpTooltip></div> : null}
       </section>
     </> : null}
-    {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); }} onCancel={finishEditing} /> : null}
+    {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); if (mystery && !isMysteryOffer(updated)) notify({ message: revealMessage(updated) }); }} onCancel={finishEditing} /> : null}
     {context === "application" && activeView === "application" ? <div className="signal-application-form">
       <WorkspaceFormSection title="Suivi de candidature" actions={<WorkspaceButton disabled={statusBusy} onClick={() => setView("interviews")}><CalendarDays size={15} aria-hidden />Voir les entretiens</WorkspaceButton>}>
         <div className="signal-status-field" aria-busy={statusBusy}><StatusSelect value={job.status} disabled={statusBusy} onChange={async status => { setStatusBusy(true); try { await onStatus(job.id, status); } finally { setStatusBusy(false); } }} />{job.status === "applied" && !job.interviews?.length && onCancelApplication ? <button type="button" className="signal-quiet-button" disabled={statusBusy} onClick={async()=>{setStatusBusy(true);try{await onCancelApplication();}finally{setStatusBusy(false);}}}><Undo2 size={14} aria-hidden />Annuler « J’ai postulé »</button> : null}</div>
@@ -158,7 +165,8 @@ function PrivateBrief({ jobId }: { jobId: string }) {
 const fitTones = { very_close: "is-success", close: "", to_weigh: "is-warning", far: "" } as const;
 
 /** Score v2 label shown instead of a figure; the figure stays readable on hover and by screen readers. */
-export function FitBadge({ job }: { job: Pick<JobRecord, "fit" | "fitLabel" | "confidence"> }) {
+export function FitBadge({ job }: { job: Pick<JobRecord, "fit" | "fitLabel" | "confidence" | "conditions" | "fitParts" | "deletedAt"> }) {
+  if (isMysteryOffer(job)) return <span className="workspace-badge offer-fit-badge" data-fit="mystery" title="Bon poste, fiche trop courte : complétez-la pour révéler son adéquation.">Fiche mystère</span>;
   if (job.fitLabel) return <span className={`workspace-badge offer-fit-badge ${fitTones[job.fitLabel]}`} data-fit={job.fitLabel} title={`Adéquation ${job.fit} sur 100`}>{fitLabels[job.fitLabel]}<span className="sr-only"> : adéquation {job.fit} sur 100</span></span>;
   if (job.fit != null) return <span className="workspace-badge offer-fit-badge" data-fit="incomplete" title="Niveau et missions inconnus : complétez la fiche pour la juger.">Fiche incomplète</span>;
   return null;
