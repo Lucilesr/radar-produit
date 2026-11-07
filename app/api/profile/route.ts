@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     await getDb()
       .insert(profiles)
       .values({ userId: user.userId, data: JSON.stringify(profile), updatedAt: now })
-      .onConflictDoUpdate({ target: profiles.userId, set: { data: sql`json_set(${JSON.stringify(profile)}, '$.weekPlan', json_extract(${profiles.data}, '$.weekPlan'), '$.weekPlans', json_extract(${profiles.data}, '$.weekPlans'), '$.weekPlanRevision', coalesce(json_extract(${profiles.data}, '$.weekPlanRevision'),0))`, updatedAt: now } });
+      .onConflictDoUpdate({ target: profiles.userId, set: { data: sql`json_set(${JSON.stringify(profile)}, '$.weekPlan', json_extract(${profiles.data}, '$.weekPlan'), '$.weekPlans', json_extract(${profiles.data}, '$.weekPlans'), '$.weekPlanRevision', coalesce(json_extract(${profiles.data}, '$.weekPlanRevision'),0), '$.preferences', json_extract(${profiles.data}, '$.preferences'), '$.celebrationState', json_extract(${profiles.data}, '$.celebrationState'))`, updatedAt: now } });
     return Response.json({ profile: await readCandidateProfile(user.userId) });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Erreur inattendue" }, { status: 400 });

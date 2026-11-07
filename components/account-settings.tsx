@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { Dialog } from "radix-ui";
 import { Download, LogOut, Trash2, X } from "lucide-react";
+import { RadarPreferencesSettings } from "@/components/radar-preferences";
+import type { RadarPreferences } from "@/lib/celebrations";
 import { WorkspaceButton, WorkspaceFormError, WorkspaceFormSection } from "@/components/workspace-form";
 
 /** Typed by the owner to confirm; the API checks the same word. */
@@ -20,13 +22,14 @@ function forgetLocalState(ownerId: string) {
   } catch { /* Storage may be unavailable: nothing to clean. */ }
 }
 
-export function AccountSettings({ ownerId, userName, email, demo, signOutPath }: { ownerId: string; userName: string; email?: string; demo: boolean; signOutPath: string }) {
+export function AccountSettings({ ownerId, userName, email, demo, signOutPath, preferences, onPreferences }: {preferences?:RadarPreferences;onPreferences:(preferences:RadarPreferences)=>void; ownerId: string; userName: string; email?: string; demo: boolean; signOutPath: string }) {
   const leave = signOutTarget(demo, signOutPath);
   const signOutForm = useRef<HTMLFormElement>(null);
   const deleteTrigger=useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const [deleted, setDeleted] = useState(false);
   return <div className="account-settings">
+    <RadarPreferencesSettings initial={preferences} onSaved={onPreferences}/>
     <WorkspaceFormSection title="Connexion" description={demo ? "Vous utilisez la démo : les données sont fictives et isolées dans ce navigateur." : "Radar vous identifie avec votre compte ChatGPT. Vos données ne sont visibles que par vous."}>
       <div className="account-identity">
         <span className="avatar" aria-hidden>{userName.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase() || "RP"}</span>

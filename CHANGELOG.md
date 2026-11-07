@@ -1,6 +1,12 @@
 ## 7 novembre 2026 — Q4, la portée de votre radar
 
 
+## Encouragements et confort — Q6
+
+- Courts encouragements corail après certaines actions confirmées, au plus un par heure pour le compte. Aucun après un refus ou un écartement ; aucune erreur ni action utile remplacée.
+- Dans Mon profil, réduction des animations et célébrations et choix indépendant des raccourcis S/L/X. Réglages conservés entre appareils, sans migration ni service tiers.
+
+
 ## Plan de semaine — Q5
 
 - Deux à quatre engagements, suggestions depuis le radar, horaires locaux et cases confirmées dans le compte. Report neutre, moment facultatif de nouvelle semaine et bilan de semaine tenue.

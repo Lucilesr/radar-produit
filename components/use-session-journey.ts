@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
+import {confirmedProgress} from "@/lib/progress-event";
 import {useRadarSession} from "@/components/use-radar-session";
 import {refreshRadarClock} from "@/components/use-radar-clock";
 import {sessionDay,sessionSnapshot,sessionSteps,sessionVisits,sessionFollowups,sessionEstimate,sessionProgress,pauseSession,type RadarSession,type SessionStep,type SessionProgress,type SessionSource} from "@/lib/radar-session";
@@ -39,7 +40,7 @@ export function useSessionJourney({owner,jobs,lot,sources,initialLibrary,now,onN
   function finish(){if(!session||pending.current.size)return;const result=sessionProgress(session,jobs,sources,facts,Date.now());save(null);onNavigate("triage","home");if(result.total)setFinished(result);else requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}
   function next(){if(!session||pending.current.size)return;refreshRadarClock();if(session.current===session.steps.length-1){finish();return;}const value={...session,current:session.current+1};save(value);open(value);}
   function pause(){if(!session||pending.current.size)return;save(pauseSession(session,Date.now()));onNavigate("triage","home");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}
-  function confirmFollowup(id:string){if(session&&!session.sent.includes(id))save({...session,sent:[...session.sent,id]});}
+  function confirmFollowup(id:string){const entry=due.find(entry=>entry.id===id);if(session&&entry&&!session.sent.includes(id)){save({...session,sent:[...session.sent,id]});confirmedProgress({kind:"followup_done",objectId:id,stamp:entry.at});}}
   function closeFinish(){setFinished(null);requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}
   const tomorrow=sessionFollowups(jobs,now+86400000,sent).filter(entry=>Date.parse(entry.at)>now).length;
   return {writing,ready:ready&&factsLoaded&&!!now,session,steps,minutes,due,visits,facts,factsError,retryFacts:readFacts,start,next,finish,pause,open:()=>session&&open(session),finished,closeFinish,confirmFollowup,tomorrow};

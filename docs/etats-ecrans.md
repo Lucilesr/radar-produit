@@ -858,3 +858,24 @@ Contradiction levée avec la maquette Portee : le titre « débloque » suggéra
 | Mouvement réduit | Préférence système ou compte | Progression et moment sans animation | Mêmes actions | oui |
 | Clavier seul | Tab / Entrée / Échap | Contrôles Signal, focus dans le dialogue puis retour | Enregistrer ou fermer | oui |
 | Mobile 390 px | Petite fenêtre | Plan et engagements sur une colonne, tiroirs de choix | Mêmes actions | oui |
+
+## Confort et encouragements Q6
+
+| État | Ce qui le déclenche | Ce que voit la personne | Action proposée | Existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Compte neuf / vide | Aucun réglage enregistré | Valeurs par défaut, aucune célébration à l’ouverture | Choisir ses réglages | oui |
+| Chargement | Relecture des réglages | Cases désactivées et message de lecture | Attendre | oui |
+| Erreur API / hors ligne | Lecture ou écriture non confirmée | Valeur précédente et erreur ; aucun faux succès | Relire / retoucher pour réessayer | partiel : réseau non émulé |
+| Succès | Réglage confirmé | Case et confirmation du compte | Continuer | oui |
+| Partiel | Encouragement indisponible | L’action métier reste confirmée | Aucune action nécessaire | oui |
+| Beaucoup de données | Nombreuses actions ou offres | Reçus bornés à 500 ; au plus un encouragement par heure | Continuer normalement | oui, limite testée |
+| Textes longs | Explications et phrases | Retour à la ligne, sans CTA supplémentaire | Fermer la notification | oui |
+| Mouvement réduit | Système ou choix du compte | Aucun mouvement ; choix compte coupe les surprises | Mêmes fonctions | oui |
+| Clavier seul | Tab / Espace sur une case | Focus visible, retour après écriture | Changer ou conserver le choix | oui |
+| Mobile 390 px | Petite fenêtre | Cases 44 px et paragraphes sur une colonne | Mêmes choix | oui |
+| Refus / offre écartée | Décision négative | Aucun encouragement surprise | Continuer ou revenir plus tard | oui |
+| Dialogue, saisie ou erreur | Action confirmée pendant une autre lecture | Surprise différée ou supprimée, erreur préservée | Terminer la saisie | oui |
+
+### Défaut supplémentaire repéré pendant Q6
+
+**Gênant — Opportunités, après annulation d’une candidature.** L’offre revient bien dans les comptes à examiner, mais le volet de lecture sur ordinateur peut conserver son ancien objet et afficher « Voir dans Candidatures ». Une réouverture de l’offre relit son état. Correction prévue en PR ciblée après S5 ; conserver le comportement de lecture après une candidature réellement enregistrée. Aucun changement de production.
