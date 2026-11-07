@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink } from "lucide-react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ExternalLink, Trash2 } from "lucide-react";
+import { Sheet, SheetContent, SheetClose, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ChoiceSelect } from "@/components/choice-select";
 import { Switch } from "@/components/ui/switch";
 import { SourceCard, type SourceSetting } from "@/components/source-card";
 import { CollectiveAlertPanel } from "@/components/collective-alert-panel";
@@ -34,7 +35,7 @@ function sourceSearches(source: Source, setting: SourceSetting | undefined, prof
   const saved = Object.entries(setting?.searchLinks ?? {})
     .filter(([, links]) => links && (links.Site || links.Google))
     .map(([role, links]) => ({ id: `saved-${role}`, label: role, detail: "Recherche enregistrée sur le site", url: (links.Site || links.Google) as string }));
-  return [...generated, ...saved];
+  return [...generated, ...saved.filter(item => !generated.some(search => search.url === item.url))];
 }
 
 /** Everything about one source: what to open, when to come back, and what it brought. */
@@ -100,44 +101,39 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
         <SheetTitle>{source.name}</SheetTitle>
         <SheetDescription>
           {kind === "manual" ? "Source à consulter" : kind === "automatic" ? "Collecte automatique" : "Autre piste"}
-          {setting?.updatedAt ? ` · suivie depuis le ${formatDate(setting.updatedAt, "Indian/Mauritius")}` : null}
         </SheetDescription>
         <span className="signal-source-pill" data-tone={statusTones[status]}>{statusLabels[status]}</span>
       </SheetHeader>
 
       <div className="source-detail-body">
-        {source.name==="Collective"?<CollectiveAlertPanel setting={setting} onSaved={onSaved}/>:null}
         <section className="source-detail-action" aria-labelledby="source-detail-open">
-          <h3 id="source-detail-open">Passer en revue</h3>
+          <h3 id="source-detail-open" className="sr-only">Consulter la source</h3>
           <div className="source-detail-buttons">
-            <a className="primary-button" href={setting?.linkUrl || source.url} target="_blank" rel="noopener noreferrer">
-              Ouvrir {searches.length} recherche{searches.length > 1 ? "s" : ""}<ExternalLink size={14} aria-hidden />
+            <a className="secondary-button" href={setting?.linkUrl || source.url} target="_blank" rel="noopener noreferrer">
+              Ouvrir le site<ExternalLink size={14} aria-hidden />
             </a>
             {kind === "manual" ? <WorkspaceButton variant="secondary" disabled={busy} onClick={async () => { setBusy(true); try { await onVisit(source); } finally { setBusy(false); } }}>J’ai fait le tour</WorkspaceButton> : null}
           </div>
-          <p className="signal-help">Radar ne collecte rien sur ce site et n’utilise aucun compte.</p>
+          {kind === "manual" ? <p className="signal-help">Ouvrez une recherche puis marquez la visite comme terminée.</p> : <p className="signal-help">{source.note}</p>}
         </section>
 
-        <section aria-labelledby="source-detail-searches">
-          <h3 id="source-detail-searches">Recherches générées depuis vos critères</h3>
+        {kind === "manual" ? <section aria-label="Recherches">
           <ul className="source-detail-searches">{searches.map(search => <li key={search.id}>
             <span><strong>{search.label}</strong><span className="signal-help">{search.detail}</span></span>
             <a className="secondary-button" href={search.url} target="_blank" rel="noopener noreferrer">Ouvrir<ExternalLink size={13} aria-hidden /></a>
           </li>)}</ul>
           {drift.map(item => <DriftNotice key={`${item.searchId}-${item.value}`} drift={item} busy={busy} onKeep={() => void keepTerm(item.value)} onDrop={() => void dropSearch(item.searchId)} />)}
-        </section>
+        </section> : null}
 
-        {kind === "manual" ? <section aria-labelledby="source-detail-rhythm">
-          <h3 id="source-detail-rhythm">Rythme de visite</h3>
-          <div role="radiogroup" aria-label="Rythme de visite" className="source-detail-rhythm">
-            {visitRhythms.map(([days, label]) => <button key={days} type="button" role="radio" aria-checked={visitEvery(setting) === days} disabled={busy} onClick={() => void save({ visitEveryDays: days })}>{label}</button>)}
-          </div>
+        <SourceCard key={source.name} embedded source={source} setting={setting} count={found.length} profile={profile} onSaveSearch={onSaveSearch} onSaved={onSaved} settingsExtra={kind === "manual" ? <section aria-label="Rythme de visite">
+          <ChoiceSelect label="Rythme de visite" value={String(visitEvery(setting))} disabled={busy} options={visitRhythms.map(([days, label]) => ({ value: String(days), label }))} onChange={days => void save({ visitEveryDays: Number(days) })} />
           <label className="source-detail-switch">
             <Switch checked={remindsInToday(setting)} disabled={busy} onCheckedChange={checked => void save({ remindInToday: checked })} />
             <span>Me le rappeler dans « Aujourd’hui »</span>
           </label>
           {setting?.lastVisitedAt ? <p className="signal-help">Dernière visite le {formatDate(setting.lastVisitedAt, "Indian/Mauritius")}.</p> : <p className="signal-help">Jamais visitée depuis Radar.</p>}
-        </section> : null}
+        </section> : null} />
+        {source.name==="Collective"?<CollectiveAlertPanel setting={setting} onSaved={onSaved}/>:null}
 
         <section aria-labelledby="source-detail-found">
           <h3 id="source-detail-found">Offres trouvées ici</h3>
@@ -149,10 +145,10 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
           {onAddOffer ? <p className="signal-help">Collez l’URL d’une offre vue sur ce site : le formulaire d’ajout s’ouvre, prérempli.</p> : null}
         </section>
 
-        <section aria-labelledby="source-detail-settings">
-          <h3 id="source-detail-settings">Réglages et notes</h3>
-          <SourceCard source={source} setting={setting} count={found.length} profile={profile} onSaveSearch={onSaveSearch} onSaved={onSaved} onRemove={() => onRemove(source)} />
-        </section>
+      </div>
+      <div className="source-detail-footer">
+        <WorkspaceButton variant="danger" onClick={() => onRemove(source)}><Trash2 size={15} aria-hidden />Supprimer la source</WorkspaceButton>
+        <SheetClose asChild><WorkspaceButton variant="secondary">Fermer</WorkspaceButton></SheetClose>
       </div>
     </SheetContent>
   </Sheet>;

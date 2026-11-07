@@ -469,3 +469,27 @@
 .signal-source-row-logo .source-logo-square{height:28px;max-width:38px}
 .source-detail-logo .source-logo-square{height:32px;max-width:40px}
 .source-add-logo .source-logo-square{height:24px;max-width:40px}
+
+/* Source sheet: one identity, one configuration, actions always in reach. */
+[data-slot=sheet-content].source-detail{overflow:hidden}
+.source-detail .source-detail-head{flex-shrink:0;border-bottom:1px solid var(--signal-line)}
+.source-detail-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-top:20px;align-content:start;grid-auto-rows:max-content}
+.source-detail .source-detail-settings{min-height:0;padding:0;border:0;border-radius:0;background:transparent}
+.source-detail .source-detail-settings .source-research{margin:0}
+.source-detail .radar-collapsible-heading.library-section-heading{display:flex;align-items:center;gap:8px;padding:0;min-height:44px}
+.source-detail .library-section-toggle{flex:0 0 36px;width:36px;height:44px}
+.source-detail .library-section-title{flex:1;min-width:0;padding:0;font:600 14px/1.5 var(--font-sans)}
+.source-detail .signal-source-config>.radar-collapsible-content{border:0;padding:12px 0 0;gap:16px}
+.source-detail .source-setup-help{padding:12px;background:var(--signal-soft);border-radius:5px}
+.source-detail .source-setup-help .library-section-title{font-weight:500}
+.source-detail .source-setup-steps{margin:8px 0;padding-left:22px;font-size:13px;line-height:1.6}
+.source-detail .source-detail-rhythm{max-width:100%}
+.source-detail-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;padding:14px 22px;border-top:1px solid var(--signal-line);background:var(--signal-paper);padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.source-detail :is(input,textarea,.choice-select-trigger){font:inherit;max-width:100%}
+.source-detail .signal-source-actions{margin:0}
+@media(max-width:640px){.source-detail .source-detail-head{padding-left:16px}.source-detail-body{padding-inline:16px}.source-detail-footer{padding-inline:16px}.source-detail .source-detail-rhythm>button{padding-inline:10px}.source-detail :is(input,textarea,.choice-select-trigger){font-size:16px}}
+
+.source-detail{background:var(--signal-paper)}
+.source-detail .signal-source-config{flex:none}
+.source-detail .signal-source-form :is(input,textarea){width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--input);border-radius:5px;background:var(--signal-paper);color:var(--signal-ink)}
+.source-detail .signal-source-form textarea{min-height:96px}
