@@ -879,3 +879,19 @@ Contradiction levée avec la maquette Portee : le titre « débloque » suggéra
 ### Défaut supplémentaire repéré pendant Q6
 
 **Gênant — Opportunités, après annulation d’une candidature.** L’offre revient bien dans les comptes à examiner, mais le volet de lecture sur ordinateur peut conserver son ancien objet et afficher « Voir dans Candidatures ». Une réouverture de l’offre relit son état. Correction prévue en PR ciblée après S5 ; conserver le comportement de lecture après une candidature réellement enregistrée. Aucun changement de production.
+
+## Termes du domaine S5
+
+| État | Ce qui le déclenche | Ce que voit la personne | Action proposée | Existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Compte neuf / vide | Aucun bloc du carnet | Explication et aucun terme inventé | Ouvrir mon carnet | oui |
+| Pas de droit candidature | Blocs privés ou à relire | Aucune proposition provenant de ces blocs | Choisir les droits dans le carnet | oui |
+| Chargement | Lecture du carnet et des droits | Termes confirmés conservés, propositions absentes | Attendre | oui |
+| Erreur API / hors ligne | Réponse non confirmée | Critères précédents, erreur et relecture | Relire les termes | partiel : réseau non émulé |
+| Succès | Une confirmation ou un retrait | Jeton et compteur confirmés, notification sans CTA | Continuer | oui |
+| Partiel / version périmée | Bloc ou droits changés | Aucun ajout, propositions à relire | Relire | oui |
+| Beaucoup de données | Nombreux blocs / quarante termes | Propositions par huit, limite40 et boutons désactivés | Retirer un terme | oui, limites testées |
+| Textes longs | Titre180caractères / extrait borné | Retours à la ligne, pas de texte brut complet | Confirmer ou ignorer | oui |
+| Mouvement réduit | Système ou compte | Mêmes informations sans mouvement | Mêmes actions | oui |
+| Clavier seul | Tab / Espace | Confirmation, retrait et retour au titre | Confirmer ou retirer | oui |
+| Mobile390px | Petite fenêtre | Proposition et bouton sur une colonne, cibles44px | Mêmes actions | oui |

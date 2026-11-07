@@ -47,6 +47,7 @@ export function describeCriteriaChanges(before: SearchPreferences, after: Search
   if (before.minimumSalary !== after.minimumSalary) changes.push(`Salaire ${euro(before.minimumSalary)} → ${euro(after.minimumSalary)}/an`);
   if (before.minimumDailyRate !== after.minimumDailyRate) changes.push(`TJM ${euro(before.minimumDailyRate)} → ${euro(after.minimumDailyRate)}/jour`);
   changes.push(...listChange("Mot-clé", before.boostKeywords ?? [], after.boostKeywords ?? [], "ajouté", "retiré"));
+  changes.push(...listChange("Domaine", before.domainTerms ?? [], after.domainTerms ?? [], "ajouté", "retiré"));
   changes.push(...listChange("Mot-clé", before.excludeKeywords ?? [], after.excludeKeywords ?? [], "écarté", "réautorisé"));
   if ((before.payTolerancePercent ?? 0) !== (after.payTolerancePercent ?? 0)) changes.push(`Tolérance ${before.payTolerancePercent ?? 0} % → ${after.payTolerancePercent ?? 0} %`);
   if (before.minimumMatchScore !== after.minimumMatchScore) changes.push(`Score Jobgether ${before.minimumMatchScore} → ${after.minimumMatchScore}`);

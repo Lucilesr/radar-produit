@@ -1,0 +1,19 @@
+# S5 — Termes du domaine
+
+Le champ `SearchPreferences.domainTerms` conserve quarante termes au plus, séparément des douze mots-clés manuels. `searchPreferences` normalise la liste ; `domainKeywords` fusionne les deux sans doublons d’accent ou de casse. `fit.ts` conserve ses poids 30/25/15/30, ses paliers Domaine 12/8/5/2 et son plafond30. Le bonus de compatibilité des mots-clés reste aussi le même. Une description résumée de moins de300 caractères reste inconnue, comme avant ; un terme ne complète pas la fiche.
+
+## Repérage privé et confirmation
+
+`domain-suggestions.ts` utilise un vocabulaire professionnel conservateur, avec correspondances entières et quelques négations simples. Il ne prétend pas extraire toute une expertise. Les champs considérés sont titre, rôle, contexte, contribution et résultat. Le champ organisation, les périodes, citations de provenance, questions et textes bruts de CV ne sont pas parcourus. Un titre relu peut naturellement nommer une organisation ; la personne choisit ce que le terme représente. Chaque proposition indique le bloc, sa version et un extrait d’un champ relu. Les offsets des extraits tiennent compte des accents et ligatures.
+
+Seuls les éléments courants, `approved` et `applicationAllowed`, non sensibles et sans conflit ouvert sont éligibles. Un enfant demande aussi un parent courant, validé et autorisé. Les éléments masqués, proposés, remplacés et les anciens documents sont exclus. Une histoire Q4 validée mais encore privée ne propose rien. Le repérage est local au serveur de Radar, sans modèle ni service tiers.
+
+Le panneau ne confirme rien automatiquement. L’API authentifiée de même origine recontrôle source et version à chaque confirmation. L’écriture conditionnelle du profil vérifie dans la même requête le consentement, la version du bloc et du parent, et l’absence de conflit ouvert. Deux confirmations concurrentes fusionnent leurs termes ; le plafond40 est appliqué au dernier état. Un ancien formulaire de profil ne peut pas ajouter, retirer ou écraser ces termes. Les autres critères, préférences et plans restent conservés. Aucune migration. Le JSON complet de profil et les termes sont inclus dans la sauvegarde intégrale A/B.
+
+Les mots confirmés deviennent des critères indépendants : révoquer le droit d’un bloc arrête ses nouvelles propositions, sans supprimer les mots déjà choisis. Ils restent retirables par la personne. Aucun texte du carnet n’est réutilisé en candidature ou profil public par cette fonction.
+
+## Interface et états
+
+Signal réutilisé : panneau, boutons, erreurs, jetons existants et notification commune sans CTA. Les boutons de confirmation et retrait font44px. Huit propositions sont rendues au premier affichage, puis huit de plus à la demande ; la réponse est bornée à80. Le chargement et les droits indisponibles ne produisent pas de fausses propositions. Une erreur garde les termes confirmés et propose une relecture. Les propositions sont retirées de l’écran avant cette relecture ; une réponse périmée ne remplace pas une lecture récente. Après confirmation, le focus revient au titre et les offres sont relues. Le retrait fonctionne au clavier.
+
+Tests : états de validation et droits, parent masqué, conflit, document courant, absence de citations brutes et de lecture du champ organisation, termes déjà manuels, casse/accents, limite40, ligatures, mêmes poids et description courte inconnue. SQLite : confirmation périmée, isolation A/B, confirmations concurrentes, idempotence, révocation entre lecture et écriture, retrait après révocation, plafond, conservation du profil et impossibilité de confirmer depuis un formulaire général. Recette staging36 effectuée sur1360et390px : confirmations, retrait clavier, persistance, classement, vraie révocation concurrente et reprise, plafond40/40 et pagination ; console nominale propre. Voir [les preuves](s5-domaine/README.md).

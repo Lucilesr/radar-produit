@@ -17,6 +17,7 @@ export const defaultSearchPreferences: SearchPreferences = {
   minimumSalary: 0,
   minimumDailyRate: 0,
   boostKeywords: [],
+  domainTerms: [],
   excludeKeywords: [],
   minimumMatchScore: 55,
   payTolerancePercent: 0,
@@ -66,6 +67,14 @@ export function normalizeKeywords(value: unknown): string[] {
   return [...new Map(words.map(word => [foldKeyword(word), word])).values()].slice(0, 12);
 }
 export const foldKeyword = foldTerm;
+export const maxDomainTerms=40;
+export function normalizeDomainTerms(value:unknown):string[]{
+  if(!Array.isArray(value))return [];
+  const words=value.filter((word):word is string=>typeof word==="string").map(word=>word.trim().replace(/\s+/g," ")).filter(word=>word.length>=2&&word.length<=40&&/[\p{L}\p{N}]/u.test(word));
+  return [...new Map(words.map(word=>[foldKeyword(word),word])).values()].slice(0,maxDomainTerms);
+}
+/** A manual keyword and a domain term never earn the same points twice. */
+export function domainKeywords(search:Pick<SearchPreferences,"boostKeywords"|"domainTerms">){return [...new Map([...normalizeKeywords(search.boostKeywords),...normalizeDomainTerms(search.domainTerms)].map(term=>[foldKeyword(term),term])).values()];}
 
 export const maxDismissedRoleSuggestions = 30;
 
@@ -102,6 +111,7 @@ export function searchPreferences(value: unknown): SearchPreferences {
       }))
       : undefined,
     boostKeywords: normalizeKeywords(raw.boostKeywords),
+    domainTerms: normalizeDomainTerms(raw.domainTerms),
     excludeKeywords: normalizeKeywords(raw.excludeKeywords),
     excludeSources: Array.isArray(raw.excludeSources) ? [...new Map(raw.excludeSources.filter((name):name is string=>typeof name==="string").map(name=>name.trim()).filter(name=>name.length>=2&&name.length<=80).map(name=>[foldKeyword(name),name])).values()].slice(0,30) : [],
     minimumSalary: amount(raw.minimumSalary, defaultSearchPreferences.minimumSalary),

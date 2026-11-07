@@ -134,6 +134,8 @@ export type SearchPreferences = {
   minimumDailyRate: number;
   /** Words that make an offer stand out, and words that rule it out. */
   boostKeywords?: string[];
+  /** Individually confirmed from approved experiences allowed for applications. */
+  domainTerms?: string[];
   excludeKeywords?: string[];
   /** Explicitly confirmed source exclusions; selections/applications remain accessible. */
   excludeSources?: string[];

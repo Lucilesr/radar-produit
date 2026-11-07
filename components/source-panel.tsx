@@ -1,7 +1,7 @@
 "use client";
 import { requestError } from "@/lib/request-error";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChoiceSelect } from "@/components/choice-select";
@@ -34,7 +34,7 @@ const initialAlertSources = new Set(["Collective", "Apec", "Free-Work", "We Work
 const initialJobboardSources = new Set(["LinkedIn Jobs", "Welcome to the Jungle", "Wellfound", "Himalayas"]);
 const allInitialSources = new Set([...initialAlertSources, ...initialJobboardSources]);
 
-export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError="",syncedSettings,onSettingsChanged,onAddOffer,onQuitSession,sessionWriting=false,active=true,headerTarget}:{jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSync:(quiet?:boolean)=>Promise<boolean>;syncBusy?:boolean;syncError?:string;syncedSettings?:SourceSetting[];onSettingsChanged:(sources:SourceSetting[])=>void;onAddOffer?:(url:string)=>void;onQuitSession?:()=>void;sessionWriting?:boolean;active?:boolean;headerTarget?:HTMLElement|null}) {
+export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError="",syncedSettings,onSettingsChanged,onAddOffer,onQuitSession,sessionWriting=false,active=true,headerTarget,domainContent}:{domainContent?:ReactNode;jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSync:(quiet?:boolean)=>Promise<boolean>;syncBusy?:boolean;syncError?:string;syncedSettings?:SourceSetting[];onSettingsChanged:(sources:SourceSetting[])=>void;onAddOffer?:(url:string)=>void;onQuitSession?:()=>void;sessionWriting?:boolean;active?:boolean;headerTarget?:HTMLElement|null}) {
   const demo=useDemoMode();
   const notify=useWorkspaceFeedback();
   const [settings,setSettings]=useState<SourceSetting[]|null>(null);
@@ -155,6 +155,7 @@ export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError
     </div>,headerTarget):null}
     <div id="source-panel-criteria" className="source-subpanel">
       <SearchCriteriaPanel active={active} profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
+      {domainContent}
     </div>
     <div id="source-panel-channels" className="source-subpanel">
       <WorkspacePanelHeader id="source-settings-title" title={<span className="source-title-line"><span>Sources suivies</span>{summary?<span className="source-summary">{summary}</span>:null}</span>} actions={<WorkspaceButton variant="secondary" aria-haspopup="dialog" disabled={!settings} onClick={()=>setAddFilter("all")}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>
