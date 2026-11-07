@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { WorkspaceFormError } from "@/components/workspace-form";
 import { createPortal } from "react-dom";
 import type { RadarTab } from "@/lib/radar-navigation";
 import type { CandidateProfile } from "@/lib/types";
@@ -36,6 +37,7 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate, initia
   useEffect(() => { const query = window.matchMedia("(max-width:640px)"); const update = () => setMobile(query.matches); update(); query.addEventListener("change", update); return () => query.removeEventListener("change", update); }, []);
   const [hasFact, setHasFact] = useState(initialHasFact ?? false);
   const [checking, setChecking] = useState(false);
+  const [checkError,setCheckError]=useState("");
   const key = "radar:onboarding:v4:" + ownerId;
   const demo = ownerId.startsWith("demo:");
   const ready = complete(profile);
@@ -48,15 +50,15 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate, initia
     try { localStorage.setItem(key, JSON.stringify(next)); } catch { /* Navigation possible sans stockage local. */ }
   }, [key]);
   const checkFacts = useCallback(async () => {
-    setChecking(true);
+    setChecking(true); setCheckError("");
     try {
-      const response = await fetch("/api/experiences", { cache: "no-store" });
-      if (!response.ok) return false;
+      const response = await fetch("/api/experiences", { cache: "no-store", signal: AbortSignal.timeout(15000) });
+      if (!response.ok) throw new Error();
       const data = await response.json() as { items?: { validation: string }[] };
       const found = Boolean(data.items?.some(item => item.validation === "approved"));
       setHasFact(found);
       return found;
-    } catch { return false; }
+    } catch { setCheckError("Vérification du carnet impossible. Réessayez ; vos contenus restent conservés."); return false; }
     finally { setChecking(false); }
   }, []);
 
@@ -83,6 +85,13 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate, initia
     if (state.index === 4 && (profile.cvFrDocumentId || profile.cvEnDocumentId)) persist({ phase: "setup", index: 5 });
     if (state.index === 6 && hasFact) persist({ phase: "intro", index: 0 });
   }, [state, ready, hasFact, profile.cvFrDocumentId, profile.cvEnDocumentId, persist]);
+  // The same destination can be reached through a contextual action or a URL.
+  // Follow the visible page instead of requiring a redundant sidebar click.
+  useEffect(() => {
+    if (state?.phase === "setup" && current?.action === "click" && current.target === "nav-" + activeTab) {
+      persist({ phase: "setup", index: state.index + 1 });
+    }
+  }, [state, current, activeTab, persist]);
   useEffect(() => {
     const changed = () => { void checkFacts(); };
     window.addEventListener("radar:experiences-changed", changed);
@@ -124,6 +133,7 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate, initia
     <strong className="onboarding-tour-title">{current.title}</strong>
     <p><span className={current.mobileDetail ? "onboarding-tour-detail-desktop" : undefined}>{current.detail}</span>{current.mobileDetail ? <span className="onboarding-tour-detail-mobile">{current.mobileDetail}</span> : null}</p>
     {state.phase === "tour" && index < steps.length - 1 ? <div className="onboarding-tour-next">Cliquez sur « <strong>{mobile ? mobileTourLabels[steps[index + 1].target] : steps[index + 1].title}</strong> » pour continuer.</div> : null}
+    <WorkspaceFormError message={checkError}/>
     <div className="onboarding-tour-actions">
       <button type="button" className="onboarding-tour-later" onClick={() => persist({ phase: "paused", index: state.index })}>Plus tard</button>
       {state.phase === "intro" ? <button type="button" className="onboarding-tour-open" onClick={() => { onNavigate("dashboard"); persist({phase:"tour",index:0}); }}>Lancer la visite</button> : state.phase === "tour" ? (index === steps.length - 1 ? <button type="button" className="onboarding-tour-open" onClick={() => persist({phase:"done",index:0})}>Terminer la visite</button> : null) : current.action === "upload" ? <button type="button" className="onboarding-tour-open" onClick={() => persist({ phase: "setup", index: 5 })}>Continuer sans CV</button> : current.action === "verify" ? <button type="button" className="onboarding-tour-open" disabled={checking} onClick={() => void checkFacts()}>{checking ? "Vérification…" : "Vérifier mon carnet"}</button> : <span className="onboarding-tour-instruction">{current.action === "save" ? "Saisissez un poste et appuyez sur Entrée" : "Ouvrez l’onglet mis en lumière"}</span>}

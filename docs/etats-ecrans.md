@@ -685,6 +685,7 @@ Preuve : `questions-apres-validation-defaut`, après une confirmation réelle. L
 | G-P2 | Mon profil / carnet | Recherche sans résultat : conseil de changer de filtre mais pas de commande pour effacer la recherche. | Message adapté et Effacer la recherche, avec retour du focus. | Même PR Mon profil. |
 | G-P3 | Mon profil / carnet | Défilements JavaScript smooth non soumis à la préférence système. | Positionnement instantané si le mouvement réduit est demandé. | Même PR Mon profil. |
 | G-A1 | Aujourd’hui | Nouveau profil sans poste : le chemin vers le réglage initial n’est pas explicite dans la carte prioritaire. | Orientation vers poste, sources et première actualisation ; tour existant conservé. | Correctif Aujourd’hui préparé ; recette après déploiement. |
+| G-T1 | Tour de prise en main | Une navigation contextuelle ouvre Ma recherche sans faire avancer l’étape « Ouvrez Ma recherche ». | Suivre la page effectivement ouverte, quelle que soit l’action de navigation. | Correctif Tour préparé ; recette après déploiement. |
 
 ### Cosmétique ou amélioration planifiée
 

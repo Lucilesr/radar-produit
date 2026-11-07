@@ -1,5 +1,9 @@
 ## 7 novembre 2026 — Feuille de route gamification
 
+## 7 novembre 2026 — Guide synchronisé avec la page
+
+- Une ouverture de Ma recherche ou Mon profil par une action contextuelle fait avancer le guide comme une ouverture par la navigation.
+
 ## 7 novembre 2026 — Première recherche depuis Aujourd’hui
 
 - Sans poste choisi, l’accueil explique les trois premières étapes et mène à Ma recherche. Un entretien urgent conserve sa priorité.
