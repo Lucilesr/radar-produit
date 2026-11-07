@@ -17,6 +17,7 @@ import { ApplicationQuestions } from "@/components/application-questions";
 import { ApplicationTagBadges } from "@/components/application-tags";
 import { formatDate, fromZonedInput, reviewDue, statusLabels, zonedInput } from "@/lib/application-workflow";
 import { formatPay } from "@/lib/pay-range";
+import { fitLabels } from "@/lib/fit";
 import { hasApplication, workspaceSections } from "@/lib/opportunity-views";
 import type { CandidateProfile, InterviewRecord, JobRecord, JobStatus } from "@/lib/types";
 
@@ -99,6 +100,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
         </dl>
 
       </section>
+      <FitSummary job={job} />
       <div className="grid gap-3 sm:grid-cols-2"><Signals title="Pourquoi c’est pertinent" items={job.reasons} tone="positive" /><Signals title="Points à vérifier" items={job.flags} tone="caution" /></div>
       <section className="reading-description"><div className="reading-description-heading"><div><h3 className="offer-section-title">Description, missions et exigences</h3><p className="review-coverage">{coverage}</p></div>{!job.deletedAt ? <button ref={editTrigger} onClick={() => setEditing(true)} className="secondary-button"><Pencil size={13} /> Compléter / corriger</button> : null}</div><p className="offer-description-read">{job.description || "Aucune description fournie. Ajoutez le contenu de l’annonce ou d’une alerte autorisée."}</p>{coverage !== "Description complète fournie" ? <p className="mt-2 text-xs leading-5 text-muted-foreground">{coverage} : les informations absentes restent à confirmer.{!job.deletedAt ? " Vous pouvez coller une description complète ici, sans recréer une fiche." : " Restaurez l’offre pour compléter sa description."}</p> : null}</section>
       <section className="review-offer-dates" aria-label="Dates de l’offre">
@@ -151,6 +153,24 @@ function PrivateBrief({ jobId }: { jobId: string }) {
     </section>
     <ApplicationQuestions jobId={jobId} onSaved={()=>setRefresh(value=>value+1)}/>
   </div>;
+}
+
+const fitTones = { very_close: "is-success", close: "", to_weigh: "is-warning", far: "" } as const;
+
+/** Score v2 label shown instead of a figure; the figure stays readable on hover and by screen readers. */
+export function FitBadge({ job }: { job: Pick<JobRecord, "fit" | "fitLabel" | "confidence"> }) {
+  if (job.fitLabel) return <span className={`workspace-badge offer-fit-badge ${fitTones[job.fitLabel]}`} data-fit={job.fitLabel} title={`Adéquation ${job.fit} sur 100`}>{fitLabels[job.fitLabel]}<span className="sr-only"> : adéquation {job.fit} sur 100</span></span>;
+  if (job.fit != null) return <span className="workspace-badge offer-fit-badge" data-fit="incomplete" title="Niveau et missions inconnus : complétez la fiche pour la juger.">Fiche incomplète</span>;
+  return null;
+}
+
+function FitSummary({ job }: { job: JobRecord }) {
+  if (job.fit === undefined) return null;
+  const missing = job.missing ?? [];
+  return <p className="offer-fit"><FitBadge job={job} />
+    {job.fitLabel ? <span className="offer-fit-detail">Adéquation {job.fit} sur 100</span> : null}
+    {missing.length ? <span className="offer-fit-detail">{job.fitLabel ? "Inconnu" : "À compléter"} : {missing.join(", ")}</span> : <span className="offer-fit-detail">Fiche complète</span>}
+  </p>;
 }
 
 function Signals({ title, items, tone }: { title: string; items: string[]; tone: "positive" | "caution" }) {

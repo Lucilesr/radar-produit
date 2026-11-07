@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Score v2, lot S3 : adéquation et fiabilité de la fiche
+
+Chaque offre reçoit une adéquation sur 100 (poste, niveau, rémunération lue comme signal de niveau, domaine des missions), calculée uniquement sur ce qui est connu : une information absente ne compte jamais comme zéro. La fiabilité de la fiche dit ce qu’on sait vraiment (description, rémunération, présence, niveau, langue). Les cartes et la fiche affichent un libellé (Très proche, Proche, À jauger, Loin) ou « Fiche incomplète » quand ni le niveau ni les missions ne sont connus ; le chiffre reste au survol. Une rémunération très au-dessus du minimum devient un point à vérifier. « Correspondances Radar » et le classement du tri utilisent l’adéquation ; la fraîcheur ne fait plus que départager. L’ancien score reste calculé pour le filtre Jobgether.
+
 ## 7 novembre 2026 — Score v2, lot S2 : niveau visé et niveau détecté
 
 Nouveau critère « Niveau visé » (Junior, Confirmé, Senior, Lead, Head of), proposé dans « + Critère » puis affiché dans le groupe *Le poste*, avec la case « J’accepte un cran au-dessus ». Radar lit le niveau d’une offre dans l’intitulé, les années d’expérience demandées et l’encadrement, et ajoute un point à vérifier quand l’offre est un cran au-dessus, nettement plus senior ou plus junior que la cible. Le classement ne change pas dans ce lot. Sans niveau visé, rien ne change.

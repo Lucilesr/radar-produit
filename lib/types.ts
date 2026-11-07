@@ -33,8 +33,9 @@ export type JobInput = {
   notificationAt?: string;
 };
 
-export type JobRecord = JobInput & {
+export type JobRecord = JobInput & ScoreV2 & {
   id: string;
+  signals?: string[];
   deletedAt?: string;
   reviewState?: "to_review" | "selected";
   dismissalReason?: DismissalReason;
@@ -88,6 +89,18 @@ export type Assessment = {
   flags: string[];
   /** Level or pay hints, also listed in `flags` so they show as points to check. */
   signals?: string[];
+} & ScoreV2;
+
+/** Score v2: a conditions filter, then the job's own fit and how much of the offer is known. */
+export type ScoreV2 = {
+  conditions?: "pass" | "check" | "excluded";
+  /** 0–100 on the known parts only; null when nothing comparable is known. */
+  fit?: number | null;
+  fitParts?: { role?: number; level?: number; pay?: number; domain?: number };
+  confidence?: "high" | "medium" | "low";
+  /** Facts still unknown, for « Fiche incomplète ». */
+  missing?: string[];
+  fitLabel?: "very_close" | "close" | "to_weigh" | "far";
 };
 
 /** One search track: a named group of job titles Radar looks for on the sources. */

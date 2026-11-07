@@ -5,6 +5,7 @@ import { activeStatuses } from "./application-workflow";
 import { isNorthAmericaRestricted } from "./market-scope";
 import { announcedLocationFor, assessLocation } from "./location-criteria";
 import { detectLevel, levelSignal } from "./seniority";
+import { assessConfidence, assessFit, fitLabel, type RoleMatch } from "./fit";
 
 const ownerRoles = [/\bproduct owner\b/i, /\bpo\b/i];
 const managerRoles = [/\bproduct manager\b/i, /\bchef(?:fe)? de produits?\b/i, /\bresponsable produit\b/i];
@@ -14,16 +15,17 @@ const projectRole = /\b(?:project manager|chef(?:fe)? de projets?|program(?:me)?
 const projectWork = /\b(?:project manager|project management|gestion de projets?|chef(?:fe)? de projets?|pmo|pmp|prince2|maîtrise d['’]œuvre|moa|erp|btp|chantiers?)\b/i;
 const productWork = /\bproduct\b|\bproduit\b/i;
 
-function matchesSearchedRole(title: string, role: string, description = "") {
-  if (role === "Product Owner") return ownerRoles.some(pattern => pattern.test(title));
+/** "ambiguous": a bare "PM" with neither product nor project context. */
+function matchesSearchedRole(title: string, role: string, description = ""): RoleMatch {
+  if (role === "Product Owner") return ownerRoles.some(pattern => pattern.test(title)) ? "exact" : "none";
   if (role === "Product Manager") {
-    if (managerRoles.some(pattern => pattern.test(title))) return true;
-    if (!ambiguousManager.test(title) || projectRole.test(title)) return false;
+    if (managerRoles.some(pattern => pattern.test(title))) return "exact";
+    if (!ambiguousManager.test(title) || projectRole.test(title)) return "none";
     const context = `${title} ${description.slice(0, 600)}`;
-    return productWork.test(context) || !projectWork.test(context);
+    return productWork.test(context) ? "exact" : projectWork.test(context) ? "none" : "ambiguous";
   }
   const normalized = (value: string) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("fr").replace(/[^a-z0-9]+/g, " ").trim();
-  return (` ${normalized(title)} `).includes(` ${normalized(role)} `);
+  return (` ${normalized(title)} `).includes(` ${normalized(role)} `) ? "exact" : "none";
 }
 
 export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: SearchPreferences): Assessment {
@@ -54,7 +56,9 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     flags.push("Lieu annoncé à vérifier selon vos critères géographiques.");
   }
 
-  const matchedRole = search.roles.find(role => matchesSearchedRole(job.title, role, job.description ?? ""));
+  const roleMatches = search.roles.map(role => [role, matchesSearchedRole(job.title, role, job.description ?? "")] as const);
+  const matchedRole = (roleMatches.find(([, match]) => match === "exact") ?? roleMatches.find(([, match]) => match === "ambiguous"))?.[0];
+  const roleMatch: RoleMatch = roleMatches.some(([, match]) => match === "exact") ? "exact" : matchedRole ? "ambiguous" : "none";
   if (!search.roles.length) {
     exception = true;
     flags.push("Aucun poste choisi : indiquez le poste que vous cherchez dans Ma recherche.");
@@ -193,10 +197,14 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
     flags.push(`Contient ${unwanted.join(", ")}, que vous écartez.`);
   }
 
-  // Level is a point to check in this lot; it does not change the score yet.
+  // Score v2: level and pay hints are points to check; the legacy score below is kept for compatibility.
   const signals: string[] = [];
-  const level = levelSignal(detectLevel(job.title, job.description ?? ""), search.targetLevel, search.acceptLevelAbove);
+  const detectedLevel = detectLevel(job.title, job.description ?? "");
+  const level = levelSignal(detectedLevel, search.targetLevel, search.acceptLevelAbove);
   if (level) { signals.push(level); flags.push(level); }
+  const fit = assessFit(job, search, roleMatch, detectedLevel);
+  for (const signal of fit.signals) { signals.push(signal); flags.push(signal); }
+  const { confidence, missing } = assessConfidence(job, arrangement.mode !== "unknown", detectedLevel);
 
   score = Math.max(0, Math.min(100, score));
   const tier = excluded
@@ -207,7 +215,9 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
         ? "priority"
         : "match";
 
-  return { score, tier, reasons, flags, signals };
+  const conditions = excluded ? "excluded" as const : exception ? "check" as const : "pass" as const;
+  return { score, tier, reasons, flags, signals, conditions, fit: fit.fit, fitParts: fit.parts, confidence, missing,
+    fitLabel: fitLabel(fit.fit, fit.parts, fit.toWeigh) };
 }
 
 export function createFingerprint(job: JobInput) {
@@ -231,4 +241,10 @@ export function payLabel(min: number | null | undefined, max: number | null | un
   if (min != null && max != null && min !== max) return `entre ${formatEuro(min)} et ${formatEuro(max)} ${unit}`;
   const single = value ?? max ?? min;
   return single == null ? unit : `à ${formatEuro(single)} ${unit}`;
+}
+
+/** Score v2 fields an offer carries to the interface, next to the legacy score. */
+export function scoreFields(assessment: Assessment) {
+  const { signals, conditions, fit, fitParts, confidence, missing, fitLabel } = assessment;
+  return { signals, conditions, fit, fitParts, confidence, missing, fitLabel };
 }

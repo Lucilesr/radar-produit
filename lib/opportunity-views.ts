@@ -36,5 +36,8 @@ export function inOpportunityView(job: JobRecord, view: OpportunityView) {
   if (view === "to_review") return reviewState(job) === "to_review" && !hasApplication(job)
     && !(job.matchTier === "excluded" && job.flags?.some(flag => flag.startsWith("Lieu annoncé hors de votre recherche") || flag.startsWith("Marché limité aux États-Unis") || flag.startsWith("Salaire sous votre seuil") || flag.startsWith("TJM sous votre seuil") || flag.startsWith("Contient ")));
   if (view === "selected") return reviewState(job) === "selected" && !hasApplication(job);
-  return !hasApplication(job) && job.matchScore >= 75 && job.matchTier !== "excluded";
+  if (hasApplication(job)) return false;
+  // Score v2: a good match fits the job and is known well enough; older records keep the legacy rule.
+  if (job.fit !== undefined) return job.fit != null && job.fit >= 80 && job.conditions !== "excluded" && job.confidence !== "low";
+  return job.matchScore >= 75 && job.matchTier !== "excluded";
 }

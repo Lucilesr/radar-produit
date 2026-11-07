@@ -1,7 +1,7 @@
 import { and, desc, eq, isNull, inArray, isNotNull, like, lt, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { jobs, profiles, interviews, applicationQuestions, applicationAnswerRevisions, applicationAnswerProposals, workspaceWrites } from "@/db/schema";
-import { assessJob, createFingerprint } from "./matching";
+import { assessJob, createFingerprint, scoreFields } from "./matching";
 import { searchPreferences } from "./search-preferences";
 import { readCandidateProfile } from "./profile-store";
 import { normalizeJobInput, rowToJob } from "./server";
@@ -73,7 +73,7 @@ export async function listOffers(userId: string, limit?: number, includeDeleted 
     const job = rowToJob(row);
     const assessment = assessJob(job, preferences);
     return { ...job, matchScore: assessment.score, matchTier: assessment.tier,
-      reasons: assessment.reasons, flags: assessment.flags,
+      reasons: assessment.reasons, flags: assessment.flags, ...scoreFields(assessment),
       candidateNote: typeof notes[job.id] === "string" ? notes[job.id] : undefined,
       interviews: interviewsByJob.get(job.id) ?? [] };
   }).filter(job => !!job.deletedAt || showJobgetherOffer(job.source, job.matchScore, preferences.minimumMatchScore, job.status, job.reviewState));
@@ -92,7 +92,7 @@ export async function getOffer(userId: string, id: string, includeDeleted = fals
   const assessment = assessJob(job, searchPreferences(profileRows[0] ? JSON.parse(profileRows[0].data).searchPreferences : undefined));
   const notes = profileRows[0] ? JSON.parse(profileRows[0].data).applicationNotes ?? {} : {};
   return { ...job, matchScore: assessment.score, matchTier: assessment.tier,
-    reasons: assessment.reasons, flags: assessment.flags,
+    reasons: assessment.reasons, flags: assessment.flags, ...scoreFields(assessment),
     candidateNote: savedNote ?? (typeof notes[id] === "string" ? notes[id] : undefined),
     interviews: interviewRows.map(rowToInterview) };
 }

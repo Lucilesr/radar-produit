@@ -129,28 +129,29 @@ Les seuils 1,35 et 1,6 sont des constantes nommées dans `lib/matching.ts`, faci
 
 **Fiabilité de la fiche.** On compte cinq informations connues : description `full`, rémunération, présence (`mode` différent de `unknown`), niveau détecté, langue (différente de `unknown`). 4 ou 5 : `high` ; 3 : `medium` ; 2 ou moins : `low`.
 
-**Compatibilité.** `score` devient `Math.round(fit ?? 0)`. `tier` devient :
+**Compatibilité.** `score` et `tier` gardent leur calcul actuel : ils servent encore au filtre Jobgether et aux anciens écrans. Les nouveaux champs (`conditions`, `fit`, `fitParts`, `confidence`, `missing`, `fitLabel`, `signals`) sont calculés à la lecture, comme le reste de l'évaluation, sans migration.
 
-- `excluded` si `conditions` vaut `excluded` ;
-- `exception` si `conditions` vaut `check` ;
-- `priority` si `fit` est au moins 80 ;
-- `match` sinon.
+Consommateurs basculés :
 
-Revoir chaque consommateur listé au §1 :
-
-- la vue à `matchScore >= 75` utilise `fit >= 80` et une fiabilité différente de `low` ;
-- le compte des `exception` dans `radar-app.tsx` lit `conditions === "check"`.
+- « Correspondances Radar » (`good_matches`) : `fit` d'au moins 80, conditions non exclues, fiabilité différente de `low`. Un enregistrement sans `fit` garde l'ancienne règle.
+- Le classement du tri (ci-dessous).
 
 **Classement du tri.** `offerRank` = `fit` (ou 0) + fraîcheur réduite (+5 sous 7 jours, +2 sous 21) ; la fraîcheur ne fait plus que départager. Le −12 de doute d'éligibilité disparaît : il est porté par `conditions`.
 
-**Affichage.** Sur les cartes d'offre, un libellé remplace le chiffre :
+**Affichage.** Sur les cartes d'offre et dans la fiche, un libellé remplace le chiffre :
 
-- « Très proche » si `fit` est au moins 80 ;
+- aucun libellé tant que ni le niveau ni les missions ne sont connus : l'intitulé et le salaire seuls ne disent rien du poste, la carte affiche « Fiche incomplète » ;
+- « Loin » sous 50 ;
+- « À jauger » pour un cran au-dessus de la cible ou une rémunération au-dessus de 1,35 fois le minimum ;
+- « Très proche » à partir de 80 ;
 - « Proche » de 60 à 79 ;
-- « À jauger » dès qu'il y a un signal de niveau ou de rémunération ;
 - « Loin » sous 60.
 
-Le chiffre reste lisible au survol (`title`) et pour les lecteurs d'écran. Une fiabilité `low` ajoute le tag « Fiche incomplète » (`.quiet-tag`).
+Le chiffre reste lisible au survol (`title`) et pour les lecteurs d'écran. La fiche liste les informations encore inconnues.
+
+**Niveau.** L'intitulé l'emporte sur les années demandées, mais l'encadrement le relève : un « Senior PM » qui encadre des PM est un Head of.
+
+**Domaine.** Il ne compte que si la description est lisible (`full`, ou au moins 300 caractères) : un résumé de deux lignes ne vaut pas « aucun recoupement ».
 
 **Acceptation.** Les sept cas du §4 donnent le résultat attendu. Une offre sans salaire ni remote détectable n'est plus classée sous une offre médiocre complète.
 
@@ -194,8 +195,8 @@ Compte fictif : postes Product Owner et Product Manager, CDI, full remote, minim
 
 | # | Offre | Aujourd'hui | Attendu après S3 |
 | --- | --- | --- | --- |
-| 1 | Product Owner Paiements, « 5 ans d'expérience », 62–70 k€, missions paiements et SEPA, fiche complète | priorité | `fit` 95 (30 + 25 + 15 + 25 sur 100), fiabilité `high`, « Très proche » |
-| 2 | Lead Product Owner, « 10+ years », encadre 3 PO, 100 k€ | priorité | Niveau 15, rémunération 0 (ratio 1,8), signaux de niveau et de rémunération, « À jauger » |
+| 1 | Product Owner Paiements, « 5 ans d'expérience », 62–70 k€, missions paiements et SEPA, fiche complète | priorité | `fit` 90 (30 + 25 + 15 + 20), fiabilité `high`, « Très proche » |
+| 2 | Lead Product Owner, 100 k€, missions paiements (sans encadrement) | priorité | Niveau 15, rémunération 0 (ratio 1,8), domaine 12 : `fit` 57, « À jauger ». S'il encadre des PO, il devient Head of : « Loin » |
 | 3 | Senior Product Manager, « 8+ years », « manage a team of 3 PMs », 120 k€ | priorité | Niveau `head` : 0 ; rémunération 0 ; « Loin » |
 | 4 | Product Owner, résumé RSS de deux lignes, sans salaire, remote non précisé | `exception`, score 47 | Seul le Poste est connu, fiabilité `low` : fiche mystère (S4) |
 | 5 | Chef de produit Paiements, 65 k€, niveau non précisé, mission paiements | `exception` (intitulé non reconnu) | (30 + 15 + 12) ÷ 75 connus = 76, « Proche » |

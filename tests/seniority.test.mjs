@@ -36,8 +36,10 @@ test("l'encadrement relève le niveau, la simple collaboration non", () => {
   assert.equal(level("Product Owner", "PO référent du parcours de paiement."), undefined);
 });
 
-test("l'intitulé l'emporte sur la description", () => {
+test("l'intitulé l'emporte sur les années, mais l'encadrement le relève", () => {
   assert.equal(level("Senior Product Owner", "10+ years of experience."), "senior");
+  assert.equal(level("Senior Product Manager", "8+ years of experience. You manage a team of 3 PMs."), "head");
+  assert.equal(level("Lead Product Owner", "Vous travaillez avec les product owners."), "lead");
 });
 
 test("signal selon l'écart avec le niveau visé", () => {

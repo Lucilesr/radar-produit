@@ -60,3 +60,13 @@ test("les exclusions de rémunération sont masquées à examiner sans effacer l
   }
   assert(inOpportunityView({ ...job, matchTier: "exception", flags: ["Salaire non communiqué"] }, "to_review"));
 });
+
+test("Score v2 S3 : « Correspondances Radar » lit l'adéquation et la fiabilité", () => {
+  const v2 = { ...job, matchScore: 40, matchTier: "match", conditions: "pass", confidence: "high" };
+  assert(inOpportunityView({ ...v2, fit: 85 }, "good_matches"));
+  assert(!inOpportunityView({ ...v2, fit: 79 }, "good_matches"));
+  assert(!inOpportunityView({ ...v2, fit: 95, confidence: "low" }, "good_matches"));
+  assert(!inOpportunityView({ ...v2, fit: 95, conditions: "excluded" }, "good_matches"));
+  assert(!inOpportunityView({ ...v2, fit: null }, "good_matches"));
+  assert(inOpportunityView({ ...job, matchScore: 80 }, "good_matches")); // older record without fit
+});

@@ -36,13 +36,25 @@ function fromYears(years: number): Level {
 
 function rank(level: Level) { return levels.indexOf(level); }
 
-/** Level asked by an offer, with the words that show it. The title wins when it states one. */
+function managementSignal(text: string): DetectedLevel | undefined {
+  const managers = text.match(managesManagers);
+  if (managers) return { level: "head", evidence: [`« ${managers[0].trim()} »`] };
+  const team = text.match(managesTeam);
+  return team ? { level: "lead", evidence: [`« ${team[0].trim()} »`] } : undefined;
+}
+
+/**
+ * Level asked by an offer, with the words that show it. The title wins over the years asked,
+ * but managing a team raises it: a "Senior PM" who manages PMs is a head of product.
+ */
 export function detectLevel(title: string, description = ""): DetectedLevel | undefined {
-  for (const [level, pattern] of titleRules) {
-    const match = title.match(pattern);
-    if (match) return { level, evidence: ["d’après l’intitulé"] };
-  }
   const text = description.slice(0, 6000);
+  const management = managementSignal(text);
+  for (const [level, pattern] of titleRules) {
+    if (!pattern.test(title)) continue;
+    const fromTitle: DetectedLevel = { level, evidence: ["d’après l’intitulé"] };
+    return management && rank(management.level) > rank(level) ? management : fromTitle;
+  }
   const signals: DetectedLevel[] = [];
   for (const match of text.matchAll(yearsPattern)) {
     // The figure must sit next to the word experience, not anywhere in the same sentence.
@@ -51,12 +63,7 @@ export function detectLevel(title: string, description = ""): DetectedLevel | un
     const years = Number(match[1]);
     if (experienceContext.test(around) && years >= 1 && years <= 25) signals.push({ level: fromYears(years), evidence: [`« ${match[0].trim()} »`] });
   }
-  const managers = text.match(managesManagers);
-  if (managers) signals.push({ level: "head", evidence: [`« ${managers[0].trim()} »`] });
-  else {
-    const team = text.match(managesTeam);
-    if (team) signals.push({ level: "lead", evidence: [`« ${team[0].trim()} »`] });
-  }
+  if (management) signals.push(management);
   if (!signals.length) return undefined;
   const top = signals.reduce((best, next) => rank(next.level) > rank(best.level) ? next : best);
   return { level: top.level, evidence: signals.filter(signal => signal.level === top.level).flatMap(signal => signal.evidence).slice(0, 2) };
