@@ -1,5 +1,10 @@
 ## 7 novembre 2026 — Feuille de route gamification
 
+## 7 novembre 2026 — Sortie d’attente de Mon compte
+
+- Après annulation du dialogue, le focus revient sur son bouton d’ouverture.
+- La confirmation de suppression sort de l’attente après 60 s et demande de vérifier l’état du compte avant toute nouvelle tentative ; aucun effacement n’est supposé confirmé.
+
 ## 7 novembre 2026 — Lecture de l’historique des notes
 
 - Le suivi distingue chargement, historique vide et erreur ; une reprise est possible après 15 s sans modifier la note.
