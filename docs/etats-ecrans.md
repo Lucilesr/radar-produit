@@ -912,3 +912,9 @@ Contradiction levée avec la maquette Portee : le titre « débloque » suggéra
 | erreur / conflit | réponse absente ou offre modifiée | message Signal ; aucune annulation d’un choix plus récent | Réessayer le même choix ou actualiser | oui |
 | beaucoup de données | plus de50offres dans le groupe | limite explicite des50premières | ranger par lots | oui |
 | clavier / mobile390 / réduit | navigation clavier ou petit écran | confirmations lisibles et actions44px ; aucun mouvement ajouté | Espace, Annuler, retour au titre si nécessaire | oui |
+
+### Audit C0 — candidatures et volume
+
+Recette staging39 : exactement 1 000 offres et 50 candidatures fictives, tableau et Kanban à1360/390px, conflit réel de déplacement409, refus consultable, titre180 et note2000 conservés, lot3 stable, groupe101 borné à50 et annulation845→895. [Audit](candidatures.md) et [captures](candidatures/README.md). Console nominale propre. Les dates14/30jours sont relues dans le code, sans capture temporelle inventée.
+
+**Gênant — fiche de candidature mobile, titre long.** Les outils d’en-tête occupent une rangée trop large à390px ; le titre180caractères se replie dans une colonne très étroite. Le corps et la note restent accessibles par défilement. Correction prévue dans C4, avec avant/après. Aucun blocage ni perte de texte observé.
