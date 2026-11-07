@@ -9,6 +9,7 @@ import {SignalMoment} from "@/components/signal/signal-moment";
 import {SignalProgress} from "@/components/signal/signal-progress";
 import {WorkspaceButton,WorkspaceFormError,WorkspacePanelHeader} from "@/components/workspace-form";
 import {weekKey,weekRhythms,weekActions,planHeld,commitmentOverdue,localDateTime,localTimeInZone,type WeekPlan,type WeekPlanState,type WeekCommitment} from "@/lib/week-plan";
+import {confirmedProgress} from "@/lib/progress-event";
 import {sessionWrite} from "@/lib/session-write";
 import {interviewThemes} from "@/lib/radar-reach";
 import type {CandidateProfile,JobRecord} from "@/lib/types";
@@ -48,7 +49,7 @@ export function WeekPlanCard({owner,profile,jobs,sources,allowMoment,onState,onO
   try{const response=await fetch("/api/week-plan",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(command),signal:AbortSignal.timeout(15000)});const data=await response.json() as WeekPlanState&{state?:WeekPlanState;error?:string};
    if(!response.ok){if(data.state)accept(data.state);return {ok:false,state:data.state,error:data.error??"Enregistrement non confirmé. Votre brouillon reste conservé."};}
    const wasHeld=planHeld(current.current.plan);accept(data);
-   if(!wasHeld&&planHeld(data.plan)&&!heldSeen.current){heldSeen.current=true;setMoment("held");}
+   if(!wasHeld&&planHeld(data.plan)){confirmedProgress({kind:"week_held",objectId:data.plan!.week,stamp:data.plan!.week});if(!heldSeen.current){heldSeen.current=true;setMoment("held");}}
    return {ok:true,state:data};
   }catch{return {ok:false,error:"Enregistrement non confirmé. Votre brouillon et les engagements déjà confirmés restent conservés."};}
   finally{sessionWrite(key,false);lock.current=false;setBusy(false);}

@@ -5,6 +5,7 @@ import { AutosaveStatus, NoteHistory, useAutosave, useSavedForm } from "@/compon
 import { sourceNames } from "@/lib/source-catalog";
 import { OfferForm } from "@/components/offer-form";
 import { countryLabel } from "@/lib/countries";
+import { confirmedProgress, cancelEncouragement } from "@/lib/progress-event";
 import { DateTimePicker } from "@/components/date-picker";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
@@ -246,7 +247,7 @@ function InterviewReview({ interview, onSaved, onCancel }: { interview: Intervie
   const change=<K extends keyof typeof draft.value>(key:K,value:typeof draft.value[K])=>draft.setValue(current=>({...current,[key]:value}));
   const setOutcome=(value:typeof outcome)=>change("outcome",value),setSummary=(value:string)=>change("summary",value),setStrengths=(value:string)=>change("strengths",value),setWeaknesses=(value:string)=>change("weaknesses",value),setNextAction=(value:string)=>change("nextAction",value),setFollowUp=(value:string)=>change("followUp",value);
   const [busy,setBusy]=useState(false),[error,setError]=useState("");
-  async function save() { if(writeLock.current)return;writeLock.current=true;setBusy(true); setError(""); try { const updated=await requestJob(`/api/interviews/${interview.id}`, "PATCH", { action: "review", outcome, summary, strengths, weaknesses, nextAction, followUpAt: followUp ? fromZonedInput(followUp, interview.timeZone) : "" });draft.save.document.confirmedElsewhere("");onSaved(updated); } catch (problem) { const message=requestError(problem, "Enregistrement non confirmé.");setError(message);notify({message,tone:"error"}); } finally { writeLock.current=false;setBusy(false); } }
+  async function save() { if(writeLock.current)return;writeLock.current=true;setBusy(true); setError(""); try { const updated=await requestJob(`/api/interviews/${interview.id}`, "PATCH", { action: "review", outcome, summary, strengths, weaknesses, nextAction, followUpAt: followUp ? fromZonedInput(followUp, interview.timeZone) : "" });draft.save.document.confirmedElsewhere("");onSaved(updated);if(outcome==="rejected"||outcome==="withdrawn")cancelEncouragement();const saved=updated.interviews?.find(event=>event.id===interview.id);if(saved?.updatedAt&&outcome!=="rejected"&&[summary,strengths,weaknesses].some(value=>value.trim())&&(interview.state!=="reviewed"||![interview.summary,interview.strengths,interview.weaknesses].some(value=>value?.trim())))confirmedProgress({kind:"interview_review",objectId:interview.id,stamp:saved.updatedAt}); } catch (problem) { const message=requestError(problem, "Enregistrement non confirmé.");setError(message);notify({message,tone:"error"}); } finally { writeLock.current=false;setBusy(false); } }
   return <div className="signal-form-editor signal-interview-review">
     <AutosaveStatus save={draft.save} draft/>
     <div className="signal-section-heading"><div><h3 ref={editorTitle} tabIndex={-1}>Bilan d’entretien</h3><p className="signal-help">{interview.label} · {formatDate(interview.startAt,interview.timeZone,true)} · Bilan privé</p></div></div>

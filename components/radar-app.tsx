@@ -22,6 +22,9 @@ import { useRadarClock, refreshRadarClock } from "@/components/use-radar-clock";
 import { OpportunitiesWorkspace } from "@/components/opportunities-workspace";
 import { useRadarScan } from "@/components/use-radar-scan";
 import { useSessionJourney } from "@/components/use-session-journey";
+import { ProgressCelebrations } from "@/components/progress-celebrations";
+import { confirmedProgress, cancelEncouragement } from "@/lib/progress-event";
+import type { RadarPreferences } from "@/lib/celebrations";
 import { WeekPlanCard, type WeekTarget } from "@/components/week-plan";
 import type { WeekPlanState, WeekCommitment } from "@/lib/week-plan";
 import { weekKey } from "@/lib/week-plan";
@@ -95,6 +98,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   const trashLock = useRef(false);
   const [trashError, setTrashError] = useState<string | null>(null);
   const [profile, setProfile] = useState<CandidateProfile>(initialState?.profile ?? profileTemplate);
+  const acceptPreferences=useCallback((preferences:RadarPreferences)=>setProfile(current=>({...current,preferences})),[setProfile]);
   const [profileLoaded,setProfileLoaded] = useState(!!initialState && !initialState.errors.profile);
   const [loading, setLoading] = useState(!initialState);
   const [sourceHeaderTarget,setSourceHeaderTarget] = useState<HTMLDivElement|null>(null);
@@ -114,7 +118,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   const acceptSources=useCallback((incoming:SourceSetting[])=>{setSourceSettings(current=>mergeSourceSettings(current,incoming));setSourcesLoaded(true);setSourcesError(false);},[setSourceSettings,setSourcesLoaded,setSourcesError]);
   const acceptOffers=useCallback((incoming:JobRecord[])=>{setJobs(incoming);setLoadErrors(current=>({...current,jobs:false}));refreshRadarClock();},[setJobs,setLoadErrors]);
   const scan=useRadarScan({onOffers:acceptOffers,onSources:acceptSources});
-  useEffect(()=>{document.documentElement.dataset.motion=profile.preferences?.reducedMotion?"reduced":"full";return()=>{delete document.documentElement.dataset.motion;};},[profile.preferences?.reducedMotion]);
+  useLayoutEffect(()=>{document.documentElement.dataset.motion=profile.preferences?.reducedMotion?"reduced":"full";return()=>{delete document.documentElement.dataset.motion;};},[profile.preferences?.reducedMotion]);
   const selectedJob = allJobs.find(job => job.id === route.offer) || null;
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [visited, setVisited] = useState({profile:false,sources:false});
@@ -178,6 +182,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   }), [jobs, allJobs]);
 
   async function updateJob(id: string, changes: { status?: JobStatus; candidateNote?: string; reviewState?: "to_review" | "selected" | "later"; boardColumnId?: string; expectedStatus?: JobStatus; expectedBoardColumnId?: string|null }) {
+    if(changes.status&&["rejected","withdrawn","closed"].includes(changes.status))cancelEncouragement();
     const writeKey=crypto.randomUUID();sessionWrite(writeKey,true);
     const previousJob = allJobs.find(job => job.id === id);
     if (changes.reviewState || changes.status === "applied") lockDailyLot();
@@ -193,6 +198,8 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
       else if (changes.reviewState) setToast(changes.reviewState === "selected" ? "Offre ajoutée à ma sélection." : "Offre remise à examiner.", false, {label: changes.reviewState === "selected" ? "Voir ma sélection" : "Voir les offres à examiner", onClick: () => navigate({tab:"offers",filter:changes.reviewState === "selected" ? "selected" : "to_review",offer:undefined})});
       else if (changes.status === "applied") setToast("Cette opportunité fait maintenant partie de vos candidatures.", false, {label:"Annuler",onClick:()=>void cancelApplication(id,previousJob&&reviewState(previousJob)==="selected"?"selected":"to_review")});
       else setToast("Statut enregistré.");
+      if(changes.status&&["rejected","withdrawn","closed"].includes(changes.status))cancelEncouragement();
+      if(changes.status==="applied"&&!previousJob?.appliedAt&&job.appliedAt)confirmedProgress({kind:"application_sent",objectId:job.id,stamp:job.appliedAt});
       return true;
     } catch {
       setToast("La mise à jour n’a pas été enregistrée. Vos données restent inchangées.", true); return false;
@@ -200,11 +207,12 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   }
   async function changeStatus(id: string, status: JobStatus, columnId?: string) { return updateJob(id, { status, ...(columnId ? {boardColumnId: columnId, expectedStatus: allJobs.find(job=>job.id===id)?.status,expectedBoardColumnId:allJobs.find(job=>job.id===id)?.boardColumnId??null} : {}) }); }
   async function cancelApplication(id: string, fromToast?: "selected"|"to_review") {
+    cancelEncouragement();
     const job=allJobs.find(item=>item.id===id);
     if (!fromToast && (!job || job.status!=="applied" || job.interviews?.length)) return false;
     const destination=fromToast??(job&&reviewState(job)==="selected"?"selected":"to_review");
     const saved=await updateJob(id,{status:destination==="selected"?"shortlist":"new",expectedStatus:"applied"});
-    if(saved){navigate({tab:"offers",filter:destination,offer:undefined,view:"offer"});setToast("Candidature annulée. L’offre est revenue dans sa liste.");}
+    if(saved){cancelEncouragement();navigate({tab:"offers",filter:destination,offer:undefined,view:"offer"});setToast("Candidature annulée. L’offre est revenue dans sa liste.");}
     return saved;
   }
   async function requestDelete(job: JobRecord, next?: JobRecord) {
@@ -217,11 +225,12 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   async function changeTrash(selection: JobRecord[], deleted: boolean) {
     if (trashLock.current || refreshing || !selection.length) return false;
     trashLock.current = true; setTrashBusy(selection[0].id); setTrashError(null);
-    if (deleted) lockDailyLot();
+    if (deleted) {cancelEncouragement();lockDailyLot();}
     try {
       const response = await fetch("/api/jobs/trash", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: selection.map(job => job.id), deleted }), signal: AbortSignal.timeout(20000) });
       if (!response.ok) throw new Error("Enregistrement non confirmé");
       const { results } = await response.json() as { results: { id: string; deletedAt: string | null; dismissalReason?: DismissalReason; dismissalNote?: string }[] };
+      if(deleted&&results.length)cancelEncouragement();
       const confirmed = new Set(results.map(item => item.id));
       refreshRadarClock();
       const missing = selection.filter(job => !confirmed.has(job.id));
@@ -326,7 +335,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
         {!loading && !loadErrors.jobs && tab === "offers" && filter === "to_review" && !query && roleChosen ? <TriageLearning jobs={allJobs} profile={profile} now={rescueClock} onSaveProfile={saveProfile} onSaveSearch={saveSearch}/> : null}
         {!loading && !loadErrors.jobs && tab === "offers" && (!profileLoaded || roleChosen) ? <OpportunitiesWorkspace enabled={!scanOpen} onReload={()=>refreshOffers({silent:true})} rescueOffers={rescueOffers} currentJob={selectedJob} jobs={shownJobs} lot={dailyLot} counts={viewCounts} filter={filter} onFilter={setFilter} query={query} onClearSearch={() => {setQuery("");requestAnimationFrame(()=>searchRef.current?.focus());}} activeId={route.offer} view={workspaceView} onOpen={openJob} onClose={closeJob} profile={profile} onReview={(id,state)=>updateJob(id,{reviewState:state})} onDelete={requestDelete} onDeleteMany={requestDeleteMany} onRestore={job=>changeTrash([job],false)} onStatus={changeStatus} onNote={(id,candidateNote)=>updateJob(id,{candidateNote})} onChange={updated=>{setJobs(current=>current.map(job=>job.id===updated.id?updated:job));setToast("Offre mise à jour.");}} onApplication={job=>navigate({tab:"pipeline",offer:job.id,view:"application"})} onViewChange={(job,view)=>navigate({offer:job.id,view})} trashBusy={!!trashBusy||refreshing||scan.busy} /> : null}
         {tab === "pipeline" ? <ApplicationsWorkspace placeholder={loading?<WorkspaceLoading/>:loadErrors.jobs?loadNotice:undefined} notice={!loading&&!loadErrors.jobs?loadNotice:undefined} jobs={allJobs.filter(hasApplication)} onStatus={changeStatus} onOpen={openJob} /> : null}
-        {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace reachContent={reachContent} account={{ ownerId: ownerId ?? "", userName, email: userEmail, demo: !!ownerId?.startsWith("demo:"), signOutPath }} active={tab === "profile"} initialSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} profile={profile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
+        {profileLoaded && (tab === "profile" || visited.profile) ? <div hidden={tab!=="profile"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><ProfileWorkspace onPreferencesSaved={acceptPreferences} reachContent={reachContent} account={{ ownerId: ownerId ?? "", userName, email: userEmail, demo: !!ownerId?.startsWith("demo:"), signOutPath }} active={tab === "profile"} initialSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} profile={profile} onDocumentsLinked={links => setProfile(current => ({ ...current, ...links }))} /></Suspense></WorkspaceBoundary></div> : null}
         {profileLoaded && (tab === "sources" || visited.sources) ? <div hidden={tab!=="sources"}><WorkspaceBoundary><Suspense fallback={<WorkspaceLoading />}><SourcePanel sessionWriting={journey.writing} onQuitSession={journey.session&&!journey.session.paused?journey.finish:undefined} headerTarget={sourceHeaderTarget} active={tab==="sources"} jobs={jobs} profile={profile} onSave={saveSearch} onSync={quiet=>runScan(undefined,quiet)} syncBusy={scan.busy} syncError={scan.error} syncedSettings={sourceSettings} onSettingsChanged={acceptSources} onAddOffer={url=>{setJobDialogUrl(url);setJobDialogOpen(true);}} /></Suspense></WorkspaceBoundary></div> : null}
         {tab !== "profile" && tab !== "offers" ? <footer className="radar-footer"><span><ShieldCheck size={12} /> Vos données restent privées.</span></footer> : null}
         </div>
@@ -335,6 +344,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
     </div>
     {profileLoaded&&!scanOpen&&!storyTheme&&!weekOverlay&&!(journey.session&&!journey.session.paused) ? <OnboardingTour ownerId={ownerId ?? ""} profile={profile} activeTab={tab} onNavigate={selectTab} initialHasFact={initialExperienceLibrary?.items.some(item => item.validation === "approved")} /> : null}
     {storyTheme?<InterviewStoryEditor key={storyTheme} themeId={storyTheme} existing={journey.facts.find(item=>item.data.claimKey===`interview-story:${storyTheme}`&&!["rejected","superseded"].includes(item.validation))} onClose={()=>setStoryTheme(null)} onCarnet={()=>{setStoryTheme(null);openProfileSection("experiences");}}/>:null}
+    <ProgressCelebrations preferences={profile.preferences}/>
     <SessionFinish weekPlan={rescueClock&&profile.weekPlan&&profile.weekPlan.week===weekKey(rescueClock,profile.weekPlan.timeZone)?profile.weekPlan:null} result={journey.finished} gem={allJobs.find(job=>job.id===journey.finished?.gemId)} tomorrow={journey.tomorrow} onClose={journey.closeFinish} onGem={()=>{const gem=allJobs.find(job=>job.id===journey.finished?.gemId);journey.closeFinish();if(gem)navigate({tab:"offers",filter:"selected",offer:gem.id,view:"offer"});}}/>
     {jobDialogOpen ? <JobDialog initialUrl={jobDialogUrl} onClose={() => { setJobDialogOpen(false); setJobDialogUrl(""); }} onCreated={onJobCreated} /> : null}
     {selectedJob && tab !== "offers" ? <Modal title={selectedJob.title} description={selectedJob.company || "Entreprise à confirmer"} headerActions={<>{journey.session&&!journey.session.paused?<WorkspaceButton className="session-dialog-exit" disabled={journey.writing} onClick={journey.finish}>Quitter la séance</WorkspaceButton>:null}{(selectedJob.sourceUrl || selectedJob.applicationUrl) ? <a href={selectedJob.sourceUrl || selectedJob.applicationUrl} target="_blank" rel="noopener noreferrer" className="signal-quiet-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : null}{selectedJob.deletedAt ? <button type="button" className="signal-quiet-button" disabled={!!trashBusy || refreshing} onClick={() => void changeTrash([selectedJob], false)}><Undo2 size={15} aria-hidden />Restaurer</button> : null}{tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? <ApplicationTagEditor key={selectedJob.id} jobId={selectedJob.id}/> : null}</>} meta={<OfferSourceBadge job={selectedJob} />} onClose={closeJob}><OfferWorkspace key={selectedJob.id + ":" + tab} onViewChange={view => navigate({ view })} job={selectedJob} profile={profile} initialView={workspaceView} showAnnouncement={false} context={tab === "pipeline" || (tab === "dashboard" && hasApplication(selectedJob)) ? "application" : "opportunity"} onStatus={changeStatus} onNote={(id, candidateNote) => updateJob(id, { candidateNote })} onOpenApplication={() => navigate({ tab: "pipeline", offer: selectedJob.id, view: "application" })} onCancelApplication={() => cancelApplication(selectedJob.id)} onChange={(updated, message) => { setJobs(current => current.map(job => job.id === updated.id ? updated : job)); setToast(message ?? "Dossier enregistré."); }} /></Modal> : null}
