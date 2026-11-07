@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { JobInput } from "./types";
+import { parsePayRange, payMidpoint } from "./pay-range";
 
 const jobSchema = z.object({
   id: z.string(), title: z.string(), company: z.string().nullish(), url: z.string().url(),
@@ -14,8 +15,7 @@ export function parseJobgetherPage(value: unknown): { offers: JobInput[]; hasMor
   for (const job of page.jobs) {
     const url = new URL(job.url);
     if (url.protocol !== "https:" || !["jobgether.com", "www.jobgether.com"].includes(url.hostname) || !url.pathname.startsWith("/offer/")) continue;
-    const salary = job.salaryRange?.match(/(\d[\d\s.,]*)\s*(?:[-–]\s*\d[\d\s.,]*)?\s*EUR\b/i);
-    const annualSalary = salary ? Number(salary[1].replace(/[^\d]/g, "")) : null;
+    const salary = job.salaryRange ? parsePayRange(job.salaryRange, "annual") : null;
     const published = job.postedAt ? new Date(job.postedAt) : null;
     offers.push({
       title: job.title, company: job.company?.trim() || undefined, source: "Jobgether",
@@ -26,7 +26,7 @@ export function parseJobgetherPage(value: unknown): { offers: JobInput[]; hasMor
       remoteMode: /full remote/i.test(job.remote ?? "") ? "full_remote" : /hybrid/i.test(job.remote ?? "") ? "hybrid" : "unknown",
       // A listing's location is not a guarantee that work from that country is permitted.
       language: "unknown",
-      annualSalary: annualSalary && annualSalary >= 10000 && annualSalary <= 1000000 ? annualSalary : null,
+      annualSalary: payMidpoint(salary), salaryMin: salary?.min ?? null, salaryMax: salary?.max ?? null,
       dailyRate: null, contentCoverage: "summary",
       publishedAt: published && !Number.isNaN(published.getTime()) ? published.toISOString() : undefined,
     });

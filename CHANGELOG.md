@@ -1,3 +1,7 @@
+## 7 novembre 2026 — Score v2, lot S1 : fourchettes de rémunération et intitulés
+
+Les fourchettes de salaire et de TJM sont lues de la même façon par toutes les sources (« 62–70 k€ », « 60 000 – 70 000 € », « €60,000–70,000 », « 500–600 €/jour », « jusqu’à 70 k€ »). Le bas et le haut sont conservés ; le milieu reste la valeur comparable. Une offre n’est exclue que si le haut de la fourchette est sous le plancher ; si seul le bas est sous le minimum, elle passe avec un point à vérifier. Les fiches et la liste affichent la fourchette, et un montant saisi à la main la remplace. « Chef de produit » et « Responsable produit » sont reconnus ; « PM » ne l’est plus quand l’annonce parle de gestion de projet. Migration additive : quatre colonnes nullables sur `jobs`.
+
 ## 7 novembre 2026 — Alignement des actions des critères
 
 « Tout modifier » reste aligné à droite lorsque l’en-tête passe sur plusieurs lignes, ainsi que dans les vues détaillée et édition. Les boutons et le focus Signal existants sont conservés.

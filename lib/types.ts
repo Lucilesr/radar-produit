@@ -11,6 +11,11 @@ export type JobInput = {
   contractType: ContractType;
   annualSalary?: number | null;
   dailyRate?: number | null;
+  /** Announced pay range; `annualSalary` and `dailyRate` keep its midpoint for compatibility. */
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  dailyRateMin?: number | null;
+  dailyRateMax?: number | null;
   remoteMode: RemoteMode;
   onsiteCadence?: string;
   onsiteDaysPerWeek?: number | null;

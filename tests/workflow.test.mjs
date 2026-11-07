@@ -12,7 +12,8 @@ const { fromZonedInput, zonedInput, reviewDue, formatDate, applicationAge, activ
 const marketScopeSource = readFileSync(new URL("../lib/market-scope.ts", import.meta.url), "utf8");
 const marketScopeJs = ts.transpileModule(marketScopeSource, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
 const marketScopeUrl = "data:text/javascript;base64," + Buffer.from(marketScopeJs).toString("base64");
-const { parseWwrFeed, plainFeedText } = await load("rss-offers", { "./market-scope": marketScopeUrl });
+const payRangeUrl = "data:text/javascript;base64," + Buffer.from(ts.transpileModule(readFileSync(new URL("../lib/pay-range.ts", import.meta.url), "utf8"), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText).toString("base64");
+const { parseWwrFeed, plainFeedText } = await load("rss-offers", { "./market-scope": marketScopeUrl, "./pay-range": payRangeUrl });
 const { summarizeOfferDescription } = await load("offer-summary");
 test("statuts historiques conservés mais explicités, progression et clôtures distinctes", () => {
   assert.equal(Object.keys(statusLabels).length,13);

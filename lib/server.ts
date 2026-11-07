@@ -2,6 +2,7 @@ import { isCountryCode } from "./countries";
 import type { CandidateProfile, JobInput, JobRecord, JobStatus } from "./types";
 import { statusLabels } from "./application-workflow";
 import { explicitOfferFacts } from "./explicit-offer-facts";
+import { payMidpoint } from "./pay-range";
 
 const contractTypes = new Set(["cdi", "cdd", "freelance", "portage", "part_time", "other"]);
 const remoteModes = new Set(["full_remote", "exceptional", "hybrid", "onsite", "unknown"]);
@@ -32,6 +33,10 @@ export function normalizeJobInput(value: unknown): JobInput {
       : "other",
     annualSalary: asNumber(raw.annualSalary),
     dailyRate: asNumber(raw.dailyRate),
+    salaryMin: asNumber(raw.salaryMin),
+    salaryMax: asNumber(raw.salaryMax),
+    dailyRateMin: asNumber(raw.dailyRateMin),
+    dailyRateMax: asNumber(raw.dailyRateMax),
     remoteMode: remoteModes.has(raw.remoteMode as string)
       ? (raw.remoteMode as JobInput["remoteMode"])
       : "unknown",
@@ -53,12 +58,25 @@ export function normalizeJobInput(value: unknown): JobInput {
     notificationAt: asText(raw.notificationAt, 30),
   };
   const facts = explicitOfferFacts(input.description ?? "");
-  if (input.annualSalary == null && facts.annualSalary != null) input.annualSalary = facts.annualSalary;
-  if (input.dailyRate == null && facts.dailyRate != null) input.dailyRate = facts.dailyRate;
+  if (input.annualSalary == null && input.salaryMin == null && input.salaryMax == null && facts.annualSalary != null) {
+    input.annualSalary = facts.annualSalary; input.salaryMin = facts.salaryMin ?? null; input.salaryMax = facts.salaryMax ?? null;
+  }
+  if (input.dailyRate == null && input.dailyRateMin == null && input.dailyRateMax == null && facts.dailyRate != null) {
+    input.dailyRate = facts.dailyRate; input.dailyRateMin = facts.dailyRateMin ?? null; input.dailyRateMax = facts.dailyRateMax ?? null;
+  }
+  orderRange(input, "salaryMin", "salaryMax"); orderRange(input, "dailyRateMin", "dailyRateMax");
+  // A range alone still gives the single comparable figure the rest of the app reads.
+  if (input.annualSalary == null) input.annualSalary = payMidpoint({ min: input.salaryMin ?? null, max: input.salaryMax ?? null });
+  if (input.dailyRate == null) input.dailyRate = payMidpoint({ min: input.dailyRateMin ?? null, max: input.dailyRateMax ?? null });
   if (input.contractType === "other" && facts.contractType) input.contractType = facts.contractType;
   if (input.remoteMode === "unknown" && facts.remoteMode) input.remoteMode = facts.remoteMode;
   if (input.language === "unknown" && facts.language) input.language = facts.language;
   return input;
+}
+
+function orderRange(input: JobInput, low: "salaryMin" | "dailyRateMin", high: "salaryMax" | "dailyRateMax") {
+  const min = input[low], max = input[high];
+  if (min != null && max != null && min > max) { input[low] = max; input[high] = min; }
 }
 
 export function rowToJob(row: Record<string, unknown>): JobRecord {
@@ -75,6 +93,10 @@ export function rowToJob(row: Record<string, unknown>): JobRecord {
     contractType: (row.contractType as JobInput["contractType"]) ?? "other",
     annualSalary: numberOrNull(row.annualSalary),
     dailyRate: numberOrNull(row.dailyRate),
+    salaryMin: numberOrNull(row.salaryMin),
+    salaryMax: numberOrNull(row.salaryMax),
+    dailyRateMin: numberOrNull(row.dailyRateMin),
+    dailyRateMax: numberOrNull(row.dailyRateMax),
     remoteMode: (row.remoteMode as JobInput["remoteMode"]) ?? "unknown",
     onsiteCadence: stringOrUndefined(row.onsiteCadence),
     onsiteDaysPerWeek: numberOrNull(row.onsiteDaysPerWeek),

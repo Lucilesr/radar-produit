@@ -3,9 +3,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
 
-const source = readFileSync(new URL("../lib/jobgether-offers.ts", import.meta.url), "utf8");
-const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText
-  .replace('from "zod"', `from ${JSON.stringify(import.meta.resolve("zod"))}`);
+const transpile = name => ts.transpileModule(readFileSync(new URL(`../lib/${name}.ts`, import.meta.url), "utf8"), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
+const payRangeUrl = "data:text/javascript;base64," + Buffer.from(transpile("pay-range")).toString("base64");
+const js = transpile("jobgether-offers")
+  .replace('from "zod"', `from ${JSON.stringify(import.meta.resolve("zod"))}`)
+  .replace('from "./pay-range"', `from ${JSON.stringify(payRangeUrl)}`);
 const { parseJobgetherPage } = await import("data:text/javascript;base64," + Buffer.from(js).toString("base64"));
 
 test("Jobgether garde le lien d'origine et ne confond pas lieu et pays autorisé", () => {
@@ -15,7 +17,9 @@ test("Jobgether garde le lien d'origine et ne confond pas lieu et pays autorisé
     postedAt: "2026-11-01T00:00:00.000Z",
   }], pagination: { hasMore: false } });
   assert.equal(result.offers.length, 1);
-  assert.equal(result.offers[0].annualSalary, 60000);
+  assert.equal(result.offers[0].salaryMin, 60000);
+  assert.equal(result.offers[0].salaryMax, 80000);
+  assert.equal(result.offers[0].annualSalary, 70000);
   assert.equal(result.offers[0].contractType, "other");
   assert.equal(result.offers[0].remoteCountry, undefined);
   assert.equal(result.offers[0].announcedLocation, "France");

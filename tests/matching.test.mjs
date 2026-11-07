@@ -20,7 +20,8 @@ const searchPreferencesModule = await import(preferences);
 const { searchPreferences } = searchPreferencesModule;
 const { assessJob: assessWith } = await import(moduleUrl("matching", { "./work-arrangement": arrangement, "./application-workflow": workflow, "./market-scope": marketScope, "./search-preferences": preferences, "./location-criteria": locations }));
 const { assessLocation, normalizeLocationRules } = await import(locations);
-const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement }));
+const payRange = moduleUrl("pay-range");
+const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement, "./pay-range": payRange }));
 const { createCandidateBrief, briefOffer } = await import(moduleUrl("candidate-brief"));
 const opportunityViews = moduleUrl("opportunity-views");
 const { selectTriageActions, sortOffersForTriage } = await import(moduleUrl("triage", { "./application-workflow": workflow, "./opportunity-views": opportunityViews }));
@@ -385,4 +386,39 @@ test("les mots-clés mettent en avant ou écartent une offre", () => {
   assert.equal(saved.boostKeywords.filter(word => word.toLowerCase() === "fintech").length, 1);
   assert.ok(saved.boostKeywords.includes("paiement"));
   assert.equal(saved.boostKeywords.length, 12);
+});
+
+test("Score v2 S1 : une fourchette à cheval sur le minimum passe, avec un signal sur le bas", () => {
+  const straddling = assessJob({ ...baseline, annualSalary: 57500, salaryMin: 50000, salaryMax: 65000 });
+  assert.notEqual(straddling.tier, "excluded");
+  assert.match(straddling.reasons.join(" "), /entre 50\s000\s€ et 65\s000\s€ brut\/an/);
+  assert.match(straddling.flags.join(" "), /Bas de fourchette sous votre minimum/);
+  const below = assessJob({ ...baseline, annualSalary: 45000, salaryMin: 40000, salaryMax: 50000 });
+  assert.equal(below.tier, "excluded");
+  const daily = assessJob({ ...baseline, contractType: "freelance", annualSalary: null, dailyRate: 525, dailyRateMin: 450, dailyRateMax: 600 });
+  assert.notEqual(daily.tier, "excluded");
+  assert.match(daily.flags.join(" "), /Bas de fourchette sous votre minimum de 500/);
+});
+
+test("Score v2 S1 : « PM » de gestion de projet refusé, chef de produit reconnu", () => {
+  const project = assessJob({ ...baseline, title: "Project Manager (PM) déploiement ERP", description: "Piloter le déploiement d'un ERP, gestion de projet et planning." });
+  assert.doesNotMatch(project.reasons.join(" "), /votre recherche/);
+  const projectAbbrev = assessJob({ ...baseline, title: "PM ERP", description: "Gestion de projet ERP, coordination des chantiers." });
+  assert.doesNotMatch(projectAbbrev.reasons.join(" "), /votre recherche/);
+  const productAbbrev = assessJob({ ...baseline, title: "Senior PM", description: "Vous pilotez la roadmap produit." });
+  assert.match(productAbbrev.reasons.join(" "), /votre recherche/);
+  for (const title of ["Chef de produit paiements", "Cheffe de produit", "Responsable produit B2C"]) {
+    assert.match(assessJob({ ...baseline, title }).reasons.join(" "), /votre recherche/, title);
+  }
+  assert.doesNotMatch(assessJob({ ...baseline, title: "Chef de projet digital" }).reasons.join(" "), /votre recherche/);
+});
+
+test("Score v2 S1 : le texte collé donne la fourchette, sans confondre TJM et salaire", () => {
+  const annual = parseOfferText("Product Owner\nCDI\nSalaire : 62–70 k€ brut annuel", "Autre");
+  assert.equal(annual.salaryMin, 62000); assert.equal(annual.salaryMax, 70000); assert.equal(annual.annualSalary, 66000);
+  assert.equal(annual.dailyRate, null);
+  const daily = parseOfferText("Product Owner freelance\nTJM : 500–600 € HT/jour", "Autre");
+  assert.equal(daily.dailyRateMin, 500); assert.equal(daily.dailyRateMax, 600); assert.equal(daily.annualSalary, null);
+  const revenue = parseOfferText("Product Owner\nScale-up de 300 000 € de chiffre d'affaires", "Autre");
+  assert.equal(revenue.annualSalary, null);
 });

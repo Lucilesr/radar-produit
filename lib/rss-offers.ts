@@ -1,5 +1,6 @@
 import type { JobInput } from "./types";
 import { isNorthAmericaRestricted } from "./market-scope";
+import { parsePayRange, payMidpoint } from "./pay-range";
 
 function unescape(value: string) {
   return value.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/&#(\d+);/g, (_, code) => { const n = Number(code); return n <= 0x10ffff ? String.fromCodePoint(n) : ""; })
@@ -19,9 +20,12 @@ export function parseWwrFeed(xml: string): JobInput[] {
     const description = plainFeedText(tag(item, "content:encoded") || tag(item, "description")).slice(0, 12000);
     const announcedLocation = isNorthAmericaRestricted({ title, description }) ? /north america/i.test(`${title} ${description}`) ? "Amérique du Nord" : "États-Unis" : undefined;
     const date = new Date(plainFeedText(tag(item, "pubDate")));
+    // Feeds rarely state pay in euros; a figure in another currency is never compared with a euro minimum.
+    const payLine = description.split("\n").find(line => /(?:salary|compensation|salaire|rémunération)/i.test(line));
+    const salary = payLine ? parsePayRange(payLine, "annual") : null;
     offers.push({ title, company, source: "We Work Remotely", sourceUrl, applicationUrl: sourceUrl, description, announcedLocation,
       contractType: /freelance|contractor|contract role/i.test(description) ? "freelance" : /full[- ]time|permanent/i.test(description) ? "cdi" : "other",
-      remoteMode: "full_remote", language: "en", annualSalary: null, dailyRate: null,
+      remoteMode: "full_remote", language: "en", annualSalary: payMidpoint(salary), salaryMin: salary?.min ?? null, salaryMax: salary?.max ?? null, dailyRate: null,
       onsiteCadence: "Pays autorisés et fuseau de travail à vérifier dans la description",
       contentCoverage: "summary", publishedAt: Number.isNaN(date.getTime()) ? undefined : date.toISOString() });
   }

@@ -16,7 +16,7 @@ import { SourceLogo } from "@/components/source-logo";
 import { ApplicationQuestions } from "@/components/application-questions";
 import { ApplicationTagBadges } from "@/components/application-tags";
 import { formatDate, fromZonedInput, reviewDue, statusLabels, zonedInput } from "@/lib/application-workflow";
-import { formatEuro } from "@/lib/matching";
+import { formatPay } from "@/lib/pay-range";
 import { hasApplication, workspaceSections } from "@/lib/opportunity-views";
 import type { CandidateProfile, InterviewRecord, JobRecord, JobStatus } from "@/lib/types";
 
@@ -90,7 +90,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
         <h3>Conditions de l’offre</h3>
         <dl className="review-criteria-grid">
           <ConditionRow label="Contrat" value={job.contractType === "cdi" ? "CDI" : job.contractType === "cdd" ? "CDD" : job.contractType === "freelance" ? "Freelance" : job.contractType === "portage" ? "Portage salarial" : job.contractType === "part_time" ? "Temps partagé" : "À confirmer"}/>
-          <ConditionRow label="Rémunération" value={job.dailyRate ? `${formatEuro(job.dailyRate)} HT/jour` : job.annualSalary ? `${formatEuro(job.annualSalary)} brut/an` : "Non communiquée"}/>
+          <ConditionRow label="Rémunération" value={(job.dailyRate != null || job.dailyRateMin != null || job.dailyRateMax != null ? formatPay(job.dailyRateMin, job.dailyRateMax, job.dailyRate, "HT/jour") : formatPay(job.salaryMin, job.salaryMax, job.annualSalary, "brut/an")) ?? "Non communiquée"}/>
           <ConditionRow label="Mode de travail" value={{ full_remote: "Full remote", exceptional: "Présence exceptionnelle", hybrid: "Hybride", onsite: "Sur site", unknown: "À confirmer" }[job.remoteMode]}/>
           <ConditionRow label="Lieu annoncé" value={job.announcedLocation || "À confirmer"}/>
           <ConditionRow label="Présence sur site" value={[job.onsiteDaysPerWeek!=null?`${job.onsiteDaysPerWeek} j/semaine sur site`:"",job.onsiteDaysPerMonth!=null?`${job.onsiteDaysPerMonth} j/mois sur site`:"",job.onsiteCadence].filter(Boolean).join(" · ")||"À confirmer"}/>
