@@ -52,5 +52,13 @@ test("autosave SQLite : versions conservées, conflits, isolation et dossier inc
  const reviewKey="review:event",reviewContext={params:Promise.resolve({key:reviewKey})};
  const draft=JSON.stringify({summary:"Bilan en cours",outcome:"offer"});assert.equal((await route.PUT(new Request("https://radar.test/api/workspace-drafts/"+reviewKey,{method:"PUT",body:JSON.stringify({value:draft,base:"",version:0})}),reviewContext)).status,200);
  const reviewed=await store.getOffer("alice",job.id);assert.equal(reviewed.status,before.status);assert.deepEqual(reviewed.interviews,before.interviews,"le brouillon ne termine pas le bilan");
+ const storyContext={params:Promise.resolve({key:"story:prioriser"})};
+ const storyGet=()=>route.GET(new Request("https://radar.test/api/workspace-drafts/story:prioriser"),storyContext);
+ const storyPut=value=>route.PUT(new Request("https://radar.test/api/workspace-drafts/story:prioriser",{method:"PUT",body:JSON.stringify({value,base:"",version:0})}),storyContext);
+ assert.equal((await storyPut("Récit privé A")).status,200);
+ globalThis.__trashUser="bob";assert.deepEqual(await(await storyGet()).json(),{value:"",version:0});assert.equal((await storyPut("Récit privé B")).status,200);
+ globalThis.__trashUser="alice";assert.equal((await(await storyGet()).json()).value,"Récit privé A");
+ assert.equal((await route.GET(new Request("https://radar.test/api/workspace-drafts/story:alice"),{params:Promise.resolve({key:"story:alice"})})).status,404);
+ globalThis.__trashUser=null;assert.equal((await storyGet()).status,401);
  sqlite.close();
 });

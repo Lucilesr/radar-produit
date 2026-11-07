@@ -55,3 +55,7 @@ test("Q3 : la pause ne gonfle pas les minutes de séance",()=>{
  const resumed={...paused,paused:false,resumedAt:afterPause};assert.equal(sessionProgress(resumed,[],[],facts,afterPause+30000).minutes,1);
  assert.equal(pauseSession(paused,afterPause).activeMs,30000);
 });
+test("Q4 : les blocs complets restent hors de l’instantané de confort de séance",()=>{
+ const snapshot=sessionSnapshot([job("a",{description:"PRIVATE_OFFER_TEXT"})],[source("manual")],[{id:"fact",validation:"approved",data:{context:"PRIVATE_STORY_TEXT"}}]);
+ assert.doesNotMatch(JSON.stringify(snapshot),/PRIVATE_/);assert.deepEqual(snapshot.approved,["fact"]);
+});

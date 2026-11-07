@@ -14,11 +14,13 @@ import { StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
 import { PageHeader, WorkspaceState } from "@/components/workspace-ui";
 import type { JobRecord, JobStatus } from "@/lib/types";
 import { lotHeadline, type DailyLot } from "@/lib/daily-lot";
+import { useRadarClock } from "@/components/use-radar-clock";
 
 // Recalculate deadlines on entry and explicit data changes; keep the page stable while reading.
 function useNow(jobs: JobRecord[]) { const [now,setNow]=useState(()=>Date.now()); useEffect(()=>setNow(Date.now()),[jobs]);return now; }
-export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd, onOpen, onOpenSource, setupRequired=false, onConfigureSearch, radarLine, sessionAction, sessionNotice, manualRefresh=false }: {sessionAction?:{ready:boolean;minutes:number;available:boolean;resumable:boolean;onStart:()=>void};sessionNotice?:ReactNode;manualRefresh?:boolean;radarLine?:ReactNode;setupRequired?:boolean;onConfigureSearch?:()=>void;jobs:JobRecord[];lot?:DailyLot|null;sources?:{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onOpenSource?:(name:string)=>void}) {
+export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd, onOpen, onOpenSource, setupRequired=false, onConfigureSearch, radarLine, sessionAction, sessionNotice, manualRefresh=false,reach }: {reach?:ReactNode;sessionAction?:{ready:boolean;minutes:number;available:boolean;resumable:boolean;onStart:()=>void};sessionNotice?:ReactNode;manualRefresh?:boolean;radarLine?:ReactNode;setupRequired?:boolean;onConfigureSearch?:()=>void;jobs:JobRecord[];lot?:DailyLot|null;sources?:{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onOpenSource?:(name:string)=>void}) {
   const now=useNow(jobs);
+  const dateClock=useRadarClock();
   const count=jobs.filter(job=>inOpportunityView(job,"to_review")).length;
   const selected=jobs.filter(job=>inOpportunityView(job,"selected")).length;
   const active=jobs.filter(job=>hasApplication(job)&&activeStatuses.includes(job.status)).length;
@@ -40,7 +42,7 @@ export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd
     <div className="today-main">
       {imminent||urgent?<section className="today-next" aria-label="Entretien prioritaire"><h2>{imminent?"Votre prochain entretien":urgent!.title}</h2><p className="workspace-caption">{imminent?`${imminent.job.company} · ${formatDate(imminent.event.startAt,imminent.event.timeZone,true)}`:urgent!.detail}</p><WorkspaceButton onClick={()=>imminent?onOpen(imminent.job,"interviews"):openAction(urgent!)}>Ouvrir le suivi de l’entretien</WorkspaceButton></section>:null}
       <section className="today-focus" aria-label="Action prioritaire">
-        <p className="today-session-date">{new Date(now).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</p>
+        <p className="today-session-date">{dateClock?new Date(dateClock).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}):"Aujourd’hui"}</p>
         <h2 className="today-focus-title">{focusTitle}</h2>
         <p className="workspace-caption">{preparing?"Choisissez votre poste, vos sources et une première actualisation.":!sessionAction?.ready?"Préparation de votre séance…":sessionAction?.available?`Une séance d’environ ${Math.max(1,sessionAction.minutes)} minute${sessionAction.minutes>1?"s":""}, à votre rythme.`:manualRefresh?"Rien d’urgent. Revenez quand vous le souhaitez et actualisez votre radar.":"Rien d’urgent. Revenez demain ; vos sources seront actualisées à l’ouverture."}</p>
         <div className="today-session-actions">
@@ -52,6 +54,7 @@ export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd
       </section>
       {!preparing?sessionNotice:null}
       {!preparing?radarLine:null}
+      {!preparing?reach:null}
       {!preparing?<><section className="today-next" aria-labelledby="today-next-title"><WorkspacePanelHeader id="today-next-title" title="À faire ensuite"/>
         {actions.filter(action=>action!==urgent).slice(0,3).map(action=><button key={action.job.id} type="button" className="workspace-task" onClick={()=>openAction(action)}><span className="workspace-task-icon"><ClipboardCheck size={18} aria-hidden /></span><span><strong>{action.title}</strong><small>{action.detail}</small></span><ArrowUpRight size={17} aria-hidden /></button>)}
         {!actions.filter(action=>action!==urgent).length?<p className="workspace-caption">Aucune action supplémentaire en attente.</p>:null}

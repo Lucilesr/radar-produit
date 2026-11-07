@@ -1,0 +1,27 @@
+.reach-workspace{display:grid;gap:24px;min-width:0}
+.reach-compact,.reach-hero,.reach-levels,.reach-rules,.reach-stories{padding:24px;border:1px solid var(--signal-line);border-radius:var(--signal-surface-radius);background:var(--signal-paper);min-width:0}
+.reach-compact{display:grid;gap:12px}
+.reach-compact-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.reach-hero{display:flex;align-items:center;gap:32px;padding:32px}
+.reach-hero>div{display:grid;gap:14px;flex:1;min-width:0;overflow-wrap:anywhere}
+.reach-hero h2{font:700 clamp(28px,4vw,48px)/1.1 var(--font-display);letter-spacing:-.03em;margin:0}
+.reach-eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--signal-petrol)}
+.reach-next{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding:20px 24px;border-radius:var(--signal-surface-radius);background:var(--signal-energy);color:var(--signal-petrol-ink)}
+.reach-next p{margin:6px 0 0;font-size:14px}
+.reach-levels ol,.reach-rules ul{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:12px}
+.reach-levels li{display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--signal-soft);border-radius:5px}
+.reach-levels li>span{display:grid;place-items:center;flex:none;min-width:28px;min-height:28px;border:1px solid var(--signal-input);border-radius:50%}
+.reach-levels li.is-reached>span{background:var(--signal-energy);color:var(--signal-petrol-ink)}
+.reach-levels h3{font:600 14px/1.5 var(--font-sans);margin:0}.reach-levels li p{margin:4px 0 0;color:var(--signal-muted);font-size:14px}
+.reach-stories>div:last-child{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}
+.reach-stories button{justify-content:flex-start;white-space:normal;text-align:left;min-height:48px}
+.reach-stories button.is-done{background:var(--signal-petrol-ink);border-color:var(--signal-petrol-ink);color:var(--signal-paper)}
+.reach-hero.is-milestone,.reach-compact.is-milestone{border-color:var(--signal-petrol);background:var(--signal-energy)}
+.reach-milestone{font-weight:600}
+.signal-toast.is-milestone{animation:signal-pop 260ms ease-out both}
+.signal-toast.is-milestone .signal-toast-close{width:44px;height:44px;min-width:44px;min-height:44px}
+.reach-story-dialog{max-height:calc(100dvh - 32px);overflow-y:auto}
+.reach-story-dialog form{display:grid;gap:16px}.reach-story-dialog label{display:grid;gap:8px;font-size:14px;font-weight:500}
+.reach-story-comparison{border:1px solid var(--signal-line);padding:16px;border-radius:5px;overflow-wrap:anywhere}.reach-story-comparison p{white-space:pre-wrap;font-size:14px}.reach-story-comparison h3{margin-top:16px;font-size:14px}
+@media(min-width:1100px){.reach-workspace{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.reach-workspace>:nth-child(-n+2){grid-column:1 / -1}.reach-levels{grid-column:1;grid-row:3}.reach-rules{grid-column:1;grid-row:4}.reach-stories{grid-column:2;grid-row:3 / span 2}.reach-stories>div:last-child{grid-template-columns:1fr}}
+@media(max-width:700px){.reach-hero{flex-direction:column;align-items:flex-start;gap:20px;padding:24px}.reach-stories>div:last-child{grid-template-columns:1fr}.reach-compact,.reach-levels,.reach-rules,.reach-stories{padding:20px}.reach-next{padding:20px}.reach-next button{width:100%}.reach-story-dialog{font-size:16px}.reach-story-dialog textarea{font-size:16px}}

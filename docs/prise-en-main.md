@@ -31,3 +31,11 @@ Depuis Aujourd’hui, **Commencer ma séance** propose au plus quatre étapes : 
 **Étape suivante** permet de passer une étape ; seul ce que vous confirmez compte dans le bilan. Aucun message n’est envoyé au recruteur. Avant C2, les relances viennent des dates choisies dans un bilan d’entretien et leur confirmation reste dans la séance. **Reprendre plus tard** garde la progression pour aujourd’hui ; la reprise est proposée, jamais imposée. **Quitter la séance** reste accessible, y compris dans la fiche d’une candidature ou d’une source. Sans action, vous revenez directement à l’accueil ; sinon, vous voyez le bilan et éventuellement votre meilleure offre sélectionnée. Les pauses ne comptent pas dans les minutes.
 
 La séance reste propre à ce navigateur : mémoire, stockage de session et copie de confort limitée au jour pour retrouver un onglet fermé. Cette copie contient des identifiants et états, aucun texte du CV ni note privée. Sans stockage, la visite courante fonctionne ; un autre appareil ne reprend pas la séance. Le journal L1 apportera ensuite l’historique interne au compte.
+
+## La portée de votre radar — Q4
+
+L’accueil indique votre portée et une seule prochaine action. **Voir ma portée**, ou **Mon profil → Portée du radar**, détaille les dix crans. Vos informations déjà validées comptent dès le départ : critères, niveau, trois sources actives, une visite, deux expériences et quatre histoires. La jauge ne bloque aucune fonction. À dix crans, elle reste stable.
+
+Les huit thèmes d’entretien ouvrent un récit : contexte, contribution personnelle, effets observés et limites. Un chiffre inconnu ne doit pas être inventé. Le brouillon se conserve ; **Valider cette histoire** confirme les faits dans le carnet, sans autoriser leur usage en candidature ou sur un profil public. Vous pouvez relire une histoire et ouvrir le carnet pour ses droits. Après modification, la réutilisation est suspendue jusqu’à un nouveau choix de ces droits, comme pour les autres blocs du carnet.
+
+Un conflit garde votre texte et le récit enregistré. Comparez les versions avant de choisir laquelle enregistrer. Le changement de palier est signalé discrètement une seule fois dans ce navigateur ; les points déjà présents à votre première visite ne déclenchent aucune animation.

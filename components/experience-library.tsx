@@ -97,6 +97,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary 
     const experiences = requests.experiences.then(s => {
       if (live) {
         setState(s);
+        window.dispatchEvent(new CustomEvent("radar:experiences-changed",{detail:{items:s.items}}));
         // The document list is only needed for history or a first extraction.
         if (!s.reference || s.extractions.some(e => e.documentId === s.reference?.documentId)) setLoading(false);
       }
@@ -124,7 +125,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary 
             void work.finally(() => extractionInFlight.current.delete(reference.id)).catch(() => undefined);
           }
           const result = await work;
-          if (live) { setState(result.state); setNotice(result.status === "extracted" ? "Document chargé. Nouveaux éléments à relire." : result.issue); }
+          if (live) { setState(result.state);window.dispatchEvent(new CustomEvent("radar:experiences-changed",{detail:{items:result.state.items}})); setNotice(result.status === "extracted" ? "Document chargé. Nouveaux éléments à relire." : result.issue); }
         }
       }).catch(e => { if (live) setError(e.message); }).finally(() => {
         if (readsInFlight.current === requests) readsInFlight.current = null;
@@ -170,7 +171,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary 
         }
       }
       setState(next); setSelected([]); setConfirm(null); pending.current = null;
-      window.dispatchEvent(new CustomEvent("radar:experiences-changed",{detail:{items:next.items.map(({id,validation,parentId})=>({id,validation,parentId}))}}));
+      window.dispatchEvent(new CustomEvent("radar:experiences-changed",{detail:{items:next.items}}));
       if(body.action==="review"&&body.validation==="approved"){
         const ids=(body.selection as {id:string}[]).map(i=>i.id);
         setConsentPrompt(next.items.filter(i=>ids.includes(i.id)&&i.validation==="approved"&&sectionType(i)==="experience"&&!isSensitiveDetail(i)&&!i.applicationAllowed&&i.applicationConsent==="pending").map(i=>({id:i.id,version:i.version,title:detailHeading(i)})));

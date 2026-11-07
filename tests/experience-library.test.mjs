@@ -311,5 +311,19 @@ test("stockage réel SQLite : versions, validation groupée, arbitrage, isolatio
   sqlite.prepare("UPDATE profiles SET data=json_set(data,'$.detailedExperienceDocumentId',?) WHERE user_id=?").run(extraction.documentId,"alice");
   assert.equal((await store.library("alice")).reference.documentId,extraction.documentId);
   assert.deepEqual(await store.approvedFacts("alice","application"),[]);
+  // Q4: validating four personal stories does not grant candidature/public usage.
+  for(const theme of ["prioriser","impact","tech","apprendre"]){
+    const id=crypto.randomUUID();
+    const createStory={action:"create",id,kind:"fact",parentId:null,requestId:crypto.randomUUID(),data:{title:theme,organization:"",role:"",period:"",context:"Récit entièrement fictif pour la recette.",contribution:"J’ai préparé et arbitré un backlog d’exemple.",result:"Effet observé fictif, impact non mesuré.",claimKey:`interview-story:${theme}`,reviewModel:1,reviewPoints:[]}};
+    await store.mutateLibrary("alice",createStory);await store.mutateLibrary("alice",createStory);
+    const approveStory={action:"review",selection:[{id,version:1}],validation:"approved",confirmed:true,requestId:crypto.randomUUID()};
+    await store.mutateLibrary("alice",approveStory);await store.mutateLibrary("alice",approveStory);
+    const saved=(await store.library("alice")).items.find(item=>item.id===id);
+    assert.equal(saved.validation,"approved");assert.equal(saved.version,2);assert.equal(saved.applicationAllowed,false);assert.equal(saved.publicProfileAllowed,false);
+    assert.equal((await store.history("alice",id)).length,2);
+    await assert.rejects(store.mutateLibrary("bob",approveStory),/introuvable/);
+  }
+  assert.equal((await store.library("alice")).items.filter(item=>item.data.claimKey.startsWith("interview-story:")).length,4);
+  assert.deepEqual(await store.approvedFacts("alice","application"),[]);assert.deepEqual(await store.approvedFacts("alice","public_profile"),[]);
   sqlite.close();
 });
