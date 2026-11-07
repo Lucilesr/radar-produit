@@ -1,5 +1,9 @@
 ## 7 novembre 2026 — Feuille de route gamification
 
+## 7 novembre 2026 — Archives accessibles depuis le lot
+
+- Le lien Archives reste accessible quand aucune offre n’attend dans la réserve.
+
 ## 7 novembre 2026 — États fiables des candidatures
 
 - Une réponse confirmée reste dans son éditeur ; une seconde validation ne revient plus à l’ancienne valeur.

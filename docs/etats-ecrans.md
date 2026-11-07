@@ -678,7 +678,7 @@ Preuve : `questions-apres-validation-defaut`, après une confirmation réelle. L
 
 | ID | Écran | Défaut et conséquence | Correction attendue | Suivi |
 | --- | --- | --- | --- | --- |
-| G-O1 | Opportunités | Lien Archives uniquement dans la réserve ; si aucune offre n’attend hors du lot, il peut être inaccessible. | Accès indépendant du nombre d’offres dans la réserve, y compris lot vide. | PR par écran à créer. |
+| G-O1 | Opportunités | Lien Archives uniquement dans la réserve ; si aucune offre n’attend hors du lot, il peut être inaccessible. | Accès indépendant du nombre d’offres dans la réserve. | Correctif Opportunités préparé ; recette après déploiement. |
 | G-S1 | Sources | Lectures et écritures non bornées ; une requête qui ne répond pas peut laisser des commandes occupées indéfiniment. | Délai maximum, fin de chargement, erreur compréhensible et reprise ; 60 s maximum pour l’actualisation. | PR Sources à créer. |
 | G-C1 | Candidatures / entretiens | Colonnes, tags, statuts et écritures d’entretien ont des requêtes sans borne cohérente. | Délai, sortie de l’état occupé, reprise et saisie conservée. | Correctif Candidatures préparé ; recette après déploiement. |
 | G-P1 | Mon profil / documents | Un fichier lié est déclaré indisponible pendant sa lecture initiale. | Squelette ou lecture en cours avant de conclure à l’absence ; erreur de lecture distincte. | PR Mon profil à créer. |
