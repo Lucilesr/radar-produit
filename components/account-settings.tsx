@@ -23,6 +23,7 @@ function forgetLocalState(ownerId: string) {
 export function AccountSettings({ ownerId, userName, email, demo, signOutPath }: { ownerId: string; userName: string; email?: string; demo: boolean; signOutPath: string }) {
   const leave = signOutTarget(demo, signOutPath);
   const signOutForm = useRef<HTMLFormElement>(null);
+  const deleteTrigger=useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const [deleted, setDeleted] = useState(false);
   return <div className="account-settings">
@@ -42,9 +43,9 @@ export function AccountSettings({ ownerId, userName, email, demo, signOutPath }:
         <div className="account-actions"><a className="secondary-button signal-form-button" href="/sauvegarde"><Download size={15} aria-hidden />Exporter mes données</a></div>
       </WorkspaceFormSection>
       <WorkspaceFormSection className="account-danger" title="Supprimer mon compte" description="Efface définitivement vos critères, sources, offres, candidatures, entretiens, notes, réponses, carnet d’expériences et documents (CV compris). Votre compte ChatGPT n’est pas concerné.">
-        {deleted ? <p role="status" className="account-deleted">Votre compte Radar a été supprimé. Déconnexion…</p> : <div className="account-actions"><WorkspaceButton variant="danger" onClick={() => setOpen(true)}><Trash2 size={15} aria-hidden />Supprimer mon compte</WorkspaceButton></div>}
+        {deleted ? <p role="status" className="account-deleted">Votre compte Radar a été supprimé. Déconnexion…</p> : <div className="account-actions"><WorkspaceButton ref={deleteTrigger} variant="danger" onClick={() => setOpen(true)}><Trash2 size={15} aria-hidden />Supprimer mon compte</WorkspaceButton></div>}
       </WorkspaceFormSection>
-      <AccountDeletionDialog open={open} onClose={() => setOpen(false)} onDeleted={() => {
+      <AccountDeletionDialog open={open} onReturnFocus={()=>deleteTrigger.current?.focus({preventScroll:true})} onClose={() => setOpen(false)} onDeleted={() => {
         setOpen(false); setDeleted(true); forgetLocalState(ownerId);
         // The account no longer exists: end the session too, then land on the sign-in page.
         setTimeout(() => signOutForm.current?.requestSubmit(), 1200);
@@ -53,7 +54,7 @@ export function AccountSettings({ ownerId, userName, email, demo, signOutPath }:
   </div>;
 }
 
-function AccountDeletionDialog({ open, onClose, onDeleted }: { open: boolean; onClose: () => void; onDeleted: () => void }) {
+function AccountDeletionDialog({ open, onClose, onDeleted, onReturnFocus }: { open: boolean; onClose: () => void; onDeleted: () => void; onReturnFocus:()=>void }) {
   const [typed, setTyped] = useState(""), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const locked = useRef(false);
   const cancel = useRef<HTMLButtonElement>(null);
@@ -63,17 +64,17 @@ function AccountDeletionDialog({ open, onClose, onDeleted }: { open: boolean; on
     if (!confirmed || locked.current) return;
     locked.current = true; setBusy(true); setError("");
     try {
-      const response = await fetch("/api/account", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirmation: typed.trim() }) });
+      const response = await fetch("/api/account", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirmation: typed.trim() }), signal: AbortSignal.timeout(60000) });
       const data = await response.json().catch(() => ({})) as { deleted?: boolean; error?: string };
-      if (!response.ok || !data.deleted) throw new Error(data.error ?? "Suppression non confirmée. Réessayez.");
+      if (!response.ok || !data.deleted) throw new Error(data.error ?? "Suppression non confirmée. Rechargez la page pour vérifier votre compte avant de réessayer.");
       onDeleted();
-    } catch (problem) { setError(problem instanceof Error ? problem.message : "Suppression non confirmée. Réessayez."); }
+    } catch (problem) { setError(problem instanceof Error && !["TimeoutError","AbortError","TypeError"].includes(problem.name) ? problem.message : "Suppression non confirmée. Rechargez la page pour vérifier votre compte avant de réessayer."); }
     finally { locked.current = false; setBusy(false); }
   }
   return <Dialog.Root open={open} onOpenChange={next => { if (!next) close(); }}>
     <Dialog.Portal>
       <Dialog.Overlay data-testid="modal-backdrop" className="fixed inset-0 z-50" />
-      <Dialog.Content className="workspace-dialog account-delete-dialog fixed left-1/2 top-1/2 z-50 max-h-[92dvh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto shadow-2xl outline-none" onOpenAutoFocus={event => { event.preventDefault(); cancel.current?.focus(); }} onEscapeKeyDown={event => { if (locked.current) event.preventDefault(); }} onPointerDownOutside={event => { if (locked.current) event.preventDefault(); }}>
+      <Dialog.Content className="workspace-dialog account-delete-dialog fixed left-1/2 top-1/2 z-50 max-h-[92dvh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto shadow-2xl outline-none" onCloseAutoFocus={event=>{event.preventDefault();onReturnFocus();}} onOpenAutoFocus={event => { event.preventDefault(); cancel.current?.focus(); }} onEscapeKeyDown={event => { if (locked.current) event.preventDefault(); }} onPointerDownOutside={event => { if (locked.current) event.preventDefault(); }}>
         <div className="signal-dialog-header"><div className="signal-dialog-heading"><Dialog.Title>Supprimer définitivement votre compte ?</Dialog.Title></div><button type="button" className="signal-dialog-close" aria-label="Fermer" disabled={busy} onClick={close}><X size={20} aria-hidden /></button></div>
         <Dialog.Description className="signal-help">Toutes vos données Radar et vos documents seront effacés. Cette action ne peut pas être annulée. Pour garder une copie, exportez d’abord vos données depuis « Vos données ».</Dialog.Description>
         <form onSubmit={event => { event.preventDefault(); void remove(); }}>
