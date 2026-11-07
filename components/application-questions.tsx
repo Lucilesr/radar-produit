@@ -1,4 +1,5 @@
 "use client";
+import { requestError } from "@/lib/request-error";
 
 import {AutosaveStatus,useSavedForm} from "@/components/autosave";
 import {useWorkspaceFeedback} from "@/components/workspace-feedback";
@@ -15,7 +16,7 @@ type Revision = { id: string; version: number; answer: string; createdAt: string
 
 async function api<T>(path: string, method = "GET", body?: unknown): Promise<T> {
   const response = await fetch(path, { method, headers: body ? { "Content-Type": "application/json" } : undefined,
-    body: body ? JSON.stringify(body) : undefined });
+    body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(15000) });
   const data = await response.json() as T & { error?: string };
   if (!response.ok) throw new Error(data.error || "Enregistrement non confirmé.");
   return data;
@@ -41,14 +42,14 @@ export function ApplicationQuestions({ jobId, onSaved }: { jobId: string; onSave
     let active = true;
     api<{ questions: Question[] }>(`/api/application-questions?jobId=${encodeURIComponent(jobId)}${showArchived ? "&includeArchived=1" : ""}`)
       .then(data => { if (active) { setQuestions(data.questions); setError(""); } })
-      .catch(problem => { if (active) setError(problem instanceof Error ? problem.message : "Questions indisponibles."); })
+      .catch(problem => { if (active) setError(requestError(problem, "Questions indisponibles.")); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [jobId, showArchived, refresh]);
   async function restore(item: Question) {
     setBusy(true); setError("");
     try { await api(`/api/application-questions/${encodeURIComponent(item.id)}`, "PATCH", { action: "restore", version: item.version }); setRefresh(value => value + 1); onSaved?.(); notify({message:"Question restaurée."}); }
-    catch (problem) { setError(problem instanceof Error ? problem.message : "Restauration non confirmée."); }
+    catch (problem) { setError(requestError(problem, "Restauration non confirmée.")); }
     finally { setBusy(false); }
   }
   async function add() {
@@ -59,12 +60,13 @@ export function ApplicationQuestions({ jobId, onSaved }: { jobId: string; onSave
       });
       setQuestions(previous => previous.some(item => item.id === result.question.id) ? previous : [...previous, result.question]);
       setNewQuestion(""); setNewLimit(""); setNewId(crypto.randomUUID()); setAdding(false); onSaved?.(); notify({message:"Question enregistrée."});
-    } catch (problem) { setError(problem instanceof Error ? problem.message : "Question non enregistrée."); }
+    } catch (problem) { setError(requestError(problem, "Question non enregistrée.")); }
     finally { setBusy(false); }
   }
   return <section className="brief-questions" aria-label="Questions du recruteur">
     <div className="signal-section-heading"><div><h3>Questions du recruteur</h3><p className="signal-help">Préparez une réponse pour chaque question reçue.</p></div><div className="brief-question-tools"><WorkspaceButton variant="quiet" onClick={()=>setShowArchived(value=>!value)}>{showArchived?"Masquer les questions retirées":"Questions retirées"}</WorkspaceButton><WorkspaceButton onClick={()=>setAdding(true)} disabled={loading||adding||questions.filter(item=>!item.archivedAt).length>=30}><Plus size={14} aria-hidden/>Ajouter une question</WorkspaceButton></div></div>
     <WorkspaceFormError message={error}/>
+    {error?<WorkspaceButton onClick={()=>{setLoading(true);setRefresh(value=>value+1);}}>Réessayer</WorkspaceButton>:null}
     {loading?<LoadingSkeleton label="Chargement des questions…" rows={2}/>:null}
     {!loading&&!questions.length&&!adding?<p className="signal-help">Aucune question enregistrée pour cette offre.</p>:null}
     {questions.map((item,index)=>item.archivedAt?<div key={item.id} className="signal-archived-question"><span><strong>Question retirée :</strong> {item.question}</span><WorkspaceButton disabled={busy} onClick={()=>void restore(item)}>Restaurer</WorkspaceButton></div>:<QuestionEditor key={item.id} number={index+1} initial={item} onChange={updated=>{setQuestions(previous=>previous.map(q=>q.id===updated.id?updated:q));onSaved?.();}} onArchive={()=>{setRefresh(value=>value+1);onSaved?.();}}/>)}
@@ -90,20 +92,20 @@ function QuestionEditor({ initial, number, onChange, onArchive }: { initial: Que
       const result = await api<{ question: Question }>(`/api/application-questions/${encodeURIComponent(initial.id)}`, "PATCH", {
         version: initial.version, question, characterLimit: limitValue(limit), answer,
       });
-      draft.save.document.confirmedElsewhere("");onChange(result.question); setHistory(null); notify({message:"Brouillon enregistré. La version précédente reste dans l’historique."});
-    } catch (problem) { setError(problem instanceof Error ? problem.message : "Brouillon non enregistré."); }
+      draft.save.document.confirmedElsewhere(JSON.stringify({question:result.question.question,limit:result.question.characterLimit?.toString()??"",answer:result.question.answer}));onChange(result.question); setHistory(null); notify({message:"Brouillon enregistré. La version précédente reste dans l’historique."});
+    } catch (problem) { setError(requestError(problem, "Brouillon non enregistré.")); }
     finally { setBusy(false); }
   }
   async function archive() {
     setBusy(true); setError("");
     try { await api(`/api/application-questions/${encodeURIComponent(initial.id)}`, "PATCH", { action: "archive", version: initial.version }); onArchive(); notify({message:"Question retirée. Ses versions restent conservées."}); }
-    catch (problem) { setError(problem instanceof Error ? problem.message : "Question non retirée."); }
+    catch (problem) { setError(requestError(problem, "Question non retirée.")); }
     finally { setBusy(false); }
   }
   async function showHistory() {
     if (history) { setHistory(null); return; }
     try { const result = await api<{ revisions: Revision[] }>(`/api/application-questions/${encodeURIComponent(initial.id)}`); setHistory(result.revisions); }
-    catch (problem) { setError(problem instanceof Error ? problem.message : "Historique indisponible."); }
+    catch (problem) { setError(requestError(problem, "Historique indisponible.")); }
   }
   return <article className="brief-question" aria-label={`Question ${number}`}>
     <div className="brief-question-heading"><h4>Question {number}</h4><div className="brief-question-tools"><button type="button" className="signal-text-action" aria-expanded={!!history} onClick={()=>void showHistory()}>{history?"Masquer les versions":"Voir les versions"}</button><button type="button" className="signal-text-action is-danger" disabled={busy||!draft.ready} onClick={()=>setConfirmArchive(true)}>Retirer la question</button></div></div>

@@ -1,4 +1,5 @@
 "use client";
+import { requestError } from "@/lib/request-error";
 
 import { useEffect, useRef, useState } from "react";
 import { Dialog } from "radix-ui";
@@ -21,14 +22,14 @@ export function useApplicationTags() {
   const [loadError, setLoadError] = useState("");
   async function load() {
     try {
-      const response = await fetch("/api/application-tags", { cache: "no-store" });
+      const response = await fetch("/api/application-tags", { cache: "no-store", signal: AbortSignal.timeout(15000) });
       if (!response.ok) throw new Error();
       setState(await response.json() as ApplicationTags); setReady(true); setLoadError("");
     } catch { setLoadError("Tags indisponibles. Réessayez."); }
   }
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/application-tags", { cache: "no-store", signal: controller.signal })
+    fetch("/api/application-tags", { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) })
       .then(async response => { if (!response.ok) throw new Error(); return await response.json() as ApplicationTags; })
       .then(result => { if (!controller.signal.aborted) { setState(result); setReady(true); setLoadError(""); } })
       .catch(() => { if (!controller.signal.aborted) setLoadError("Tags indisponibles. Réessayez."); });
@@ -36,7 +37,7 @@ export function useApplicationTags() {
     return () => { controller.abort(); window.removeEventListener(changedEvent, load); };
   }, []);
   async function change(input: Record<string, unknown>) {
-    const response = await fetch("/api/application-tags", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...input, version: state.version }) });
+    const response = await fetch("/api/application-tags", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...input, version: state.version }), signal: AbortSignal.timeout(15000) });
     const result = await response.json() as ApplicationTags & { error?: string };
     if (response.status === 409) setState({ version: result.version, tags: result.tags });
     if (!response.ok) throw new Error(result.error ?? "Tag non enregistré.");
@@ -70,7 +71,7 @@ export function ApplicationTagEditor({ jobId }: { jobId: string }) {
     if (lock.current) return;
     lock.current = true; setBusy(true); setError("");
     try { await store.change(input); done?.(); }
-    catch (problem) { setError(problem instanceof Error ? problem.message : "Tag non enregistré."); }
+    catch (problem) { setError(requestError(problem, "Tag non enregistré.")); }
     finally { lock.current = false; setBusy(false); }
   }
   return <>

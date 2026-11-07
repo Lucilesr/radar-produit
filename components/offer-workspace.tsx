@@ -1,4 +1,5 @@
 "use client";
+import { requestError } from "@/lib/request-error";
 
 import { AutosaveStatus, NoteHistory, useAutosave, useSavedForm } from "@/components/autosave";
 import { sourceNames } from "@/lib/source-catalog";
@@ -36,7 +37,7 @@ export function StatusSelect({ value, onChange, label = "Statut de candidature",
 }
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="block text-xs font-semibold text-muted-foreground"><span className="mb-1.5 block">{label}</span>{children}</label>; }
 async function requestJob(path: string, method: string, value: unknown) {
-  const response = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(value) });
+  const response = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(value), signal: AbortSignal.timeout(15000) });
   const data = await response.json() as { job?: JobRecord; error?: string };
   if (!response.ok || !data.job) throw new Error(data.error ?? "Enregistrement non confirmé."); return data.job;
 }
@@ -141,20 +142,20 @@ function PrivateBrief({ jobId }: { jobId: string }) {
   useEffect(() => {
     let active = true;
     setBrief(""); setError(""); setCopied(false); setLoading(true);
-    fetch("/api/brief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId, language }) })
+    fetch("/api/brief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId, language }), signal: AbortSignal.timeout(15000) })
       .then(async response => {
         const data = await response.json() as { error?: string; brief: string };
         if (!response.ok) throw new Error(data.error ?? "Prompt indisponible.");
         if (active) setBrief(data.brief);
       })
-      .catch(problem => { if (active) setError(problem instanceof Error ? problem.message : "Prompt indisponible."); })
+      .catch(problem => { if (active) setError(requestError(problem, "Prompt indisponible.")); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [jobId, language, refresh]);
   async function copyPrompt(){try{await navigator.clipboard.writeText(brief);setCopied(true);notify({message:"Prompt copié. Collez-le dans ChatGPT."});}catch{setError("Copie impossible : sélectionnez le texte.");notify({message:"Copie impossible : sélectionnez le texte.",tone:"error"});}}
   return <div className="signal-brief">
     <section className="signal-prompt-section" aria-label="Prompt ChatGPT"><div className="signal-prompt-heading"><div><div className="inline-help"><h3>Prompt ChatGPT</h3><HelpTooltip label="Contenu du prompt">Vos notes privées, entretiens, sources brutes et ancien profil ne sont pas inclus.</HelpTooltip></div><p className="signal-help">Annonce, parcours validé et questions. Copiez dans ChatGPT, puis collez la réponse ci-dessous.</p></div><div className="signal-prompt-actions"><div className="signal-brief-language"><ChoiceSelect label="Langue des réponses" value={language} onChange={value=>setLanguage(value as "fr"|"en")} options={[{value:"fr",label:"Français"},{value:"en",label:"Anglais professionnel simple"}]}/></div><WorkspaceButton variant="primary" disabled={loading||!brief} onClick={()=>void copyPrompt()}><Copy size={14} aria-hidden/>{copied?"Prompt copié":"Copier le prompt"}</WorkspaceButton></div></div>
-      {loading?<p className="signal-help" role="status">Chargement du prompt…</p>:null}<WorkspaceFormError message={error}/>
+      {loading?<p className="signal-help" role="status">Chargement du prompt…</p>:null}<WorkspaceFormError message={error}/>{error?<WorkspaceButton onClick={()=>setRefresh(value=>value+1)}>Réessayer</WorkspaceButton>:null}
       {!loading&&brief?<details className="signal-prompt-preview"><summary>Voir le contenu du prompt</summary><pre>{brief}</pre></details>:null}
       {!loading&&!brief&&!error?<p className="signal-help">Aucun prompt disponible pour cette offre.</p>:null}
     </section>
@@ -220,7 +221,7 @@ function InterviewEditor({ jobId, interview, onSaved, onCancel }: { jobId: strin
   const change=<K extends keyof typeof draft.value>(key:K,value:typeof draft.value[K])=>draft.setValue(current=>({...current,...(!recovered?{requestId,label,zone,start,duration,format,interviewId:interview?.id??""}:{}),[key]:value}));
   const setLabel=(value:string)=>change("label",value),setZone=(value:string)=>change("zone",value),setStart=(value:string)=>change("start",value),setDuration=(value:number)=>change("duration",value),setFormat=(value:typeof format)=>change("format",value);
   const [busy,setBusy]=useState(false),[error,setError]=useState("");
-  async function save() { if(writeLock.current)return;writeLock.current=true;setBusy(true); setError(""); try { const startAt = fromZonedInput(start, zone); const fields = { label, startAt, endAt: new Date(Date.parse(startAt) + duration * 60000).toISOString(), timeZone: zone, format }; const updated=await requestJob(interview ? `/api/interviews/${interview.id}` : "/api/interviews", interview ? "PATCH" : "POST", interview ? { action: "schedule", ...fields } : { id: draft.value.requestId, jobId, ...fields }); draft.save.document.confirmedElsewhere("");onSaved(updated); } catch (problem) { const message=problem instanceof Error ? problem.message : "Enregistrement non confirmé.";setError(message);notify({message,tone:"error"}); } finally { writeLock.current=false;setBusy(false); } }
+  async function save() { if(writeLock.current)return;writeLock.current=true;setBusy(true); setError(""); try { const startAt = fromZonedInput(start, zone); const fields = { label, startAt, endAt: new Date(Date.parse(startAt) + duration * 60000).toISOString(), timeZone: zone, format }; const updated=await requestJob(interview ? `/api/interviews/${interview.id}` : "/api/interviews", interview ? "PATCH" : "POST", interview ? { action: "schedule", ...fields } : { id: draft.value.requestId, jobId, ...fields }); draft.save.document.confirmedElsewhere("");onSaved(updated); } catch (problem) { const message=requestError(problem, "Enregistrement non confirmé.");setError(message);notify({message,tone:"error"}); } finally { writeLock.current=false;setBusy(false); } }
   return <div className="signal-form-editor">
     <AutosaveStatus save={draft.save} draft/>
     <div className="signal-section-heading"><div><h3 ref={editorTitle} tabIndex={-1}>{interview ? "Modifier le rendez-vous" : "Planifier ou dater un entretien"}</h3><p className="signal-help">La date et l’heure sont celles du fuseau choisi.</p></div></div>
@@ -245,7 +246,7 @@ function InterviewReview({ interview, onSaved, onCancel }: { interview: Intervie
   const change=<K extends keyof typeof draft.value>(key:K,value:typeof draft.value[K])=>draft.setValue(current=>({...current,[key]:value}));
   const setOutcome=(value:typeof outcome)=>change("outcome",value),setSummary=(value:string)=>change("summary",value),setStrengths=(value:string)=>change("strengths",value),setWeaknesses=(value:string)=>change("weaknesses",value),setNextAction=(value:string)=>change("nextAction",value),setFollowUp=(value:string)=>change("followUp",value);
   const [busy,setBusy]=useState(false),[error,setError]=useState("");
-  async function save() { if(writeLock.current)return;writeLock.current=true;setBusy(true); setError(""); try { const updated=await requestJob(`/api/interviews/${interview.id}`, "PATCH", { action: "review", outcome, summary, strengths, weaknesses, nextAction, followUpAt: followUp ? fromZonedInput(followUp, interview.timeZone) : "" });draft.save.document.confirmedElsewhere("");onSaved(updated); } catch (problem) { const message=problem instanceof Error ? problem.message : "Enregistrement non confirmé.";setError(message);notify({message,tone:"error"}); } finally { writeLock.current=false;setBusy(false); } }
+  async function save() { if(writeLock.current)return;writeLock.current=true;setBusy(true); setError(""); try { const updated=await requestJob(`/api/interviews/${interview.id}`, "PATCH", { action: "review", outcome, summary, strengths, weaknesses, nextAction, followUpAt: followUp ? fromZonedInput(followUp, interview.timeZone) : "" });draft.save.document.confirmedElsewhere("");onSaved(updated); } catch (problem) { const message=requestError(problem, "Enregistrement non confirmé.");setError(message);notify({message,tone:"error"}); } finally { writeLock.current=false;setBusy(false); } }
   return <div className="signal-form-editor signal-interview-review">
     <AutosaveStatus save={draft.save} draft/>
     <div className="signal-section-heading"><div><h3 ref={editorTitle} tabIndex={-1}>Bilan d’entretien</h3><p className="signal-help">{interview.label} · {formatDate(interview.startAt,interview.timeZone,true)} · Bilan privé</p></div></div>
