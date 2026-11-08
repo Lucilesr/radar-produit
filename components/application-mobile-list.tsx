@@ -70,7 +70,7 @@ export function ApplicationMobileList({ jobs, board, busy, now, onStatus, onOpen
             <span className={`workspace-badge${due || followup ? " is-warning" : ""}`}>{closed ? statusLabels[job.status] : job.status === "offer" ? "Proposition reçue" : due ? "Bilan à faire" : followup ? "Relance à faire" : next ? "Entretien planifié" : job.status === "interview" ? "Entretien à suivre" : "En attente de retour"}</span>
             {next ? <p className="signal-help">{formatDate(next.startAt, next.timeZone, true)} · {next.timeZone}</p> : null}
             <ChoiceSelect label={`Étape · ${job.company || job.title}`} value={personalColumn(job, columns)} disabled={!!busy} options={columns.filter(item => item.stage !== "other" || item.id === personalColumn(job, columns)).map(item => ({ value: item.id, label: item.label }))} onChange={target => void move(job, target)}/>
-            <WorkspaceButton id={`application-mobile-${job.id}`} variant="primary" onClick={() => onOpen(job, applicationDestination(job, now))} aria-label={`${label} · ${job.company || job.title}`}>{label}<ArrowUpRight size={16} aria-hidden/></WorkspaceButton>
+            <WorkspaceButton id={`application-mobile-${job.id}`} variant="primary" disabled={!!busy} onClick={() => onOpen(job, applicationDestination(job, now))} aria-label={`${label} · ${job.company || job.title}`}>{label}<ArrowUpRight size={16} aria-hidden/></WorkspaceButton>
           </article>;
         })}
       </CollapsibleContent>
