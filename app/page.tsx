@@ -4,7 +4,7 @@ import { listOffers, purgeExpiredTrash } from "@/lib/job-store";
 import { readCandidateProfile } from "@/lib/profile-store";
 import { loadRadarState } from "@/lib/radar-bootstrap";
 import { library as readExperienceLibrary } from "@/lib/experience-store";
-import { readRadarRoute, readProfileSection } from "@/lib/radar-navigation";
+import { readRadarRoute, profileSectionForRoute } from "@/lib/radar-navigation";
 import { ensureOnboardingDemo } from "@/lib/onboarding-demo";
 import { ensureRecruiterDemo } from "@/lib/recruiter-demo";
 import { syncDemoSources } from "@/lib/demo-scan";
@@ -27,10 +27,10 @@ export default async function Home({searchParams}: {searchParams: Promise<Record
     for (const item of Array.isArray(value) ? value : value === undefined ? [] : [value]) search.append(key, item);
   }
   const initialRoute = readRadarRoute(search.toString());
-  const initialProfileSection = readProfileSection(search.get("profile"));
+  const initialProfileSection = profileSectionForRoute(initialRoute);
   const [initialState, initialExperienceLibrary] = await Promise.all([
     loadRadarState(user.userId, { jobs: owner => listOffers(owner, undefined, true), profile: readCandidateProfile }),
-    initialRoute.tab === "profile" && initialProfileSection === "experiences" ? readExperienceLibrary(user.userId).catch(() => undefined) : Promise.resolve(undefined),
+    initialRoute.tab === "radar" && (initialProfileSection === "experiences" || initialProfileSection === "stories") ? readExperienceLibrary(user.userId).catch(() => undefined) : Promise.resolve(undefined),
   ]);
   return <RadarApp fridayDemo={demoMode === "friday"} ownerId={user.userId} userName={user.fullName ?? user.displayName} userEmail={user.email} signOutPath={chatGPTSignOutPath("/")} initialState={initialState} initialRoute={initialRoute} initialProfileSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} />;
 }

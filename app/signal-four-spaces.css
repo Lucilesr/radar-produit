@@ -1,0 +1,16 @@
+/* Four spaces reuse Signal navigation, reach, forms and dropdown primitives. */
+.radar-account-trigger{display:flex;align-items:center;gap:9px;min-height:44px;min-width:44px;width:100%;text-align:left;border-radius:5px}
+.radar-account-name{display:grid;gap:4px;min-width:0}
+.radar-account-name strong{font:600 12px/1.4 var(--font-sans);overflow:hidden;text-overflow:ellipsis}
+.radar-account-name>span{font:400 10px/1.5 var(--font-sans);color:var(--muted-foreground)}
+.radar-account-mobile{display:none}
+.radar-account-menu{min-width:220px;max-width:calc(100vw - 24px)}
+.radar-account-menu [role=menuitem]{min-height:44px;font:500 13px/1.5 var(--font-sans)}
+.mon-radar-heading,.mon-radar-reach{width:80%;max-width:72rem;margin-inline:auto;min-width:0}
+.mon-radar-heading .reach-compact{margin:0 0 20px}
+.mon-radar-tabs{flex-wrap:wrap}
+.mon-radar-tabs button{min-height:44px}
+.radar-app .radar-page:not([data-space=radar])>.workspace-page-header{width:100%;max-width:none;margin-inline:0}
+.radar-app .radar-page[data-space=radar]>.workspace-page-header{width:80%;max-width:72rem;margin-inline:auto}
+@media(max-width:1023px){.radar-account-mobile{display:block}.radar-account-mobile .radar-account-trigger{justify-content:center}.radar-account-mobile .avatar{width:34px;height:34px}.mon-radar-heading,.mon-radar-reach,.radar-app .radar-page[data-space=radar]>.workspace-page-header{width:100%}}
+@media(max-width:640px){.radar-nav{grid-template-columns:repeat(4,minmax(0,1fr))}.radar-nav button{font-size:10px}.mon-radar-tabs{gap:4px 12px}.mon-radar-tabs button{font-size:12px}.radar-account-trigger:focus-visible{outline:3px solid var(--ring);outline-offset:3px}}

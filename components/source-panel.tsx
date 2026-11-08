@@ -35,12 +35,13 @@ const initialAlertSources = new Set(["Collective", "Apec", "Free-Work", "We Work
 const initialJobboardSources = new Set(["LinkedIn Jobs", "Welcome to the Jungle", "Wellfound", "Himalayas"]);
 const allInitialSources = new Set([...initialAlertSources, ...initialJobboardSources]);
 
-export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError="",syncedSettings,onSettingsChanged,onAddOffer,onQuitSession,sessionWriting=false,active=true,headerTarget,domainContent}:{domainContent?:ReactNode;jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSync:(quiet?:boolean)=>Promise<boolean>;syncBusy?:boolean;syncError?:string;syncedSettings?:SourceSetting[];onSettingsChanged:(sources:SourceSetting[])=>void;onAddOffer?:(url:string)=>void;onQuitSession?:()=>void;sessionWriting?:boolean;active?:boolean;headerTarget?:HTMLElement|null}) {
+export function SourcePanel({displaySection="all",onSection,jobs,profile,onSave,onSync,syncBusy=false,syncError="",syncedSettings,onSettingsChanged,onAddOffer,onQuitSession,sessionWriting=false,active=true,headerTarget,domainContent}:{displaySection?:"all"|"criteria"|"channels"|"outreach";onSection?:(section:SearchSection)=>void;domainContent?:ReactNode;jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSync:(quiet?:boolean)=>Promise<boolean>;syncBusy?:boolean;syncError?:string;syncedSettings?:SourceSetting[];onSettingsChanged:(sources:SourceSetting[])=>void;onAddOffer?:(url:string)=>void;onQuitSession?:()=>void;sessionWriting?:boolean;active?:boolean;headerTarget?:HTMLElement|null}) {
   const demo=useDemoMode();
   const notify=useWorkspaceFeedback();
   const [settings,setSettings]=useState<SourceSetting[]|null>(null);
   const [seenSettings,setSeenSettings]=useState(syncedSettings);
-  useEffect(()=>{const restore=()=>{if(active){const requested=new URLSearchParams(window.location.search).get("sources");if(requested)selectSection(readSearchSection(requested));}};restore();window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);},[active]);
+  useEffect(()=>{const restore=()=>{if(active){const requested=new URLSearchParams(window.location.search).get("sources");if(requested&&!onSection)selectSection(readSearchSection(requested));}};restore();window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);},[active]);
+  useEffect(()=>{if(!active||displaySection!=="outreach")return;const frame=requestAnimationFrame(()=>{const element=document.getElementById("source-panel-outreach");revealCollapsibleAncestors(element);element?.scrollIntoView({block:"start"});});return()=>cancelAnimationFrame(frame);},[active,displaySection]);
   // « Aujourd'hui » links to one source: open its panel, then drop the parameter.
   useEffect(()=>{
     if(!active||!settings)return;
@@ -53,6 +54,7 @@ export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError
     window.history.replaceState(null,"",url.pathname+url.search+url.hash);
   },[active,settings]);
   function selectSection(next:SearchSection){
+    if(onSection&&displaySection!==next){onSection(next);return;}
     const element=document.getElementById("source-panel-"+next);
     revealCollapsibleAncestors(element);
     requestAnimationFrame(()=>element?.scrollIntoView({block:"start"}));
@@ -154,10 +156,10 @@ export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError
       <WorkspaceButton variant="primary" busy={syncBusy} disabled={busy||!settings||!hasSearchedRole(searchPreferences(profile.searchPreferences))} onClick={()=>void sync()}><RefreshCw size={14} aria-hidden/>Actualiser maintenant</WorkspaceButton>
       <Popover><PopoverTrigger asChild><WorkspaceButton variant="quiet" aria-label="Réglages d’actualisation"><MoreHorizontal size={18} aria-hidden/></WorkspaceButton></PopoverTrigger><PopoverContent align="end"><ChoiceSelect label="Actualisation" value={refreshMode(profile.refreshMode)} options={[{value:"on_open",label:refreshModeLabels.on_open},{value:"manual",label:refreshModeLabels.manual}]} onChange={mode=>void saveRefreshMode(mode)} disabled={demo||busy}/></PopoverContent></Popover>
     </div>,headerTarget):null}
-    <div id="source-panel-criteria" className="source-subpanel">
-      <SearchCriteriaPanel domainContent={domainContent} active={active} profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
+    <div id="source-panel-criteria" className="source-subpanel" hidden={displaySection!=="all"&&displaySection!=="criteria"}>
+      <SearchCriteriaPanel domainContent={domainContent} active={active&&(displaySection==="all"||displaySection==="criteria")} profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
     </div>
-    <div id="source-panel-channels" className="source-subpanel">
+    <div id="source-panel-channels" className="source-subpanel" hidden={displaySection!=="all"&&displaySection!=="channels"&&displaySection!=="outreach"}>
       <WorkspacePanelHeader id="source-settings-title" title={<span className="source-title-line"><span>Sources suivies</span>{summary?<span className="source-summary">{summary}</span>:null}</span>} hint={demo?<HelpTooltip label="Sources fictives">Les balayages sont fictifs : aucun flux externe n’est contacté. L’ajout d’alertes Collective reste désactivé dans la démo.</HelpTooltip>:undefined} actions={<WorkspaceButton variant="secondary" aria-haspopup="dialog" disabled={!settings} onClick={()=>setAddFilter("all")}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>
       <WorkspaceFormError message={syncError}/><WorkspaceFormError message={loadError}/>
       {settings&&!followedSources.length?<section className="source-empty" aria-labelledby="source-empty-title">
@@ -174,13 +176,13 @@ export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError
       {settings&&suggested.length?<div className="source-suggestions" role="group" aria-label="Sources suggérées pour vos critères"><span className="signal-help">Suggérées pour vos critères :</span>{suggested.map(source=><WorkspaceButton key={source.name} variant="quiet" disabled={addingSource!==null} busy={addingSource===source.name} onClick={event=>void addSuggested(source.name,event.currentTarget)}><Plus size={14} aria-hidden/>{source.name}</WorkspaceButton>)}</div>:null}
       {addFilter===null?<WorkspaceFormError message={addSourceError}/>:null}
     </div>
-    <ExpandableSection title="Autres pistes" className="source-research signal-source-research">
+    <div hidden={displaySection!=="all"&&displaySection!=="channels"&&displaySection!=="outreach"}><ExpandableSection title="Autres pistes" className="source-research signal-source-research">
     <div id="source-panel-outreach" className="source-subpanel">
       <section className="signal-source-panel" aria-labelledby="source-strategies-title"><WorkspacePanelHeader id="source-strategies-title" title="Pistes hors annonces"/><p className="signal-help">Des pistes à explorer et des messages à adapter vous-même.</p><div className="signal-source-strategies"><Strategy title="Entreprises ciblées" text="Constituer une liste de SaaS, fintech et acteurs publics/ESN compatibles avec votre expérience. Vérifier leurs pages carrières et pays autorisés, puis préparer une candidature spontanée centrée sur un problème concret de delivery."/><Strategy title="Réseau & communautés" text="Anciens collègues, agences, clients et communautés produit : demander une introduction à un Head of Product ou un recruteur, pas seulement “avez-vous une offre ?”. Repérer ateliers et rencontres où une conversation peut déboucher sur une recommandation."/><Strategy title="Recruteurs spécialisés" text="Présenter une disponibilité claire : PO/PM delivery, tarif à préciser selon la mission, remote prioritaire, présence exceptionnelle négociable. Demander quelles équipes acceptent déjà cette organisation, même sans annonce publiée."/></div><div className="signal-source-message"><h3>Message de mise en relation à adapter</h3><p>« Je cherche une mission PO/PM orientée delivery de produits métiers complexes. Dans cet exemple fictif, j’ai contribué au cadrage d’un produit SaaS. Connaissez-vous une équipe remote qui aurait besoin de structurer son backlog, sécuriser ses livraisons ou renforcer sa recette ? Je suis ouverte aux échanges, même si le besoin n’est pas encore publié. »</p></div></section>
       <section className="source-manual-heading" aria-labelledby="source-manual-title"><h2 id="source-manual-title">Ajouts volontaires</h2><p>Pour les annonces ou posts que vous choisissez d’ajouter vous-même.</p></section>
       {cards(["manual"])}
     </div>
-    </ExpandableSection>
+    </ExpandableSection></div>
     {settings?<SourceAddSheet open={addFilter!==null} initialFilter={addFilter??"all"} sources={[...jobboardCatalog,...alertCatalog]} followed={name=>sourceVisible(name,allInitialSources)} profile={profile} adding={addingSource} error={addSourceError} onAdd={async name=>{await addSource(name);}} onAddSite={addCustomSite} onClose={()=>{setAddFilter(null);setAddSourceError("");}}/>:null}
     <SourceDetail sessionWriting={sessionWriting} onQuitSession={onQuitSession?()=>{setDetailSource(null);onQuitSession();}:undefined} key={detailSource?.name ?? "closed"} onReturnFocus={restoreDetailFocus} source={detailSource} setting={detailSource?settings?.find(item=>item.source===detailSource.name):undefined} jobs={jobs} profile={profile} onClose={()=>setDetailSource(null)} onSaveSearch={onSave} onSaved={onSourceSaved} onRemove={source=>{setDetailSource(null);setRemovingSource(source);}} onVisit={visitSource} onAddOffer={onAddOffer?url=>{setDetailSource(null);onAddOffer(url);}:undefined}/>
     <SourceRemovalDialog focusAfterCancel={restoreDetailFocus} source={removingSource} onClose={()=>setRemovingSource(null)} onRemoved={updated=>{onSourceSaved(updated);setRemovingSource(null);notify({message:`${updated.source} supprimé des sources suivies.`});}} focusAfterRemoval={()=>document.querySelector<HTMLElement>("#source-panel-channels button")?.focus()}/>

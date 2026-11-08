@@ -1123,3 +1123,18 @@ Les anciens compteurs, l’agenda séparé et la portée compacte ne sont plus d
 | clavier / mouvement réduit / mobile | dispositif ou préférence | boutons Signal, aide à la demande, focus après repli | mêmes actions à 390 px | oui |
 
 Les reports sont privés dans profiles.data, protégés des anciens formulaires. Aucune migration, aucun service tiers. Les bilans et termes ne sont pas recopiés dans une histoire sans saisie volontaire.
+
+## P5 — navigation en quatre espaces
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| navigation principale | ouverture de Radar | Aujourd’hui, Offres, Candidatures, Mon radar | quatre espaces | oui |
+| critères / sources / carnet | section de Mon radar choisie | un panneau à la fois, portée en en-tête | onglets et réglages existants | oui |
+| compte | avatar ouvert | préférences, journal, sauvegarde et connexion | menu accessible au clavier et au toucher | oui |
+| leçons | onglet Mes leçons dans Candidatures | bilans privés et liens de dossier | mêmes actions de bilan et carnet | oui |
+| ancien lien | URL du profil, de la recherche ou section historique | bonne section, adresse canonique | reprise directe | oui |
+| brouillon existant | changement d’espace pendant une édition | panneau et mécanisme de brouillon conservés ; le niveau reste à valider avec Terminé | revenir selon le formulaire | oui |
+| lecture / erreur | API du panneau indisponible | états et derniers choix de son composant d’origine | réessayer | oui |
+| mobile / clavier / mouvement réduit | vue à 390 px ou préférence | quatre entrées, menu et contrôles Signal | mêmes actions et focus visible | oui |
+
+Les anciennes listes qui placent le journal, les leçons ou les critères dans les menus Profil/Recherche décrivent désormais l’historique : les destinations en vigueur sont celles de P5. Le contenu et les droits ne changent pas. C4 suit ce lot, puis L6 sur les quatre nouveaux espaces.

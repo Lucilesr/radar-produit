@@ -9,15 +9,16 @@ export function useRadarNavigation(initialRoute: RadarRoute = defaultRoute) {
   const [route, setRoute] = useState(initialRoute);
   const latest = useRef(route);
   useEffect(() => {
-    const restore = (event?: PopStateEvent) => { const next = readRadarRoute(window.location.search); latest.current = next; setRoute(next); if(event)requestAnimationFrame(()=>{const detail=document.getElementById("opportunity-detail-title");(detail?.getClientRects().length?detail:document.getElementById("workspace-title"))?.focus({preventScroll:true});}); };
+    const restore = (event?: PopStateEvent) => { const next = readRadarRoute(window.location.search); const search=radarSearch(next,window.location.search);if(search!==window.location.search)window.history.replaceState(null,"",window.location.pathname+search+window.location.hash);latest.current = next; setRoute(next); if(event)requestAnimationFrame(()=>{const detail=document.getElementById("opportunity-detail-title");(detail?.getClientRects().length?detail:document.getElementById("workspace-title"))?.focus({preventScroll:true});}); };
     restore(); window.addEventListener("popstate", restore);
     return () => window.removeEventListener("popstate", restore);
   }, []);
   function navigate(patch: Partial<RadarRoute>, replace = false) {
     const next = { ...latest.current, ...patch };
+    if(patch.tab&&patch.tab!==latest.current.tab&&!("section" in patch))delete next.section;
     const url = window.location.pathname + radarSearch(next, window.location.search);
     if (url !== window.location.pathname + window.location.search) window.history[replace ? "replaceState" : "pushState"](null, "", url);
-    latest.current = next; setRoute(next);
+    const canonical=readRadarRoute(radarSearch(next,window.location.search));latest.current = canonical; setRoute(canonical);
   }
   return { route, navigate };
 }
