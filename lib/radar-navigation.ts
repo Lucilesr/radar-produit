@@ -7,7 +7,7 @@ export type SearchSection="criteria"|"channels"|"outreach";
 export function readSearchSection(value:string|null):SearchSection{return value==="channels"||value==="outreach"?value:"criteria";}
 const sectionAliases:Record<string,RadarSection|"account">={criteria:"criteria",search:"criteria",channels:"sources",sources:"sources",outreach:"outreach",experiences:"carnet",experience:"carnet",carnet:"carnet",stories:"stories",documents:"documents",months:"months",portee:"reach",reach:"reach",lessons:"lessons",account:"account"};
 export function radarSection(value:string|null):RadarSection|"account"|undefined{return value&&Object.hasOwn(sectionAliases,value)?sectionAliases[value]:undefined;}
-export type RadarRoute={tab:RadarTab;section?:RadarSection;filter:"to_review"|"selected"|"good_matches"|"trash"|"archived";query:string;offer?:string;view:"offer"|"application"|"interviews"|"brief"};
+export type RadarRoute={tab:RadarTab;source?:string;section?:RadarSection;filter:"to_review"|"selected"|"good_matches"|"trash"|"archived";query:string;offer?:string;view:"offer"|"application"|"interviews"|"brief"};
 export const defaultRoute:RadarRoute={tab:"dashboard",filter:"to_review",query:"",view:"offer"};
 /** Resolve legacy bookmarks before rendering, so direct visits and Back agree. */
 export function readRadarRoute(search:string):RadarRoute{
@@ -23,7 +23,7 @@ export function readRadarRoute(search:string):RadarRoute{
  else if(!oldTab&&explicit){tab="radar";section=explicit;}
  if(section==="account"){tab="account";section=undefined;}
  if(section==="lessons")tab="pipeline";
- return {tab,...(section?{section}:{}),filter:valid(params.get("filter"),["to_review","selected","good_matches","trash","archived"] as const,"to_review"),query:(params.get("q")||"").slice(0,200),offer:params.get("offer")||undefined,view};
+ return {tab,...(section?{section}:{}),...(tab==="offers"&&params.get("source")?.trim()?{source:params.get("source")!.trim().slice(0,100)}:{}),filter:valid(params.get("filter"),["to_review","selected","good_matches","trash","archived"] as const,"to_review"),query:(params.get("q")||"").slice(0,200),offer:params.get("offer")||undefined,view};
 }
 export function radarSearch(route:RadarRoute,search=""){
  const params=new URLSearchParams(search);
@@ -31,7 +31,8 @@ export function radarSearch(route:RadarRoute,search=""){
  params.set("tab",route.tab);
  if(route.tab==="radar"&&route.section&&route.section!=="criteria")params.set("section",route.section);
  if(route.tab==="pipeline"&&route.section==="lessons")params.set("section","lessons");
- if(route.tab!=="radar"||!["sources","outreach"].includes(route.section??""))params.delete("source");
+ if(route.tab==="offers"){if(route.source)params.set("source",route.source);else params.delete("source");}
+ else if(route.tab!=="radar"||!["sources","outreach"].includes(route.section??""))params.delete("source");
  if(route.filter!=="to_review")params.set("filter",route.filter);
  if(route.query)params.set("q",route.query);
  if(route.offer){params.set("offer",route.offer);if(route.view!=="offer")params.set("view",route.view);}

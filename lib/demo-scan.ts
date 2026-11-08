@@ -11,7 +11,7 @@ const examples:JobInput[]=["Aurore Atelier","Rivage Studio","Clairière Produit"
 }));
 
 /** First-party fictional fixtures only: this adapter performs no external requests. */
-export async function syncDemoSources(userId:string,mode:DemoScenario|"full",requested?:AutomaticSource){
+export async function syncDemoSources(userId:string,mode:DemoScenario|"full",requested?:AutomaticSource,retry=!!requested){
   if(!userId.startsWith("demo:"))throw new Error("Le scénario exige un compte fictif.");
   const now=new Date().toISOString(),readings:SourceReading[]=[];
   const settings=await listSourceSettings(userId);
@@ -20,7 +20,7 @@ export async function syncDemoSources(userId:string,mode:DemoScenario|"full",req
     if(previous?.selected===false||previous?.state==="paused"||(source==="Jobgether"&&previous?.selected!==true)){
       readings.push({source,state:"paused",ok:true,total:0,imported:0,deduplicated:0,matchedIds:[]});continue;
     }
-    const failed=mode==="scan-error"||(mode==="scan-partial"&&source==="Jobgether"&&!requested);
+    const failed=mode==="scan-error"||mode==="scan-auto-error"||(mode==="scan-partial"&&source==="Jobgether"&&!retry);
     const reading:SourceReading={source,state:failed?"error":"ok",ok:!failed,total:0,imported:0,deduplicated:0,matchedIds:[],...(failed?{error:"Panne fictive de cette source. Vous pouvez réessayer."}:{lastSyncedAt:now})};
     if(!failed){
       // The repeated first item creates a real deduplication through the normal private write path.

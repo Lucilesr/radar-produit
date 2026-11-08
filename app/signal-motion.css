@@ -43,3 +43,9 @@ html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-
 }
 
 .signal-progress.is-segmented{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;height:8px;background:transparent;border-radius:0;overflow:visible}.signal-progress.is-segmented>span{width:100%;background:var(--signal-line);border-radius:var(--radius);overflow:hidden}.signal-progress.is-segmented>span>span{display:block;height:100%;background:var(--signal-petrol-mid)}.signal-progress-finished.is-segmented>span{background:var(--signal-petrol-ink)}.signal-progress-finished.is-segmented>span>span{background:var(--signal-energy)}
+
+/* New echoes pulse once and stay visible, including reduced motion. */
+@keyframes radar-echo-arrive{0%{opacity:.25;stroke-width:5px}60%{opacity:1;stroke-width:2px}100%{opacity:1;stroke-width:0}}
+.signal-radar-echo.is-new{stroke:currentColor;animation:radar-echo-arrive 900ms ease-out 1}
+@media(prefers-reduced-motion:reduce){.signal-radar-echo.is-new{animation:none}}
+html[data-motion=reduced] .signal-radar-echo.is-new{animation:none}

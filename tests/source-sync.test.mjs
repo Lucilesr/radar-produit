@@ -4,7 +4,7 @@ import test from "node:test";
 import ts from "typescript";
 function moduleUrl(name){return "data:text/javascript;base64,"+Buffer.from(ts.transpileModule(readFileSync(new URL(`../lib/${name}.ts`,import.meta.url),"utf8"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText).toString("base64");}
 const {scanMatches,summarizeScan,mergeScan,readScanSummary,mergeSourceSettings}=await import(moduleUrl("source-sync"));
-const {demoScenario,demoScenarioNotice}=await import(moduleUrl("demo-scenarios"));
+const {demoScenario,demoScenarioNotice,demoAutoScan}=await import(moduleUrl("demo-scenarios"));
 const at="2026-11-07T17:00:00Z";
 const reading=(source,extra={})=>({source,state:"ok",ok:true,total:4,imported:2,deduplicated:2,matchedIds:[`${source}-1`],...extra});
 test("Q2 : les compteurs proviennent des lectures et les offres proches sont uniques",()=>{
@@ -42,4 +42,10 @@ test("Q2 : une lecture de source ancienne n’efface pas une modification récen
 test("Q2 : les scénarios de démo sont fermés et explicitement annoncés",()=>{
  assert.equal(demoScenario("scan-partial"),"scan-partial");assert.equal(demoScenario("arbitraire"),"full");assert.equal(demoScenario({}),"full");
  assert.match(demoScenarioNotice("scan-partial"),/fictif.*panne/);assert.match(demoScenarioNotice("scan-reduced"),/mouvements réduits/);
+});
+
+test("Q2b : seuls les deux scénarios fictifs explicites autorisent l’actualisation à l’ouverture",()=>{
+ for(const mode of ["scan-auto","scan-auto-error"]){assert.equal(demoScenario(mode),mode);assert.equal(demoAutoScan(mode),true);}
+ for(const mode of [undefined,"full","scan","scan-error","scan-partial","onboarding","__proto__"]){assert.equal(demoAutoScan(mode),false);}
+ assert.match(demoScenarioNotice("scan-auto"),/ouverture/);assert.match(demoScenarioNotice("scan-auto-error"),/panne simulée/);
 });

@@ -65,3 +65,7 @@ Le [glossaire](glossaire.md) précise les termes employés.
 Dans un lot contenant une offre Senior ou Lead, Radar peut vous demander le niveau visé. Cliquez sur Confirmé, Senior, Lead ou Peu importe pour enregistrer ce choix ; l’ouverture du lot ne modifie aucun critère. Dans l’éditeur des critères, les changements attendent toujours « Terminé ».
 
 Un entretien planifié propose de préparer une histoire dans le carnet. Après un bilan privé, « En faire une histoire ? » ouvre un thème sans recopier automatiquement vos textes. Le lot terminé peut proposer une source manuelle de la file commune. Les termes restent sous leur expérience validée. Chaque « Plus tard » masque sa proposition sept jours sur le compte ; recharger ou changer d’écran ne la rétablit pas.
+
+### Balayage vivant
+
+« Actualiser » ouvre Balayage : chaque source passe de l’attente à la lecture, puis au résultat. Une source en erreur a son propre bouton Réessayer. Le radar conserve un écho par offre correspondant aux critères ; les nouvelles pulsent brièvement, sauf si les animations sont réduites. « Voir ses offres » ouvre un filtre de source effaçable, sans modifier le lot du jour. Trois sources à visiter sont affichées ; les autres et les sources en pause se déplient à la demande. L’actualisation automatique à l’ouverture reste silencieuse.

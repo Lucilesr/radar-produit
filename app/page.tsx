@@ -8,6 +8,7 @@ import { readRadarRoute, profileSectionForRoute } from "@/lib/radar-navigation";
 import { ensureOnboardingDemo } from "@/lib/onboarding-demo";
 import { ensureRecruiterDemo } from "@/lib/recruiter-demo";
 import { syncDemoSources } from "@/lib/demo-scan";
+import { demoAutoScan } from "@/lib/demo-scenarios";
 import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
@@ -32,5 +33,5 @@ export default async function Home({searchParams}: {searchParams: Promise<Record
     loadRadarState(user.userId, { jobs: owner => listOffers(owner, undefined, true), profile: readCandidateProfile }),
     initialRoute.tab === "radar" && (initialProfileSection === "experiences" || initialProfileSection === "stories") ? readExperienceLibrary(user.userId).catch(() => undefined) : Promise.resolve(undefined),
   ]);
-  return <RadarApp fridayDemo={demoMode === "friday"} ownerId={user.userId} userName={user.fullName ?? user.displayName} userEmail={user.email} signOutPath={chatGPTSignOutPath("/")} initialState={initialState} initialRoute={initialRoute} initialProfileSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} />;
+  return <RadarApp autoScanDemo={demoAutoScan(demoMode)} fridayDemo={demoMode === "friday"} ownerId={user.userId} userName={user.fullName ?? user.displayName} userEmail={user.email} signOutPath={chatGPTSignOutPath("/")} initialState={initialState} initialRoute={initialRoute} initialProfileSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} />;
 }
