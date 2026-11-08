@@ -1,4 +1,5 @@
 import {applicationMetadataRows,applicationMetadataRow} from "./application-metadata-store";
+import {applicationFollowup} from "./application-followup";
 import {readCare} from "./application-care";
 import {activityDb,activityStatement,jobActivityStatement} from "./activity-store";
 import {jobActivity} from "./activity";
@@ -76,25 +77,28 @@ export async function listOffers(userId: string, limit?: number, includeDeleted 
     interviewsByJob.set(row.jobId, entries);
   }
   const careByJob=new Map(metadataRows.filter(row=>row.key.startsWith("application:care:")).map(row=>[row.key.slice(17),readCare(row.value,row.version)]));
+  const followupByJob=new Map(metadataRows.filter(row=>row.key.startsWith("application:followup:")).map(row=>[row.key.slice(21),row]));
   return rows.map(row => {
-    const job = rowToJob(row);
+    const job = rowToJob(row),events=interviewsByJob.get(row.id)??[],followup=followupByJob.get(row.id);
     const assessment = assessJob(job, preferences);
     return { ...job, matchScore: assessment.score, matchTier: assessment.tier,
       reasons: assessment.reasons, flags: assessment.flags, ...scoreFields(assessment),
       candidateNote: typeof notes[job.id] === "string" ? notes[job.id] : undefined,
       applicationCare:careByJob.get(job.id),
-      interviews: interviewsByJob.get(job.id) ?? [] };
+      applicationFollowup:applicationFollowup({...job,interviews:events},followup?.value,followup?.version??0),
+      interviews: events };
   }).filter(job => !!job.deletedAt || showJobgetherOffer(job.source, job.matchScore, preferences.minimumMatchScore, job.status, job.reviewState));
 }
 
 export async function getOffer(userId: string, id: string, includeDeleted = false) {
   const db = getDb();
-  const [rows, profileRows, interviewRows, savedNote,careRow] = await Promise.all([
+  const [rows, profileRows, interviewRows, savedNote,careRow,followupRow] = await Promise.all([
     db.select().from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.id, id), includeDeleted ? undefined : isNull(jobs.deletedAt))).limit(1),
     db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1),
     db.select().from(interviews).where(and(eq(interviews.userId, userId), eq(interviews.jobId, id))).orderBy(desc(interviews.startAt)),
     workspaceNoteValue(userId, id),
     applicationMetadataRow(userId,`application:care:${id}`),
+    applicationMetadataRow(userId,`application:followup:${id}`),
   ]);
   if (!rows[0]) return undefined;
   const job = rowToJob(rows[0]);
@@ -104,6 +108,7 @@ export async function getOffer(userId: string, id: string, includeDeleted = fals
     reasons: assessment.reasons, flags: assessment.flags, ...scoreFields(assessment),
     candidateNote: savedNote ?? (typeof notes[id] === "string" ? notes[id] : undefined),
     applicationCare:careRow?readCare(careRow.value,careRow.version):undefined,
+    applicationFollowup:applicationFollowup({...job,interviews:interviewRows.map(rowToInterview)},followupRow?.value,followupRow?.version??0),
     interviews: interviewRows.map(rowToInterview) };
 }
 

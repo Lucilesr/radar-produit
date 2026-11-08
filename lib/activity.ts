@@ -19,3 +19,5 @@ export function activityCursor(value:unknown):[string,string]|null{
  if(typeof value!=="string"||!value||value.length>1000)return null;
  try{const parsed=JSON.parse(atob(value));return Array.isArray(parsed)&&parsed.length===2&&typeof parsed[0]==="string"&&Number.isFinite(Date.parse(parsed[0]))&&typeof parsed[1]==="string"&&parsed[1].length<=250?parsed as [string,string]:null;}catch{return null;}
 }
+
+export async function activityReceiptId(userId:string,action:string,objectId:string,stamp:string){return [...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify([userId,action,objectId,stamp]))))].map(byte=>byte.toString(16).padStart(2,"0")).join("");}

@@ -69,3 +69,7 @@ Aucune notification externe, transmission à un tiers, mesure d’usage tierce n
 ## C1 livré — préparation propre à chaque candidature
 
 La jauge sur quatre est désormais reliée à quatre confirmations explicites, disponibles dans Préparer / brief et Ma candidature. Le CV global ne compte pas comme CV adapté. Trois sur quatre donne le libellé Soignée et le point manquant ; la jauge reste facultative et n’agit pas sur le statut. Tableau, Kanban et accueil montrent les mêmes choix confirmés. Les cases sont versionnées et sauvegardées ; un passage à trois repères écrit application_cared dans L1, sans texte privé. Recette : `c1-candidature/README.md`.
+
+## C2 livré — relances J+7 et fuseaux
+
+Les candidatures envoyées/en attente, sans entretien non annulé déjà enregistré, disposent d’une proposition J+7 depuis leur date d’envoi. Date modifiable sur Terminé, rappel retirable et déclaration faite persistante via L1. Aujourd’hui et Q3 utilisent les mêmes échéances ; une seconde relance reste facultative. Propositions reçues et dossiers clos exclus. Dates d’envoi affichées selon le fuseau de l’appareil, sans Indian/Mauritius imposé. Calendrier Signal partagé porté à44px sur mobile. Les limites historiques constatées dans l’audit restent décrites ci-dessus ; elles sont désormais corrigées pour ce périmètre. Recette : `c2-relances/README.md`.

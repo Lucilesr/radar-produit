@@ -35,3 +35,7 @@ La poignée du Kanban mesure 32 px sur bureau et 44 px sur mobile. Le titre rest
 ## Kanban et sauvegarde des saisies — 28 octobre
 
 Les contrôles compacts de suivi et les indicateurs de sauvegarde remplacent les confirmations répétées. Les colonnes personnelles restent liées aux étapes métier. Référence de comportement et de conservation : [recette de personnalisation et autosave](kanban-personnalisation-autosave-2026-10-28.md).
+
+## C2 — calendrier partagé sur mobile
+
+Le DateTimePicker existant est réutilisé pour les relances. Le calendrier partagé garde le même composant et ses comportements ; à390px, ses jours et sa navigation passent de36à44px par la variable de cellule, sans débordement. Focus de dialogue, confirmation sur Terminé et contrôles indisponibles pendant l’écriture vérifiés dans le lot.

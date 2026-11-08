@@ -1,4 +1,5 @@
 "use client";
+import {useDisplayTimeZone} from "@/components/use-display-time-zone";
 
 import {ApplicationCareBadge} from "@/components/application-care";
 import { CalendarDays, Pencil, Plus } from "lucide-react";
@@ -14,7 +15,7 @@ import { tagsForJob } from "@/lib/application-tags";
 import { useEffect, useState } from "react";
 
 export function ApplicationKanban({ jobs, now, busy, onStatus, onOpen, board = defaultBoard(), onColumn }: { jobs: JobRecord[]; now: number; busy: string | null; onStatus: (job: JobRecord, status: JobStatus, columnId?: string) => Promise<boolean>; onOpen: (job: JobRecord, view?: WorkspaceView) => void; board?: PersonalBoard; onColumn?: (column?: PersonalColumn) => void }) {
-  const tagStore = useApplicationTags();
+  const tagStore = useApplicationTags(),displayZone=useDisplayTimeZone();
   const [tagFilter, setTagFilter] = useState("");
   useEffect(() => { if (tagStore.ready && tagFilter && !tagStore.tags.some(tag => tag.id === tagFilter)) setTagFilter(""); }, [tagFilter, tagStore.ready, tagStore.tags]);
   const selectedTag = tagStore.tags.find(tag => tag.id === tagFilter);
@@ -31,10 +32,10 @@ export function ApplicationKanban({ jobs, now, busy, onStatus, onOpen, board = d
           const interview = column.stage === "interviews";
           const due = !terminalStatuses.includes(job.status) && job.interviews?.some(event => reviewDue(event, now));
           return <DraggableApplicationCard key={job.id} job={job} column={column.id} busy={!!busy} title={<h3><button type="button" aria-label={`Ouvrir la candidature : ${job.title} · ${job.company || "Entreprise à confirmer"}`} onClick={() => onOpen(job, applicationDestination(job, now))}><span className="application-card-title-text">{job.title}</span></button></h3>}>
-            <p className="application-card-company">{job.company || "Entreprise à confirmer"}</p><ApplicationCareBadge job={job}/>
+            <p className="application-card-company">{job.company || "Entreprise à confirmer"}</p><ApplicationCareBadge job={job}/>{job.applicationFollowup?.eligible&&job.applicationFollowup.dueAt&&!job.applicationFollowup.doneAt&&Date.parse(job.applicationFollowup.dueAt)<=now?<p className="signal-help">Relance à faire · {formatDate(job.applicationFollowup.dueAt,displayZone)}</p>:null}
             {tagsForJob(tagStore.tags, job.id).length ? <div className="application-card-tags">{tagsForJob(tagStore.tags, job.id).map(tag => <TagBadge key={tag.id} tag={tag} selected={tagFilter === tag.id} onClick={() => setTagFilter(current => current === tag.id ? "" : tag.id)}/>)}</div> : null}
             {job.deletedAt ? <p className="signal-help">Offre en corbeille · suivi conservé</p> : null}
-            <div className="application-card-date"><span>Envoyée le</span><span className={`application-age${age ? ` is-${age.tone}` : ""}`}>{job.appliedAt ? formatDate(job.appliedAt, "Indian/Mauritius") : "Date inconnue"}</span></div>
+            <div className="application-card-date"><span>Envoyée le</span><span className={`application-age${age ? ` is-${age.tone}` : ""}`}>{job.appliedAt ? formatDate(job.appliedAt,displayZone) : "Date inconnue"}</span></div>
             {interview ? <div className="application-card-step">
               <span className="application-card-round">{step.rank ? `${step.rank === 1 ? "1er" : `${step.rank}e`} entretien` : "Entretien à dater"}</span>
               {due ? <span className="workspace-badge is-warning">Bilan à faire</span> : null}

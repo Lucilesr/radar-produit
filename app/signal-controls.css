@@ -126,3 +126,5 @@ input[type=checkbox], input[type=radio] { accent-color: var(--primary); }
 .signal-toast-actions{display:flex;flex-wrap:wrap;gap:4px 14px}
 .signal-toast-actions .signal-toast-link{min-height:42px}
 @media(max-width:640px){.signal-toast-actions .signal-toast-link{min-height:44px}}
+/* Shared date picker: seven 44 px targets fit a 390 px viewport. */
+@media(max-width:700px){.date-picker-popover .rdp-root{--cell-size:44px}}

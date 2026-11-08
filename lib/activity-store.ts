@@ -1,6 +1,8 @@
 import {env} from "cloudflare:workers";
 import type {ActivityAction,ActivityData,ActivityEvent} from "./activity";
-import {activityCursor} from "./activity";
+import {declareApplicationFollowup} from "./application-followup-store";
+export {activityReceiptId} from "./activity";
+import {activityCursor,activityReceiptId} from "./activity";
 export const activityDb=()=>env.DB as D1Database;
 export function activityPrepared(query:{toSQL:()=>{sql:string;params:unknown[]}}){const value=query.toSQL();return activityDb().prepare(value.sql).bind(...value.params);}
 /** Gate SQL comes only from reviewed application code; every value stays bound. */
@@ -18,13 +20,14 @@ export async function readActivity(userId:string,cursor?:string|null){
  const items=rows.slice(0,20).map(row=>({...row,data:JSON.parse(row.data) as ActivityData})),last=items.at(-1);
  return {items,cursor:rows.length>20&&last?btoa(JSON.stringify([last.createdAt,last.id])):null};
 }
-export async function activityReceiptId(userId:string,action:string,objectId:string,stamp:string){return [...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify([userId,action,objectId,stamp]))))].map(byte=>byte.toString(16).padStart(2,"0")).join("");}
+
 /** Only the two explicit declarations not already covered by a business write enter here. */
 export async function declareActivity(userId:string,raw:unknown,now=new Date()){
  if(!raw||typeof raw!=="object"||Array.isArray(raw))throw new Error("Action invalide.");
- const command=raw as {action:string;objectId:string;stamp?:string;startedAt?:string;minutes?:number};
+ const command=raw as {action:string;objectId:string;stamp?:string;appliedFor?:string;startedAt?:string;minutes?:number};
  if(typeof command.objectId!=="string"||!command.objectId||command.objectId.length>100)throw new Error("Action invalide.");
  const createdAt=now.toISOString();
+ if(command.action==="followup_done"&&command.objectId.startsWith("application:"))return declareApplicationFollowup(userId,command.objectId.slice(12),command.stamp,command.appliedFor,now);
  if(command.action==="followup_done"){
   const row=await activityDb().prepare("SELECT i.job_id,i.state,i.data,j.status,j.source FROM interviews i JOIN jobs j ON j.id=i.job_id AND j.user_id=i.user_id WHERE i.user_id=? AND i.id=?").bind(userId,command.objectId).first<{job_id:string;state:string;data:string;status:string;source:string}>();
   const at=row?JSON.parse(row.data).followUpAt:null;

@@ -1,3 +1,4 @@
+import {dueFollowups,confirmedSessionFollowups} from "./application-followup";
 import type { JobRecord } from "./types";
 
 export type SessionStep = "triage" | "followups" | "sources" | "validation";
@@ -13,8 +14,8 @@ export function sessionSnapshot(jobs:readonly JobRecord[],sources:readonly Sessi
   return {decisions:Object.fromEntries(jobs.map(job=>[job.id,decision(job)])),visits:Object.fromEntries(sources.map(source=>[source.source,source.lastVisitedAt??""])),approved:facts.filter(fact=>fact.validation==="approved"&&(!fact.parentId||facts.find(parent=>parent.id===fact.parentId)?.validation!=="rejected")).map(fact=>fact.id)};
 }
 export function sessionVisits(sources:readonly SessionSource[],modeOf:(source:string)=>string|undefined,now:number){return sources.filter(source=>source.selected!==false&&source.state!=="paused"&&["web","research","email"].includes(modeOf(source.source)??"")&&(!Number.isFinite(Date.parse(source.lastVisitedAt??""))||now-Date.parse(source.lastVisitedAt!)>5*86400000));}
-/** Before C2, only explicitly dated interview follow-ups exist. No inferred or automatic sending. */
-export function sessionFollowups(jobs:readonly JobRecord[],now:number,sent:readonly string[]=[]){return jobs.filter(job=>!["rejected","withdrawn","closed","offer"].includes(job.status)).flatMap(job=>(job.interviews??[]).filter(event=>event.state==="reviewed"&&event.followUpAt&&!(event.followUpDoneAt&&event.followUpDoneFor===event.followUpAt)&&Date.parse(event.followUpAt)<=now&&!sent.includes(event.id)).map(event=>({id:event.id,job,at:event.followUpAt!}))).sort((a,b)=>a.at.localeCompare(b.at));}
+/** Shared reminders, with no automatic sending. */
+export const sessionFollowups=dueFollowups;
 export function sessionSteps(lotSize:number,due:number,visits:number,facts:readonly SessionFact[]):SessionStep[]{return [...(lotSize?["triage" as const]:[]),...(due?["followups" as const]:[]),...(visits?["sources" as const]:[]),...(facts.some(fact=>fact.validation==="proposed"&&(!fact.parentId||facts.find(parent=>parent.id===fact.parentId)?.validation!=="rejected"))?["validation" as const]:[])];}
 export function sessionEstimate(lotSize:number,due:number,visits:number){return lotSize+3*(due+Math.min(1,visits));}
 export function sessionProgress(session:RadarSession,jobs:readonly JobRecord[],sources:readonly SessionSource[],facts:readonly SessionFact[],now:number):SessionProgress {
@@ -23,7 +24,7 @@ export function sessionProgress(session:RadarSession,jobs:readonly JobRecord[],s
   const visited=Object.entries(after.visits).filter(([name,at])=>at!==before.visits[name]&&Date.parse(at)>=session.startedAt).length;
   const validated=after.approved.filter(id=>!before.approved.includes(id)).length;
   const gem=changed.filter(job=>!job.deletedAt&&decision(job)==="selected"&&["very_close","close"].includes(job.fitLabel??"")&&job.fit!=null).sort((a,b)=>(b.fit??0)-(a.fit??0)||a.id.localeCompare(b.id))[0];
-  const followups=new Set(session.sent).size,sorted=changed.length;
+  const confirmed=confirmedSessionFollowups(jobs,session.startedAt);for(const id of session.sent)confirmed.add(id);const followups=confirmed.size,sorted=changed.length;
   return {sorted,followups,visited,validated,total:sorted+followups+visited+validated,minutes:Math.max(1,Math.ceil((session.activeMs+(session.paused||session.resumedAt===null?0:Math.max(0,now-session.resumedAt)))/60000)),...(gem?{gemId:gem.id}:{})};
 }
 /** No offer descriptions or private notes enter comfort storage. Reject stale or malformed state. */

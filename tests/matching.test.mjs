@@ -24,7 +24,7 @@ const payRange = moduleUrl("pay-range");
 const { parseOfferText } = await import(moduleUrl("offer-parser", { "./work-arrangement": arrangement, "./pay-range": payRange }));
 const { createCandidateBrief, briefOffer } = await import(moduleUrl("candidate-brief"));
 const opportunityViews = moduleUrl("opportunity-views");
-const { selectTriageActions, sortOffersForTriage } = await import(moduleUrl("triage", { "./application-workflow": workflow, "./opportunity-views": opportunityViews }));
+const { selectTriageActions, sortOffersForTriage } = await import(moduleUrl("triage", { "./application-followup":moduleUrl("application-followup"), "./application-workflow": workflow, "./opportunity-views": opportunityViews }));
 // These fixtures describe a PO/PM search explicitly: a new account no longer starts with it.
 const poSearch = searchPreferences({ roles: ["Product Owner", "Product Manager"], contracts: ["cdi", "freelance"], remote: "hybrid", minimumSalary: 55000, minimumDailyRate: 500 });
 const assessJob = (job, preferences = poSearch) => assessWith(job, preferences);

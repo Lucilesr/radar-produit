@@ -958,3 +958,16 @@ Les notes longues restent dans leur dossier : elles ne sont pas reproduites dans
 | Erreur / hors ligne | choix non confirmé | dernier état conservé, erreur | Relire les repères | oui |
 | Conflit | un autre onglet a avancé | version du compte relue, aucune autre coche écrasée | Relire les repères | oui |
 | Mobile / clavier / mouvement réduit |390px, Tab, préférence | cases Signal44px, même jauge et focus, pas de mouvement requis | mêmes actions | oui |
+
+## Complément C2 — relances de candidature
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Proposition | candidature éligible envoyée | date J+7, sans envoi automatique | modifier ou retirer le rappel | oui |
+| Échéance | date passée, non notée faite | action dans Aujourd’hui, séance et dossier | J’ai fait cette relance après son propre envoi | oui |
+| Succès | déclaration confirmée | date de confirmation, rappel retiré | nouvelle relance facultative | oui |
+| Aucune date | rappel retiré ou envoi inconnu | absence explicitée, aucune date inventée | prévoir une date si l’envoi est connu | oui |
+| Entretien / dossier clos | entretien enregistré ou candidature terminée | pas de rappel J+7, suivi d’entretien distinct | ouvrir Entretiens si utile | oui |
+| Chargement / écriture | lecture ou confirmation du compte | dernière valeur, actions indisponibles pendant l’écriture | attendre la confirmation | oui |
+| Erreur / conflit | réponse non confirmée ou autre version | saisie de date conservée et comparaison | relire ou enregistrer après comparaison | oui |
+| Mobile / clavier / mouvement réduit |390px, Tab, préférence | contrôles Signal44px, focus après confirmation, même information | mêmes actions | oui |

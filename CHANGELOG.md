@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Relances de candidature C2
+
+- Rappel proposé à J+7 pour les candidatures en attente, date choisie sur Terminé, retrait et déclaration faite dans le compte. Même rappel dans l’accueil, la séance et le suivi ; aucun message envoyé ni seconde relance automatique.
+- Dates d’envoi dans le fuseau de l’appareil, calendrier Signal mobile44px, conflits comparables et sauvegarde des confirmations. Aucun ajout de table ni service tiers.
+
 ## 8 novembre 2026 — Candidature soignée C1
 
 - Quatre repères facultatifs et propres à chaque offre : CV, message, contact et questions. Jauge et point manquant dans le dossier, le tableau, le Kanban et l’accueil, sans coche automatique ni blocage d’envoi.
