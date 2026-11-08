@@ -76,7 +76,7 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
     { id: "role", title: "Le poste", rows: [
       { id: "roles", label: "Postes visés", values: preferences.roles.length ? preferences.roles : [noRoleChosen], tone: "include", target: "roles" },
       ...tracks,
-      ...(preferences.targetLevel ? [{ id: "level" as const, label: "Niveau visé", values: [levelLabels[preferences.targetLevel] + (preferences.acceptLevelAbove ? " · un cran au-dessus accepté" : "")], tokenValues: [levelLabels[preferences.targetLevel]], tone: "include" as const, target: "level" as const }] : []),
+      ...(preferences.targetLevel ? [{ id: "level" as const, label: "Niveau visé", values: [levelLabels[preferences.targetLevel] + (preferences.acceptLevelAbove ? " · niveau supérieur accepté" : "")], tokenValues: [levelLabels[preferences.targetLevel]], tone: "include" as const, target: "level" as const }] : []),
       { id: "contracts", label: "Contrats", values: contracts.map(contract => contractLabels[contract]), tone: "include", target: "conditions" },
     ] },
     { id: "presence", title: "La présence", rows: presenceRows(preferences) },

@@ -41,3 +41,5 @@
 html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-motion="reduced"] *::after {
   animation-duration: 0s !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; scroll-behavior: auto !important;
 }
+
+.signal-progress.is-segmented{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;height:8px;background:transparent;border-radius:0;overflow:visible}.signal-progress.is-segmented>span{width:100%;background:var(--signal-line);border-radius:var(--radius);overflow:hidden}.signal-progress.is-segmented>span>span{display:block;height:100%;background:var(--signal-petrol-mid)}.signal-progress-finished.is-segmented>span{background:var(--signal-petrol-ink)}.signal-progress-finished.is-segmented>span>span{background:var(--signal-energy)}

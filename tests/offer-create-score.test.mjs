@@ -57,7 +57,7 @@ test("création API : adéquation disponible sans rechargement, y compris après
       const { job, deduplicated } = await created.json(); assert.equal(deduplicated, false);
       assert.equal(job.fitLabel, label); assert.equal(job.fit, fit);
       assert(job.confidence); assert(Array.isArray(job.missing)); assert(Array.isArray(job.signals));
-      if (label === "to_weigh") assert(job.signals.some(signal => /un cran au-dessus/.test(signal)));
+      if (label === "to_weigh") assert(job.signals.some(signal => /un niveau au-dessus/.test(signal)));
       if (!label) assert.deepEqual(job.missing, ["description complète", "rémunération", "présence", "niveau", "langue"]);
       const reimport = await post(input); assert.equal(reimport.status, 200);
       const repeated = await reimport.json(); assert.equal(repeated.deduplicated, true); assert.equal(repeated.job.id, job.id);

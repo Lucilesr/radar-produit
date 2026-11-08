@@ -1,3 +1,5 @@
+> Mise à jour P2 : la présentation actuelle remplace les points par six réglages en trois groupes, avec quatre paliers segmentés. Les huit thèmes se trouvent dans Mes histoires du carnet. Le calcul Q4 ci-dessous reste inchangé ; les captures historiques décrivent son ancienne présentation. Recette actuelle : [P2](p2-portee-reglages/README.md).
+
 # Q4 — Portée du radar
 
 La fonction pure `lib/radar-reach.ts` calcule dix crans depuis les données du compte : rôle choisi 2, niveau 1, trois sources suivies actives 2, source consultable visitée 1, deux expériences validées 2, quatre histoires validées 2. Les sources en pause, désactivées, inconnues ou répétées sont exclues. Les suggestions non enregistrées ne comptent pas. Les blocs sont filtrés sur le document courant et les éléments masqués ou sensibles ; un parent masqué ne donne aucun crédit à ses enfants.

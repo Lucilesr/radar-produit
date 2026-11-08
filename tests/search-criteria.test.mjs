@@ -146,7 +146,7 @@ test("Score v2 S2 : le niveau visé devient une ligne du poste une fois choisi",
   assert.ok(!criteriaGroups(searchPreferences({ contracts: ["cdi"], roles: ["Product Owner"] }))[0].rows.some(row => row.id === "level"));
   const rows = criteriaGroups(searchPreferences({ contracts: ["cdi"], roles: ["Product Owner"], targetLevel: "senior", acceptLevelAbove: true }))[0].rows;
   const level = rows.find(row => row.id === "level");
-  assert.deepEqual(level.values, ["Senior · un cran au-dessus accepté"]);
+  assert.deepEqual(level.values, ["Senior · niveau supérieur accepté"]);
   assert.equal(level.target, "level");
   assert.ok(rows.findIndex(row => row.id === "level") < rows.findIndex(row => row.id === "contracts"));
   assert.equal(criteriaTokens(searchPreferences({ contracts: ["cdi"], roles: ["Product Owner"], targetLevel: "lead" })).find(token => token.id === "level").value, "Lead");
