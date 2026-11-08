@@ -493,7 +493,7 @@ test("Score v2 S3 : le tri classe par adéquation, la fraîcheur ne fait que dé
   assert.deepEqual(ranked, ["fraiche-forte", "ancienne-forte", "fraiche-moyenne"]);
 });
 
-const { isMysteryOffer, pinMysteryOffers, revealMessage } = await import(moduleUrl("fit", { "./seniority": moduleUrl("seniority"), "./search-preferences": preferences }));
+const { isMysteryOffer, pinMysteryOffers, revealMessage, isGoodFind } = await import(moduleUrl("fit", { "./seniority": moduleUrl("seniority"), "./search-preferences": preferences }));
 
 test("Score v2 S4 : une fiche mystère vise le poste mais reste trop courte pour être jugée", () => {
   const summary = v2({ title: "Product Owner", remoteMode: "unknown", language: "unknown", description: "Remote role, apply on the site.", contentCoverage: "summary" });
@@ -525,4 +525,12 @@ test("Q1d : une source explicitement écartée est filtrée, sans changer les au
   assert.equal(assessed.tier,"excluded");assert.equal(assessed.conditions,"excluded");
   assert.ok(assessed.flags.some(flag=>flag.startsWith("Source écartée de votre recherche")));
   assert.notEqual(assessJob(baseline,preferences).tier,"excluded");
+});
+
+test("Offres : le moment de révélation exige un score confirmé et le libellé Très proche",()=>{
+ assert(isGoodFind({fit:80,fitLabel:"very_close"}));
+ assert(!isGoodFind({fit:79,fitLabel:"very_close"}));
+ assert(!isGoodFind({fit:95,fitLabel:"to_weigh"}));
+ assert(!isGoodFind({fit:100}));
+ assert(!isGoodFind({fit:null,fitLabel:"very_close"}));
 });

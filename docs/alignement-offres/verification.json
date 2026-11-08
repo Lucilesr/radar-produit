@@ -1,0 +1,202 @@
+{
+  "pr": 262,
+  "staging_version": 94,
+  "viewports": {
+    "desktop": {
+      "width": 1360,
+      "height": 960
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "checks": {
+    "tests_passed": 428,
+    "typecheck": "pass",
+    "new_eslint_errors": 0,
+    "normal_console_errors": 0,
+    "decisions_desktop_gap_px": 10,
+    "decisions_mobile_min_height_px": 52,
+    "long_title_characters": 180,
+    "horizontal_overflow": false,
+    "failure_keeps_counter_and_lot": true,
+    "lot_identical_after_reload": true,
+    "mystery_reveal_high": 100,
+    "mystery_reveal_low": 64,
+    "annotation_blocks_rendered": false,
+    "error_replaces_loading": true,
+    "retry_restores_offer": true
+  },
+  "data_preservation": {
+    "jobs": 1003,
+    "applications": 50,
+    "documents": 2,
+    "profile_jobs_documents_board_week_continuity_identical": true,
+    "source_configuration_and_counts_identical": true,
+    "source_read_timestamps_advanced": true
+  },
+  "captures": {
+    "lecture-erreur-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "reserve-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "chargement-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "editeur-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "vide-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "editeur-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "archive-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "apres-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "avant-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "liste-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "decision-en-cours-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "decision-erreur-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "maquette-mobile.jpg": {
+      "width": 390,
+      "height": 1380
+    },
+    "bonne-pioche-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "archive-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "mystere-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "mystere-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "decision-en-cours-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "fiche-completee-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "reserve-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "chargement-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "fiche-completee-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "textes-longs-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "lot-boucle-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "textes-longs-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "decision-erreur-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "maquette-ordinateur.jpg": {
+      "width": 1360,
+      "height": 1406
+    },
+    "editeur-propositions-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "lecture-reprise-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "avant-liste-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "lecture-erreur-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "avant-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "apres-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "bonne-pioche-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "decision-confirmee-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "lecture-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "lot-boucle-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "decision-confirmee-ordinateur.jpg": {
+      "width": 1360,
+      "height": 960
+    },
+    "editeur-selection-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    },
+    "vide-mobile.jpg": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "staging_source_commit": "3e6db6b27f0cb46ccfce718c30e2953b2ea9b20d"
+}
