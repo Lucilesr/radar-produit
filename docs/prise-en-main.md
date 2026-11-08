@@ -44,9 +44,9 @@ Un conflit garde votre texte et le récit enregistré. Comparez les versions ava
 
 Sur Aujourd’hui, **Poser mon plan** permet de choisir un rythme Tranquille (2 engagements), Régulier (3) ou Intense (4). Pour chaque engagement, choisissez quand, l’action et sa cible, ou écrivez un engagement personnel. Trois pistes reprennent les candidatures, sources et thèmes disponibles dans votre radar. Elles remplissent une place vide, sans rien envoyer ni cocher. **Enregistrer mon plan** confirme le plan ; fermer garde seulement le brouillon.
 
-Après l’action, cochez l’engagement. Le compteur attend la confirmation du compte ; lorsque tous sont cochés, un petit bilan signale la semaine tenue. Une date passée affiche **À replanifier**, sans alerte rouge : **Déplacer** permet de changer l’horaire. Déplacer une action déjà tenue conserve sa coche ; changer son action ou sa cible la retire. La semaine et les horaires suivent le fuseau de votre appareil, affiché dans le formulaire.
+Après l’action, cochez l’engagement. Le compteur attend la confirmation du compte ; lorsque tous sont cochés, un petit bilan signale la semaine tenue. Une date passée affiche **À replanifier**, sans alerte rouge : **Déplacer** permet de changer l’horaire. Déplacer une action déjà tenue conserve sa coche ; changer son action ou sa cible la retire. La semaine et les horaires suivent le fuseau du plan, affiché dans le formulaire. Au premier plan, il reprend celui de votre appareil ; L2 conserve ensuite ce calendrier pour la série entre appareils.
 
-La première visite de la semaine propose « Nouvelle semaine, page blanche ». **Plus tard** revient à l’accueil, où le rappel reste discret. Le moment attend la fin d’un dialogue, du guide ou d’une séance. Les semaines précédentes et le plan sont conservés dans le compte et la sauvegarde intégrale ; un autre appareil peut relire le plan. En cas de conflit entre onglets, comparez le plan enregistré avant de sauvegarder votre brouillon. Séries et jokers seront ajoutés par L2.
+La première visite de la semaine propose « Nouvelle semaine, page blanche ». **Plus tard** revient à l’accueil, où le rappel reste discret. Le moment attend la fin d’un dialogue, du guide ou d’une séance. Les semaines précédentes et le plan sont conservés dans le compte et la sauvegarde intégrale ; un autre appareil peut relire le plan. En cas de conflit entre onglets, comparez le plan enregistré avant de sauvegarder votre brouillon. Le badge de série et les jokers sont décrits ci-dessous.
 
 ## Votre confort — Q6
 
@@ -83,3 +83,13 @@ Le journal conserve des repères (action, objet, date), pas le contenu des notes
 Le lot verrouillé et le point de reprise d’une séance sont désormais conservés dans le compte. Sur un autre appareil ou après rechargement, **Reprendre la séance** est volontaire. Une ancienne page ne peut pas remettre une séance terminée ni écraser une étape plus récente. Si le point de reprise a changé, **Réessayer** le relit avant de poursuivre ; vos décisions déjà confirmées restent enregistrées. La fermeture d’une page tente une pause, sans garantir une transmission hors ligne.
 
 Dans une séance, **J’ai fait cette relance** enregistre votre déclaration et retire ce rappel, y compris après rechargement. Radar n’envoie aucun message. Une nouvelle date explicitement posée pour cette relance crée un nouveau rappel. **Terminer la séance** attend la confirmation du compte avant d’afficher son bilan.
+
+## Série de semaines et pauses — L2
+
+Sur l’accueil, **N semaines tenues** compte les semaines dont tous les engagements sont cochés. La semaine courante compte dès sa dernière coche ; retirer une coche la retire du calcul. Le plan reste facultatif : une semaine ouverte n’interrompt pas la série avant sa fin.
+
+Vous commencez avec zéro joker. Un joker est gagné toutes les quatre semaines tenues, avec deux en réserve au maximum. Quand une semaine se termine sans être tenue, un joker disponible préserve automatiquement la série. Sans joker, la série revient à zéro ; le moment suivant affiche **Nouvelle semaine, page blanche**. Les semaines déjà tenues restent dans votre historique.
+
+**Faire une pause** propose une à quatre semaines. La pause commence cette semaine, ou lundi prochain si celle-ci est déjà tenue. Ses dates sont affichées avant et après confirmation. Elle préserve la série et les jokers, sans bloquer Radar. Une semaine entièrement cochée pendant la pause compte tout de même. **Gérer ma pause → Reprendre cette semaine** met fin aux semaines de pause encore à venir, en conservant celles déjà passées.
+
+À la première visite de la semaine, le moment **Nouvelle semaine** montre votre série et les jokers ; **Plus tard** revient à l’accueil. Ce repère est conservé dans le compte, aussi sur un autre appareil. Le calendrier suit le fuseau affiché pour le plan ; le calcul ne remonte pas avant le premier plan connu. La série, les pauses et l’historique sont inclus dans la sauvegarde intégrale. Aucun envoi ni service tiers.

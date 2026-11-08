@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Série de semaines L2
+
+- Badge de semaines tenues sur l’accueil, un joker gagné toutes les quatre semaines et deux au maximum. Les semaines ouvertes restent sans sanction ; un nouveau départ affiche Nouvelle semaine, page blanche.
+- Pause confirmée de une à quatre semaines, reprise anticipée et moment de nouvelle semaine partagé entre appareils. Plan toujours facultatif, préférences et sauvegarde conservées, aucune migration supplémentaire.
+
 ## 8 novembre 2026 — Journal privé d’activité L1
 
 - Actions confirmées conservées dans le compte, sans notes ni textes de CV : tri, candidature, entretien noté, relance déclarée, histoire validée, engagement et fin de séance. Lecture paginée dans Mon profil → Mon compte.

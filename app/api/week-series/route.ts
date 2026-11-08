@@ -1,0 +1,6 @@
+import {getChatGPTUser} from "@/app/chatgpt-auth";
+import {ensureSameOrigin} from "@/lib/server";
+import {readWeekSeries,writeWeekSeries,WeekSeriesConflict} from "@/lib/week-series-store";
+const headers={"Cache-Control":"private, no-store"};
+export async function GET(request:Request){const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401,headers});try{return Response.json(await readWeekSeries(user.userId,new Date(),new URL(request.url).searchParams.get("zone")??"UTC"),{headers});}catch{return Response.json({error:"La série ne peut pas être relue. Votre plan reste conservé."},{status:503,headers});}}
+export async function PUT(request:Request){const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401,headers});if(!ensureSameOrigin(request))return Response.json({error:"Origine non autorisée"},{status:403,headers});try{const text=await request.text();if(text.length>1000)throw new Error();return Response.json(await writeWeekSeries(user.userId,JSON.parse(text)),{headers});}catch(error){return Response.json({error:error instanceof WeekSeriesConflict?error.message:"Pause non confirmée. Relisez votre série avant de réessayer.",...(error instanceof WeekSeriesConflict?{state:error.state}:{})},{status:error instanceof WeekSeriesConflict?409:400,headers});}}

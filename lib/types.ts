@@ -64,6 +64,7 @@ export type InterviewRecord = {
 };
 
 export type CandidateProfile = {
+  weekSeries?: import("./week-series").SeriesSettings;
   weekPlan?: import("./week-plan").WeekPlan | null;
   weekPlans?: import("./week-plan").WeekPlan[];
   weekPlanRevision?: number;
