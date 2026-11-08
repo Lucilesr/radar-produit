@@ -7,7 +7,7 @@ Un seul écran en cours. Le suivant commence après fusion **et** recette du pr�
 | Écran | Maquette | PR | État | Écarts restants |
 | --- | --- | --- | --- | --- |
 | a. Q2b — Balayage | [Ordinateur](maquettes/iteration-2/Balayage-v2.html) · [mobile](maquettes/iteration-2/Balayage-mobile.html) | [#258](https://github.com/Lucilesr/radar-produit/pull/258) · [grille et preuves](q2b-balayage-vivant/README.md) | fusionné | Aucun écart non justifié ; deux collecteurs réels, un écho par offre unique, cibles 44 px. Staging 84 vérifié, états remplacés sans annotations. |
-| b. Aujourd’hui | [Ordinateur](maquettes/iteration-2/Aujourdhui-v2.html) · [mobile](maquettes/iteration-2/Aujourdhui-mobile.html) | À ouvrir ; existant #255 | à faire | Comparaison détaillée au début du lot ; tous les états de la bande. |
+| b. Aujourd’hui | [Ordinateur](maquettes/iteration-2/Aujourdhui-v2.html) · [mobile](maquettes/iteration-2/Aujourdhui-mobile.html) | PR à ouvrir · [grille avant code](alignement-aujourdhui/README.md) ; existant #255 | en cours | En-tête, séance, semaine, radar et états alternatifs selon les deux maquettes. |
 | c. Offres | [Ordinateur](maquettes/iteration-2/Offre-fiche.html) · [mobile](maquettes/iteration-2/Offre-mobile.html) | À ouvrir ; existant #256 | à faire | Comparer fiche et liste, décisions et tous les états de la bande. |
 | d. Candidatures — ordinateur | [Ordinateur](maquettes/iteration-2/Candidatures.html) · [mobile](maquettes/iteration-2/Candidatures-mobile.html) | À ouvrir | à faire | Comparer tableau, cartes et tous les états de la bande. |
 | e. C4 — Candidatures mobile | [Candidatures mobile](maquettes/iteration-2/Candidatures-mobile.html) | À ouvrir ; existant #254 | à faire | Comparer groupes, filtres, fiche et barre du bas. |
