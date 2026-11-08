@@ -1,5 +1,10 @@
 ## 8 novembre 2026 — Aujourd’hui aligné sur les maquettes
 
+## 9 novembre 2026 — Candidatures sur mobile
+
+- Liste compacte par action, deux cartes par groupe, préparation et relances visibles ; outils dans le menu et reprise après échec.
+- Dossier plein écran avec retour Candidatures ; Reporter ouvre le choix de date existant sans report automatique.
+
 ## 9 novembre 2026 — Candidatures par étape
 
 - Vue unique par étapes, terminées repliées, prochaine action nommée et entonnoir compact ; outils rangés dans le menu.

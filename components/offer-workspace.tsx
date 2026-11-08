@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { CalendarDays, CalendarPlus, CheckCircle2, CircleHelp, Copy, ExternalLink, LoaderCircle, Pencil, Undo2 } from "lucide-react";
 import { ChoiceSelect, type ChoiceOption } from "@/components/choice-select";
 import { SourceLogo } from "@/components/source-logo";
+import {useRadarClock} from "@/components/use-radar-clock";
 import {ApplicationCare} from "@/components/application-care";
 import { ApplicationQuestions } from "@/components/application-questions";
 import { ApplicationTagBadges } from "@/components/application-tags";
@@ -65,7 +66,8 @@ export function ApplicationTrackingAction({job,onStatus,onOpenApplication}:{job:
   return <button type="button" className="secondary-button reading-application-action" disabled={starting} aria-busy={starting} onClick={async()=>{if(hasApplication(job)){onOpenApplication();return;}setStarting(true);try{await onStatus(job.id,"applied");}finally{setStarting(false);}}}>{starting?<LoaderCircle size={14} className="animate-spin" aria-hidden/>:null}{hasApplication(job)?"Voir dans Candidatures":"J’ai postulé"}</button>;
 }
 
-export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onCancelApplication, onViewChange, showApplicationAction = true, showAnnouncement = true, pasteRequest, onEditingChange }: {
+export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onCancelApplication, onViewChange, showApplicationAction = true, showAnnouncement = true, pasteRequest, onEditingChange,compactApplication=false,startFollowupEdit=false }: {
+  compactApplication?:boolean;startFollowupEdit?:boolean;
   pasteRequest?: {jobId:string;revision:number};
   onEditingChange?: (editing:boolean)=>void;
   showApplicationAction?: boolean;
@@ -75,6 +77,8 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   onStatus: (id: string, status: JobStatus) => Promise<boolean>; onNote: (id: string, note: string) => Promise<boolean>; onOpenApplication: () => void; onCancelApplication?: () => Promise<boolean>;
 }) {
   const editTrigger=useRef<HTMLButtonElement>(null);
+  const dossierNow=useRadarClock()??0;
+  const [followupIntent,setFollowupIntent]=useState(startFollowupEdit);
   const notify=useWorkspaceFeedback();
   const mystery=isMysteryOffer(job);
   const finishEditing=()=>{setEditing(false);requestAnimationFrame(()=>{editTrigger.current?.focus({preventScroll:true});editTrigger.current?.scrollIntoView({block:"nearest"});});};
@@ -133,12 +137,14 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
       </section>
     </> : null}
     {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); if (mystery && !isMysteryOffer(updated)) { if(context==="opportunity"&&isGoodFind(updated))setRevealed(updated); else notify({ message: revealMessage(updated) }); } }} onCancel={finishEditing} /> : null}
+    {compactApplication&&(activeView==="application"||activeView==="brief")?<section className="application-mobile-dossier-next" aria-label="Prochaine action"><h3>Prochaine action</h3><p>{job.applicationFollowup?.eligible&&job.applicationFollowup.dueAt&&!job.applicationFollowup.doneAt&&Date.parse(job.applicationFollowup.dueAt)<=dossierNow?`Relancer ${job.company||job.title}`:job.status==="interview"?`Préparer le prochain échange avec ${job.company||job.title}`:job.status==="rejected"?"Un bilan, si cela vous aide":"Préparer la suite de cette candidature"}</p><WorkspaceButton variant="quiet" onClick={()=>{const followup=document.getElementById(`application-followup-${job.id}`);const check=document.querySelector<HTMLButtonElement>('.application-care button[role=checkbox][data-state=unchecked]');(job.applicationFollowup?.eligible?followup:check??document.querySelector<HTMLElement>('.application-care'))?.focus();}}>Voir la prochaine action</WorkspaceButton></section>:null}
     {activeView==="brief"||context==="application"&&activeView==="application"?<ApplicationCare key={`care:${job.id}`} job={job}/>:null}
+    {compactApplication&&activeView==="application"?<WorkspaceFormSection className="application-mobile-dossier-dates" title="Dates"><p>{job.appliedAt?`Envoyée le ${formatDate(job.appliedAt)}`:"Envoi non déclaré"}</p>{(job.interviews??[]).filter(event=>event.state==="planned"&&Date.parse(event.startAt)>=dossierNow).toSorted((a,b)=>Date.parse(a.startAt)-Date.parse(b.startAt)).slice(0,1).map(event=><p key={event.id}>Prochain entretien : {formatDate(event.startAt,event.timeZone,true)}</p>)}</WorkspaceFormSection>:null}
     {context === "application" && activeView === "application" ? <div className="signal-application-form">
       <ApplicationLessonCard key={`lesson:${job.id}`} job={job}/>
-      <ApplicationFollowupCard key={`followup:${job.id}:${job.appliedAt??"unknown"}`} job={job} onInterviews={()=>setView("interviews")}/>
+      <ApplicationFollowupCard key={`followup:${job.id}:${job.appliedAt??"unknown"}`} job={job} onInterviews={()=>setView("interviews")} initialEditor={followupIntent} onEditorClosed={()=>setFollowupIntent(false)}/>
       <WorkspaceFormSection title="Suivi de candidature" actions={<WorkspaceButton disabled={statusBusy} onClick={() => setView("interviews")}><CalendarDays size={15} aria-hidden />Voir les entretiens</WorkspaceButton>}>
-        <div className="signal-status-field" aria-busy={statusBusy}><StatusSelect value={job.status} disabled={statusBusy} onChange={async status => { setStatusBusy(true); try { await onStatus(job.id, status); } finally { setStatusBusy(false); } }} />{job.status === "applied" && !job.interviews?.length && onCancelApplication ? <button type="button" className="signal-quiet-button" disabled={statusBusy} onClick={async()=>{setStatusBusy(true);try{await onCancelApplication();}finally{setStatusBusy(false);}}}><Undo2 size={14} aria-hidden />Annuler « J’ai postulé »</button> : null}</div>
+        <div className="signal-status-field" aria-busy={statusBusy}><StatusSelect label={compactApplication?"Changer d’étape":"Statut de candidature"} value={job.status} disabled={statusBusy} onChange={async status => { setStatusBusy(true); try { await onStatus(job.id, status); } finally { setStatusBusy(false); } }} />{job.status === "applied" && !job.interviews?.length && onCancelApplication ? <button type="button" className="signal-quiet-button" disabled={statusBusy} onClick={async()=>{setStatusBusy(true);try{await onCancelApplication();}finally{setStatusBusy(false);}}}><Undo2 size={14} aria-hidden />Annuler « J’ai postulé »</button> : null}</div>
       </WorkspaceFormSection>
       <WorkspaceFormSection title="Notes privées de candidature">
         <NoteEditor inputRef={noteEditorRef} label="Notes privées de candidature" rows={4} disabled={!noteSave.ready} maxLength={2000} value={note} onChange={setNote} placeholder="Vos échanges, vos conditions proposées, les points encore à confirmer…" />

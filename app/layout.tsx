@@ -43,6 +43,7 @@ import "./signal-today-aligned.css";
 import "./signal-offers-aligned.css";
 import "./signal-candidatures-aligned.css";
 import "./signal-global-header.css";
+import "./signal-candidatures-mobile.css";
 import "./signin-page.css";
 
 export const metadata: Metadata = {
