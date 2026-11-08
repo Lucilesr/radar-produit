@@ -1,3 +1,4 @@
+import {demoScanSources,demoScanPaused} from "./demo-scan-plan";
 import {demoMonthPlans,seedMonthStoryFacts} from "./demo-month-story";
 import {demoWeekSeries} from "./demo-week-series";
 import { and, eq } from "drizzle-orm";
@@ -104,8 +105,8 @@ export async function ensureRecruiterDemo(userId: string, options: DemoOptions|b
     createdAt: nowIso, updatedAt: nowIso,
   }))).onConflictDoNothing({ target: [experienceItems.userId, experienceItems.importKey] });
   const bucket = env.BUCKET;
-  if(scanDemo)for(const source of ["We Work Remotely","Jobgether"]){
-    await db.insert(sourceSettings).values({id:crypto.randomUUID(),userId,source,data:JSON.stringify({selected:true,state:"configured"}),updatedAt:nowIso}).onConflictDoNothing({target:[sourceSettings.userId,sourceSettings.source]});
+  for(const source of demoScanSources){
+    await db.insert(sourceSettings).values({id:crypto.randomUUID(),userId,source,data:JSON.stringify({selected:!(demoScanPaused as readonly string[]).includes(source),state:(demoScanPaused as readonly string[]).includes(source)?"paused":"configured"}),updatedAt:nowIso}).onConflictDoNothing({target:[sourceSettings.userId,sourceSettings.source]});
   }
   if(scanDemo||sessionDemo)for(const source of ["Collective","Malt"]){
     await db.insert(sourceSettings).values({id:crypto.randomUUID(),userId,source,data:JSON.stringify({selected:true,state:"not_configured",lastVisitedAt:daysAgo(8),remindInToday:true,visitEveryDays:7}),updatedAt:nowIso}).onConflictDoNothing({target:[sourceSettings.userId,sourceSettings.source]});

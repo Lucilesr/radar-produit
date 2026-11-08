@@ -1,25 +1,27 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { requestError } from "@/lib/request-error";
-import { mergeScan, readScanSummary, summarizeScan, type AutomaticSource, type ScanSummary, type SourceReading } from "@/lib/source-sync";
+import { mergeScan, readScanSummary, summarizeScan, type ScanSummary, type SourceReading } from "@/lib/source-sync";
 import { scanPlan, scanSources, type ScanSourceProgress } from "@/lib/scan-presentation";
 import type { JobRecord } from "@/lib/types";
+import {lastRefreshAt} from "@/lib/refresh-schedule";
 import type { SourceSetting } from "@/components/source-card";
 
-export function useRadarScan({ onOffers, onSources, knownJobs, sources, sourcesKnown }: {
+export function useRadarScan({ onOffers, onSources, knownJobs, sources, sourcesKnown, simulated=false }: {
   onOffers: (jobs: JobRecord[]) => void; onSources: (sources: SourceSetting[]) => void;
-  knownJobs: readonly JobRecord[]; sources: SourceSetting[]; sourcesKnown: boolean;
+  knownJobs: readonly JobRecord[]; sources: SourceSetting[]; sourcesKnown: boolean; simulated?:boolean;
 }) {
   const [busy,setBusy]=useState(false),[error,setError]=useState(""),[quiet,setQuiet]=useState(false);
   const [result,setResult]=useState<ScanSummary|null>(null),[progress,setProgress]=useState<ScanSourceProgress[]>([]);
+  const [previousAt,setPreviousAt]=useState<string|undefined>();
   const [newIds,setNewIds]=useState<string[]>([]);
   const saved=useRef<ScanSummary|null>(null),controller=useRef<AbortController|null>(null);
   const pending=useRef<Promise<boolean>|null>(null),baseline=useRef(new Set<string>());
   useEffect(()=>()=>controller.current?.abort(),[]);
-  function run(source?:AutomaticSource,silent=false):Promise<boolean>{
+  function run(source?:string,silent=false):Promise<boolean>{
     if(pending.current)return pending.current;
     const abort=new AbortController();controller.current=abort;
-    const overall=AbortSignal.any([abort.signal,AbortSignal.timeout(60000)]);
+    const overall=AbortSignal.any([abort.signal,AbortSignal.timeout(simulated?180000:60000)]);
     setBusy(true);setError("");setQuiet(silent);
     if(!source){saved.current=null;baseline.current=new Set(knownJobs.map(job=>job.id));setResult(null);setNewIds([]);}
     else if(!saved.current)baseline.current=new Set(knownJobs.map(job=>job.id));
@@ -28,7 +30,8 @@ export function useRadarScan({ onOffers, onSources, knownJobs, sources, sourcesK
         const read=async<T,>(path:string):Promise<T>=>{const response=await fetch(path,{cache:"no-store",signal:AbortSignal.any([overall,AbortSignal.timeout(15000)])});if(!response.ok)throw new Error();return response.json() as Promise<T>;};
         const settings=sourcesKnown?sources:(await read<{sources:SourceSetting[]}>("/api/sources")).sources;
         if(!Array.isArray(settings))throw new Error("Vos sources n’ont pas pu être relues. Réessayez.");
-        const plan=scanPlan(settings);
+        if(!source)setPreviousAt(lastRefreshAt(settings));
+        const plan=scanPlan(settings,simulated);
         setProgress(current=>source?plan.map(item=>item.source===source?{...item,state:"waiting"}:current.find(previous=>previous.source===item.source)??item):plan);
         const paused:SourceReading[]=source?[]:plan.filter(item=>item.state==="paused").map(item=>({source:item.source,state:"paused",ok:true,total:0,imported:0,deduplicated:0,matchedIds:[]}));
         if(!source){saved.current=summarizeScan(paused,new Date().toISOString());setResult(saved.current);}
@@ -56,5 +59,5 @@ export function useRadarScan({ onOffers, onSources, knownJobs, sources, sourcesK
     };
     pending.current=execute();return pending.current;
   }
-  return {busy,error,result,progress,newIds,quiet,run};
+  return {busy,error,result,progress,newIds,quiet,previousAt,run};
 }

@@ -14,7 +14,7 @@ Les termes du domaine viennent de votre carnet validé et autorisé pour les can
 
 ## Lire et trier les offres
 
-**Actualiser** lit les sources automatiques. Le bilan distingue annonces parcourues, offres selon vos critères, nouvelles fiches et doublons. Une source en erreur peut être reprise seule ; vos offres restent accessibles. Pour une source manuelle, ouvrez-la puis confirmez **J’ai fait le tour** après votre visite.
+**Actualiser** lit les sources automatiques. Le bilan distingue annonces parcourues, offres selon vos critères, nouvelles fiches et doublons. En démo, sept sources fictives montrent la progression et deux restent en pause ; une panne simulée permet de tester la reprise. Le bilan sans nouveauté indique l’heure du balayage précédent. Une source en erreur peut être reprise seule ; vos offres restent accessibles. Pour une source manuelle, ouvrez-la puis confirmez **J’ai fait le tour** après votre visite.
 
 Dans **Offres → À examiner**, le lot du jour contient vingt offres au plus. **Sélectionner**, **Plus tard** et **Écarter** attendent la confirmation avant de passer à la suivante. Le lot ne se remplit pas pendant le tri et reste identique après rechargement. Sur ordinateur, la page remonte jusqu’aux panneaux, puis la liste et la fiche défilent séparément. Sur téléphone, ouvrez une offre puis utilisez **Lot du jour** ou **Offres** en haut de la fiche pour retrouver la liste. Les touches **S**, **L**, **X** fonctionnent dans une fiche ouverte, sauf pendant une saisie ou un dialogue ; elles se désactivent dans **Mon compte → Votre confort**.
 

@@ -1,4 +1,5 @@
 "use client";
+import {demoScanSources} from "@/lib/demo-scan-plan";
 import { useEffect, useRef } from "react";
 import { SignalCounter } from "@/components/signal/signal-counter";
 import { SignalProgress } from "@/components/signal/signal-progress";
@@ -6,25 +7,25 @@ import { SignalRadar } from "@/components/signal/signal-radar";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { WorkspaceButton, WorkspaceFormError } from "@/components/workspace-form";
 import { sourceCatalog } from "@/lib/source-catalog";
-import { scanBar, scanPlan, scanSourceGroups, scanSourceStatus, sortedScanReadings, visitUrl, type ScanSourceProgress } from "@/lib/scan-presentation";
-import { automaticSources, type AutomaticSource, type ScanSummary } from "@/lib/source-sync";
+import { scanBar, scanPlan, scanSourceGroups, scanSourceStatus, sortedScanReadings, noNewScanLabel, visitUrl, type ScanSourceProgress } from "@/lib/scan-presentation";
+import { automaticSources, type ScanSummary } from "@/lib/source-sync";
 import { lastRefreshAt, refreshedAgo } from "@/lib/refresh-schedule";
 import type { SourceSetting } from "@/components/source-card";
 
 function visitLabel(at:string|undefined,now:number){const time=Date.parse(at??"");if(!Number.isFinite(time))return "jamais visitée";const days=Math.max(0,Math.floor((now-time)/86400000));return days===0?"aujourd’hui":days===1?"hier":`${days} jours`;}
 
-export function ScanWorkspace({busy,error,result,progress,newIds,sources,sourcesKnown,knownCount,toReviewCount,simulated,now,onRun,onOffers,onSource}:{busy:boolean;error:string;result:ScanSummary|null;progress:ScanSourceProgress[];newIds:string[];sources:SourceSetting[];sourcesKnown:boolean;knownCount:number;toReviewCount:number;simulated:boolean;now:number;onRun:(source?:AutomaticSource)=>void;onOffers:(source?:string)=>void;onSource:(source:string)=>void}){
+export function ScanWorkspace({previousAt,busy,error,result,progress,newIds,sources,sourcesKnown,knownCount,toReviewCount,simulated,now,onRun,onOffers,onSource}:{previousAt?:string;busy:boolean;error:string;result:ScanSummary|null;progress:ScanSourceProgress[];newIds:string[];sources:SourceSetting[];sourcesKnown:boolean;knownCount:number;toReviewCount:number;simulated:boolean;now:number;onRun:(source?:string)=>void;onOffers:(source?:string)=>void;onSource:(source:string)=>void}){
   const heading=useRef<HTMLHeadingElement>(null),wasBusy=useRef(busy);
   useEffect(()=>{document.getElementById("workspace-title")?.focus();},[]);
   useEffect(()=>{if(wasBusy.current&&!busy&&document.activeElement===document.body)heading.current?.focus();wasBusy.current=busy;},[busy]);
-  const groups=scanSourceGroups(sourceCatalog,sources),rows=sortedScanReadings(result?.sources??[]);
-  const statuses=progress.length?progress:scanPlan(sources),active=statuses.filter(item=>item.state!=="paused");
+  const groups=scanSourceGroups(simulated?sourceCatalog.filter(item=>(demoScanSources as readonly string[]).includes(item.name)):sourceCatalog,sources),rows=sortedScanReadings(result?.sources??[]);
+  const statuses=progress.length?progress:scanPlan(sources,simulated),active=statuses.filter(item=>item.state!=="paused");
   const completed=active.filter(item=>item.state!=="waiting"&&item.state!=="running").length;
   const echoes=[...new Set(result?.sources.flatMap(source=>source.matchedIds)??[])];
   const newMatching=echoes.filter(id=>newIds.includes(id)).length;
   const moment=busy||!error&&newMatching>0;
   const max=Math.max(0,...rows.map(row=>row.total));
-  const title=busy?`Balayage de ${active.length} source${active.length!==1?"s":""}…`:error?"Le balayage n’a pas abouti.":result?.inactive?"Vos sources sont au repos":newMatching?`${newMatching} nouvelle${newMatching!==1?"s":""} offre${newMatching!==1?"s":""} pour vous`:result?`Rien de nouveau depuis ${new Date(result.at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`:"Prêt pour le premier balayage";
+  const title=busy?`Balayage de ${active.length} source${active.length!==1?"s":""}…`:error?"Le balayage n’a pas abouti.":result?.inactive?"Vos sources sont au repos":newMatching?`${newMatching} nouvelle${newMatching!==1?"s":""} offre${newMatching!==1?"s":""} pour vous`:result?noNewScanLabel(previousAt):"Prêt pour le premier balayage";
   function offersLink(source:string){return <a href={`?tab=offers&source=${encodeURIComponent(source)}`} className="scan-source-offers" aria-label={`Voir les offres de ${source}`} onClick={event=>{event.preventDefault();onOffers(source);}}><span className="scan-desktop-label">Voir ses offres</span><span className="scan-mobile-label">Voir</span></a>;}
   function visits(items:typeof groups.visits){return <ul className="scan-visits-list">{items.map(source=>{const setting=sources.find(item=>item.source===source.name),url=visitUrl(source,sources);return <li key={source.name}><span>{source.name} · {visitLabel(setting?.lastVisitedAt,now)}</span>{url?<a href={url} target="_blank" rel="noopener noreferrer" aria-label={`Visiter ${source.name}`}>Visiter <span aria-hidden>›</span></a>:<WorkspaceButton variant="quiet" aria-label={`Configurer le lien de ${source.name}`} onClick={()=>onSource(source.name)}>Configurer</WorkspaceButton>}</li>;})}</ul>;}
   return <div className="scan-workspace">
@@ -47,7 +48,7 @@ export function ScanWorkspace({busy,error,result,progress,newIds,sources,sources
       <div className="scan-sources-heading"><h2 id="scan-sources-title"><span className="scan-desktop-label">Ce que chaque source a donné</span><span className="scan-mobile-label">Par source</span></h2><p className="scan-bar-legend"><span>pour vous</span><span>parcourues</span></p></div>
       {rows.length?<ul className="scan-readings">{rows.map(source=>{const bar=scanBar(source,max);return <li className="scan-source-row" key={source.source} data-state={source.state}>
         <strong>{source.source}</strong>
-        {source.state==="error"?<><p className="scan-source-error">N’a pas répondu.{source.retryAt?<span> Nouvel essai : {new Date(source.retryAt).toLocaleString("fr-FR")}</span>:null}</p><WorkspaceButton disabled={busy||Date.parse(source.retryAt??"")>now} aria-label={`Réessayer ${source.source}`} onClick={()=>onRun(source.source as AutomaticSource)}>Réessayer<span className="scan-desktop-label"> {source.source}</span></WorkspaceButton></>:<>
+        {source.state==="error"?<><p className="scan-source-error">N’a pas répondu.{source.retryAt?<span> Nouvel essai : {new Date(source.retryAt).toLocaleString("fr-FR")}</span>:null}</p><WorkspaceButton disabled={busy||Date.parse(source.retryAt??"")>now} aria-label={`Réessayer ${source.source}`} onClick={()=>onRun(source.source)}>Réessayer<span className="scan-desktop-label"> {source.source}</span></WorkspaceButton></>:<>
           <div className="scan-source-bar" aria-hidden="true"><span style={{width:`${bar.width}%`}}><span style={{width:`${bar.matching}%`}}/></span></div>
           <p className="scan-source-figures">{source.state==="cached"?<span>Lecture récente conservée</span>:<><span>{source.total} parcourue{source.total!==1?"s":""}</span> · <strong>{source.matchedIds.length} pour vous</strong> · <span>{source.imported} nouvelle{source.imported!==1?"s":""}</span></>}</p>{offersLink(source.source)}
         </>}
@@ -59,9 +60,11 @@ export function ScanWorkspace({busy,error,result,progress,newIds,sources,sources
   </div>;
 }
 
-export function ScanStatusLine({sources,busy,hasResult,onOpen,compact=false,newOffers,pendingOffers,error="",partial=false}:{sources:SourceSetting[];busy:boolean;hasResult:boolean;onOpen:()=>void;compact?:boolean;newOffers?:number;pendingOffers?:number;error?:string;partial?:boolean}){
-  const readings=sources.filter(source=>(automaticSources as readonly string[]).includes(source.source)&&source.lastSyncedAt);
-  const count=readings.reduce((total,source)=>total+(Number.isFinite(source.lastCount)?source.lastCount??0:0),0);
-  if(compact)return <div className="scan-status-line is-embedded" role="group" aria-label="Dernières lectures du radar" aria-busy={busy}><WorkspaceButton variant="quiet" disabled={busy} onClick={onOpen}>{hasResult?"Voir le bilan":"Actualiser"}</WorkspaceButton><p className="scan-new-offers">{newOffers!==undefined?<><strong>{newOffers} nouvelle{newOffers!==1?"s":""} offre{newOffers!==1?"s":""}</strong> au dernier balayage.</>:pendingOffers!==undefined?<><strong>{pendingOffers} offre{pendingOffers!==1?"s":""}</strong> à examiner.</>:"Offres à relire"}</p><p className="scan-last-reading">{busy?"Balayage en cours…":refreshedAgo(lastRefreshAt(readings))}{readings.length?` · ${count} offres lors des dernières lectures sur ${readings.length} source${readings.length!==1?"s":""}`:""}</p>{partial?<p className="scan-partial-reading" role="status">Une source n’a pas répondu. Les autres résultats sont conservés.</p>:null}<WorkspaceFormError message={error}/></div>;
-  return <section className="scan-status-line" aria-label="Dernières lectures du radar"><SignalRadar size={48} scanning={busy}/><div><p>{busy?"Balayage en cours…":refreshedAgo(lastRefreshAt(readings))}</p>{readings.length?<p className="signal-help">{count} offres lors des dernières lectures · {readings.length} source{readings.length>1?"s":""} automatique{readings.length>1?"s":""}</p>:<p className="signal-help">Vos sources à visiter restent accessibles dans Mon radar → Où chercher.</p>}</div><WorkspaceButton disabled={busy} onClick={onOpen}>{hasResult?"Voir le bilan":"Actualiser"}</WorkspaceButton></section>;
+export function ScanStatusLine({sources,busy,hasResult,onOpen,summary,simulated=false,compact=false,newOffers,pendingOffers,error="",partial=false}:{sources:SourceSetting[];busy:boolean;hasResult:boolean;onOpen:()=>void;summary?:ScanSummary|null;simulated?:boolean;compact?:boolean;newOffers?:number;pendingOffers?:number;error?:string;partial?:boolean}){
+  const readings=sources.filter(source=>((simulated?demoScanSources:automaticSources) as readonly string[]).includes(source.source)&&source.lastSyncedAt);
+  const count=summary?.total??readings.reduce((total,source)=>total+(Number.isFinite(source.lastCount)?source.lastCount??0:0),0);
+  const sourceCount=summary?summary.sources.filter(source=>source.state!=="paused").length:readings.length;
+  const refreshed=summary?.at??lastRefreshAt(readings);
+  if(compact)return <div className="scan-status-line is-embedded" role="group" aria-label="Dernières lectures du radar" aria-busy={busy}><WorkspaceButton variant="quiet" disabled={busy} onClick={onOpen}>{hasResult?"Voir le bilan":"Actualiser"}</WorkspaceButton><p className="scan-new-offers">{newOffers!==undefined?<><strong>{newOffers} nouvelle{newOffers!==1?"s":""} offre{newOffers!==1?"s":""}</strong> au dernier balayage.</>:pendingOffers!==undefined?<><strong>{pendingOffers} offre{pendingOffers!==1?"s":""}</strong> à examiner.</>:"Offres à relire"}</p><p className="scan-last-reading">{busy?"Balayage en cours…":refreshedAgo(refreshed)}{sourceCount?` · ${count} offres parcourues sur ${sourceCount} source${sourceCount!==1?"s":""}`:""}</p>{partial?<p className="scan-partial-reading" role="status">Une source n’a pas répondu. Les autres résultats sont conservés.</p>:null}<WorkspaceFormError message={error}/></div>;
+  return <section className="scan-status-line" aria-label="Dernières lectures du radar"><SignalRadar size={48} scanning={busy}/><div><p>{busy?"Balayage en cours…":refreshedAgo(refreshed)}</p>{sourceCount?<p className="signal-help">{count} offres parcourues · {sourceCount} source{sourceCount>1?"s":""}</p>:<p className="signal-help">Vos sources à visiter restent accessibles dans Mon radar → Où chercher.</p>}</div><WorkspaceButton disabled={busy} onClick={onOpen}>{hasResult?"Voir le bilan":"Actualiser"}</WorkspaceButton></section>;
 }

@@ -1,16 +1,17 @@
-import { automaticSources, type AutomaticSource, type SourceReading } from "./source-sync";
+import {demoScanSources,demoScanState} from "./demo-scan-plan";
+import { automaticSources, type SourceReading } from "./source-sync";
 import { isSourceVisible } from "./source-visibility";
 import type { SourceSetting } from "../components/source-card";
 
 export type ScanSourceState = "waiting" | "running" | SourceReading["state"];
-export type ScanSourceProgress = { source: AutomaticSource; state: ScanSourceState };
+export type ScanSourceProgress = { source: string; state: ScanSourceState };
 const defaults = new Set(["Collective", "Apec", "Free-Work", "We Work Remotely", "LinkedIn Jobs", "Welcome to the Jungle", "Wellfound", "Himalayas"]);
 export function automaticSourceActive(name: string, settings: readonly SourceSetting[]) {
   const setting = settings.find(item => item.source === name);
   return setting?.state !== "paused" && (name === "We Work Remotely" ? setting?.selected !== false : setting?.selected === true);
 }
-export function scanPlan(settings: readonly SourceSetting[]): ScanSourceProgress[] {
-  return automaticSources.map(source => ({ source, state: automaticSourceActive(source, settings) ? "waiting" : "paused" }));
+export function scanPlan(settings: readonly SourceSetting[], simulated=false): ScanSourceProgress[] {
+  return simulated?demoScanSources.map(source=>({source,state:demoScanState(source,settings)})):automaticSources.map(source => ({ source, state: automaticSourceActive(source, settings) ? "waiting" : "paused" }));
 }
 export function sortedScanReadings(readings: readonly SourceReading[]) {
   return readings.filter(item => item.state !== "paused").toSorted((a, b) => b.matchedIds.length - a.matchedIds.length || b.total - a.total || a.source.localeCompare(b.source, "fr"));
@@ -48,8 +49,8 @@ export function scanSourceStatus(state: ScanSourceState) {
 }
 /** Sequential reads expose waiting/running/completed states and keep every confirmed result. */
 export async function scanSources(
-  names: readonly AutomaticSource[], read: (source: AutomaticSource) => Promise<SourceReading>,
-  update: (source: AutomaticSource, state: ScanSourceState, reading?: SourceReading) => void,
+  names: readonly string[], read: (source: string) => Promise<SourceReading>,
+  update: (source: string, state: ScanSourceState, reading?: SourceReading) => void,
   signal: AbortSignal,
 ) {
   const readings: SourceReading[] = [];
@@ -65,4 +66,10 @@ export async function scanSources(
 }
 export function offersFromSource<T extends { source: string }>(jobs: readonly T[], source?: string) {
   return source ? jobs.filter(job => job.source === source) : [...jobs];
+}
+
+/** The reference precedes this run; the completion time is never used as history. */
+export function noNewScanLabel(previousAt:string|undefined){
+ const previous=Date.parse(previousAt??"");
+ return Number.isFinite(previous)?`Rien de nouveau depuis ${new Date(previous).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`:"Aucune nouvelle offre à ce premier balayage";
 }

@@ -55,3 +55,13 @@ test("Q2b : un écho par offre unique, stable lors d’une arrivée et contenu d
 test("Q2b : le filtre de source est exact, même si une entreprise contient le nom",()=>{
  const jobs=[{id:"1",source:"Jobgether",company:"Fictive"},{id:"2",source:"Autre",company:"Jobgether"}];assert.deepEqual(offersFromSource(jobs,"Jobgether").map(job=>job.id),["1"]);assert.equal(offersFromSource(jobs).length,2);assert.equal(jobs.length,2);
 });
+test("B : sept lectures fictives et deux pauses, sans étendre les collecteurs réels",()=>{
+ const plan=scanPlan([],true);assert.equal(plan.filter(item=>item.state==="waiting").length,7);assert.equal(plan.filter(item=>item.state==="paused").length,2);
+ assert.equal(scanPlan([]).length,2);assert.equal(scanPlan([{source:"Apec",state:"paused"}],true).find(item=>item.source==="Apec").state,"paused");
+});
+test("B : le bilan sans nouveauté utilise la référence précédente et gère une première lecture",async()=>{
+ const {noNewScanLabel}=await import(moduleUrl("scan-presentation"));
+ const previous="2026-11-08T08:15:00Z";
+ assert.equal(noNewScanLabel(previous),"Rien de nouveau depuis "+new Date(previous).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}));
+ assert.equal(noNewScanLabel(undefined),"Aucune nouvelle offre à ce premier balayage");assert.equal(noNewScanLabel("invalide"),noNewScanLabel(undefined));
+});

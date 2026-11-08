@@ -34,3 +34,7 @@ test("Aujourd’hui : seuls les scénarios explicites autorisent un balayage aut
  for(const mode of ["today-error","today-loading","today-interview"]){assert.equal(demoScenario(mode),mode);assert.equal(demoAutoScan(mode),false);}
  assert.equal(demoAutoScan("today-partial"),true);assert.equal(demoAutoScan("unknown"),false);
 });
+test("B : l’entretien conserve le nom de sa cible dans la présentation",()=>{
+ const step={kind:"interview",label:"Préparer une histoire pour votre entretien chez Orion Cloud",action:{type:"story",theme:"prioriser",jobId:"orion"}};
+ assert.match(todayStepLabel(step),/chez Orion Cloud$/);assert.equal(step.action.jobId,"orion");
+});
