@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Bilan privé après refus L3 / C3
+
+- Deux questions facultatives et un espace libre privé dans la candidature ; brouillon conservé et validation explicite. Mes leçons rassemble les bilans dans Mon profil.
+- Le bilan validé compte comme progrès dans le journal privé, avec encouragement Q6 possible ; le refus seul et les modifications répétées n’en créent pas. Conflits comparables, sauvegarde conservée, aucune migration ni service tiers.
+
 ## 8 novembre 2026 — Dates précises des sources
 
 - Les dates de publication avec microsecondes et fuseau restent complètes à l’import. Une correction de TJM ne rajeunit pas une offre ancienne avant son archivage restaurable. Aucune migration ni réécriture des anciennes dates inconnues.

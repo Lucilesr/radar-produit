@@ -1,4 +1,5 @@
 import "./signal-application-followup.css";
+import "./signal-application-lesson.css";
 import "./signal-application-care.css";
 import "./signal-activity.css";
 import type { Metadata } from "next";

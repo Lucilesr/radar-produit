@@ -28,6 +28,8 @@ function fixture(path = ":memory:") {
     sqlite.prepare("INSERT INTO workspace_writes(user_id,key,version,value,created_at) VALUES(?,?,?,?,?)").run(user,"draft:job-"+user,1,"Note sauvegardée", "now");
     sqlite.prepare("INSERT INTO workspace_writes(user_id,key,version,value,created_at) VALUES(?,?,?,?,?)").run(user,"application:care:job-"+user,1,JSON.stringify({cv:true,message:true,contact:false,questions:true}),"now");
     sqlite.prepare("INSERT INTO workspace_writes(user_id,key,version,value,created_at) VALUES(?,?,?,?,?)").run(user,"application:followup:job-"+user,1,JSON.stringify({appliedFor:"2026-11-01T10:00:00Z",dueAt:"2026-11-08T10:00:00Z",doneAt:"2026-11-08T11:00:00Z"}),"now");
+    sqlite.prepare("INSERT INTO workspace_writes(user_id,key,version,value,created_at) VALUES(?,?,?,?,?)").run(user,"application:lesson:job-"+user,1,JSON.stringify({keep:"Leçon privée "+user,change:"",note:"Espace libre "+user,validatedAt:"2026-11-08T12:00:00Z"}),"now");
+    sqlite.prepare("INSERT INTO workspace_writes(user_id,key,version,value,created_at) VALUES(?,?,?,?,?)").run(user,"lesson:job-"+user,1,JSON.stringify({keep:"Brouillon privé "+user,change:"",note:"",baseVersion:0}),"now");
     sqlite.prepare("INSERT INTO application_questions(id,user_id,job_id,question,answer,created_at,updated_at) VALUES(?,?,?,?,?,?,?)")
       .run("question-"+user,user,"job-"+user,"Question fictive", "Brouillon privé "+user,"now","now");
     sqlite.prepare("INSERT INTO application_answer_revisions(id,user_id,question_id,version,question,answer,created_at) VALUES(?,?,?,?,?,?,?)")
@@ -59,7 +61,7 @@ test("sauvegarde intégrale A/B : noms/contenus/offres identiques, aucune donné
     assert.equal(a.manifest.format,BACKUP_FORMAT);
     assert.equal(a.database.tables.application_questions[0].answer,"Brouillon privé alice");
     assert.equal(a.database.tables.application_answer_proposals[0].answer,"Variante fictive alice");
-    assert.equal(a.database.tables.workspace_writes.find(row=>row.key.startsWith("draft:")).value,"Note sauvegardée");assert.equal(JSON.parse(a.database.tables.workspace_writes.find(row=>row.key.startsWith("application:care:")).value).questions,true);assert.equal(JSON.parse(a.database.tables.workspace_writes.find(row=>row.key.startsWith("application:followup:")).value).doneAt,"2026-11-08T11:00:00Z");
+    assert.equal(a.database.tables.workspace_writes.find(row=>row.key.startsWith("draft:")).value,"Note sauvegardée");assert.equal(JSON.parse(a.database.tables.workspace_writes.find(row=>row.key.startsWith("application:care:")).value).questions,true);assert.equal(JSON.parse(a.database.tables.workspace_writes.find(row=>row.key.startsWith("application:followup:")).value).doneAt,"2026-11-08T11:00:00Z");assert.equal(JSON.parse(a.database.tables.workspace_writes.find(row=>row.key.startsWith("application:lesson:")).value).note,"Espace libre alice");assert.equal(JSON.parse(a.database.tables.workspace_writes.find(row=>row.key.startsWith("lesson:")).value).keep,"Brouillon privé alice");
     assert.equal(a.database.tables.application_boards[0].user_id,"alice");
     assert(a.files.every(o => o.key.startsWith("users/alice/")));
     assert.doesNotMatch(JSON.stringify(a), /job-bob|doc-bob|users\/bob/);
@@ -83,7 +85,7 @@ test("restauration locale complète, relecture, refus d’écrasement et altéra
     assert.equal(proof.counts.jobs, 1);
     assert.equal(proof.counts.activity_events,1);
     assert.equal(proof.counts.application_answer_proposals,1);
-    assert.equal(proof.counts.workspace_writes,3);
+    assert.equal(proof.counts.workspace_writes,5);
     assert.equal(proof.counts.application_boards,1);
     assert.equal(proof.referenceDiagnostics.proposalsWithoutQuestion,0);
     assert.equal(JSON.parse(await readFile(join(root, "restore", "preuve-restauration.json"), "utf8")).integrityCheck, "ok");
@@ -139,7 +141,7 @@ test("une sauvegarde v3 avec fourchettes reste restaurable après le journal L1"
   for(const table of BACKUP_TABLES.filter(name=>!V3_BACKUP_TABLES.includes(name))){delete previous.database.tables[table];delete previous.manifest.tables[table];}
   previous.database.schema=previous.database.schema.filter(row=>V3_BACKUP_TABLES.includes(row.tbl_name));previous.manifest.databaseSha256=await sha256(canonical(previous.database));
   await verifyBackup(previous);const root=await mkdtemp(join(tmpdir(),"radar-backup-v3-test-")),file=join(root,"backup-v3.json");const {writeFile}=await import("node:fs/promises");await writeFile(file,JSON.stringify(previous),{mode:0o600});
-  const proof=await restoreBackup(file,join(root,"restore-v3"));assert.equal(proof.format,V3_BACKUP_FORMAT);assert(proof.fullRowComparison);assert.equal(proof.counts.workspace_writes,3);assert.equal(proof.counts.jobs,1);
+  const proof=await restoreBackup(file,join(root,"restore-v3"));assert.equal(proof.format,V3_BACKUP_FORMAT);assert(proof.fullRowComparison);assert.equal(proof.counts.workspace_writes,5);assert.equal(proof.counts.jobs,1);
  }finally{f.sqlite.close();}
 });
 test("refus complet si original manquant, namespace incorrect, fichier changeant, table inconnue ou identité absente", async () => {

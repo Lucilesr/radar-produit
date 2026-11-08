@@ -52,7 +52,7 @@ La première visite de la semaine propose « Nouvelle semaine, page blanche ». 
 
 Dans **Mon profil → Mon compte → Votre confort**, **Réduire les animations et célébrations** garde les informations et coupe les mouvements et encouragements surprises. Le mouvement réduit de l’appareil est également respecté. **Activer les raccourcis de tri S, L et X** est un choix séparé : vous pouvez garder les animations et désactiver les touches, ou l’inverse. Les cases attendent la sauvegarde du compte et se retrouvent sur vos appareils.
 
-Certaines actions confirmées peuvent afficher une courte phrase avec un signal corail : candidature envoyée, relance déclarée faite, bilan d’entretien rempli ou semaine tenue. En usage normal, le choix est aléatoire, environ une fois sur trois, avec un maximum d’un encouragement par heure pour le compte. Aucun son, aucun envoi. Il ne remplace ni une erreur ni un bouton utile ; il attend la fin d’un dialogue ou d’une saisie. Aucun encouragement après un refus ou une offre écartée. Le signal citron de portée décrit un palier ; il reste distinct de ces surprises.
+Certaines actions confirmées peuvent afficher une courte phrase avec un signal corail : candidature envoyée, relance déclarée faite, bilan d’entretien rempli ou semaine tenue. En usage normal, le choix est aléatoire, environ une fois sur trois, avec un maximum d’un encouragement par heure pour le compte. Aucun son, aucun envoi. Il ne remplace ni une erreur ni un bouton utile ; il attend la fin d’un dialogue ou d’une saisie. Le passage au statut refusé et l’écartement d’une offre ne déclenchent aucun encouragement. La validation ultérieure d’un bilan privé constitue une action distincte. Le signal citron de portée décrit un palier ; il reste distinct de ces surprises.
 
 ## Termes de votre domaine — S5
 
@@ -115,3 +115,9 @@ Après une relance faite, aucune seconde n’est créée automatiquement. **Pré
 Une date d’envoi inconnue reste inconnue : Radar n’invente pas J+7. Les relances après un entretien se règlent dans **Entretiens**. Les choix, confirmations et versions sont conservés dans la sauvegarde intégrale ; aucun service tiers ne les reçoit.
 
 Les dates de publication importées gardent leur précision et leur fuseau. Corriger un TJM ne change pas l’âge de publication : une offre ancienne sans décision reste dans les archives restaurables. Une ancienne date invalide ne peut pas être devinée ; corrigez-la depuis la fiche si vous la connaissez.
+
+## Après un refus — L3 / C3
+
+Le statut **Refus reçu** propose un bilan facultatif. Vous pouvez choisir **Pas maintenant** et revenir dans **Ma candidature** : **Ce que je garde**, **Ce que je change** et **Mon espace libre privé**. Un seul champ peut suffire. Le brouillon se conserve ; **Valider mon bilan privé** est une action séparée et compte comme progrès. Le refus seul ne déclenche aucun encouragement.
+
+**Mon profil → Mes leçons** rassemble les bilans, avec un accès au dossier. Relire et modifier conserve les versions précédentes et ne crée pas un nouveau progrès pour le même envoi. En cas de conflit, comparez le dernier bilan du compte avec votre saisie conservée. Ces textes et brouillons sont privés, inclus dans votre sauvegarde et exclus des prompts de candidature ; aucun service tiers ne les reçoit.
