@@ -15,8 +15,8 @@ import { applicationAge, formatDate, reviewDue, statusLabels, terminalStatuses }
 import { personalColumn, type PersonalBoard, type PersonalColumn } from "@/lib/personal-board";
 import type { JobRecord, JobStatus } from "@/lib/types";
 
-export function ApplicationMobileList({ jobs, board, busy, now, onStatus, onOpen, onColumn }: {
-  jobs: JobRecord[]; board: PersonalBoard; busy: string | null; now: number;
+export function ApplicationMobileList({ jobs, board, busy, now, onStatus, onOpen, onColumn, scope }: {
+  jobs: JobRecord[]; board: PersonalBoard; busy: string | null; now: number; scope: string;
   onStatus: (job: JobRecord, status: JobStatus, columnId?: string) => Promise<boolean>;
   onOpen: (job: JobRecord, view?: WorkspaceView) => void; onColumn: (column?: PersonalColumn) => void;
 }) {
@@ -53,7 +53,7 @@ export function ApplicationMobileList({ jobs, board, busy, now, onStatus, onOpen
   return <div className="application-mobile-list">
     <div className="application-mobile-summary"><p>{jobs.length} candidature{jobs.length === 1 ? "" : "s"}</p><WorkspaceButton variant="quiet" disabled={!!busy} onClick={() => onColumn()}><Plus size={16} aria-hidden/>Ajouter une étape</WorkspaceButton></div>
     <p className="sr-only" role="status">{message}</p><WorkspaceFormError message={closing ? "" : error}/>
-    {groups.map(({ column, jobs: items }) => <Collapsible key={column.id} defaultOpen className={`application-mobile-group is-${column.stage}`}>
+    {groups.filter(group => scope === "closed" ? group.column.stage === "closed" : scope === "active" ? group.column.stage !== "closed" : true).map(({ column, jobs: items }) => <Collapsible key={column.id} defaultOpen className={`application-mobile-group is-${column.stage}`}>
       <div className="application-mobile-group-heading"><h2><CollapsibleTrigger className="signal-quiet-button"><span>{column.label}</span><span className="workspace-badge" aria-label={`${items.length} candidature${items.length === 1 ? "" : "s"}`}>{items.length}</span><ChevronDown size={16} aria-hidden/></CollapsibleTrigger></h2><button type="button" className="board-column-edit" disabled={!!busy} aria-label={`Modifier la colonne ${column.label}`} onClick={() => onColumn(column)}><Pencil size={16} aria-hidden/></button></div>
       <CollapsibleContent className="application-mobile-cards">
         {items.map(job => {
