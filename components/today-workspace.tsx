@@ -1,18 +1,17 @@
 "use client";
-import {useRadarNextSteps} from "@/components/next-steps-context";
 import {useDisplayTimeZone} from "@/components/use-display-time-zone";
+import {weekKey} from "@/lib/week-plan";
+import {useRadarNextSteps} from "@/components/next-steps-context";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, ArrowUpRight, Columns3, List } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { usePersonalBoard } from "@/components/use-personal-board";
-import {ApplicationCareBadge} from "@/components/application-care";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ApplicationMobileList } from "@/components/application-mobile-list";
 import { ApplicationKanban } from "@/components/application-kanban";
-import {HelpTooltip} from "@/components/help-tooltip";
 import { WorkspaceButton, WorkspacePanelHeader } from "@/components/workspace-form";
 import {upcomingInterviews} from "@/lib/workspace-agenda";
-import { applicationAge, formatDate, reviewDue, terminalStatuses } from "@/lib/application-workflow";
-import { StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
+import { terminalStatuses } from "@/lib/application-workflow";
+import { type WorkspaceView } from "@/components/offer-workspace";
 import { PageHeader, WorkspaceState } from "@/components/workspace-ui";
 import type { JobRecord, JobStatus } from "@/lib/types";
 import {todayStepLabel} from "@/lib/today-presentation";
@@ -51,35 +50,27 @@ export function TodayWorkspace({radarLine,sessionAction,sessionNotice,weekPlan,i
  </div></div>;
 }
 
-export function ApplicationsWorkspace({lessonsActive=false,onLessons,onMainView,lessons,contextualPrompt,jobs,onStatus,onOpen,placeholder,notice,funnel}:{lessonsActive?:boolean;onLessons?:()=>void;onMainView?:()=>void;lessons?:ReactNode;contextualPrompt?:ReactNode;funnel?:ReactNode;placeholder?:ReactNode;notice?:ReactNode;jobs:JobRecord[];onStatus:(id:string,status:JobStatus,columnId?:string)=>Promise<boolean>;onOpen:(job:JobRecord,view?:WorkspaceView)=>void}) {
-  const displayZone=useDisplayTimeZone();
-  const [scope,setScope]=useState("active"),[busy,setBusy]=useState<string|null>(null),[error,setError]=useState("");
-  const [display,setDisplay]=useState<"list"|"board"|"funnel">("list");
-  const mobile=useIsMobile();
-  const shownDisplay=lessonsActive?"lessons":mobile&&display==="board"?"list":display;
+export function ApplicationsWorkspace({lessonsActive=false,onLessons,onMainView,onOffers,lessons,refusal,jobs,preparedJobs=[],onStatus,onOpen,placeholder,notice,funnel}:{lessonsActive?:boolean;onLessons?:()=>void;onMainView?:()=>void;onOffers?:(selection?:boolean)=>void;lessons?:ReactNode;refusal?:ReactNode;funnel?:ReactNode;placeholder?:ReactNode;notice?:ReactNode;jobs:JobRecord[];preparedJobs?:JobRecord[];onStatus:(id:string,status:JobStatus,columnId?:string)=>Promise<boolean>;onOpen:(job:JobRecord,view?:WorkspaceView)=>void}) {
+  const [busy,setBusy]=useState<string|null>(null),[error,setError]=useState(""),[errorJob,setErrorJob]=useState<string|null>(null);
+  const zone=useDisplayTimeZone();
+  const mobile=useIsMobile(),personal=usePersonalBoard(jobs),now=useNow(jobs);
+  const {queue,ready,onAction}=useRadarNextSteps();
+  const next=queue.find(step=>["interview","followups","care"].includes(step.kind));
+  const active=jobs.filter(job=>!terminalStatuses.includes(job.status)),closed=jobs.filter(job=>terminalStatuses.includes(job.status));
+  const followups=active.filter(job=>job.applicationFollowup?.eligible&&job.applicationFollowup.dueAt&&!job.applicationFollowup.doneAt&&Date.parse(job.applicationFollowup.dueAt)<=now).length;
+  const interviews=upcomingInterviews(active,now).filter(({event})=>weekKey(Date.parse(event.startAt),zone)===weekKey(now,zone)).length;
   const statusLock=useRef(false);
-  const personal=usePersonalBoard(jobs);
-  const now=useNow(jobs);
-  const items=jobs.filter(job=>scope==="active"?!terminalStatuses.includes(job.status):scope==="closed"?terminalStatuses.includes(job.status):true);
-  async function changeStatus(job:JobRecord,status:JobStatus,columnId?:string){if(statusLock.current)return false;statusLock.current=true;setBusy(job.id);setError("");try{const saved=await onStatus(job.id,status,columnId);if(!saved)setError("Réessayez de modifier le statut. Le dernier statut confirmé reste affiché.");return saved;}catch{setError("Statut non confirmé. Actualisez pour vérifier avant de réessayer.");return false;}finally{statusLock.current=false;setBusy(null);requestAnimationFrame(()=>{if(document.activeElement!==document.body)return;const trigger=Array.from(document.getElementById(`application-status-${job.id}`)?.querySelectorAll<HTMLButtonElement>("button")??[]).find(element=>element.getClientRects().length);(trigger??document.getElementById("workspace-title"))?.focus();});}}
-  return <><PageHeader title="Candidatures"><div className="application-display-toggle" role="group" aria-label="Affichage des candidatures"><button type="button" aria-label={mobile?"Afficher la liste par étape":"Afficher en tableau"} aria-pressed={shownDisplay==="list"} onClick={()=>{setDisplay("list");onMainView?.();}}><List size={16} aria-hidden/>{mobile?"Liste":"Tableau"}</button>{!mobile?<button type="button" aria-label="Afficher en Kanban" aria-pressed={shownDisplay==="board"} onClick={()=>{if(shownDisplay!=="board")setScope("all");setDisplay("board");onMainView?.();}}><Columns3 size={16} aria-hidden/>Kanban</button>:null}{funnel?<button type="button" aria-pressed={shownDisplay==="funnel"} onClick={()=>{setDisplay("funnel");onMainView?.();}}>Entonnoir</button>:null}{lessons?<button type="button" aria-pressed={shownDisplay==="lessons"} onClick={onLessons}>Mes leçons</button>:null}</div></PageHeader>
-    {shownDisplay==="lessons"?lessons:shownDisplay==="funnel"?funnel:placeholder??<div className="applications-workspace">{notice}{contextualPrompt}
-    {shownDisplay==="list"?<div className="applications-toolbar"><nav className="workspace-tabs" aria-label="Vues des candidatures">{[["active","En cours"],["closed","Closes"],["all","Toutes"]].map(([id,label])=><button key={id} type="button" aria-pressed={scope===id} onClick={()=>setScope(id)}>{label}</button>)}</nav></div>:null}
-    {error&&!mobile?<WorkspaceState error title="Statut non enregistré">{error}</WorkspaceState>:null}
-    {(shownDisplay==="board"||mobile)&&!personal.ready?<WorkspaceState error={!!personal.error} title={personal.error?"Colonnes indisponibles":"Chargement des colonnes…"}>{personal.error}<WorkspaceButton onClick={()=>void personal.load()}>Réessayer</WorkspaceButton></WorkspaceState>:shownDisplay==="board"?<ApplicationKanban board={personal.board} onColumn={personal.open} jobs={items} now={now} busy={busy} onStatus={changeStatus} onOpen={onOpen}/>:!items.length?<WorkspaceState title="Aucune candidature dans cette vue">Le bouton « J’ai postulé » d’une offre permet de commencer son suivi.</WorkspaceState>:mobile?<ApplicationMobileList scope={scope} jobs={items} board={personal.board} now={now} busy={busy} onStatus={changeStatus} onOpen={onOpen} onColumn={personal.open}/>:<div className="applications-list"><div className="applications-heading" aria-hidden="true"><span>Poste</span><span>Envoyée le</span><span>Suite</span><span>Statut</span><span></span></div>{items.map(job=>{
-      const followup=job.applicationFollowup?.eligible&&job.applicationFollowup.dueAt&&!job.applicationFollowup.doneAt&&Date.parse(job.applicationFollowup.dueAt)<=now;
-      const due=job.interviews?.find(event=>reviewDue(event,now));
-      const next=upcomingInterviews([job],now)[0]?.event;
-      const age=applicationAge(job.appliedAt,now);
-      return <article key={job.id} className="application-row" aria-busy={busy===job.id}>
-        <div className="application-identity"><div><h2><button type="button" onClick={()=>onOpen(job,"application")}>{job.title}</button></h2><p>{job.company||"Entreprise à confirmer"}{job.deletedAt?" · Offre en corbeille, suivi conservé":""}</p><ApplicationCareBadge job={job}/><div className="application-inline-sent"><span>Envoyée le</span><span className={`application-age${age?` is-${age.tone}`:""}`}>{job.appliedAt?formatDate(job.appliedAt,displayZone):"Date inconnue"}</span></div></div></div>
-        <div className="application-sent"><span className="application-cell-label">Envoyée le</span><span className={`application-age${age?` is-${age.tone}`:""}`}>{job.appliedAt?formatDate(job.appliedAt,displayZone):"Date inconnue"}</span></div>
-        <div className="application-next"><span className="application-cell-label">Suite</span><span className={"workspace-badge "+(due?"is-warning":next?"is-success":"")}>{terminalStatuses.includes(job.status)?"Candidature close":job.status==="offer"?"Proposition reçue":due?"Bilan à faire":followup?"Relance à faire":next?"Entretien planifié":job.status==="interview"?"Entretien à suivre":"En attente de retour"}</span>{next?<p>{formatDate(next.startAt,next.timeZone,true)}<br/><small>{next.timeZone}</small></p>:null}</div>
-        <div id={`application-status-${job.id}`} className="application-status"><span className="application-cell-label" aria-hidden="true">Statut</span><StatusSelect compact value={job.status} disabled={!!busy} label={"Statut · "+(job.company||job.title)} onChange={status=>void changeStatus(job,status)}/></div>
-        <button type="button" className="secondary-button application-open" onClick={()=>onOpen(job,job.status==="offer"?"application":due||next||job.status==="interview"?"interviews":"application")}>{job.status==="offer"?"Ouvrir":due?"Faire le bilan":followup?"Faire la relance":next?"Voir l’entretien":"Ouvrir"}<ArrowUpRight size={15} aria-hidden /></button>
-      </article>;
-    })}</div>}
-    {personal.dialog}
-  </div>}
-  </>;
+  async function changeStatus(job:JobRecord,status:JobStatus,columnId?:string){if(statusLock.current)return false;statusLock.current=true;setBusy(job.id);setErrorJob(job.id);setError("");try{const saved=await onStatus(job.id,status,columnId);if(!saved)setError("Le déplacement n’est pas confirmé. Le dernier statut confirmé reste affiché.");return saved;}catch{setError("Statut non confirmé. Actualisez pour vérifier avant de réessayer.");return false;}finally{statusLock.current=false;setBusy(null);requestAnimationFrame(()=>{if(document.activeElement!==document.body)return;document.getElementById("workspace-title")?.focus({preventScroll:true});});}}
+  const lessonLink=<a href="?tab=pipeline&section=lessons" className="application-lessons-link" onClick={event=>{event.preventDefault();onLessons?.();}}>Mes leçons</a>;
+  if(lessonsActive)return <div className="applications-aligned"><a href="?tab=pipeline" className="application-return" onClick={event=>{event.preventDefault();onMainView?.();}}>← Candidatures</a><PageHeader title="Mes leçons"/>{lessons}</div>;
+  return <div className="applications-aligned"><PageHeader title="Candidatures"><WorkspaceButton onClick={()=>onOffers?.(true)}>Ajouter depuis une offre</WorkspaceButton></PageHeader>
+    {!placeholder?<p className="application-overview">{active.length} en cours · {followups} relance{followups!==1?"s":""} à faire · {interviews} entretien{interviews!==1?"s":""} cette semaine</p>:null}
+    {placeholder??<div className="applications-workspace">{notice}
+      {refusal??(ready&&next?<section className="application-next-step" aria-labelledby="application-next-title"><div><p>Prochaine étape</p><h2 id="application-next-title">{next.label}</h2><span>{next.minutes} minutes, à votre rythme.</span></div><WorkspaceButton variant="primary" onClick={()=>onAction(next.action)}>{next.kind==="interview"?"Préparer":next.kind==="followups"?"Relancer":"Préparer la candidature"}</WorkspaceButton></section>:null)}
+      {funnel}
+      {error&&preparedJobs.some(job=>job.id===errorJob)?<WorkspaceState error title="Déplacement non enregistré">{error}</WorkspaceState>:null}
+      {!personal.ready?<WorkspaceState error={!!personal.error} title={personal.error?"Colonnes indisponibles":"Chargement des colonnes…"}>{personal.error}{personal.error?<WorkspaceButton onClick={()=>void personal.load()}>Réessayer</WorkspaceButton>:null}</WorkspaceState>:!jobs.length&&!preparedJobs.length?<WorkspaceState title="Votre suivi commence ici">Sélectionnez une offre pour préparer votre candidature.<WorkspaceButton variant="primary" onClick={()=>onOffers?.()}>Voir mon lot du jour</WorkspaceButton></WorkspaceState>:mobile?<><ApplicationMobileList scope="active" jobs={active} board={personal.board} now={now} busy={busy} onStatus={changeStatus} onOpen={onOpen} onColumn={personal.open}/><details className="application-closed"><summary id="application-closed-summary">Terminées ({closed.length}) <span aria-hidden>▸</span></summary>{closed.length?<ApplicationMobileList scope="closed" jobs={closed} board={personal.board} now={now} busy={busy} onStatus={changeStatus} onOpen={onOpen} onColumn={personal.open}/>:<p>Aucune candidature terminée.</p>}</details></>:<ApplicationKanban board={personal.board} onColumn={personal.open} jobs={jobs} preparedJobs={preparedJobs} now={now} busy={busy} onStatus={changeStatus} onOpen={onOpen}/>}
+      {lessonLink}{personal.dialog}
+    </div>}
+  </div>;
 }

@@ -1,5 +1,10 @@
 ## 8 novembre 2026 — Aujourd’hui aligné sur les maquettes
 
+## 9 novembre 2026 — Candidatures par étape
+
+- Vue unique par étapes, terminées repliées, prochaine action nommée et entonnoir compact ; outils rangés dans le menu.
+- Préparation depuis la sélection et déplacement accessible par carte ; trois cartes par colonne avant dépliage.
+
 ## 9 novembre 2026 — Balayage et prochaines étapes
 
 - Alignement du retour, du titre et des commandes de Balayage ; absence de nouveauté comparée au balayage précédent.
