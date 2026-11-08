@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Radar — Balayage v2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F3F5F6}
+a{color:#193F50}a:hover{color:#24566B}
+@keyframes radar-sweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes echo{0%{r:4;opacity:1}100%{r:14;opacity:0}}
+.sweep{transform-origin:100px 100px;animation:radar-sweep 2.4s linear infinite}
+.echo{animation:echo 1.6s ease-out 3}
+@media (prefers-reduced-motion: reduce){.sweep,.echo{animation:none}}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F3F5F6; font-family: Inter, system-ui, sans-serif; color: #203743">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 14px 32px; background: #FFFFFF; border-bottom: 1px solid #D4DFE5">
+<a href="Aujourdhui-v2.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #193F50">
+<svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true"><rect x="2" y="2" width="44" height="44" rx="12" fill="#193F50"></rect><circle cx="24" cy="24" r="15.5" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-opacity="0.5"></circle><circle cx="24" cy="24" r="3.3" fill="#FFFFFF"></circle><path d="M24 24 35 13" stroke="#FFFFFF" stroke-width="1.8"></path><circle cx="35" cy="13" r="4" fill="#E6EE53"></circle></svg>
+<span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.01em">Radar</span>
+</a>
+<nav aria-label="Navigation principale" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto">
+<a href="Aujourdhui-v2.dc.html" style="padding: 10px 16px; border-radius: 999px; color: #203743; font-weight: 500; font-size: 15px; text-decoration: none">Aujourd’hui</a>
+<a href="Offre-fiche.dc.html" style="padding: 10px 16px; border-radius: 999px; color: #203743; font-weight: 500; font-size: 15px; text-decoration: none">Offres</a>
+<a href="Candidatures.dc.html" style="padding: 10px 16px; border-radius: 999px; color: #203743; font-weight: 500; font-size: 15px; text-decoration: none">Candidatures</a>
+<a href="MonRadar.dc.html" aria-current="page" style="padding: 10px 16px; border-radius: 999px; background: #193F50; color: #FFFFFF; font-weight: 600; font-size: 15px; text-decoration: none">Mon radar</a>
+</nav>
+<button type="button" aria-label="Mon compte : Camille" style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid #D4DFE5; background: #EAF0F3; color: #193F50; font: 700 15px Inter, sans-serif; cursor: pointer">C</button>
+</header>
+
+<main style="max-width: 1120px; margin: 0 auto; padding: 28px 32px 56px; display: flex; flex-direction: column; gap: 20px">
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<a href="MonRadar.dc.html" style="font-size: 14px; font-weight: 600; text-decoration: none">← Mon radar</a>
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 40px; line-height: 1.1; font-weight: 750; letter-spacing: -0.01em; color: #193F50">Balayage</h1>
+</div>
+<button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #D4DFE5; background: #FFFFFF; color: #193F50; font: 600 15px Inter, sans-serif; cursor: pointer">Actualiser</button>
+</div>
+
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5B6B76">État 1 · Nouvelles offres (moment complet)</p>
+<section aria-labelledby="done-title" style="display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 28px 40px; align-items: center; padding: 32px 36px; border-radius: 20px; background: #193F50; color: #FFFFFF">
+<svg viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Radar : 6 échos pour vos critères">
+<circle cx="100" cy="100" r="92" fill="#203743" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.5"></circle>
+<circle cx="100" cy="100" r="62" fill="none" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1.2"></circle>
+<circle cx="100" cy="100" r="32" fill="none" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1.2"></circle>
+<path d="M100 8v184M8 100h184" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="1"></path>
+<circle cx="100" cy="100" r="4" fill="#FFFFFF"></circle>
+<circle cx="138" cy="56" r="5" fill="#E6EE53"></circle><circle class="echo" cx="138" cy="56" r="4" fill="none" stroke="#E6EE53" stroke-width="2"></circle>
+<circle cx="64" cy="70" r="5" fill="#E6EE53"></circle><circle class="echo" cx="64" cy="70" r="4" fill="none" stroke="#E6EE53" stroke-width="2"></circle>
+<circle cx="150" cy="128" r="5" fill="#E6EE53"></circle>
+<circle cx="84" cy="150" r="5" fill="#E6EE53"></circle>
+<circle cx="118" cy="88" r="5" fill="#E6EE53"></circle>
+<circle cx="46" cy="118" r="5" fill="#E6EE53"></circle>
+</svg>
+<div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+<p style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #E6EE53">Balayage terminé · à l’instant</p>
+<h2 id="done-title" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 36px; line-height: 1.12; font-weight: 750; letter-spacing: -0.005em">6 nouvelles offres pour vous</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<div style="padding: 16px; border-radius: 16px; background: #24566B"><p style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 32px; font-weight: 750; font-variant-numeric: tabular-nums">214</p><p style="margin: 2px 0 0; font-size: 14px; color: #D8E6EC">parcourues</p></div>
+<div style="padding: 16px; border-radius: 16px; background: #E6EE53; color: #193F50"><p style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 32px; font-weight: 750; font-variant-numeric: tabular-nums">12</p><p style="margin: 2px 0 0; font-size: 14px; font-weight: 600">pour vous</p></div>
+<div style="padding: 16px; border-radius: 16px; background: #24566B"><p style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 32px; font-weight: 750; font-variant-numeric: tabular-nums">6</p><p style="margin: 2px 0 0; font-size: 14px; color: #D8E6EC">nouvelles</p></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+<a href="Offre-fiche.dc.html" style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 22px; border-radius: 10px; background: #E6EE53; color: #193F50; font-weight: 700; font-size: 15px; text-decoration: none">Voir mon lot du jour</a>
+<button type="button" aria-label="En savoir plus sur les doublons" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; color: #D8E6EC; font: 500 14px Inter, sans-serif; cursor: pointer">ⓘ 30 doublons fusionnés</button>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="sources-title" style="display: flex; flex-direction: column; gap: 4px; padding: 24px 28px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px">
+<h2 id="sources-title" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 22px; font-weight: 700; color: #193F50">Ce que chaque source a donné</h2>
+<p style="margin: 0; display: flex; gap: 16px; font-size: 13px; color: #5B6B76"><span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #E6EE53; border: 1px solid #A7B528"></span>pour vous</span><span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #D8E6EC"></span>parcourues</span></p>
+</div>
+
+<div style="display: grid; grid-template-columns: 200px minmax(0, 1fr) 230px 120px; gap: 12px 16px; align-items: center; padding: 12px 0; border-top: 1px solid #EAF0F3">
+<strong style="font-size: 15px">Welcome to the Jungle</strong>
+<div style="height: 12px; border-radius: 999px; background: #EAF0F3; overflow: hidden"><div style="width: 100%; height: 100%; background: #D8E6EC; display: flex"><div style="width: 9%; background: #E6EE53"></div></div></div>
+<span style="font-size: 14px; color: #5B6B76; font-variant-numeric: tabular-nums">48 parcourues · <strong style="color: #193F50">4 pour vous</strong> · 2 nouv.</span>
+<a href="Offre-fiche.dc.html" style="font-size: 14px; font-weight: 600">Voir ses offres</a>
+</div>
+<div style="display: grid; grid-template-columns: 200px minmax(0, 1fr) 230px 120px; gap: 12px 16px; align-items: center; padding: 12px 0; border-top: 1px solid #EAF0F3">
+<strong style="font-size: 15px">We Work Remotely</strong>
+<div style="height: 12px; border-radius: 999px; background: #EAF0F3; overflow: hidden"><div style="width: 83%; height: 100%; background: #D8E6EC; display: flex"><div style="width: 9%; background: #E6EE53"></div></div></div>
+<span style="font-size: 14px; color: #5B6B76; font-variant-numeric: tabular-nums">40 parcourues · <strong style="color: #193F50">3 pour vous</strong> · 2 nouv.</span>
+<a href="Offre-fiche.dc.html" style="font-size: 14px; font-weight: 600">Voir ses offres</a>
+</div>
+<div style="display: grid; grid-template-columns: 200px minmax(0, 1fr) 230px 120px; gap: 12px 16px; align-items: center; padding: 12px 0; border-top: 1px solid #EAF0F3">
+<strong style="font-size: 15px">Jobgether</strong>
+<div style="height: 12px; border-radius: 999px; background: #EAF0F3; overflow: hidden"><div style="width: 75%; height: 100%; background: #D8E6EC; display: flex"><div style="width: 7%; background: #E6EE53"></div></div></div>
+<span style="font-size: 14px; color: #5B6B76; font-variant-numeric: tabular-nums">36 parcourues · <strong style="color: #193F50">2 pour vous</strong> · 1 nouv.</span>
+<a href="Offre-fiche.dc.html" style="font-size: 14px; font-weight: 600">Voir ses offres</a>
+</div>
+<div style="display: grid; grid-template-columns: 200px minmax(0, 1fr) 230px 120px; gap: 12px 16px; align-items: center; padding: 12px 0; border-top: 1px solid #EAF0F3">
+<strong style="font-size: 15px">Remotive</strong>
+<div style="height: 12px; border-radius: 999px; background: #EAF0F3; overflow: hidden"><div style="width: 62%; height: 100%; background: #D8E6EC; display: flex"><div style="width: 4%; background: #E6EE53"></div></div></div>
+<span style="font-size: 14px; color: #5B6B76; font-variant-numeric: tabular-nums">30 parcourues · <strong style="color: #193F50">1 pour vous</strong> · 1 nouv.</span>
+<a href="Offre-fiche.dc.html" style="font-size: 14px; font-weight: 600">Voir ses offres</a>
+</div>
+<div style="display: grid; grid-template-columns: 200px minmax(0, 1fr) 350px; gap: 12px 16px; align-items: center; padding: 12px 0; border-top: 1px solid #EAF0F3">
+<strong style="font-size: 15px">Remote OK</strong>
+<p style="margin: 0; font-size: 14px; color: #8A3B12">N’a pas répondu. Les autres sources sont enregistrées.</p>
+<button type="button" style="justify-self: end; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D4DFE5; background: #FFFFFF; color: #193F50; font: 600 14px Inter, sans-serif; cursor: pointer">Réessayer Remote OK</button>
+</div>
+<button type="button" aria-expanded="false" style="align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: transparent; color: #24566B; font: 600 14px Inter, sans-serif; cursor: pointer">2 sources en pause ▸</button>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 8px; padding-top: 16px; border-top: 1px solid #D4DFE5">
+<strong style="font-size: 15px; color: #193F50">À visiter</strong>
+<span style="display: inline-flex; align-items: center; gap: 10px; padding: 4px 4px 4px 14px; border-radius: 999px; background: #EAF0F3; font-size: 14px">Collective · 6 jours <a href="MonRadar.dc.html" aria-label="Visiter Collective" style="display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: 999px; background: #FFFFFF; font-weight: 600; text-decoration: none">Visiter</a></span>
+<span style="display: inline-flex; align-items: center; gap: 10px; padding: 4px 4px 4px 14px; border-radius: 999px; background: #EAF0F3; font-size: 14px">Malt · 9 jours <a href="MonRadar.dc.html" aria-label="Visiter Malt" style="display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: 999px; background: #FFFFFF; font-weight: 600; text-decoration: none">Visiter</a></span>
+<span style="display: inline-flex; align-items: center; gap: 10px; padding: 4px 4px 4px 14px; border-radius: 999px; background: #EAF0F3; font-size: 14px">Apec · jamais <a href="MonRadar.dc.html" aria-label="Visiter Apec" style="display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: 999px; background: #FFFFFF; font-weight: 600; text-decoration: none">Visiter</a></span>
+<button type="button" style="min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #24566B; font: 600 14px Inter, sans-serif; cursor: pointer">+ 3 autres</button>
+</div>
+</section>
+
+<p style="margin: 16px 0 0; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5B6B76">État 2 · En cours</p>
+<section aria-labelledby="busy-title" aria-busy="true" style="display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 24px 36px; align-items: center; padding: 28px 32px; border-radius: 20px; background: #193F50; color: #FFFFFF">
+<svg viewBox="0 0 200 200" width="160" height="160" aria-hidden="true">
+<circle cx="100" cy="100" r="92" fill="#203743" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.5"></circle>
+<circle cx="100" cy="100" r="62" fill="none" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1.2"></circle>
+<circle cx="100" cy="100" r="32" fill="none" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1.2"></circle>
+<g class="sweep"><path d="M100 100 L100 8 A92 92 0 0 1 165 35 Z" fill="#E6EE53" fill-opacity="0.22"></path><path d="M100 100 L100 8" stroke="#E6EE53" stroke-width="2"></path></g>
+<circle cx="138" cy="56" r="5" fill="#E6EE53"></circle>
+<circle cx="64" cy="70" r="5" fill="#E6EE53"></circle>
+</svg>
+<div style="display: flex; flex-direction: column; gap: 14px; min-width: 0">
+<h2 id="busy-title" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 30px; font-weight: 700">Balayage de 7 sources…</h2>
+<div role="progressbar" aria-label="Sources balayées" aria-valuemin="0" aria-valuemax="7" aria-valuenow="4" aria-valuetext="4 sources sur 7" style="height: 10px; max-width: 460px; border-radius: 999px; background: #24566B; overflow: hidden"><div style="width: 57%; height: 100%; background: #E6EE53"></div></div>
+<ul aria-live="polite" style="margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px 20px; font-size: 14px">
+<li style="color: #FFFFFF">✓ Welcome to the Jungle · 4 pour vous</li>
+<li style="color: #FFFFFF">✓ We Work Remotely · 3 pour vous</li>
+<li style="color: #FFFFFF">✓ Jobgether · 2 pour vous</li>
+<li style="color: #FFFFFF">✓ Remotive · 1 pour vous</li>
+<li style="color: #E6EE53">◌ Himalayas · en cours</li>
+<li style="color: #D8E6EC">· Remote OK · en attente</li>
+<li style="color: #D8E6EC">· Free-Work · en attente</li>
+</ul>
+</div>
+</section>
+
+<p style="margin: 16px 0 0; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5B6B76">État 3 · Rien de nouveau (pas de célébration)</p>
+<section aria-labelledby="quiet-title" style="display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 16px 28px; align-items: center; padding: 24px 28px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<svg viewBox="0 0 200 200" width="96" height="96" aria-hidden="true">
+<circle cx="100" cy="100" r="92" fill="#EAF0F3" stroke="#24566B" stroke-opacity="0.45" stroke-width="2"></circle>
+<circle cx="100" cy="100" r="58" fill="none" stroke="#24566B" stroke-opacity="0.35" stroke-width="2"></circle>
+<circle cx="100" cy="100" r="6" fill="#24566B"></circle>
+</svg>
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<h2 id="quiet-title" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 26px; font-weight: 700; color: #193F50">Rien de nouveau depuis 9 h 40</h2>
+<p style="margin: 0; font-size: 15px; color: #5B6B76">214 offres parcourues, toutes déjà connues. 4 offres vous attendent dans votre lot du jour.</p>
+</div>
+<a href="Offre-fiche.dc.html" style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; border-radius: 10px; background: #193F50; color: #FFFFFF; font-weight: 600; font-size: 15px; text-decoration: none">Voir mon lot du jour</a>
+</section>
+
+<section aria-label="Autres états" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">
+<article style="padding: 18px 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5"><p style="margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #24566B">Toutes les sources en erreur</p><p style="margin: 0; font-size: 14px; color: #5B6B76">« Le balayage n’a pas abouti. Vos offres restent conservées. » Bouton « Réessayer ». Arrêt au bout de 60 s, jamais d’animation infinie.</p></article>
+<article style="padding: 18px 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5"><p style="margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #24566B">Mouvement réduit</p><p style="margin: 0; font-size: 14px; color: #5B6B76">Radar fixe, échos affichés directement, chiffres sans défilement.</p></article>
+<article style="padding: 18px 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5"><p style="margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #24566B">Mobile, 390 px</p><p style="margin: 0; font-size: 14px; color: #5B6B76">Radar de 120 px au-dessus du titre ; cartes de chiffres en 3 colonnes étroites ; une source par bloc : nom, barre pleine largeur, chiffres dessous.</p></article>
+<article style="padding: 18px 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5"><p style="margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #24566B">Actualisation à l’ouverture</p><p style="margin: 0; font-size: 14px; color: #5B6B76">Silencieuse. Sur Aujourd’hui, le bloc « Le radar » affiche un petit radar qui tourne, puis « 6 nouvelles offres · Voir le bilan ».</p></article>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2000}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
