@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Radar — Aujourd’hui mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F3F5F6}
+a{color:#193F50}a:hover{color:#24566B}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1240px; box-sizing: border-box; background: #F3F5F6; font-family: Inter, system-ui, sans-serif; color: #203743; position: relative; padding-bottom: 96px">
+
+<header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; background: #FFFFFF; border-bottom: 1px solid #D4DFE5">
+<div>
+<p style="margin: 0; font-size: 13px; font-weight: 600; color: #5B6B76">Dimanche 8 novembre</p>
+<h1 style="margin: 2px 0 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 28px; line-height: 1.1; font-weight: 750; color: #193F50">Bonjour Camille</h1>
+</div>
+<button type="button" aria-label="Mon compte : Camille" style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid #D4DFE5; background: #EAF0F3; color: #193F50; font: 700 15px Inter, sans-serif; cursor: pointer">C</button>
+</header>
+
+<div style="padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+<section aria-labelledby="m-seance" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 20px; background: #193F50; color: #FFFFFF">
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #E6EE53">Prochaine étape · 12 min</p>
+<h2 id="m-seance" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 24px; line-height: 1.18; font-weight: 700">Trier votre lot du jour : 20 offres, dont 3 très proches</h2>
+<a href="Offre-mobile.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 10px; background: #E6EE53; color: #193F50; font-weight: 700; font-size: 16px; text-decoration: none">Commencer ma séance</a>
+<ul style="margin: 0; padding: 12px 0 0; list-style: none; border-top: 1px solid #24566B; display: flex; flex-direction: column; gap: 4px">
+<li><a href="Candidatures-mobile.dc.html" style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; color: #FFFFFF; font-size: 15px; text-decoration: none"><span>Ensuite : relancer Scale-up Paiements</span><span style="color: #D8E6EC">3 min ›</span></a></li>
+<li><a href="MonRadar-mobile.dc.html" style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; color: #FFFFFF; font-size: 15px; text-decoration: none"><span>Faire le tour de Collective</span><span style="color: #D8E6EC">3 min ›</span></a></li>
+</ul>
+</section>
+
+<section aria-labelledby="m-semaine" style="display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+<h2 id="m-semaine" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 20px; font-weight: 700; color: #193F50">Votre semaine</h2>
+<span style="font-size: 13px; font-weight: 600; color: #176947">4 semaines tenues</span>
+</div>
+<p style="margin: 0; font-size: 14px; color: #5B6B76">2 engagements sur 3 · plus qu’un, vendredi</p>
+<label style="display: flex; gap: 12px; align-items: center; min-height: 44px; font-size: 15px"><input type="checkbox" style="width: 22px; height: 22px; accent-color: #176947"></input>Vendredi 10 h, bilan de l’entretien Néobanque</label>
+<button type="button" aria-expanded="false" style="align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: transparent; color: #24566B; font: 600 14px Inter, sans-serif; cursor: pointer">✓ 2 engagements tenus ▸</button>
+</section>
+
+<section aria-labelledby="m-radar" style="display: flex; flex-direction: column; gap: 8px; padding: 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+<h2 id="m-radar" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 20px; font-weight: 700; color: #193F50">Le radar</h2>
+<a href="Balayage-mobile.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600">Voir le bilan</a>
+</div>
+<p style="margin: 0; font-size: 15px"><strong>6 nouvelles offres</strong> pour vous depuis hier.</p>
+<p style="margin: 0; font-size: 13px; color: #5B6B76">Actualisé il y a 2 h · 214 offres sur 7 sources</p>
+</section>
+
+<section aria-labelledby="m-etats" style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: #EAF0F3">
+<h2 id="m-etats" style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5B6B76">États mobiles</h2>
+<p style="margin: 0; font-size: 13px; color: #203743"><strong>Tout est fait :</strong> le bloc séance devient blanc, « C’est tout pour aujourd’hui. Le radar veille. », sans bouton.</p>
+<p style="margin: 0; font-size: 13px; color: #203743"><strong>Entretien sous 48 h :</strong> il devient la prochaine étape, « Préparer · 5 min ».</p>
+<p style="margin: 0; font-size: 13px; color: #203743"><strong>Compte neuf :</strong> 3 étapes numérotées à la place des 3 blocs.</p>
+</section>
+</div>
+
+<nav aria-label="Navigation principale" style="position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 4px 14px; background: #FFFFFF; border-top: 1px solid #D4DFE5">
+<a href="Aujourdhui-mobile.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; font-weight: 700; color: #193F50; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" fill="#E6EE53" stroke="#193F50" stroke-width="1.8" stroke-linejoin="round"></path></svg>Accueil</a>
+<a href="Offre-mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; color: #5B6B76; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="#5B6B76" stroke-width="1.8"></circle><path d="M16 16l4 4" stroke="#5B6B76" stroke-width="1.8" stroke-linecap="round"></path></svg>Offres</a>
+<a href="Candidatures-mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; color: #5B6B76; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2" fill="none" stroke="#5B6B76" stroke-width="1.8"></rect><path d="M9 12l2 2 4-4" fill="none" stroke="#5B6B76" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Suivi</a>
+<a href="MonRadar-mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; color: #5B6B76; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="#5B6B76" stroke-width="1.8"></circle><circle cx="12" cy="12" r="2" fill="#5B6B76"></circle><path d="M12 12l5-5" stroke="#5B6B76" stroke-width="1.8"></path></svg>Mon radar</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1240}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
