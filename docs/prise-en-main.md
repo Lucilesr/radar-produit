@@ -121,3 +121,13 @@ Les dates de publication importées gardent leur précision et leur fuseau. Corr
 Le statut **Refus reçu** propose un bilan facultatif. Vous pouvez choisir **Pas maintenant** et revenir dans **Ma candidature** : **Ce que je garde**, **Ce que je change** et **Mon espace libre privé**. Un seul champ peut suffire. Le brouillon se conserve ; **Valider mon bilan privé** est une action séparée et compte comme progrès. Le refus seul ne déclenche aucun encouragement.
 
 **Mon profil → Mes leçons** rassemble les bilans, avec un accès au dossier. Relire et modifier conserve les versions précédentes et ne crée pas un nouveau progrès pour le même envoi. En cas de conflit, comparez le dernier bilan du compte avec votre saisie conservée. Ces textes et brouillons sont privés, inclus dans votre sauvegarde et exclus des prompts de candidature ; aucun service tiers ne les reçoit.
+
+## Votre entonnoir — L4
+
+Dans **Candidatures → Entonnoir**, retrouvez les candidatures envoyées sur les 90 derniers jours et leurs suites enregistrées dans votre journal privé. Les chiffres apparaissent à partir de **5 candidatures** ; avant ce seuil, Radar indique combien il en manque. Les anciennes candidatures sans événement d’envoi ne reçoivent pas d’historique inventé.
+
+Une candidature compte au plus une fois par envoi vers l’entretien et vers l’offre, même avec plusieurs rendez-vous. Une étape entretien déclarée, un rendez-vous programmé ou un bilan noté donne un signal d’entretien ; un rendez-vous annulé sans échange noté n’en donne plus. Un envoi explicitement annulé est retiré. Un nouvel envoi constitue un autre cycle.
+
+Les sources sont celles enregistrées lors de l’envoi. Les petits échantillons font beaucoup varier les pourcentages : lisez aussi les nombres. Le taux entretien → offre ne suppose aucun entretien si une proposition a été reçue directement. Une date d’entretien passée renseignée dans son bilan permet de tenir compte de l’ordre des faits.
+
+**À ce rythme, environ N entretiens par mois** décrit les 90 jours observés, divisés par trois, sans prédire votre prochain résultat. Cette phrase apparaît aussi sur Aujourd’hui une fois le seuil atteint. **Actualiser les chiffres** relit le journal ; une erreur garde les derniers chiffres confirmés. Aucun tiers, aucun e-mail ou partage automatique.

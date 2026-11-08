@@ -988,3 +988,19 @@ Les notes longues restent dans leur dossier : elles ne sont pas reproduites dans
 | Hors ligne | Connexion perdue | Brouillon local et dernier bilan confirmé ; validation non annoncée comme réussie | Garder l’onglet puis réessayer | partiel |
 
 Les erreurs de transaction, l’isolement de compte, la pagination, les versions et les textes privés dans la sauvegarde sont testés. La panne réseau système n’est pas simulée dans la recette visuelle ; les captures et mesures sont référencées dans docs/l3-bilan-refus/README.md.
+
+## L4 — Entonnoir et tendance de l’accueil
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Compte neuf / moins de5 | Moins de cinq envois L1 sur90jours | Encore N candidatures pour voir votre entonnoir ; aucun taux | Continuer à son rythme | oui |
+| Chargement | Lecture du journal | Lecture en cours, commandes désactivées | Attendre | oui |
+| Erreur API / événement illisible | Lecture impossible | Derniers chiffres confirmés conservés, erreur explicite | Réessayer la lecture | oui |
+| Résultat / peu de données | Seuil atteint | Comptes, deux taux, rythme observé, petits échantillons expliqués | Voir les sources / relire | oui |
+| Partiel historique | Journal activé après des envois anciens | Date des premiers événements, pas de reconstruction des anciens statuts | Lire la limite d’historique | oui |
+| Aucun entretien / offre directe | Aucun entretien lié avant une offre | Taux non calculable sans dénominateur, offre comptée séparément | Continuer son suivi | oui |
+| Volume / textes longs | Nombreux événements ou sources longues | Agrégat par cycle, dédoublonnage, sources à la ligne | Défiler les sources | oui |
+| Clavier / mobile390 / mouvement réduit | Interaction et préférences | Vue Entonnoir, cibles44px, compteurs Signal, focus de reprise | Même lecture | oui |
+| Hors ligne | Connexion perdue | Chiffres déjà confirmés gardés, aucune donnée inventée | Réessayer après reconnexion | partiel |
+
+Recette et limites documentées dans docs/l4-entonnoir/README.md. Les événements privés restent dans le compte et la sauvegarde L1. Une source en erreur ne modifie pas rétroactivement les événements d’envoi déjà confirmés.

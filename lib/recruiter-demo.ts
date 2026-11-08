@@ -2,7 +2,7 @@ import {demoWeekSeries} from "./demo-week-series";
 import { and, eq } from "drizzle-orm";
 import { env } from "cloudflare:workers";
 import { getDb } from "@/db";
-import { documents, experienceItems, interviews, jobs, profiles, sourceSettings } from "@/db/schema";
+import { activityEvents, documents, experienceItems, interviews, jobs, profiles, sourceSettings } from "@/db/schema";
 import { assessJob, createFingerprint } from "./matching";
 import { normalizeJobInput } from "./server";
 import type { CandidateProfile, JobStatus, SearchPreferences } from "./types";
@@ -46,9 +46,9 @@ const experience = [
   { title: "Product Manager · SaaS", organization: "Ligne Claire (fictif)", role: "Product Manager", period: "2020–2023", context: "Développement fictif d’une plateforme SaaS utilisée par plusieurs équipes métiers.", contribution: "Discovery, cadrage de la roadmap et coordination avec design, data et ingénierie.", result: "Livraisons mieux séquencées et retours utilisateurs intégrés aux décisions.", claimKey: "saas-discovery" },
 ];
 
-type DemoOptions={weekScenario?:string;emptyProfile?:boolean;fridayDemo?:boolean;triageDemo?:boolean;scanDemo?:boolean;reducedMotion?:boolean;sessionDemo?:boolean;sessionEmpty?:boolean};
+type DemoOptions={funnelDemo?:boolean;weekScenario?:string;emptyProfile?:boolean;fridayDemo?:boolean;triageDemo?:boolean;scanDemo?:boolean;reducedMotion?:boolean;sessionDemo?:boolean;sessionEmpty?:boolean};
 export async function ensureRecruiterDemo(userId: string, options: DemoOptions|boolean = {}): Promise<boolean> {
-  const {weekScenario,emptyProfile=false,fridayDemo=false,triageDemo=false,scanDemo=false,reducedMotion=false,sessionDemo=false,sessionEmpty=false}=typeof options==="boolean"?{emptyProfile:options}:options;
+  const {funnelDemo=false,weekScenario,emptyProfile=false,fridayDemo=false,triageDemo=false,scanDemo=false,reducedMotion=false,sessionDemo=false,sessionEmpty=false}=typeof options==="boolean"?{emptyProfile:options}:options;
   if (!userId.startsWith("demo:")) throw new Error("La démo exige une session fictive.");
   const db = getDb();
   const existing = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.userId, userId)).limit(1);
@@ -72,6 +72,18 @@ export async function ensureRecruiterDemo(userId: string, options: DemoOptions|b
   });
   if (!emptyProfile) await db.insert(profiles).values({ userId, data: JSON.stringify(demoProfile), updatedAt: nowIso }).onConflictDoNothing();
   for (const row of rows) await db.insert(jobs).values(row).onConflictDoNothing({ target: [jobs.userId, jobs.fingerprint] });
+  // This branch is reached only after the fresh-workspace guard above, for a fictional visitor.
+  if(funnelDemo)for(let index=0;index<10;index++){
+    const source=index<4?"Collectif fictif":index<7?"Réseau fictif":"Veille fictive",hasInterview=[0,1,2,4].includes(index),ago=35+index*3;
+    const input=normalizeJobInput({title:"Product Owner · Entonnoir fictif "+(index+1),company:"Atelier fictif "+(index+1),source,contractType:"cdi",remoteMode:"full_remote",annualSalary:65000,language:"fr",description:"Offre entièrement fictive pour montrer les taux de conversion du journal. Aucun recrutement réel."}),assessment=assessJob(input,demoSearchPreferences),id=crypto.randomUUID(),appliedAt=daysAgo(ago);
+    await db.insert(jobs).values({id,userId,fingerprint:createFingerprint(input),...input,status:index===0?"offer":hasInterview?"interview":"awaiting_response",reviewState:"selected",appliedAt,createdAt:appliedAt,updatedAt:nowIso,matchScore:assessment.score,matchTier:assessment.tier,reasons:JSON.stringify(assessment.reasons),flags:JSON.stringify(assessment.flags)});
+    await db.insert(activityEvents).values({id:crypto.randomUUID(),userId,action:"application_sent",objectType:"job",objectId:id,createdAt:appliedAt,data:{source,fictional:true}});
+    if(hasInterview){const meeting=crypto.randomUUID(),startAt=daysAgo(ago-10),endAt=new Date(Date.parse(startAt)+3600000).toISOString(),notedAt=daysAgo(ago-11),outcome=index===0?"offer":"waiting";
+      await db.insert(interviews).values({id:meeting,userId,jobId:id,label:"Entretien entièrement fictif",startAt,endAt,timeZone:"Europe/Paris",format:"video",state:"reviewed",data:JSON.stringify({summary:"Bilan entièrement fictif, pour la recette de l’entonnoir.",outcome}),updatedAt:notedAt});
+      for(const [action,createdAt] of [["interview_scheduled",daysAgo(ago-5)],["interview_noted",notedAt]])await db.insert(activityEvents).values({id:crypto.randomUUID(),userId,action,objectType:"interview",objectId:meeting,createdAt,data:{jobId:id,source,outcome:action==="interview_noted"?outcome:null,fictional:true}});
+      if(index===0)await db.insert(activityEvents).values({id:crypto.randomUUID(),userId,action:"application_stage_changed",objectType:"job",objectId:id,createdAt:daysAgo(ago-15),data:{source,from:"interview",to:"offer",fictional:true}});
+    }
+  }
   if (fridayDemo || triageDemo) for (const [index, company] of ["Atelier Signal", "Maison Boréale", "Studio Nacre", "Équipe Horizon", ...(triageDemo ? ["Exemple à trier"] : [])].entries()) {
     const input = normalizeJobInput({ title: "Product Owner senior · Plateforme B2B", company: `${company} · ${triageDemo?"triage":"repêchage"} fictif`, contractType: "cdi", annualSalary: 65000, remoteMode: triageDemo?"hybrid":"full_remote", onsiteDaysPerWeek:triageDemo?3:undefined, language: "fr", source: "Exemple fictif", contentCoverage: "full", description: "Exemple entièrement fictif pour la recette du repêchage. Vous pilotez une plateforme B2B, menez la discovery, priorisez le backlog et mesurez l’adoption avec les équipes design, data et ingénierie. Le poste demande une expérience senior en Product Ownership. Salaire annuel de 65 000 euros, contrat CDI, sans management hiérarchique." });
     const assessment = assessJob(input, demoSearchPreferences);
