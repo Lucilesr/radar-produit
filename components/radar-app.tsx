@@ -52,7 +52,7 @@ import { radarReach, type ReachAction, type InterviewTheme } from "@/lib/radar-r
 import { currentItems, isSensitiveDetail, sectionType } from "@/lib/experience-domain";
 import { sourceCatalog } from "@/lib/source-catalog";
 import { ScanWorkspace, ScanStatusLine } from "@/components/scan-workspace";
-import { mergeSourceSettings, type AutomaticSource } from "@/lib/source-sync";
+import { mergeSourceSettings } from "@/lib/source-sync";
 import { lastRefreshAt, refreshMode, shouldRefreshOnOpen } from "@/lib/refresh-schedule";
 import type { SourceSetting } from "@/components/source-card";
 import { TriageLearning } from "@/components/triage-learning";
@@ -153,7 +153,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   const scanOpener=useRef<HTMLElement|null>(null),autoScanned=useRef(false);
   const acceptSources=useCallback((incoming:SourceSetting[])=>{setSourceSettings(current=>mergeSourceSettings(current,incoming));setSourcesLoaded(true);setSourcesError(false);},[setSourceSettings,setSourcesLoaded,setSourcesError]);
   const acceptOffers=useCallback((incoming:JobRecord[])=>{setJobs(incoming);setLoadErrors(current=>({...current,jobs:false}));refreshRadarClock();},[setJobs,setLoadErrors]);
-  const scan=useRadarScan({onOffers:acceptOffers,onSources:acceptSources,knownJobs:jobs,sources:sourceSettings,sourcesKnown:sourcesLoaded&&!sourcesError});
+  const scan=useRadarScan({onOffers:acceptOffers,onSources:acceptSources,knownJobs:jobs,sources:sourceSettings,sourcesKnown:sourcesLoaded&&!sourcesError,simulated:!!ownerId?.startsWith("demo:")});
   useLayoutEffect(()=>{document.documentElement.dataset.motion=profile.preferences?.reducedMotion?"reduced":"full";return()=>{delete document.documentElement.dataset.motion;};},[profile.preferences?.reducedMotion]);
   const selectedJob = allJobs.find(job => job.id === route.offer) || null;
   const [loadAttempt, setLoadAttempt] = useState(0);
@@ -176,7 +176,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   const setToast = (message: string | null, error = false, action?: WorkspaceFeedback["action"]) => { if (message) notify({message, tone: error ? "error" : "success", action}); };
   const roleChosen = hasSearchedRole(searchPreferences(profile.searchPreferences));
   function closeScan(){setScanOpen(false);requestAnimationFrame(()=>{const previous=scanOpener.current;(previous?.isConnected&&previous.getClientRects().length?previous:document.getElementById("workspace-title"))?.focus({preventScroll:true});});}
-  async function runScan(source?:AutomaticSource,quiet=false){
+  async function runScan(source?:string,quiet=false){
     if(trashLock.current)return false;
     if(!roleChosen){navigate({tab:"radar",section:"criteria",offer:undefined});setToast("Choisissez d’abord le poste que vous cherchez dans Mon radar.",true);return false;}
     autoScanned.current=true;
@@ -386,13 +386,13 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
       </aside>
       <section className="radar-content">
 
-        <div className="radar-page" data-space={tab} data-offer-open={offerReadingOpen||undefined} data-scan={scanOpen||undefined} data-aligned={scanOpen||tab==="dashboard"||tab==="offers"||undefined}>
+        <div className="radar-page" data-space={scanOpen?"scan":tab} data-offer-open={offerReadingOpen||undefined} data-scan={scanOpen||undefined} data-aligned={scanOpen||tab==="dashboard"||tab==="offers"||undefined}>
         {journey.session&&!journey.session.paused?<SessionStrip session={journey.session} onOpen={journey.open} onNext={journey.next} onQuit={journey.finish} onPause={journey.pause} busy={!!trashBusy||refreshing||journey.writing}/>:null}
         {journey.error||continuityError?<WorkspaceState error title="Point de reprise à relire" action={<WorkspaceButton onClick={()=>{void reloadContinuity();void journey.reload();void refreshOffers({silent:true});}}>Réessayer</WorkspaceButton>}>{journey.error||continuityError}</WorkspaceState>:null}
         {journey.session&&!journey.session.paused&&journey.session.steps[journey.session.current]==="followups"?<section className="radar-session-strip" aria-label="Relances de la séance"><h2 id="session-followups-title" tabIndex={-1}>Les relances arrivées à échéance</h2><p className="signal-help">Radar n’envoie aucun message. Après votre envoi, notez la relance dans votre journal privé.</p>{journey.due.map(entry=><div className="radar-session-actions" key={entry.id}><span>{entry.job.company||entry.job.title}</span><WorkspaceButton onClick={()=>openJob(entry.job,entry.kind==="application"?"application":"interviews")}>Ouvrir la candidature</WorkspaceButton><WorkspaceButton disabled={journey.writing} onClick={()=>void journey.confirmFollowup(entry.id)}>J’ai fait cette relance</WorkspaceButton></div>)}{!journey.due.length?<p>Aucune relance arrivée à échéance pour cette étape.</p>:null}</section>:null}
         {scanOpen?<div className="scan-page-return"><WorkspaceButton variant="quiet" aria-label="Retour à Mon radar" onClick={()=>{setScanOpen(false);navigate({tab:"radar",section:"sources",offer:undefined});}}><span aria-hidden>←</span><span className="scan-desktop-label"> Mon radar</span></WorkspaceButton></div>:null}
         {!scanOpen&&tab==="dashboard"?<TodayPageHeader estimate={roleChosen} name={userName} account={<RadarAccountMenu compact name={userName} initials={initials} demo={!!ownerId?.startsWith("demo:")} signOutPath={signOutPath} onAccount={()=>selectTab("account")}/>}/>:scanOpen||tab!=="pipeline"?<PageHeader title={scanOpen?"Balayage":tab==="account"?"Mon compte":tabs.find(item => item.id === tab)?.label || "Radar Produit"}><div className="page-tools"><span className="page-header-privacy"><PrivateLabel /></span>{sourceActive&&!scanOpen?<div id="source-refresh-header" ref={setSourceHeaderTarget}/>:tab==="account"?null:<button type="button" onClick={() => void runScan()} disabled={refreshing||scan.busy||!roleChosen} aria-busy={scan.busy||undefined} className="secondary-button page-refresh-action" aria-label="Actualiser les offres"><RefreshCw size={15} className={scan.busy ? "animate-spin" : ""} aria-hidden /><span className="page-refresh-label">Actualiser</span></button>}</div></PageHeader>:null}
-        {scanOpen?<ScanWorkspace sourcesKnown={sourcesLoaded&&!sourcesError} busy={scan.busy} error={scan.error} result={scan.result} progress={scan.progress} newIds={scan.newIds} sources={sourceSettings} knownCount={jobs.length} toReviewCount={stats.new} simulated={!!ownerId?.startsWith("demo:")} now={rescueClock} onRun={source=>void runScan(source)} onOffers={source=>{setScanOpen(false);navigate({tab:"offers",filter:"to_review",query:"",source,offer:undefined});requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}} onSource={openSource}/>:null}
+        {scanOpen?<ScanWorkspace previousAt={scan.previousAt} sourcesKnown={sourcesLoaded&&!sourcesError} busy={scan.busy} error={scan.error} result={scan.result} progress={scan.progress} newIds={scan.newIds} sources={sourceSettings} knownCount={jobs.length} toReviewCount={stats.new} simulated={!!ownerId?.startsWith("demo:")} now={rescueClock} onRun={source=>void runScan(source)} onOffers={source=>{setScanOpen(false);navigate({tab:"offers",filter:"to_review",query:"",source,offer:undefined});requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}} onSource={openSource}/>:null}
         <div hidden={scanOpen}>
         {tab!=="pipeline"&&(loading||tab==="offers"&&!dailyLotReady&&!continuityError&&!loadErrors.jobs&&!loadErrors.profile) ? tab==="dashboard"?<TodaySkeleton/>:<WorkspaceLoading /> : null}
         {tab!=="pipeline"?loadNotice:null}

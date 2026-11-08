@@ -45,10 +45,10 @@ export function nextSteps(input:NextStepInput):NextStep[]{
  const imminent=upcomingInterviews(jobs,now).find(({event})=>Number.isFinite(Date.parse(event.startAt))&&Date.parse(event.startAt)<=now+48*3600000&&promptVisible(input.prompts,"interview:"+event.id,now));
  if(imminent){
   const theme=interviewThemes.find(item=>!reach?.doneThemes.includes(item.id))??interviewThemes[0];
-  add({id:"interview:"+imminent.event.id,kind:"interview",label:"Préparer une histoire pour votre entretien",minutes:5,action:{type:"story",theme:theme.id,jobId:imminent.job.id}});
+  add({id:"interview:"+imminent.event.id,kind:"interview",label:"Préparer une histoire pour votre entretien chez "+(imminent.job.company||imminent.job.title),minutes:5,action:{type:"story",theme:theme.id,jobId:imminent.job.id}});
  }
  const due=dueFollowups(jobs,now,input.confirmedFollowups??[]);
- if(due.length)add({id:"followups",kind:"followups",label:due.length===1?"Faire cette relance":"Faire "+due.length+" relances",minutes:3*due.length,action:{type:"followups",jobId:due[0].job.id,view:due[0].kind==="interview"?"interviews":"application"}});
+ if(due.length)add({id:"followups",kind:"followups",label:"Relancer "+(due[0].job.company||due[0].job.title)+(due.length>1?` et ${due.length-1} autre${due.length>2?"s":""}`:""),minutes:3*due.length,action:{type:"followups",jobId:due[0].job.id,view:due[0].kind==="interview"?"interviews":"application"}});
  const remaining=Math.max(0,Math.min(20,Math.floor(input.lotRemaining)));
  if(Number.isFinite(remaining)&&remaining)add({id:"daily-lot",kind:"triage",label:"Trier votre lot du jour",minutes:remaining,action:{type:"triage"}});
  const zone=validTimeZone(input.timeZone)?input.timeZone:"UTC";
@@ -56,7 +56,7 @@ export function nextSteps(input:NextStepInput):NextStep[]{
  if(!input.plan||input.plan.week!==weekKey(now,zone))add({id:"week-plan",kind:"plan",label:"Poser votre plan de la semaine",minutes:5,action:{type:"plan"}});
  const care=jobs.filter(job=>!job.deletedAt&&!hasApplication(job)&&!job.appliedAt&&reviewState(job)==="selected"&&careCount(job.applicationCare)<3&&!["rejected","withdrawn","closed","offer"].includes(job.status))
   .sort((a,b)=>(b.fit??0)-(a.fit??0)||a.id.localeCompare(b.id))[0];
- if(care)add({id:"care:"+care.id,kind:"care",label:"Soigner une candidature de votre sélection",minutes:5,action:{type:"care",jobId:care.id}});
+ if(care)add({id:"care:"+care.id,kind:"care",label:"Soigner votre candidature chez "+(care.company||care.title),minutes:5,action:{type:"care",jobId:care.id}});
  if(reach?.next&&(reach.next.kind!=="level"||promptVisible(input.prompts,"level",now))&&(reach.next.kind!=="visit"||!reach.next.target||promptVisible(input.prompts,"source:"+reach.next.target,now)))add({id:"setting:"+reach.next.kind,kind:"setting",label:reach.next.label,minutes:reach.next.minutes,action:{type:"setting",setting:{...reach.next}}});
  const source=[...new Map(input.sources.map(item=>[item.source,item])).values()].filter(item=>item.selected!==false&&item.state!=="paused"&&item.remindInToday!==false&&promptVisible(input.prompts,"source:"+item.source,now)&&["web","research","email"].includes(input.modeOf(item.source)??"")&&(!Number.isFinite(Date.parse(item.lastVisitedAt??""))||now-Date.parse(item.lastVisitedAt!)>=7*86400000))
   .sort((a,b)=>(Date.parse(a.lastVisitedAt??"")||0)-(Date.parse(b.lastVisitedAt??"")||0)||a.source.localeCompare(b.source,"fr"))[0];

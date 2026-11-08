@@ -141,3 +141,9 @@
  .radar-app:has(.radar-page[data-aligned=true]) .radar-nav .nav-count{display:none}
 }
 @media(max-width:640px){.radar-app:has(.radar-page[data-aligned=true]) .radar-nav button.is-active>svg{color:var(--signal-petrol-ink);stroke:var(--signal-petrol-ink)}}
+
+/* B1 — the return, title and content share a left edge from every entry point. */
+.radar-page[data-scan=true]>.workspace-page-header{width:100%;max-width:none;justify-content:space-between;justify-self:stretch;text-align:left}
+.radar-page[data-scan=true]>.workspace-page-header>div:first-child{margin:0;flex:1;min-width:0}
+.radar-page[data-scan=true]>.workspace-page-header .page-refresh-action{margin-left:auto}
+@media(max-width:640px){.radar-page[data-scan=true]>.scan-page-return{grid-column:1/-1;grid-row:auto}.radar-page[data-scan=true]>.workspace-page-header{grid-column:1/-1;grid-row:auto}.scan-page-return button{width:auto;font-size:14px}.scan-page-return .scan-desktop-label{display:inline}}

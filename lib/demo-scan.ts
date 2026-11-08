@@ -1,6 +1,7 @@
+import {demoScanSources,demoScanState,demoScanActive} from "./demo-scan-plan";
 import { saveOffer } from "./job-store";
 import { listSourceSettings, saveSourceSetting } from "./source-store";
-import { scanMatches, summarizeScan, type AutomaticSource, type SourceReading } from "./source-sync";
+import { scanMatches, summarizeScan, type SourceReading } from "./source-sync";
 import type { DemoScenario } from "./demo-scenarios";
 import type { JobInput } from "./types";
 
@@ -11,20 +12,20 @@ const examples:JobInput[]=["Aurore Atelier","Rivage Studio","Clairière Produit"
 }));
 
 /** First-party fictional fixtures only: this adapter performs no external requests. */
-export async function syncDemoSources(userId:string,mode:DemoScenario|"full",requested?:AutomaticSource,retry=!!requested){
+export async function syncDemoSources(userId:string,mode:DemoScenario|"full",requested?:string,retry=!!requested){
   if(!userId.startsWith("demo:"))throw new Error("Le scénario exige un compte fictif.");
   const now=new Date().toISOString(),readings:SourceReading[]=[];
   const settings=await listSourceSettings(userId);
-  for(const source of requested?[requested]:["We Work Remotely","Jobgether"] as const){
-    const previous=settings.find(setting=>setting.source===source);
-    if(previous?.selected===false||previous?.state==="paused"||(source==="Jobgether"&&previous?.selected!==true)){
+  for(const source of requested?[requested]:demoScanSources){
+
+    if(demoScanState(source,settings)==="paused"){
       readings.push({source,state:"paused",ok:true,total:0,imported:0,deduplicated:0,matchedIds:[]});continue;
     }
-    const failed=mode==="scan-error"||mode==="scan-auto-error"||((mode==="scan-partial"||mode==="today-partial")&&source==="Jobgether"&&!retry);
+    const failed=mode==="scan-error"||mode==="scan-auto-error"||(mode!=="scan-empty"&&source==="Jobgether"&&!retry);
     const reading:SourceReading={source,state:failed?"error":"ok",ok:!failed,total:0,imported:0,deduplicated:0,matchedIds:[],...(failed?{error:"Panne fictive de cette source. Vous pouvez réessayer."}:{lastSyncedAt:now})};
     if(!failed){
       // The repeated first item creates a real deduplication through the normal private write path.
-      for(const offer of source==="We Work Remotely"?[examples[0],examples[0]]:[examples[1],examples[2]]){
+      for(const offer of mode==="scan-empty"?[]:Array.from({length:2+(demoScanActive as readonly string[]).indexOf(source)},(_,index)=>({...examples[index%3],source,company:`${examples[index%3].company} · ${source}`}))){
         reading.total++;
         const saved=await saveOffer(userId,offer);
         if(saved.deduplicated)reading.deduplicated++;else reading.imported++;

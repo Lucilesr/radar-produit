@@ -12,7 +12,7 @@ export function todayStepLabel(step: NextStep, lot?: DailyLot | null) {
   if (step.action.type === "story" && step.kind === "interview") {
     // Keep the selected theme from the queue, without choosing a different story.
     const selected = interviewThemes.find(theme => step.action.type === "story" && theme.id === step.action.theme);
-    return selected ? `Préparer l’histoire « ${selected.label} » pour votre entretien` : step.label;
+    return selected ? `Préparer l’histoire « ${selected.label} » pour votre entretien${step.label.includes(" chez ")?" chez "+step.label.split(" chez ").slice(1).join(" chez "):""}` : step.label;
   }
   return step.label;
 }
