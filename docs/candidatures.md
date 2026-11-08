@@ -65,3 +65,7 @@ Staging privé39, code source `377fa24022e45da2c642d91b7a3d6e235c596716`. Compte
 **Cosmétique** : une proposition reçue peut encore afficher « En attente de retour » dans Suite, alors que son statut est Offre reçue. Corriger le libellé dans C4, puis harmoniser visuellement dans L6 sans changer les règles.
 
 Aucune notification externe, transmission à un tiers, mesure d’usage tierce ni règle culpabilisante n’est proposée. Les taux et récits attendront les preuves L1 ; l’absence d’historique ne doit pas devenir un faux zéro présenté comme un résultat réel.
+
+## C1 livré — préparation propre à chaque candidature
+
+La jauge sur quatre est désormais reliée à quatre confirmations explicites, disponibles dans Préparer / brief et Ma candidature. Le CV global ne compte pas comme CV adapté. Trois sur quatre donne le libellé Soignée et le point manquant ; la jauge reste facultative et n’agit pas sur le statut. Tableau, Kanban et accueil montrent les mêmes choix confirmés. Les cases sont versionnées et sauvegardées ; un passage à trois repères écrit application_cared dans L1, sans texte privé. Recette : `c1-candidature/README.md`.

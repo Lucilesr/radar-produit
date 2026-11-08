@@ -1,3 +1,4 @@
+import "./signal-application-care.css";
 import "./signal-activity.css";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";

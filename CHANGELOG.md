@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Candidature soignée C1
+
+- Quatre repères facultatifs et propres à chaque offre : CV, message, contact et questions. Jauge et point manquant dans le dossier, le tableau, le Kanban et l’accueil, sans coche automatique ni blocage d’envoi.
+- Choix confirmés et versionnés, relecture des conflits, événement privé au passage à trois sur quatre. Sauvegarde conservée, aucune migration supplémentaire ni service tiers.
+
 ## 8 novembre 2026 — Série de semaines L2
 
 - Badge de semaines tenues sur l’accueil, un joker gagné toutes les quatre semaines et deux au maximum. Les semaines ouvertes restent sans sanction ; un nouveau départ affiche Nouvelle semaine, page blanche.
