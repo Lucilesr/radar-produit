@@ -20,7 +20,7 @@ const setup: Step[] = [
   { target: "experience-library", title: "Relisez votre première expérience", detail: "Ouvrez une expérience ou une réalisation, puis touchez le crayon pour relire les champs. Enregistrer valide les faits relus. L’autorisation d’usage en candidature reste un choix séparé.", mobileDetail: "Ouvrez une réalisation, touchez le crayon, puis Enregistrer pour valider les faits relus. Sans CV : Ajouter une expérience.", action: "verify" },
 ];
 const tour = (demo: boolean): Step[] => [
-  { target: "nav-dashboard", title: "Aujourd’hui", detail: "Une prochaine étape à la fois, puis deux pistes facultatives. La séance reprend cet ordre. Vous pouvez passer ou arrêter ; seules les actions confirmées comptent.", action: "click" },
+  { target: "nav-dashboard", title: "Aujourd’hui", detail: "Trois blocs : votre séance, votre semaine et le radar. Une prochaine étape et deux pistes au plus. Vous pouvez passer ou arrêter ; seules les actions confirmées comptent.", action: "click" },
   { target: "nav-offers", title: "Offres", detail: "Triez votre lot du jour : sélectionner, Plus tard ou écarter. Le lot reste stable pendant le tri. La réserve et les archives permettent de retrouver une offre.", action: "click" },
   { target: "nav-pipeline", title: "Candidatures", detail: "Retrouvez vos dossiers, leur préparation, les relances et les entretiens. Radar n’envoie aucun message. Après un refus, un bilan privé reste facultatif.", action: "click" },
   { target: "nav-profile", title: "Mon profil", detail: "Votre carnet réunit vos expériences et vos histoires d’entretien. Retrouvez aussi vos documents, vos mois de recherche et les réglages du radar. Le journal est dans Mon compte.", action: "click" },

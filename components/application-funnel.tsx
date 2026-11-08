@@ -8,9 +8,9 @@ import {funnelMonthlyLabel,type ApplicationFunnel as Funnel} from "@/lib/applica
 import {formatDate} from "@/lib/application-workflow";
 type Props={value:Funnel|null;loading:boolean;error:string;refresh:()=>Promise<boolean>};
 const rate=(value:number|null)=>value==null?"Non calculable":`${Math.round(value*100)} %`;
-export function FunnelCompact({value,loading,error,refresh}:Props){
- if(!value?.visible)return error?<div className="funnel-compact"><p>{error}</p><WorkspaceButton disabled={loading} onClick={()=>void refresh()}>Relire l’entonnoir</WorkspaceButton></div>:null;
- return <div className="funnel-compact" role="region" aria-label="Tendance de vos candidatures"><p>{funnelMonthlyLabel(value.monthlyInterviews)}</p><span className="signal-help">Observation sur 90 jours, sans promesse. Détails dans Candidatures → Entonnoir.</span>{error?<WorkspaceFormError message={error}/>:null}</div>;
+export function FunnelHeadline({value,loading,error,refresh}:Props){
+ if(!value?.visible&&!error)return null;
+ return <div className="funnel-headline" role="region" aria-label="Tendance de vos candidatures" aria-busy={loading}>{value?.visible?<p>{funnelMonthlyLabel(value.monthlyInterviews)}</p>:null}<HelpTooltip label="Tendance des candidatures">Observation sur 90 jours, sans promesse. Retrouvez le détail et les sources dans Candidatures, Entonnoir.</HelpTooltip>{error?<><WorkspaceFormError message={error}/><WorkspaceButton disabled={loading} onClick={()=>void refresh()}>Relire la tendance</WorkspaceButton></>:null}</div>;
 }
 export function ApplicationFunnel({value,loading,error,refresh}:Props){
  const zone=useDisplayTimeZone();

@@ -45,3 +45,35 @@
  .radar-app .today-focus>.today-logo-watermark { width:260px; height:260px; bottom:-138px; right:-56px; opacity:.65; }
  .radar-app .today-focus>.radar-add-button { min-height:44px; }
 }
+
+/* P6 : trois zones Signal, avec une seule invitation principale. */
+.today-three-blocks .today-focus h2.today-focus-title{max-width:100%}
+.today-following{display:grid;gap:6px;margin-top:24px;padding-top:16px;border-top:1px solid var(--signal-petrol-mid)}
+.today-following h3{font:600 13px/1.6 var(--font-sans);color:var(--signal-paper)}
+.today-following>button{justify-content:flex-start;text-align:left;white-space:normal;min-height:44px;color:var(--signal-paper);max-width:100%;width:fit-content}
+.today-following>button:hover{color:var(--signal-paper);background:var(--signal-petrol-dark)}
+.today-following>button:focus-visible{outline:3px solid var(--signal-energy);outline-offset:2px}
+.today-session-notice:empty{display:none}
+.today-session-notice:not(:empty){margin-top:20px}
+.today-radar{min-width:0;padding:24px;border:1px solid var(--signal-line);border-radius:var(--signal-surface-radius);background:var(--signal-paper)}
+.today-radar .scan-status-line.is-embedded{padding:0;border:0;border-radius:0;background:transparent}
+.today-radar .scan-status-line p{font:400 14px/1.6 var(--font-sans)}
+.today-radar .scan-new-offers{color:var(--signal-muted)}
+.today-radar .help-tooltip-trigger{width:44px;min-width:44px;min-height:44px}
+.funnel-headline{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;font:500 14px/1.6 var(--font-sans)}
+.funnel-headline>.signal-form-error{flex-basis:100%}
+.month-story-home-link{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--signal-line)}
+.month-story-home-link>button{min-height:44px;white-space:normal;text-align:left}
+.week-overview{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;font:400 14px/1.6 var(--font-sans);color:var(--signal-muted)}
+.today-three-blocks .week-series{margin:16px 0 0;padding-top:0;border:0}
+@media(max-width:640px){.today-radar{padding:20px}.today-following{margin-top:20px}.today-following>button{width:100%}}
+
+.today-three-blocks .week-series{padding:0;margin:12px 0 0}
+.week-series-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0;flex:1}
+.week-series-meta>.help-tooltip-trigger{width:44px;min-height:44px;flex:none}
+
+.today-radar .scan-status-line>.signal-form-error{flex-basis:100%;margin-top:8px}
+
+.today-three-blocks .week-plan-card>.signal-panel-header{align-items:flex-start}
+.today-three-blocks .week-plan-card .signal-panel-title{display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex:1 1 160px}
+.today-three-blocks .week-overview{margin-top:0}

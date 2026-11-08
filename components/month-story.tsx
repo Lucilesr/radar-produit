@@ -1,20 +1,24 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
+import {ArrowRight} from "lucide-react";
 import {SignalMoment} from "@/components/signal/signal-moment";
 import {SignalStepper} from "@/components/signal/signal-stepper";
 import {SignalCounter} from "@/components/signal/signal-counter";
 import {SignalRadar} from "@/components/signal/signal-radar";
 import {WorkspaceButton,WorkspaceFormError,WorkspacePanelHeader} from "@/components/workspace-form";
+import {HelpTooltip} from "@/components/help-tooltip";
 import {ChoiceSelect} from "@/components/choice-select";
 import {useMonthStory} from "@/components/use-month-story";
 import {monthStoryCards,monthStoryTitle,type MonthStory} from "@/lib/month-story";
 import {monthStoryImage} from "@/lib/month-story-image";
 import {formatDate} from "@/lib/application-workflow";
 type State=ReturnType<typeof useMonthStory>;
-export function MonthStoryEntry({state,onOpen}:{state:State;onOpen:(story:MonthStory)=>void}){
+export function MonthStoryEntry({state,onOpen,compact=false}:{state:State;onOpen:(story:MonthStory)=>void;compact?:boolean}){
  async function retry(){await state.refresh();requestAnimationFrame(()=>(document.getElementById("month-entry-title")??document.getElementById("workspace-title"))?.focus());}
+ if(!state.value&&state.error&&compact)return <div className="month-story-home-link"><WorkspaceFormError message={state.error}/><WorkspaceButton disabled={state.loading} onClick={()=>void retry()}>Relire le récit</WorkspaceButton></div>;
  if(!state.value&&state.error)return <section className="month-story-entry"><h2 id="month-entry-title" tabIndex={-1}>Votre mois de recherche</h2><WorkspaceFormError message={state.error}/><WorkspaceButton disabled={state.loading} onClick={()=>void retry()}>Relire le récit</WorkspaceButton></section>;
  if(!state.value?.homeVisible)return null;const {story,simulatedDate}=state.value;
+ if(compact)return <div className="month-story-home-link"><WorkspaceButton variant="quiet" disabled={state.loading} aria-label={"Ouvrir mon mois de recherche · "+story.label} onClick={()=>onOpen(story)}>{monthStoryTitle(story.label)}<ArrowRight size={15} aria-hidden/></WorkspaceButton><HelpTooltip label="Mon mois de recherche">Cinq cartes sur les faits enregistrés, avec téléchargement en image. {simulatedDate?"Démo : calendrier du récit simulé au "+formatDate(simulatedDate)+".":""}</HelpTooltip><WorkspaceFormError message={state.error}/>{state.error?<WorkspaceButton disabled={state.loading} onClick={()=>void retry()}>Relire le récit</WorkspaceButton>:null}</div>;
  return <section className="month-story-entry" aria-labelledby="month-entry-title"><div><h2 id="month-entry-title" tabIndex={-1}>{monthStoryTitle(story.label)}</h2><p>Cinq cartes pour regarder ce qui a avancé, à votre rythme.</p>{simulatedDate?<p className="signal-help">Démo : calendrier du récit simulé au {formatDate(simulatedDate)}.</p>:null}</div><WorkspaceButton variant="primary" disabled={state.loading} onClick={()=>onOpen(story)}>Ouvrir mon mois de recherche</WorkspaceButton><WorkspaceFormError message={state.error}/>{state.error?<WorkspaceButton disabled={state.loading} onClick={()=>void retry()}>Relire le récit</WorkspaceButton>:null}</section>;
 }
 export function MonthStoryArchive({owner,active,onOpen}:{owner:string;active:boolean;onOpen:(story:MonthStory)=>void}){
