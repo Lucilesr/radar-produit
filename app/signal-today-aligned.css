@@ -49,7 +49,7 @@
 .today-aligned .today-radar>.month-story-entry{grid-column:1/-1;margin:0}
 .today-setup{padding:28px;border:1px solid var(--signal-line);border-radius:20px;background:var(--signal-paper);max-width:740px}.today-setup h2{font:700 28px/1.2 var(--font-display);letter-spacing:-.01em;color:var(--signal-petrol-ink);margin:0 0 20px}.today-setup ol{list-style:none;padding:0;margin:0;display:grid;gap:12px}.today-setup li{display:flex;align-items:center;gap:12px}.today-setup li>span{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:999px;background:var(--signal-mist);font-weight:700}.today-setup button{min-height:44px;white-space:normal;text-align:left;border-radius:10px}.today-setup>p{margin:16px 0 0}
 .today-skeleton{display:grid;gap:20px}.today-skeleton-focus{padding:32px 36px;min-height:260px;display:grid;gap:20px;border-radius:20px;background:var(--signal-paper);border:1px solid var(--signal-line)}.today-skeleton-lower{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.today-skeleton-lower>div{display:grid;gap:20px;padding:24px 28px;min-height:220px;border-radius:16px;background:var(--signal-paper);border:1px solid var(--signal-line)}.today-skeleton [data-slot=skeleton]{animation:none}
-@media(min-width:641px){.today-radar-insight{display:contents}.today-radar-insight>summary{display:none}.today-radar-insight>.funnel-headline{grid-column:1/-1;border-top:1px solid var(--signal-mist);padding-top:12px}}
+@media(min-width:641px){.today-radar-insight{display:block}.today-radar-insight>summary{display:none}}
 @media(max-width:640px){
  .radar-page[data-space=dashboard]:not([data-scan]){padding:0 16px 32px!important}
  .radar-page[data-space=dashboard]:not([data-scan])>.today-page-header{margin:0 -16px 16px;padding:14px 16px;width:calc(100% + 32px);background:var(--signal-paper);border-bottom:1px solid var(--signal-line);align-items:center;gap:12px;flex-wrap:nowrap}
@@ -68,3 +68,7 @@
 .today-aligned .week-plan-card{display:flex;flex-direction:column}.today-aligned .week-completed{order:2}.today-aligned .week-plan-card>.week-commitments{order:3}.today-aligned .week-settings{order:4}
 .today-aligned .today-radar .scan-status-line.is-embedded>.scan-partial-reading{grid-row:4;font-size:14px;color:var(--signal-warning)}
 @media(max-width:640px){.today-aligned .week-completed{order:3}.today-aligned .week-plan-card>.week-commitments{order:2}}
+
+.today-aligned .today-radar>.month-story-home-link{grid-column:1/-1;margin:0}
+.today-radar-insight .funnel-headline{flex-wrap:nowrap;align-items:flex-start}.today-radar-insight .funnel-headline>p{flex:1;min-width:0;margin:0}.today-radar-insight .help-tooltip-trigger{flex:none}
+.today-aligned .week-plan-card.is-held{border:1px solid var(--signal-line);background:var(--signal-paper)}
