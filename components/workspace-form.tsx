@@ -8,8 +8,8 @@ export function WorkspaceButton({ variant = "secondary", busy = false, disabled,
   const classes = { primary: "radar-add-button", secondary: "secondary-button", quiet: "signal-quiet-button", danger: "signal-danger-button" };
   return <button type="button" {...props} disabled={disabled || busy} aria-busy={busy || undefined} className={`${classes[variant]} signal-form-button ${className}`}>{busy ? <LoaderCircle size={15} className="animate-spin" aria-hidden /> : null}{children}</button>;
 }
-export function WorkspaceFormSection({ title, description, descriptionInline = false, actions, children, className = "" }: { title: string; description?: string; descriptionInline?: boolean; actions?: ReactNode; children: ReactNode; className?: string }) {
-  const id = useId();
+export function WorkspaceFormSection({ headingLevel=3,title, description, descriptionInline = false, actions, children, className = "" }: { headingLevel?:2|3;title: string; description?: string; descriptionInline?: boolean; actions?: ReactNode; children: ReactNode; className?: string }) {
+  const id = useId(),Heading=headingLevel===2?"h2":"h3";
   return <section aria-labelledby={id} className={`signal-form-section ${className}`}><div className="signal-section-heading"><div><div className="signal-section-title-help"><h3 id={id}>{title}</h3>{description && !descriptionInline ? <HelpTooltip label={title}>{description}</HelpTooltip> : null}</div>{description && descriptionInline ? <p className="signal-help">{description}</p> : null}</div>{actions}</div>{children}</section>;
 }
 export function WorkspaceSaveActions({ label, onSave, onCancel, busy = false, disabled = false, hint, sticky = false, cancelLabel = "Annuler" }: { label: string; onSave: () => void; onCancel?: () => void; busy?: boolean; disabled?: boolean; hint?: string; sticky?: boolean; cancelLabel?:string }) {
