@@ -103,3 +103,25 @@
 .scan-echo.is-moment .radar-add-button{font-weight:700}
 .scan-source-row .signal-form-button{font-size:14px}
 @media(max-width:640px){.scan-source-offers{min-width:44px;justify-content:center}.scan-actions>.help-tooltip-trigger{display:none}.scan-actions>.radar-add-button{font-size:16px}.radar-page[data-scan=true] .page-refresh-action{font-size:14px;padding:0 14px}}
+/* The reference header is scoped to this screen while alignment proceeds screen by screen. */
+@media(min-width:641px){
+ .radar-app:has(.radar-page[data-scan=true]) .radar-shell{display:block;max-width:none}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-sidebar{position:relative;top:auto;height:auto;min-height:74px;width:auto;max-width:none;display:flex;flex-direction:row;align-items:center;gap:24px;padding:14px 32px;border:0;border-bottom:1px solid var(--signal-line);background:var(--signal-paper);overflow:visible}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-sidebar>div:first-child{display:contents}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-header-actions,.radar-app:has(.radar-page[data-scan=true]) .radar-search,.radar-app:has(.radar-page[data-scan=true]) .radar-guide-launcher{display:none}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-home-link{flex:none;margin:0;padding:0}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-home-link .workspace-brand>span{width:34px;height:34px}
+ .radar-app:has(.radar-page[data-scan=true]) .workspace-brand p{font:800 22px/1.2 var(--font-display);letter-spacing:-.01em}
+ .radar-app:has(.radar-page[data-scan=true]) .workspace-brand p>span{display:none}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-nav{display:flex;position:static;flex:1;flex-wrap:wrap;gap:4px;margin:0;padding:0;border:0;background:transparent;overflow:visible}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-nav button{min-height:44px;border-radius:999px;padding:10px 16px;gap:8px;color:var(--signal-ink);font-size:15px}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-nav button>svg,.radar-app:has(.radar-page[data-scan=true]) .radar-nav button:before{display:none}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-nav button.is-active{background:var(--signal-petrol-ink);color:var(--signal-paper);box-shadow:none;border-color:transparent}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-sidebar-bottom{display:block;margin:0;padding:0;border:0;flex:none}
+ .radar-app:has(.radar-page[data-scan=true]) .sidebar-account{padding:0;border:0}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-account-trigger{padding:0;width:44px;height:44px;border-radius:999px}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-account-trigger .avatar{width:44px;height:44px;border:1px solid var(--signal-line);border-radius:999px;background:var(--signal-mist);font-size:15px}
+ .radar-app:has(.radar-page[data-scan=true]) .radar-account-name{display:none}
+ .radar-page[data-scan=true]{padding:28px 32px 56px}
+}
+@media(min-width:641px) and (max-width:1100px){.scan-echo.is-quiet .signal-radar{width:96px;height:96px}}
