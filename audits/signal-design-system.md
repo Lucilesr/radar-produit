@@ -70,3 +70,7 @@ Réutilisation de ReachCompact/ReachWorkspace, des onglets Signal, de ProfileWor
 ### C4 — liste des candidatures sur mobile
 
 Réutilisation de ChoiceSelect (tiroir tactile et sélecteur clavier), WorkspaceButton, WorkspaceFormError, Collapsible Radix/Signal, badges de préparation, boîtes de dialogue et variables Signal. Aucun contrôle natif de sélection ajouté. Une action principale par dossier ; édition des colonnes et motifs de clôture réutilisent le vocabulaire existant. Vérification du staging et captures consignées dans docs/c4-mobile/README.md.
+
+### L6 — Aujourd’hui
+
+TodayWorkspace, WeekPlanCard, SignalRadar, WorkspaceButton, WorkspacePanelHeader et HelpTooltip conservés. Typographie Bricolage pour les titres, surfaces et espacements par jetons Q0 ; les trois zones restent ordonnées dans le document et se répartissent sur deux colonnes seulement à partir de1100px. Aucun comportement ni contrôle créé. Date blanche sur pétrole, mouvement réduit, focus et cibles44px à vérifier dans docs/l6-aujourdhui/README.md avant fusion.
