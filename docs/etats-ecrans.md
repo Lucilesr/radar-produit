@@ -946,3 +946,15 @@ Les notes longues restent dans leur dossier : elles ne sont pas reproduites dans
 | Sans joker | semaine passée non tenue | série à zéro, Nouvelle semaine, page blanche | reprendre à son rythme | oui |
 | Erreur / conflit | lecture ou écriture non confirmée | dernier état conservé, erreur explicite | Relire ma série | oui |
 | Mobile / clavier / mouvement réduit | 390 px, Tab, préférence | choix Signal, focus du dialogue, mêmes données sans mouvement requis | mêmes actions | oui |
+
+## Complément C1 — candidature soignée
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Neuf | aucun repère confirmé | quatre cases vides et jauge0/4, sans déduire du CV global | cocher après préparation | oui |
+| Chargement | relecture du dossier | derniers choix, Lecture des repères, cases indisponibles | attendre | oui |
+| Partiel | une à trois cases confirmées | progression ; à3/4, point manquant précis | poursuivre ou laisser ainsi | oui |
+| Terminé | quatre cases confirmées | Soignée à4sur4 | continuer sa candidature | oui |
+| Erreur / hors ligne | choix non confirmé | dernier état conservé, erreur | Relire les repères | oui |
+| Conflit | un autre onglet a avancé | version du compte relue, aucune autre coche écrasée | Relire les repères | oui |
+| Mobile / clavier / mouvement réduit |390px, Tab, préférence | cases Signal44px, même jauge et focus, pas de mouvement requis | mêmes actions | oui |

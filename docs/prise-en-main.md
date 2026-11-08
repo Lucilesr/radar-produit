@@ -93,3 +93,11 @@ Vous commencez avec zéro joker. Un joker est gagné toutes les quatre semaines 
 **Faire une pause** propose une à quatre semaines. La pause commence cette semaine, ou lundi prochain si celle-ci est déjà tenue. Ses dates sont affichées avant et après confirmation. Elle préserve la série et les jokers, sans bloquer Radar. Une semaine entièrement cochée pendant la pause compte tout de même. **Gérer ma pause → Reprendre cette semaine** met fin aux semaines de pause encore à venir, en conservant celles déjà passées.
 
 À la première visite de la semaine, le moment **Nouvelle semaine** montre votre série et les jokers ; **Plus tard** revient à l’accueil. Ce repère est conservé dans le compte, aussi sur un autre appareil. Le calendrier suit le fuseau affiché pour le plan ; le calcul ne remonte pas avant le premier plan connu. La série, les pauses et l’historique sont inclus dans la sauvegarde intégrale. Aucun envoi ni service tiers.
+
+## Candidature soignée — C1
+
+Dans une offre, ouvrez **Préparer / brief** ; dans un dossier suivi, ouvrez **Ma candidature**. **Candidature soignée** propose quatre cases : **CV adapté**, **Lettre ou message préparé**, **Contact identifié**, **Questions préparées**. Cochez un repère quand vous l’avez préparé pour cette offre. Le CV du profil, une réponse déjà saisie ou un statut ne cochent rien automatiquement.
+
+Chaque clic attend la confirmation du compte. À trois cases, la jauge affiche par exemple **Soignée à 3 sur 4 : il manque le contact** ; à quatre, **Soignée à 4 sur 4**. Vous pouvez retirer une coche. Le tableau, le Kanban et les actions de l’accueil reprennent ce repère ; il reste propre à la candidature. Il ne bloque jamais **J’ai postulé** ni un changement de statut.
+
+En cas d’erreur ou de modification depuis un autre onglet, les derniers choix confirmés restent affichés ; **Relire les repères** permet de poursuivre sans remplacer les autres coches. Le passage à trois repères confirmés figure dans le journal privé, sans texte de candidature. Ces choix et leurs versions sont inclus dans la sauvegarde intégrale ; aucun tiers n’y reçoit de données.

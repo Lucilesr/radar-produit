@@ -1,5 +1,6 @@
 "use client";
 
+import {ApplicationCareBadge} from "@/components/application-care";
 import { CalendarDays, Pencil, Plus } from "lucide-react";
 import { ApplicationDrag, ApplicationDropColumn, DraggableApplicationCard } from "@/components/application-drag";
 import { TagBadge, useApplicationTags } from "@/components/application-tags";
@@ -30,7 +31,7 @@ export function ApplicationKanban({ jobs, now, busy, onStatus, onOpen, board = d
           const interview = column.stage === "interviews";
           const due = !terminalStatuses.includes(job.status) && job.interviews?.some(event => reviewDue(event, now));
           return <DraggableApplicationCard key={job.id} job={job} column={column.id} busy={!!busy} title={<h3><button type="button" aria-label={`Ouvrir la candidature : ${job.title} · ${job.company || "Entreprise à confirmer"}`} onClick={() => onOpen(job, applicationDestination(job, now))}><span className="application-card-title-text">{job.title}</span></button></h3>}>
-            <p className="application-card-company">{job.company || "Entreprise à confirmer"}</p>
+            <p className="application-card-company">{job.company || "Entreprise à confirmer"}</p><ApplicationCareBadge job={job}/>
             {tagsForJob(tagStore.tags, job.id).length ? <div className="application-card-tags">{tagsForJob(tagStore.tags, job.id).map(tag => <TagBadge key={tag.id} tag={tag} selected={tagFilter === tag.id} onClick={() => setTagFilter(current => current === tag.id ? "" : tag.id)}/>)}</div> : null}
             {job.deletedAt ? <p className="signal-help">Offre en corbeille · suivi conservé</p> : null}
             <div className="application-card-date"><span>Envoyée le</span><span className={`application-age${age ? ` is-${age.tone}` : ""}`}>{job.appliedAt ? formatDate(job.appliedAt, "Indian/Mauritius") : "Date inconnue"}</span></div>
