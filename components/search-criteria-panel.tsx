@@ -44,7 +44,7 @@ function storeView(view: View) {
 export function SearchCriteriaPanel({ overview=false,profile, jobs, onSave, onOpenJobgether, active = true,domainContent }: { overview?:boolean;domainContent?:React.ReactNode; profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void; active?:boolean }) {
   // A first visit keeps the form open so the onboarding step can save the first criteria.
   const firstSetup = !profile.searchPreferences;
-  const [resting, setResting] = useState(readView);
+  const [resting, setResting] = useState<Exclude<View,"edit">>(()=>overview?"summary":readView());
   const [view, setView] = useState<View>(() => firstSetup&&!overview ? "edit" : resting);
   const focusTarget = useRef<CriteriaTarget | null>(null);
   const editButton = useRef<HTMLButtonElement>(null);
@@ -163,7 +163,8 @@ export function SearchCriteriaPanel({ overview=false,profile, jobs, onSave, onOp
       </div>
     </header>
 
-    {view === "summary"&&overview?<dl className="mon-radar-criteria-lines">{criteriaGroups(preferences).flatMap(group=>group.rows).filter(row=>!['searchTracks','matchScore'].includes(row.id)).map(row=><div key={row.key??row.id}><dt>{row.label}</dt><dd>{row.id==='roles'?row.values.map(value=><span className="quiet-tag" key={value}>{value}</span>):row.values.join(' · ')}</dd></div>)}</dl>:null}
+    {view === "summary"&&overview&&!preferences.roles.length?<p className="signal-help">Choisissez votre poste pour commencer.</p>:null}
+    {view === "summary"&&overview&&preferences.roles.length?<dl className="mon-radar-criteria-lines">{criteriaGroups(preferences).flatMap(group=>group.rows).filter(row=>!['searchTracks','matchScore'].includes(row.id)).map(row=><div key={row.key??row.id}><dt>{row.label}</dt><dd>{row.id==='roles'?row.values.map(value=><span className="quiet-tag" key={value}>{value}</span>):row.values.join(' · ')}</dd></div>)}</dl>:null}
     {view === "summary" ? <ul className="search-criteria-tokens" aria-label="Critères enregistrés">
       {criteriaTokens(preferences).filter(()=>!overview).filter(token=>!["searchTracks","matchScore"].includes(token.id)).map(token => {
         const label = `${token.label} : ${token.fullValue}. Modifier${modified.has(token.id)?". Modifié lors de cette visite":""}`;
