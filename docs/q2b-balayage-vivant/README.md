@@ -1,13 +1,13 @@
 # Q2b — grille d’écarts avant code
 
-Référence : [Balayage-v2.html](../maquettes/iteration-2/Balayage-v2.html). Existant : staging privé version 80, données fictives. Grille arrêtée avant modification applicative.
+Références : [ordinateur](../maquettes/iteration-2/Balayage-v2.html) et [mobile faisant foi à 390 px](../maquettes/iteration-2/Balayage-mobile.html), #257 et #259 fusionnées. Existant : staging privé version 80, données fictives. Grille arrêtée avant modification applicative.
 
 | Format | Actuel | Maquette |
 | --- | --- | --- |
 | Ordinateur 1360 px | ![Avant](avant-ordinateur.jpg) | ![Maquette](maquette-ordinateur.jpg) |
 | Mobile 390 px | ![Avant mobile](avant-mobile.jpg) | ![Maquette mobile](maquette-mobile.jpg) |
 
-1. [ ] **Structure et colonne** : retour avant le titre, alignés sur le contenu ; bilan puis sources et visites, maximum 1120 px de contenu.
+1. [ ] **Structure et colonne** : retour avant le titre sur ordinateur, retour/titre/Actualiser sur une ligne mobile, alignés sur le contenu ; bilan puis sources et visites, maximum 1120 px de contenu.
 2. [ ] **Trois états** : moment pétrole pendant la lecture et avec nouvelles offres ; bilan calme clair sans nouveauté ; trois compteurs seulement dans le moment (parcourues / pour vous / nouvelles), doublons derrière ⓘ.
 3. [ ] **Radar** : balayage arrêté à la fin ; un écho persistant par offre unique correspondant aux critères, pulsation courte pour les nouvelles ; texte « Balayage terminé · N offres collent à vos critères » ; mouvement réduit statique.
 4. [ ] **Lecture progressive** : états attente / en cours / terminé / erreur par source, progression globale N sources sur M, résultats dès leur arrivée, reprise ciblée sans effacer les succès ; arrêt au plus à 60 s.
@@ -20,7 +20,7 @@ Référence : [Balayage-v2.html](../maquettes/iteration-2/Balayage-v2.html). Exi
 ## Choix explicites, comportement et accessibilité
 
 - La maquette présente sept sources automatiques fictives ; le produit n’en prend en charge que deux. Le bilan montre uniquement les sources réellement lues, sans inventer de collecteur ni de compteurs.
-- La maquette statique ne possède pas de règles adaptatives ; sa bande mobile fait foi pour l’empilement. Les contrôles de visite à 36 px dans le dessin passent à 44 px pour l’accessibilité demandée.
+- La maquette mobile dédiée fait foi à 390 px : titre 24 px, radar 120 px centré, compteurs en trois colonnes, sources et visites en blocs distincts. Les contrôles restent à 44 px pour l’accessibilité demandée.
 - La maquette place six échos pour douze offres « pour vous ». La demande explicite impose un point par offre unique : le radar suit les identifiants réellement reçus.
 - « N nouvelles » décrit les nouvelles fiches enregistrées ; le titre du moment précise les nouvelles correspondant aux critères. Pas de célébration si aucune nouvelle ne correspond.
 - Le lien de retour revient à Mon radar ; le filtrage de source garde le lot quotidien intact et offre un effacement du filtre.
