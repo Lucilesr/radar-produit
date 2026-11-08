@@ -1004,3 +1004,21 @@ Les erreurs de transaction, l’isolement de compte, la pagination, les versions
 | Hors ligne | Connexion perdue | Chiffres déjà confirmés gardés, aucune donnée inventée | Réessayer après reconnexion | partiel |
 
 Recette et limites documentées dans docs/l4-entonnoir/README.md. Les événements privés restent dans le compte et la sauvegarde L1. Une source en erreur ne modifie pas rétroactivement les événements d’envoi déjà confirmés.
+
+## L5 — Récit mensuel et archives du profil
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Compte neuf / mois vide | Aucun fait enregistré sur le mois | Cinq cartes à zéro, pas de pépite inventée, historique partiel explicite | Revenir à Radar | oui |
+| Début de mois | Du1erau7dans le calendrier du compte | Entrée du mois précédent sur Aujourd’hui | Ouvrir le récit | oui |
+| Après le7 | Fin de la fenêtre d’accueil | Entrée retirée de l’accueil, récits conservés dans le profil | Mes mois de recherche | oui |
+| Chargement | Lecture ou changement de mois | Lecture en cours, ouverture désactivée, dernier récit gardé | Attendre | oui |
+| Erreur API / réseau | Lecture impossible ou événement illisible | Dernier récit confirmé conservé, erreur explicite | Relire le récit | oui |
+| Partiel | Historique commencé pendant ou après le mois | Limite d’historique affichée ; zéro pour les faits absents | Lire à son rythme | oui |
+| Résultat / export | Cinq cartes lues ou téléchargement demandé | Image privée des cinq cartes, confirmation sans partage | Télécharger / revenir | oui |
+| Beaucoup de données / textes longs | Nombreux événements ou pépite longue | Dédoublonnage par offre / entretien / semaine, texte à la ligne, image à hauteur adaptée | Défiler / télécharger | oui |
+| Clavier / mobile390 | Parcours du récit | Titre focalisé, focus sur nouvelle carte, retour en haut, cibles44px, Échap et retour au déclencheur | Même lecture | oui |
+| Mouvement réduit | Préférence du compte ou système | Compteurs directs et récit utilisable sans animation | Même lecture | oui |
+| Hors ligne | Connexion perdue après lecture | Dernier récit disponible ; lecture nouvelle non annoncée réussie | Réessayer après connexion | partiel |
+
+La démo month-story simule seulement le calendrier du récit au1er du mois ; les échéances et autres écrans gardent le vrai calendrier. Aucune ouverture automatique imposée. Les captures, l’image exportée et les limites de recette sont dans docs/l5-votre-mois/README.md.

@@ -131,3 +131,13 @@ Une candidature compte au plus une fois par envoi vers l’entretien et vers l�
 Les sources sont celles enregistrées lors de l’envoi. Les petits échantillons font beaucoup varier les pourcentages : lisez aussi les nombres. Le taux entretien → offre ne suppose aucun entretien si une proposition a été reçue directement. Une date d’entretien passée renseignée dans son bilan permet de tenir compte de l’ordre des faits.
 
 **À ce rythme, environ N entretiens par mois** décrit les 90 jours observés, divisés par trois, sans prédire votre prochain résultat. Cette phrase apparaît aussi sur Aujourd’hui une fois le seuil atteint. **Actualiser les chiffres** relit le journal ; une erreur garde les derniers chiffres confirmés. Aucun tiers, aucun e-mail ou partage automatique.
+
+## Votre mois de recherche — L5
+
+Du **1er au 7 inclus**, une carte sur Aujourd’hui propose **Ouvrir mon mois de recherche**. Le récit porte sur le mois précédent et s’ouvre à votre demande. Il reste ensuite dans **Mon profil → Mes mois de recherche** ; le sélecteur permet de retrouver les mois de votre historique.
+
+Les cinq cartes reprennent les faits enregistrés : offres dont la dernière décision du mois est un tri confirmé, préparations ayant atteint au moins **3 repères sur 4**, entretiens dont vous avez noté le bilan, plans de semaine entièrement cochés et une offre sélectionnée encore accessible. Plusieurs notes ou validations sur la même offre ne gonflent pas les compteurs. Un tri remis à examiner dans le même mois est retiré du bilan de tri. Les semaines sont attribuées au mois de leur dernière coche confirmée.
+
+**Carte suivante** et **Carte précédente** parcourent le récit ; **Échap** le ferme. Le mouvement réduit de votre compte ou de votre appareil est respecté. Un mois vide reste à zéro et l’historique partiel est annoncé : Radar ne reconstruit pas d’actions manquantes.
+
+**Télécharger en image** crée une seule image PNG avec les cinq cartes, dans les téléchargements de votre navigateur. Le texte est limité aux compteurs et à la pépite : vos notes, bilans après refus, coordonnées et documents ne sont pas ajoutés. Rien n’est envoyé ou partagé automatiquement. Les données d’origine restent dans votre compte et sa sauvegarde intégrale.

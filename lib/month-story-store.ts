@@ -1,0 +1,15 @@
+import {env} from "cloudflare:workers";
+import {validTimeZone,type WeekPlan} from "./week-plan";
+import {availableStoryMonths,buildMonthStory,heldPlanDates,isMonth,monthDay,monthDecisions,monthStoryClock,monthWindow,shiftMonth,storyHomeVisible,type MonthGem,type MonthStoryData} from "./month-story";
+import type {ActivityEvent} from "./activity";
+export class MonthRequestError extends Error{}
+export async function readMonthStory(userId:string,{month,zone="UTC",mode,now=new Date()}:{month?:string|null;zone?:string;mode?:string;now?:Date}={}):Promise<MonthStoryData>{
+ if(!validTimeZone(zone))throw new MonthRequestError("Fuseau invalide.");const db=env.DB as D1Database,row=await db.prepare("SELECT data FROM profiles WHERE user_id=?").bind(userId).first<{data:string}>(),profile=row?JSON.parse(row.data):{};
+ const savedZone=profile.weekSeries?.timeZone??profile.weekPlan?.timeZone;if(validTimeZone(savedZone))zone=savedZone;
+ const clock=monthStoryClock(userId,mode,now,zone),latest=shiftMonth(monthDay(clock,zone).slice(0,7),-1),requested=month||latest;if(!isMonth(requested)||requested>latest)throw new MonthRequestError("Choisissez un mois terminé.");
+ const {start,end}=monthWindow(requested,zone),[raw,first]=await Promise.all([db.prepare("SELECT id,action,object_type AS objectType,object_id AS objectId,created_at AS createdAt,data FROM activity_events WHERE user_id=? AND created_at>=? AND created_at<? AND action IN('offer_sorted','offer_restored','application_cared','interview_noted') ORDER BY created_at,id").bind(userId,start,end).all<Omit<ActivityEvent,"data">&{data:string}>(),db.prepare("SELECT min(created_at) AS firstAt FROM activity_events WHERE user_id=?").bind(userId).first<{firstAt:string|null}>()]);
+ const events=raw.results.map(event=>{const data=JSON.parse(event.data);if(!data||typeof data!=="object"||Array.isArray(data))throw new Error("Événement illisible.");return {...event,data} as ActivityEvent;}),plans:WeekPlan[]=[...(Array.isArray(profile.weekPlans)?profile.weekPlans:[]),...(profile.weekPlan?[profile.weekPlan]:[])],known=[first?.firstAt,...heldPlanDates(plans).map(date=>date.at)].filter((at):at is string=>typeof at==="string"&&Number.isFinite(Date.parse(at))).sort((a,b)=>Date.parse(a)-Date.parse(b)),firstKnownAt=known[0]??null;
+ const selected=monthDecisions(events,start,end).filter(event=>event.data.decision==="selected").sort((a,b)=>Date.parse(b.createdAt)-Date.parse(a.createdAt)||b.id.localeCompare(a.id)).map(event=>event.objectId);
+ const gem=selected.length?await db.prepare("SELECT j.id,j.title,j.company FROM json_each(?) ids JOIN jobs j ON j.id=ids.value AND j.user_id=? WHERE j.deleted_at IS NULL AND j.status NOT IN('rejected','withdrawn','closed') AND(j.review_state='selected' OR j.applied_at IS NOT NULL) ORDER BY CAST(ids.key AS INTEGER) LIMIT 1").bind(JSON.stringify(selected),userId).first<MonthGem>():null;
+ return {story:buildMonthStory(requested,zone,events,plans,firstKnownAt,gem),months:availableStoryMonths(firstKnownAt,latest,zone),homeVisible:requested===latest&&storyHomeVisible(clock,zone),simulatedDate:clock.getTime()!==now.getTime()?monthDay(clock,zone):null};
+}

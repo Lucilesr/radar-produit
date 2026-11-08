@@ -1,3 +1,4 @@
+import {demoMonthPlans,seedMonthStoryFacts} from "./demo-month-story";
 import {demoWeekSeries} from "./demo-week-series";
 import { and, eq } from "drizzle-orm";
 import { env } from "cloudflare:workers";
@@ -46,9 +47,9 @@ const experience = [
   { title: "Product Manager · SaaS", organization: "Ligne Claire (fictif)", role: "Product Manager", period: "2020–2023", context: "Développement fictif d’une plateforme SaaS utilisée par plusieurs équipes métiers.", contribution: "Discovery, cadrage de la roadmap et coordination avec design, data et ingénierie.", result: "Livraisons mieux séquencées et retours utilisateurs intégrés aux décisions.", claimKey: "saas-discovery" },
 ];
 
-type DemoOptions={funnelDemo?:boolean;weekScenario?:string;emptyProfile?:boolean;fridayDemo?:boolean;triageDemo?:boolean;scanDemo?:boolean;reducedMotion?:boolean;sessionDemo?:boolean;sessionEmpty?:boolean};
+type DemoOptions={monthStoryDemo?:boolean;funnelDemo?:boolean;weekScenario?:string;emptyProfile?:boolean;fridayDemo?:boolean;triageDemo?:boolean;scanDemo?:boolean;reducedMotion?:boolean;sessionDemo?:boolean;sessionEmpty?:boolean};
 export async function ensureRecruiterDemo(userId: string, options: DemoOptions|boolean = {}): Promise<boolean> {
-  const {funnelDemo=false,weekScenario,emptyProfile=false,fridayDemo=false,triageDemo=false,scanDemo=false,reducedMotion=false,sessionDemo=false,sessionEmpty=false}=typeof options==="boolean"?{emptyProfile:options}:options;
+  const {monthStoryDemo=false,funnelDemo=false,weekScenario,emptyProfile=false,fridayDemo=false,triageDemo=false,scanDemo=false,reducedMotion=false,sessionDemo=false,sessionEmpty=false}=typeof options==="boolean"?{emptyProfile:options}:options;
   if (!userId.startsWith("demo:")) throw new Error("La démo exige une session fictive.");
   const db = getDb();
   const existing = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.userId, userId)).limit(1);
@@ -56,7 +57,7 @@ export async function ensureRecruiterDemo(userId: string, options: DemoOptions|b
   const now = new Date();
   const nowIso = now.toISOString();
   const series=demoWeekSeries(weekScenario,now);
-  const demoProfile: CandidateProfile = { ...profile,...(series??{}),preferences:{reducedMotion},...(fridayDemo||triageDemo||scanDemo?{searchPreferences:{...demoSearchPreferences,targetLevel:"senior" as const}}:{}) };
+  const demoProfile: CandidateProfile = { ...profile,...(series??{}),...(monthStoryDemo?{weekPlans:demoMonthPlans(now)}:{}),preferences:{reducedMotion},...(fridayDemo||triageDemo||scanDemo?{searchPreferences:{...demoSearchPreferences,targetLevel:"senior" as const}}:{}) };
   const daysAgo = (days: number) => new Date(now.getTime() - days * 86400000).toISOString();
   const rows = examples.map((example, index) => {
     const input = normalizeJobInput({ ...example, language: "fr", contentCoverage: "summary" });
@@ -72,6 +73,7 @@ export async function ensureRecruiterDemo(userId: string, options: DemoOptions|b
   });
   if (!emptyProfile) await db.insert(profiles).values({ userId, data: JSON.stringify(demoProfile), updatedAt: nowIso }).onConflictDoNothing();
   for (const row of rows) await db.insert(jobs).values(row).onConflictDoNothing({ target: [jobs.userId, jobs.fingerprint] });
+  if(monthStoryDemo)await seedMonthStoryFacts(userId,now);
   // This branch is reached only after the fresh-workspace guard above, for a fictional visitor.
   if(funnelDemo)for(let index=0;index<10;index++){
     const source=index<4?"Collectif fictif":index<7?"Réseau fictif":"Veille fictive",hasInterview=[0,1,2,4].includes(index),ago=35+index*3;
