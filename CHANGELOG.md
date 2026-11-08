@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Signal sur Offres L6
+
+- Titres, groupes de réserve et cartes reprennent la hiérarchie et les surfaces Signal ; les petites commandes atteignent 44 px.
+- Même lot, mêmes fourchettes et mêmes actions ; la page atteint les panneaux puis la liste et la fiche gardent leur défilement indépendant.
+
 ## 8 novembre 2026 — Signal sur Aujourd’hui L6
 
 - Les trois blocs conservent leurs actions et leur ordre ; séance plus compacte, semaine et radar côte à côte sur grand écran, puis empilés sur mobile.

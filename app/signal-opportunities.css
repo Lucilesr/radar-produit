@@ -182,3 +182,52 @@
 .reserve-progress{margin:0 0 12px;color:var(--signal-petrol-dark);font-weight:600;font-size:var(--signal-type-section)}
 .reserve-undo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
 .reserve .reserve-group-actions button,.reserve .reserve-undo button{min-height:44px}
+
+/* L6 — Q0 hierarchy and surfaces, keeping the reading scroll mechanism above. */
+.radar-app .radar-page[data-space="offers"] .workspace-page-header h1 {
+  font-family: var(--font-display);
+  font-weight: 650;
+  letter-spacing: -.5px;
+}
+.opportunities-workspace .daily-lot,
+.opportunities-workspace .reserve,
+.opportunities-workspace .reserve-group,
+.opportunities-workspace .reserve-archive-head,
+.opportunities-workspace .offer-mystery { border-radius: var(--signal-surface-radius); }
+.opportunities-workspace .daily-lot { margin-bottom: 12px; border-left-color: var(--signal-petrol-ink); }
+.opportunities-workspace .daily-lot-headline strong { font-family: var(--font-display); font-weight: 650; color: var(--signal-petrol-ink); }
+.opportunities-workspace .reserve-head h3 { font: 650 21px/1.3 var(--font-display); color: var(--signal-petrol-ink); }
+.opportunities-workspace .reserve-head h3 span { font: 500 13px/1.5 var(--font-sans); }
+.opportunities-workspace .reserve-group-count { font: 650 24px/1.2 var(--font-display); font-variant-numeric: tabular-nums; }
+.opportunities-workspace .reserve-group.is-shown { background: var(--signal-mist); }
+.opportunities-workspace .opportunities-toolbar { margin-bottom: 12px; }
+.opportunities-workspace .review-toolbar-actions > button,
+.opportunities-workspace .opportunity-date-order,
+.opportunities-workspace .reserve-group-actions > button,
+.opportunities-workspace .reserve-archives,
+.opportunities-workspace .reading-description-heading > button,
+.opportunities-workspace .opportunity-action-main > :is(button,a),
+.opportunities-workspace .opportunity-action-secondary > button,
+.opportunities-workspace .reading-application-action { min-height: 44px; }
+.opportunities-workspace .help-tooltip-trigger { width: 44px; min-width: 44px; height: 44px; min-height: 44px; }
+.opportunities-workspace .reserve-archives { margin-top: 8px; }
+.opportunities-workspace .opportunities-split { border: 1px solid var(--signal-line); border-radius: var(--signal-surface-radius); }
+.opportunities-workspace .opportunity-open { padding: 16px; gap: 6px; }
+.opportunities-workspace .opportunity-open > strong { color: var(--signal-petrol-ink); line-height: 1.45; }
+.opportunities-workspace .opportunity-list-row.is-current { background: var(--signal-mist); }
+.opportunities-workspace .opportunity-conditions { gap: 4px 12px; }
+.opportunities-workspace .opportunity-evidence { margin-top: 4px; }
+.opportunities-workspace .review-source { font-size: 12px; }
+.opportunities-workspace .opportunity-detail-header h2 { font: 650 24px/1.3 var(--font-display); color: var(--signal-petrol-ink); }
+.opportunities-workspace .offer-signal { border-radius: var(--signal-surface-radius); background: var(--signal-mist); }
+.opportunities-workspace .offer-signal--caution { border-left-color: var(--signal-warning); background: var(--signal-warning-bg); }
+@media(max-width:760px) {
+  .opportunities-workspace .workspace-tabs { flex-wrap: wrap; gap: 4px 12px; }
+  .radar-app .radar-page[data-space="offers"] .help-tooltip-trigger { width: 44px; min-width: 44px; height: 44px; min-height: 44px; }
+  .opportunities-workspace .opportunity-open { padding: 16px; }
+  .opportunities-workspace .opportunity-detail-header h2 { font-size: 22px; }
+}
+.opportunity-date-order-menu [data-slot="select-item"] { min-height: 44px; }
+.opportunities-workspace .opportunity-list-row:first-child { border-top-left-radius: var(--signal-surface-radius); }
+.opportunities-workspace .opportunity-open { border-radius: inherit; }
+@media(max-width:760px) { .opportunities-workspace .opportunity-list-row:first-child { border-top-right-radius: var(--signal-surface-radius); } }

@@ -38,7 +38,7 @@ Les contrôles compacts de suivi et les indicateurs de sauvegarde remplacent les
 
 ## C2 — calendrier partagé sur mobile
 
-Le DateTimePicker existant est réutilisé pour les relances. Le calendrier partagé garde le même composant et ses comportements ; à390px, ses jours et sa navigation passent de36à44px par la variable de cellule, sans débordement. Focus de dialogue, confirmation sur Terminé et contrôles indisponibles pendant l’écriture vérifiés dans le lot.
+Le DateTimePicker existant est réutilisé pour les relances. Le calendrier partagé garde le même composant et ses comportements ; à390px, ses jours et sa navigation passent de36à 44 px par la variable de cellule, sans débordement. Focus de dialogue, confirmation sur Terminé et contrôles indisponibles pendant l’écriture vérifiés dans le lot.
 
 L3/C3 : WorkspaceFormSection, WorkspaceButton/Error/PanelHeader, Dialog, Textarea et AutosaveStatus réutilisés. Couleurs et espacements Signal, aucun contrôle natif ajouté ; focus titre, erreur et reprise,44px sur mobile, pagination et textes longs. Captures de recette dans docs/l3-bilan-refus/.
 
@@ -74,3 +74,7 @@ Réutilisation de ChoiceSelect (tiroir tactile et sélecteur clavier), Workspace
 ### L6 — Aujourd’hui
 
 TodayWorkspace, WeekPlanCard, SignalRadar, WorkspaceButton, WorkspacePanelHeader et HelpTooltip conservés. Typographie Bricolage pour les titres, surfaces et espacements par jetons Q0 ; les trois zones restent ordonnées dans le document et se répartissent sur deux colonnes seulement à partir de1100px. Aucun comportement ni contrôle créé. Date blanche sur pétrole, mouvement réduit, focus et cibles44px vérifiés sur le staging privé 78 ; recette dans docs/l6-aujourdhui/README.md.
+
+### L6 — Offres
+
+OpportunitiesWorkspace, SignalProgress, FitBadge, OfferWorkspace, Select, WorkspaceButton et HelpTooltip conservés. Typographie et surfaces Q0, commandes de 44 px, même sémantique de sélection et d’avertissement. Aucun changement des hauteurs de lecture, des débordements ou du mécanisme de fixation des panneaux. Recette dans docs/l6-offres/README.md avant fusion.
