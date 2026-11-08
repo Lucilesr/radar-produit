@@ -18,3 +18,5 @@
 @media(max-width:640px){body:has(.radar-page[data-space=pipeline]) .followup-date-dialog{border-radius:20px!important}body:has(.radar-page[data-space=pipeline]) .followup-date-dialog input,body:has(.radar-page[data-space=pipeline]) .followup-date-dialog button{border-radius:10px;min-height:44px}body:has(.radar-page[data-space=pipeline]) .followup-date-dialog input{font-size:16px}}
 
 .application-mobile-dossier-dates{display:none}@media(max-width:640px){.application-mobile-dossier-dates{display:grid;gap:8px;margin-block:16px}.workspace-dialog[data-application-detail=true] [role=toolbar] button{min-width:44px;min-height:44px;border-radius:10px}}
+
+@media(max-width:640px){.application-mobile-tools{align-items:center;gap:8px}.application-mobile-active-tag{margin-right:auto;min-height:44px;border-radius:999px!important}.application-mobile-tools>details:not([open])>.application-mobile-tools-panel,.application-mobile-card-actions:not([open])>div,.application-closed:not([open])>:not(summary){display:none}.application-funnel-monthly{display:none}}
