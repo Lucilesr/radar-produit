@@ -1036,3 +1036,17 @@ La démo month-story simule seulement le calendrier du récit au1er du mois ; le
 | Clavier / mobile | 390 px ou clavier | Boutons 44 px, détails et aide accessibles, focus conservé | Mêmes choix | oui |
 
 Aucune migration. Le changement de vocabulaire général et la prochaine étape centralisée sont livrés respectivement avec P8 et P4, suivant l’ordre du guide.
+
+## Itération 2 — P2, réglages du radar
+
+| État | Déclencheur | Affichage | Action | Existe ? |
+| --- | --- | --- | --- | --- |
+| Compte neuf | Aucun réglage | Radar réglé à0 sur10, quatre paliers | Définir les critères | oui |
+| Repos | Lecture complète | Six réglages en trois groupes ; faits et autres réglages repliés | Une prochaine action | oui |
+| Chargement | Lecture du compte | Lecture des réglages | Attendre | oui |
+| Erreur / partiel | Carnet ou sources indisponibles | Valeur connue nommée, prochaine action suspendue | Réessayer | oui |
+| Terminé | Tous les réglages sont faits | Dix sur10, six réglages faits repliés | Lire les détails ou continuer dans le carnet | oui |
+| Histoires | Depuis Continuer dans le carnet | Mes histoires ouvert, huit thèmes dans un choix Signal | Écrire ou poursuivre | oui |
+| Clavier / mobile | 390 px, clavier ou mouvement réduit | Replis nommés, focus au carnet et retour de dialogue, commandes44px | Mêmes choix | oui |
+
+Les histoires sans thème continuent de compter dans le calcul Q4 ; le compteur sur8 décrit les thèmes déjà couverts. P4 fournira la prochaine étape centrale ; P2 laisse le calcul Q4 intact.

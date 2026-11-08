@@ -31,3 +31,16 @@ test("Q4 : une seule prochaine action et des seuils stables",()=>{
  input={...input,sources:[{source:"a",lastVisitedAt:"2026-11-07"},{source:"b"},{source:"feed"}]};assert.equal(radarReach(input).next.kind,"experiences");
  input={...input,facts:[fact("e1"),fact("e2")]};assert.equal(radarReach(input).next.kind,"story");assert.equal(radarReach(input).stage,2);
 });
+
+const presentationCode=ts.transpileModule(readFileSync(new URL("../lib/reach-presentation.ts",import.meta.url),"utf8"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+const presentation=await import("data:text/javascript;base64,"+Buffer.from(presentationCode).toString("base64"));
+test("P2 : six réglages concrets dans trois groupes, sans modifier le calcul de portée",()=>{
+ const reach=radarReach({...base,roles:["Product Owner"],facts:[fact("e1"),fact("e2")]});const before=structuredClone(reach),settings=presentation.reachSettings(reach);
+ assert.equal(settings.length,6);assert.deepEqual([...new Set(settings.map(setting=>setting.group))],[0,1,2]);assert.equal(settings.filter(setting=>setting.done).length,2);assert.equal(reach.points,4);assert.deepEqual(reach,before);
+ assert(settings.every(setting=>!/(?:cran|point)/i.test(setting.label+setting.effect)));assert.equal(settings.find(setting=>setting.kind===reach.next.kind).label,"Niveau visé");
+});
+test("P2 : libellés explicites, quatre paliers et complétude gardée à dix",()=>{
+ assert.equal(presentation.reachTitle(0),"Votre radar est réglé à 0 sur 10");assert.equal(presentation.reachTitle(10),"Votre radar est réglé à 10 sur 10");assert.match(presentation.reachTitle(4,true),/connus/);
+ assert.deepEqual(presentation.reachSegmentStops,[2,6,9,10]);assert.equal(presentation.reachSegmentStops.length,4);
+ const full={...radarReach(base),criteria:true,level:true,activeSources:3,visited:true,experiences:2,stories:4};assert(presentation.reachSettings(full).every(setting=>setting.done));
+});

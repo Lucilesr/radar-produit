@@ -50,3 +50,5 @@ test("navigation : « Mon compte » s'ouvre par lien direct, une valeur inconnue
   assert.equal(readProfileSection("account"), "account");
   assert.equal(readProfileSection("compte"), "experiences");
 });
+
+test("P2 : Mes histoires ouvre le carnet par lien direct sans perdre les paramètres",()=>{const search="?tab=profile&profile=stories&utm_source=demo";assert.equal(readProfileSection("stories"),"stories");assert.equal(new URLSearchParams(radarSearch(readRadarRoute(search),search)).get("profile"),"stories");assert.equal(new URLSearchParams(radarSearch({...readRadarRoute(search),tab:"offers"},search)).has("profile"),false);});

@@ -44,7 +44,7 @@ test("l'intitulé l'emporte sur les années, mais l'encadrement le relève", () 
 
 test("signal selon l'écart avec le niveau visé", () => {
   const lead = detectLevel("Lead Product Owner");
-  assert.match(levelSignal(lead, "senior"), /un cran au-dessus de votre cible/);
+  assert.match(levelSignal(lead, "senior"), /un niveau au-dessus de votre cible/);
   assert.equal(levelSignal(lead, "senior", true), undefined);
   assert.match(levelSignal(detectLevel("Head of Product"), "senior"), /trop senior/);
   assert.match(levelSignal(detectLevel("Junior Product Owner"), "senior"), /plus junior/);

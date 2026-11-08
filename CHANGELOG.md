@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Réglages du radar P2
+
+- Même calcul, quatre paliers segmentés et six réglages concrets en trois groupes. Réglages faits et autres réglages repliés ; une seule prochaine action.
+- Huit thèmes déplacés dans Mes histoires du carnet, avec choix de thème et une action principale. Vocabulaire de niveau harmonisé ; aucune migration.
+
 ## 8 novembre 2026 — Termes compacts P1
 
 - Propositions du carnet en puces, cinq au plus, avec provenance sur demande. Ignorer reste durable jusqu’à restauration explicite.

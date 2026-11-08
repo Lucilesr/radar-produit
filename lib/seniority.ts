@@ -77,7 +77,7 @@ export function levelSignal(detected: DetectedLevel | undefined, target: Level |
   if (!detected || !target) return undefined;
   const gap = levelGap(detected.level, target);
   const asked = `${levelLabels[detected.level]} (${detected.evidence.join(", ")})`;
-  if (gap === 1) return acceptAbove ? undefined : `Niveau demandé : ${asked}, un cran au-dessus de votre cible.`;
+  if (gap === 1) return acceptAbove ? undefined : `Niveau demandé : ${asked}, un niveau au-dessus de votre cible.`;
   if (gap >= 2) return `Poste probablement trop senior : ${asked}.`;
   if (gap <= -1) return `Poste plus junior que votre cible : ${asked}.`;
   return undefined;

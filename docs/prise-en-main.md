@@ -34,9 +34,9 @@ La séance reste propre à ce navigateur : mémoire, stockage de session et copi
 
 ## La portée de votre radar — Q4
 
-L’accueil indique votre portée et une seule prochaine action. **Voir ma portée**, ou **Mon profil → Portée du radar**, détaille les dix crans. Vos informations déjà validées comptent dès le départ : critères, niveau, trois sources actives, une visite, deux expériences et quatre histoires. La jauge ne bloque aucune fonction. À dix crans, elle reste stable.
+L’accueil indique **Votre radar est réglé à N sur 10**. **Voir mes réglages**, ou **Mon profil → Portée du radar**, présente quatre paliers : Repérage, Balayage, Longue portée et Précision. Six réglages sont réunis en trois groupes : ce que vous cherchez, où chercher et ce que vous savez faire. Les réglages faits se replient ; seul le prochain reste ouvert, avec sa durée. Le calcul et les informations déjà validées sont conservés ; la jauge ne bloque aucune fonction.
 
-Les huit thèmes d’entretien ouvrent un récit : contexte, contribution personnelle, effets observés et limites. Un chiffre inconnu ne doit pas être inventé. Le brouillon se conserve ; **Valider cette histoire** confirme les faits dans le carnet, sans autoriser leur usage en candidature ou sur un profil public. Vous pouvez relire une histoire et ouvrir le carnet pour ses droits. Après modification, la réutilisation est suspendue jusqu’à un nouveau choix de ces droits, comme pour les autres blocs du carnet.
+**Continuer dans le carnet** ouvre **Mes histoires**. Choisissez parmi huit thèmes, puis **Écrire ou poursuivre** ouvre un récit : contexte, contribution personnelle, effets observés et limites. Un chiffre inconnu ne doit pas être inventé. Le brouillon se conserve ; **Valider cette histoire** confirme les faits dans le carnet, sans autoriser leur usage en candidature ou sur un profil public. Vous pouvez relire une histoire et ouvrir le carnet pour ses droits. Après modification, la réutilisation est suspendue jusqu’à un nouveau choix de ces droits, comme pour les autres blocs du carnet.
 
 Un conflit garde votre texte et le récit enregistré. Comparez les versions avant de choisir laquelle enregistrer. Le changement de palier est signalé discrètement une seule fois dans ce navigateur ; les points déjà présents à votre première visite ne déclenchent aucune animation.
 

@@ -430,8 +430,8 @@ test("Score v2 S2 : niveau visé absent, aucun signal ; présent, un point à v�
   assert.deepEqual(without.signals, []);
   const senior = searchPreferences({ ...poSearch, targetLevel: "senior" });
   const flagged = assessWith(lead, senior);
-  assert.match(flagged.signals.join(" "), /un cran au-dessus de votre cible/);
-  assert.match(flagged.flags.join(" "), /un cran au-dessus de votre cible/);
+  assert.match(flagged.signals.join(" "), /un niveau au-dessus de votre cible/);
+  assert.match(flagged.flags.join(" "), /un niveau au-dessus de votre cible/);
   assert.equal(flagged.score, without.score);
   assert.equal(flagged.tier, without.tier);
   assert.deepEqual(assessWith(lead, searchPreferences({ ...poSearch, targetLevel: "senior", acceptLevelAbove: true })).signals, []);
@@ -452,7 +452,7 @@ test("Score v2 S3 : les sept cas de référence", () => {
   assert.equal(lead.fitParts.level, 0); // managing POs raises Lead to Head of
   const leadOnly = v2({ title: "Lead Product Owner", annualSalary: 100000, ...full("Vous pilotez la roadmap paiements avec les équipes.") });
   assert.deepEqual(leadOnly.fitParts, { role: 30, level: 15, pay: 0, domain: 12 }); assert.equal(leadOnly.fit, 57); assert.equal(leadOnly.fitLabel, "to_weigh");
-  assert.match(leadOnly.signals.join(" "), /un cran au-dessus/); assert.match(leadOnly.signals.join(" "), /très au-dessus de votre cible/);
+  assert.match(leadOnly.signals.join(" "), /un niveau au-dessus/); assert.match(leadOnly.signals.join(" "), /très au-dessus de votre cible/);
   const head = v2({ title: "Senior Product Manager", annualSalary: 120000, contractType: "cdi", language: "en", ...full("8+ years of experience. You manage a team of 3 PMs.") });
   assert.equal(head.fitParts.level, 0); assert.equal(head.fitLabel, "far"); assert.match(head.signals.join(" "), /trop senior/);
   const summary = v2({ title: "Product Owner", remoteMode: "unknown", language: "unknown", description: "Remote role, apply on the site.", contentCoverage: "summary" });

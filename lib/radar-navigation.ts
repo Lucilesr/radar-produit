@@ -1,7 +1,7 @@
 export type RadarTab = "dashboard" | "offers" | "pipeline" | "profile" | "sources";
-export type ProfileSection = "experiences" | "documents" | "account" | "portee" | "lessons" | "months";
+export type ProfileSection = "experiences" | "documents" | "account" | "portee" | "lessons" | "months" | "stories";
 export function readProfileSection(value: string | null): ProfileSection {
-  return value === "documents" || value === "account" || value === "portee" || value === "lessons" || value === "months" ? value : "experiences";
+  return value === "documents" || value === "account" || value === "portee" || value === "lessons" || value === "months" || value === "stories" ? value : "experiences";
 }
 export type SearchSection = "criteria" | "channels" | "outreach";
 export function readSearchSection(value: string | null): SearchSection {

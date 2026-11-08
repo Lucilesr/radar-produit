@@ -43,7 +43,7 @@ export function describeCriteriaChanges(before: SearchPreferences, after: Search
   }
   if(JSON.stringify(before.searchTracks??[])!==JSON.stringify(after.searchTracks??[]))changes.push("Pistes de recherche mises à jour");
   if ((before.targetLevel ?? null) !== (after.targetLevel ?? null)) changes.push(`Niveau visé ${before.targetLevel ? levelLabels[before.targetLevel] : "non précisé"} → ${after.targetLevel ? levelLabels[after.targetLevel] : "non précisé"}`);
-  if (!!before.acceptLevelAbove !== !!after.acceptLevelAbove && before.targetLevel === after.targetLevel) changes.push(after.acceptLevelAbove ? "Un cran au-dessus accepté" : "Un cran au-dessus signalé");
+  if (!!before.acceptLevelAbove !== !!after.acceptLevelAbove && before.targetLevel === after.targetLevel) changes.push(after.acceptLevelAbove ? "Niveau supérieur accepté" : "Niveau supérieur signalé");
   if (before.minimumSalary !== after.minimumSalary) changes.push(`Salaire ${euro(before.minimumSalary)} → ${euro(after.minimumSalary)}/an`);
   if (before.minimumDailyRate !== after.minimumDailyRate) changes.push(`TJM ${euro(before.minimumDailyRate)} → ${euro(after.minimumDailyRate)}/jour`);
   changes.push(...listChange("Mot-clé", before.boostKeywords ?? [], after.boostKeywords ?? [], "ajouté", "retiré"));

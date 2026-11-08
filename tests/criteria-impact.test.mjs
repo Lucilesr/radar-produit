@@ -78,5 +78,5 @@ test("la confirmation couvre aussi la présence par contrat et les pistes",()=>{
 
 test("Score v2 S2 : le changement de niveau visé est décrit", () => {
   assert.deepEqual(describeCriteriaChanges(searchPreferences({ roles: ["Product Owner"] }), searchPreferences({ roles: ["Product Owner"], targetLevel: "senior" })), ["Niveau visé non précisé → Senior"]);
-  assert.deepEqual(describeCriteriaChanges(searchPreferences({ roles: ["Product Owner"], targetLevel: "senior" }), searchPreferences({ roles: ["Product Owner"], targetLevel: "senior", acceptLevelAbove: true })), ["Un cran au-dessus accepté"]);
+  assert.deepEqual(describeCriteriaChanges(searchPreferences({ roles: ["Product Owner"], targetLevel: "senior" }), searchPreferences({ roles: ["Product Owner"], targetLevel: "senior", acceptLevelAbove: true })), ["Niveau supérieur accepté"]);
 });

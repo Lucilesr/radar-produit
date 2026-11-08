@@ -47,3 +47,5 @@ L4 : le sélecteur de vue existant reçoit Entonnoir ; WorkspacePanelHeader/Butt
 L5 : SignalMoment, SignalStepper, SignalCounter, SignalRadar, ChoiceSelect, WorkspacePanelHeader/Button/Error réutilisés. Les options className du moment et label du stepper gardent leurs valeurs par défaut pour les autres écrans. Étapes blanches sur pétrole, action principale citron, image avec jetons Signal et polices locales ; focus par carte, cibles44px, retour au déclencheur et mouvement réduit.
 
 P1 : puces de domaine et boutons WorkspaceButton, aide HelpTooltip existante, détails natifs accessibles ; variables Signal et rayon commun. Aucune nouvelle sélection native.
+
+P2 : SignalProgress segmenté avec les mêmes valeurs accessibles, SignalRadar, WorkspaceButton, HelpTooltip, ChoiceSelect et ExpandableSection. Rayons et couleurs Signal ; une seule action principale dans les réglages et dans Mes histoires.
