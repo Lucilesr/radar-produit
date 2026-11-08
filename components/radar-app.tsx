@@ -12,11 +12,12 @@ import { WorkspaceFeedbackProvider, useWorkspaceFeedback, type WorkspaceFeedback
 import { sessionWrite } from "@/lib/session-write";
 import { OfferForm } from "@/components/offer-form";
 import { WorkspaceButton } from "@/components/workspace-form";
-// Keep profile UI in the initial module graph: an already-open tab must not
-// request a removed, versioned profile chunk after a deployment.
+// Keep Mon radar UI in the initial module graph: an already-open tab must not
+// request a removed, versioned profile or sources chunk after a deployment.
 import { ProfileWorkspace } from "@/components/profile-workspace";
+import {SourcePanel} from "@/components/source-panel";
 
-import { lazy, Suspense, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CircleHelp, RefreshCw, ShieldCheck, ClipboardCheck, ExternalLink, LayoutDashboard, Plus, Search, SlidersHorizontal, Trash2, Undo2, X } from "lucide-react";
 import { applyTrashState } from "@/lib/offer-trash-ui";
 import { sortOffersForTriage } from "@/lib/triage";
@@ -70,7 +71,6 @@ import type { RadarInitialState } from "@/lib/radar-bootstrap";
 import type { Library } from "@/components/experience-library";
 import {profileSectionForRoute,type RadarRoute,type RadarTab,type RadarSection,type ProfileSection} from "@/lib/radar-navigation";
 
-const SourcePanel = lazy(() => import("@/components/source-panel").then(module => ({default: module.SourcePanel})));
 
 type Tab = RadarTab;
 type OfferFilter = OpportunityView;
