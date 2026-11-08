@@ -1,6 +1,6 @@
 # Plan d’alignement — itération 2
 
-Seule liste de travail à compter du 8 novembre 2026. Références : [règles](maquettes/iteration-2/README.md), [itération 2](iteration-2.md), [Signal](feuille-de-route.md#3-q0--design-system-radar-vivant). Préparation : maquettes fusionnées dans [#257](https://github.com/Lucilesr/radar-produit/pull/257) et [#259](https://github.com/Lucilesr/radar-produit/pull/259). À 390 px, la maquette mobile dédiée fait foi.
+Seule liste de travail à compter du 8 novembre 2026. Références : [règles](maquettes/iteration-2/README.md), [itération 2](iteration-2.md), [Signal](feuille-de-route.md#3-q0--design-system-radar-vivant). Préparation : maquettes fusionnées dans [#257](https://github.com/Lucilesr/radar-produit/pull/257) et [#259](https://github.com/Lucilesr/radar-produit/pull/259), annotations clarifiées dans [#260](https://github.com/Lucilesr/radar-produit/pull/260). À 390 px, la maquette mobile dédiée fait foi. Les blocs « Annotation · ne pas afficher » ne sont jamais des éléments d’interface ; ils décrivent des états alternatifs du même écran.
 
 Un seul écran en cours. Le suivant commence après fusion **et** recette du précédent sur le staging privé. Aucune production sans validation explicite de cette version. Les anciennes livraisons constituent l’existant à comparer, pas une preuve d’alignement.
 

@@ -1,6 +1,6 @@
 # Q2b — grille d’écarts avant code
 
-Références : [ordinateur](../maquettes/iteration-2/Balayage-v2.html) et [mobile faisant foi à 390 px](../maquettes/iteration-2/Balayage-mobile.html), #257 et #259 fusionnées. Existant : staging privé version 80, données fictives. Grille arrêtée avant modification applicative.
+Références : [ordinateur](../maquettes/iteration-2/Balayage-v2.html) et [mobile faisant foi à 390 px](../maquettes/iteration-2/Balayage-mobile.html), #257, #259 et #260 fusionnées. Les annotations ne sont pas affichées : les trois rendus se remplacent. Existant : staging privé version 80, données fictives. Grille arrêtée avant modification applicative.
 
 | Format | Actuel | Maquette |
 | --- | --- | --- |

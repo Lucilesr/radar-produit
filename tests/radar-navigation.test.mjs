@@ -65,3 +65,11 @@ test("P5 : les lecteurs de formulaires anciens restent compatibles",()=>{
 test("P5 : normaliser une URL deux fois ne modifie pas son point de reprise",()=>{
  for(const search of ["?tab=profile&profile=stories&utm_source=demo","?tab=sources&sources=outreach","?tab=radar","?tab=account","?offer=demo&view=interviews"]){const once=canonicalRadarSearch(search);assert.equal(canonicalRadarSearch(once),once);}
 });
+
+test("Q2b : filtre exact de source conservé après rechargement et effaçable sans toucher aux anciens liens",()=>{
+ const input="?tab=offers&source=We+Work+Remotely",route=readRadarRoute(input);
+ assert.equal(route.source,"We Work Remotely");assert.equal(route.tab,"offers");assert.deepEqual(readRadarRoute(radarSearch(route)),route);
+ assert.equal(new URLSearchParams(radarSearch({...route,source:undefined},input)).has("source"),false);
+ assert.equal(readRadarRoute("?tab=radar&section=sources&source=Jobgether").source,undefined);
+ assert.equal(new URLSearchParams(canonicalRadarSearch("?tab=radar&section=sources&source=Jobgether")).get("source"),"Jobgether");
+});

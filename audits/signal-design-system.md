@@ -78,3 +78,7 @@ TodayWorkspace, WeekPlanCard, SignalRadar, WorkspaceButton, WorkspacePanelHeader
 ### L6 — Offres
 
 OpportunitiesWorkspace, SignalProgress, FitBadge, OfferWorkspace, Select, WorkspaceButton et HelpTooltip conservés. Typographie et surfaces Q0, commandes de 44 px, même sémantique de sélection et d’avertissement. Aucun changement des hauteurs de lecture, des débordements ou du mécanisme de fixation des panneaux. Recette vérifiée sur le staging privé 80 dans docs/l6-offres/README.md.
+
+### Q2b — alignement Balayage
+
+SignalRadar, SignalProgress, SignalCounter, WorkspaceButton et HelpTooltip réutilisés ; détails natifs pour les replis. Rayons 20/16/10/999 et titres Bricolage40/24 ; radar200 sur ordinateur,120 sur mobile, conformément aux nouvelles maquettes. Les états en cours, nouvelles offres et sans nouveauté se remplacent ; les annotations de maquette ne sont pas affichées. Recette et captures dans docs/q2b-balayage-vivant/.

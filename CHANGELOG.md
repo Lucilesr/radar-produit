@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Balayage vivant Q2b
+
+- Bilan aligné sur les maquettes ordinateur et mobile : radar et échos conservés, progression source par source, trois compteurs et état clair sans nouveauté.
+- Barres triées selon vos critères, accès aux offres d’une source, pauses repliées et trois visites les plus anciennes. Reprise ciblée et actualisation à l’ouverture silencieuse ; aucune migration.
+
 ## 8 novembre 2026 — Signal sur Offres L6
 
 - Titres, groupes de réserve et cartes reprennent la hiérarchie et les surfaces Signal ; les petites commandes atteignent 44 px. Le texte du groupe Loin décrit le classement réel, sans annoncer un faux seuil.
