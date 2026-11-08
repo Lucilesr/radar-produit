@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Radar — Mon radar mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F3F5F6}
+a{color:#193F50}a:hover{color:#24566B}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1460px; box-sizing: border-box; background: #F3F5F6; font-family: Inter, system-ui, sans-serif; color: #203743; position: relative; padding-bottom: 96px">
+
+<header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #FFFFFF; border-bottom: 1px solid #D4DFE5">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 28px; font-weight: 750; color: #193F50">Mon radar</h1>
+<button type="button" aria-label="Mon compte : Camille" style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid #D4DFE5; background: #EAF0F3; color: #193F50; font: 700 15px Inter, sans-serif; cursor: pointer">C</button>
+</header>
+
+<div style="padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+<section aria-labelledby="m-reach" style="display: flex; flex-direction: column; gap: 12px; padding: 20px 18px; border-radius: 20px; background: #193F50; color: #FFFFFF">
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #E6EE53">Palier Longue portée</p>
+<h2 id="m-reach" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 24px; line-height: 1.15; font-weight: 750">Votre radar est réglé à 7 sur 10</h2>
+<div role="img" aria-label="Paliers : 3 sur 4 atteints" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px">
+<div style="height: 8px; border-radius: 999px; background: #E6EE53"></div><div style="height: 8px; border-radius: 999px; background: #E6EE53"></div><div style="height: 8px; border-radius: 999px; background: #E6EE53"></div><div style="height: 8px; border-radius: 999px; background: #24566B"></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 16px; background: #24566B">
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #E6EE53">Prochain réglage · 5 min</p>
+<p style="margin: 0; font-size: 15px; font-weight: 600">Écrire l’histoire « un désaccord »</p>
+<a href="MonRadar-mobile.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 48px; border-radius: 10px; background: #E6EE53; color: #193F50; font-weight: 700; font-size: 15px; text-decoration: none">Écrire maintenant</a>
+</div>
+<button type="button" aria-expanded="false" style="align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: transparent; color: #D8E6EC; font: 600 14px Inter, sans-serif; cursor: pointer">✓ 4 réglages faits sur 6 ▸</button>
+</section>
+
+<section aria-labelledby="m-s1" style="border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5; overflow: hidden">
+<h2 id="m-s1" style="margin: 0"><button type="button" aria-expanded="true" style="width: 100%; display: flex; justify-content: space-between; align-items: center; min-height: 56px; padding: 0 16px; border: 0; background: #FFFFFF; color: #193F50; font: 700 18px 'Bricolage Grotesque', Inter, sans-serif; cursor: pointer">Ce que je cherche <span aria-hidden="true">▾</span></button></h2>
+<div style="padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px; font-size: 15px">
+<div><p style="margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #5B6B76">Postes</p><div style="display: flex; flex-wrap: wrap; gap: 6px"><span style="padding: 4px 12px; border-radius: 999px; background: #EAF0F3">Product Owner</span><span style="padding: 4px 12px; border-radius: 999px; background: #EAF0F3">Product Manager</span></div></div>
+<p style="margin: 0"><span style="font-size: 13px; font-weight: 600; color: #5B6B76">Niveau · </span>Senior, un cran au-dessus accepté</p>
+<p style="margin: 0"><span style="font-size: 13px; font-weight: 600; color: #5B6B76">Lieu · </span>Full remote, Europe</p>
+<p style="margin: 0"><span style="font-size: 13px; font-weight: 600; color: #5B6B76">Contrat · </span>CDI dès 55 k€ · freelance dès 500 €/j</p>
+<div><p style="margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #5B6B76">Domaine</p><div style="display: flex; flex-wrap: wrap; gap: 6px"><span style="padding: 4px 12px; border-radius: 999px; background: #EAF0F3">Paiements</span><span style="padding: 4px 12px; border-radius: 999px; background: #EAF0F3">SEPA</span><span style="padding: 4px 12px; border-radius: 999px; background: #EAF0F3">SCA</span><span style="padding: 4px 8px; font-size: 14px; color: #5B6B76">+ 2</span></div></div>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 10px; background: #F3F5F6">
+<p style="margin: 0; font-size: 14px">3 termes repérés dans votre carnet</p>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<span style="display: inline-flex; align-items: center; padding: 0 0 0 12px; border-radius: 999px; background: #FFFFFF; border: 1px solid #D4DFE5; font-size: 14px">Wallets<button type="button" aria-label="Confirmer Wallets" style="width: 44px; height: 44px; border: 0; background: transparent; color: #176947; font: 700 16px Inter, sans-serif; cursor: pointer">✓</button><button type="button" aria-label="Ignorer Wallets" style="width: 44px; height: 44px; border: 0; background: transparent; color: #5B6B76; font: 700 16px Inter, sans-serif; cursor: pointer">×</button></span>
+<span style="display: inline-flex; align-items: center; padding: 0 0 0 12px; border-radius: 999px; background: #FFFFFF; border: 1px solid #D4DFE5; font-size: 14px">PSP<button type="button" aria-label="Confirmer PSP" style="width: 44px; height: 44px; border: 0; background: transparent; color: #176947; font: 700 16px Inter, sans-serif; cursor: pointer">✓</button><button type="button" aria-label="Ignorer PSP" style="width: 44px; height: 44px; border: 0; background: transparent; color: #5B6B76; font: 700 16px Inter, sans-serif; cursor: pointer">×</button></span>
+</div>
+</div>
+<button type="button" style="min-height: 48px; border-radius: 10px; border: 1px solid #D4DFE5; background: #FFFFFF; color: #193F50; font: 600 15px Inter, sans-serif; cursor: pointer">Modifier mes critères</button>
+</div>
+</section>
+
+<section aria-labelledby="m-s2" style="border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<h2 id="m-s2" style="margin: 0"><button type="button" aria-expanded="false" style="width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 56px; padding: 0 16px; border: 0; border-radius: 16px; background: #FFFFFF; color: #193F50; font: 700 18px 'Bricolage Grotesque', Inter, sans-serif; cursor: pointer; text-align: left">Où chercher <span style="font: 500 13px Inter, sans-serif; color: #5B6B76">7 sources · 2 à visiter ▸</span></button></h2>
+</section>
+
+<section aria-labelledby="m-s3" style="border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<h2 id="m-s3" style="margin: 0"><button type="button" aria-expanded="false" style="width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 56px; padding: 0 16px; border: 0; border-radius: 16px; background: #FFFFFF; color: #193F50; font: 700 18px 'Bricolage Grotesque', Inter, sans-serif; cursor: pointer; text-align: left">Ce que je sais faire <span style="font: 500 13px Inter, sans-serif; color: #5B6B76">3 exp. · 4 histoires ▸</span></button></h2>
+</section>
+
+<section aria-labelledby="m-etats" style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 16px; background: #EAF0F3">
+<h2 id="m-etats" style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5B6B76">États mobiles</h2>
+<p style="margin: 0; font-size: 13px"><strong>Accordéons :</strong> un seul ouvert à la fois ; l’état ouvert est gardé au retour sur l’écran.</p>
+<p style="margin: 0; font-size: 13px"><strong>Où chercher, ouvert :</strong> une source par ligne (nom, barre pleine largeur, « N pour vous »), puis « À visiter » en liste.</p>
+<p style="margin: 0; font-size: 13px"><strong>Compte neuf :</strong> en-tête « Votre radar s’allume » avec le champ du poste ; les 3 accordéons restent fermés.</p>
+</section>
+</div>
+
+<nav aria-label="Navigation principale" style="position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 4px 14px; background: #FFFFFF; border-top: 1px solid #D4DFE5">
+<a href="Aujourdhui-mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; color: #5B6B76; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" fill="none" stroke="#5B6B76" stroke-width="1.8" stroke-linejoin="round"></path></svg>Accueil</a>
+<a href="Offre-mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; color: #5B6B76; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="#5B6B76" stroke-width="1.8"></circle><path d="M16 16l4 4" stroke="#5B6B76" stroke-width="1.8" stroke-linecap="round"></path></svg>Offres</a>
+<a href="Candidatures-mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; color: #5B6B76; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2" fill="none" stroke="#5B6B76" stroke-width="1.8"></rect><path d="M9 12l2 2 4-4" fill="none" stroke="#5B6B76" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Suivi</a>
+<a href="MonRadar-mobile.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; font-weight: 700; color: #193F50; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="#E6EE53" stroke="#193F50" stroke-width="1.8"></circle><circle cx="12" cy="12" r="2" fill="#193F50"></circle><path d="M12 12l5-5" stroke="#193F50" stroke-width="1.8"></path></svg>Mon radar</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1460}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

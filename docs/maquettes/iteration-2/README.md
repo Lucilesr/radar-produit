@@ -10,6 +10,12 @@ Référence visuelle pour `docs/iteration-2.md`. Ces six maquettes statiques, à
 | `Candidatures.html` | Colonnes par étape, candidature soignée sur 4, relance à J+7, entonnoir en une ligne, leçons | C1, C2, L3, L4 |
 | `Candidatures-mobile.html` | Liste groupée par étape, filtres en pastilles, barre du bas à 4 entrées | C4 |
 | `MonRadar.html` | Portée en réglages, puis Ce que je cherche, Où chercher, Ce que je sais faire | P1, P2, P5 |
+| `Aujourdhui-mobile.html` | Accueil sur mobile : séance en premier, étapes suivantes en liste, semaine repliée | P6 |
+| `Balayage-mobile.html` | Balayage sur mobile : radar de 120 px, une source par bloc avec sa barre pleine largeur | Q2b |
+| `Offre-mobile.html` | Fiche sur mobile en plein écran, compteur en haut, barre de décision fixée en bas | Q1 |
+| `MonRadar-mobile.html` | Mon radar sur mobile : portée en tête, trois sections en accordéon, une seule ouverte | P5 |
+
+Chaque écran a sa version mobile (390 px). Les maquettes ordinateur passent aussi sur plusieurs lignes quand la largeur diminue ; à 390 px, c'est la maquette mobile qui fait foi.
 
 ## Règles visuelles
 

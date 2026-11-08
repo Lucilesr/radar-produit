@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Radar — Balayage mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F3F5F6}
+a{color:#193F50}a:hover{color:#24566B}
+@keyframes echo{0%{r:4;opacity:1}100%{r:12;opacity:0}}
+.echo{animation:echo 1.6s ease-out 3}
+@media (prefers-reduced-motion: reduce){.echo{animation:none}}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1500px; box-sizing: border-box; background: #F3F5F6; font-family: Inter, system-ui, sans-serif; color: #203743; position: relative; padding-bottom: 96px">
+
+<header style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px 10px 4px; background: #FFFFFF; border-bottom: 1px solid #D4DFE5">
+<a href="MonRadar-mobile.dc.html" aria-label="Retour à Mon radar" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; font-size: 22px; text-decoration: none">←</a>
+<h1 style="margin: 0; flex: 1; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 24px; font-weight: 750; color: #193F50">Balayage</h1>
+<button type="button" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #D4DFE5; background: #FFFFFF; color: #193F50; font: 600 14px Inter, sans-serif; cursor: pointer">Actualiser</button>
+</header>
+
+<div style="padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+<section aria-labelledby="m-done" style="display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 22px 18px; border-radius: 20px; background: #193F50; color: #FFFFFF; text-align: center">
+<svg viewBox="0 0 200 200" width="120" height="120" role="img" aria-label="Radar : 6 échos pour vos critères">
+<circle cx="100" cy="100" r="92" fill="#203743" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="2"></circle>
+<circle cx="100" cy="100" r="58" fill="none" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="2"></circle>
+<circle cx="100" cy="100" r="5" fill="#FFFFFF"></circle>
+<circle cx="138" cy="56" r="7" fill="#E6EE53"></circle><circle class="echo" cx="138" cy="56" r="4" fill="none" stroke="#E6EE53" stroke-width="2.5"></circle>
+<circle cx="64" cy="70" r="7" fill="#E6EE53"></circle>
+<circle cx="150" cy="128" r="7" fill="#E6EE53"></circle>
+<circle cx="84" cy="150" r="7" fill="#E6EE53"></circle>
+<circle cx="118" cy="92" r="7" fill="#E6EE53"></circle>
+<circle cx="46" cy="118" r="7" fill="#E6EE53"></circle>
+</svg>
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #E6EE53">Balayage terminé</p>
+<h2 id="m-done" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 26px; line-height: 1.15; font-weight: 750">6 nouvelles offres pour vous</h2>
+<div style="align-self: stretch; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px">
+<div style="padding: 10px 6px; border-radius: 16px; background: #24566B"><p style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 24px; font-weight: 750">214</p><p style="margin: 0; font-size: 12px; color: #D8E6EC">parcourues</p></div>
+<div style="padding: 10px 6px; border-radius: 16px; background: #E6EE53; color: #193F50"><p style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 24px; font-weight: 750">12</p><p style="margin: 0; font-size: 12px; font-weight: 600">pour vous</p></div>
+<div style="padding: 10px 6px; border-radius: 16px; background: #24566B"><p style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 24px; font-weight: 750">6</p><p style="margin: 0; font-size: 12px; color: #D8E6EC">nouvelles</p></div>
+</div>
+<a href="Offre-mobile.dc.html" style="align-self: stretch; display: flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 10px; background: #E6EE53; color: #193F50; font-weight: 700; font-size: 16px; text-decoration: none">Voir mon lot du jour</a>
+</section>
+
+<section aria-labelledby="m-sources" style="display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<h2 id="m-sources" style="margin: 0 0 6px; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 20px; font-weight: 700; color: #193F50">Par source</h2>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 0; border-top: 1px solid #EAF0F3">
+<div style="display: flex; justify-content: space-between; gap: 8px"><strong style="font-size: 15px">Welcome to the Jungle</strong><a href="Offre-mobile.dc.html" style="font-size: 14px; font-weight: 600">Voir</a></div>
+<div style="height: 10px; border-radius: 999px; background: #D8E6EC; display: flex; overflow: hidden"><div style="width: 9%; background: #E6EE53; border-right: 1px solid #A7B528"></div></div>
+<span style="font-size: 13px; color: #5B6B76">48 parcourues · <strong style="color: #193F50">4 pour vous</strong> · 2 nouvelles</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 0; border-top: 1px solid #EAF0F3">
+<div style="display: flex; justify-content: space-between; gap: 8px"><strong style="font-size: 15px">We Work Remotely</strong><a href="Offre-mobile.dc.html" style="font-size: 14px; font-weight: 600">Voir</a></div>
+<div style="height: 10px; width: 83%; border-radius: 999px; background: #D8E6EC; display: flex; overflow: hidden"><div style="width: 9%; background: #E6EE53; border-right: 1px solid #A7B528"></div></div>
+<span style="font-size: 13px; color: #5B6B76">40 parcourues · <strong style="color: #193F50">3 pour vous</strong> · 2 nouvelles</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 0; border-top: 1px solid #EAF0F3">
+<strong style="font-size: 15px">Remote OK</strong>
+<p style="margin: 0; font-size: 13px; color: #8A3B12">N’a pas répondu.</p>
+<button type="button" style="align-self: flex-start; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #D4DFE5; background: #FFFFFF; color: #193F50; font: 600 14px Inter, sans-serif; cursor: pointer">Réessayer</button>
+</div>
+<button type="button" style="align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: transparent; color: #24566B; font: 600 14px Inter, sans-serif; cursor: pointer">+ 2 sources · 2 en pause ▸</button>
+</section>
+
+<section aria-labelledby="m-visit" style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<h2 id="m-visit" style="margin: 0; font-size: 16px; font-weight: 700; color: #193F50">À visiter</h2>
+<a href="MonRadar-mobile.dc.html" style="display: flex; justify-content: space-between; align-items: center; min-height: 48px; font-size: 15px; text-decoration: none; color: #203743; border-bottom: 1px solid #EAF0F3"><span>Collective · 6 jours</span><span style="font-weight: 600; color: #193F50">Visiter ›</span></a>
+<a href="MonRadar-mobile.dc.html" style="display: flex; justify-content: space-between; align-items: center; min-height: 48px; font-size: 15px; text-decoration: none; color: #203743"><span>Malt · 9 jours</span><span style="font-weight: 600; color: #193F50">Visiter ›</span></a>
+</section>
+
+<section aria-labelledby="m-etats" style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: #EAF0F3">
+<h2 id="m-etats" style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5B6B76">États mobiles</h2>
+<p style="margin: 0; font-size: 13px"><strong>En cours :</strong> radar de 120 px qui tourne, barre « 4 sources sur 7 », puis la liste des sources avec ✓, ◌ ou ·.</p>
+<p style="margin: 0; font-size: 13px"><strong>Rien de nouveau :</strong> bloc blanc, petit radar gris, « Rien de nouveau depuis 9 h 40 », bouton « Voir mon lot du jour ».</p>
+</section>
+</div>
+
+<nav aria-label="Navigation principale" style="position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 4px 14px; background: #FFFFFF; border-top: 1px solid #D4DFE5">
+<a href="Aujourdhui-mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; color: #5B6B76; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" fill="none" stroke="#5B6B76" stroke-width="1.8" stroke-linejoin="round"></path></svg>Accueil</a>
+<a href="Offre-mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; color: #5B6B76; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="#5B6B76" stroke-width="1.8"></circle><path d="M16 16l4 4" stroke="#5B6B76" stroke-width="1.8" stroke-linecap="round"></path></svg>Offres</a>
+<a href="Candidatures-mobile.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; color: #5B6B76; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2" fill="none" stroke="#5B6B76" stroke-width="1.8"></rect><path d="M9 12l2 2 4-4" fill="none" stroke="#5B6B76" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Suivi</a>
+<a href="MonRadar-mobile.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; font-size: 12px; font-weight: 700; color: #193F50; text-decoration: none"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="#E6EE53" stroke="#193F50" stroke-width="1.8"></circle><circle cx="12" cy="12" r="2" fill="#193F50"></circle><path d="M12 12l5-5" stroke="#193F50" stroke-width="1.8"></path></svg>Mon radar</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1500}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
