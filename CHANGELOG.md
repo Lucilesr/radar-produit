@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Entonnoir réaliste L4
+
+- Nouvelle vue Entonnoir dans Candidatures : envois des 90 derniers jours, taux vers les entretiens puis les offres, sources attribuées à l’envoi et rythme mensuel observé.
+- Les chiffres restent masqués avant cinq envois enregistrés dans le journal. Aucun historique reconstruit, aucun entretien inventé pour une offre reçue directement, aucun service tiers ni migration.
+
 ## 8 novembre 2026 — Bilan privé après refus L3 / C3
 
 - Deux questions facultatives et un espace libre privé dans la candidature ; brouillon conservé et validation explicite. Mes leçons rassemble les bilans dans Mon profil.

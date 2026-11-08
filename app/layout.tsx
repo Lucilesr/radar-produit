@@ -1,4 +1,5 @@
 import "./signal-application-followup.css";
+import "./signal-application-funnel.css";
 import "./signal-application-lesson.css";
 import "./signal-application-care.css";
 import "./signal-activity.css";
