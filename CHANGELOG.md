@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Prochaine étape commune P4
+
+- Accueil, séance, portée, plan et préparation d’une candidature lisent une seule file de priorités. Trois propositions au plus, sans invitation indépendante.
+- Entretiens à 48 heures prioritaires, sources manuelles à sept jours et séances existantes conservées. Une préparation confirmée pendant une nouvelle séance figure dans son bilan ; fin de séance respectée après rechargement. Aucune migration.
+
 ## 8 novembre 2026 — Écriture P8
 
 - Vocabulaire commun : offres, critères, carnet, réglages, paliers, séance, lot du jour et réserve.
