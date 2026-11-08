@@ -6,6 +6,7 @@ import {useRadarNextSteps} from "@/components/next-steps-context";
 import {nextContextualStep,type ContextualStep} from "@/lib/next-steps";
 import {promptVisible,readPromptState,type PromptState} from "@/lib/contextual-prompts";
 import {searchPreferences} from "@/lib/search-preferences";
+import {requestError} from "@/lib/request-error";
 import {sessionWrite} from "@/lib/session-write";
 import type {CandidateProfile,JobRecord,SearchPreferences} from "@/lib/types";
 import type {DailyLot} from "@/lib/daily-lot";
@@ -21,7 +22,7 @@ export function ContextualPromptsProvider({owner,now,onState,children}:{owner:st
  useEffect(()=>{live.current=true;const frame=requestAnimationFrame(()=>void load());const focus=()=>void load();window.addEventListener("focus",focus);return()=>{live.current=false;generation.current++;cancelAnimationFrame(frame);window.removeEventListener("focus",focus);};},[owner,load]);
  async function write(command:Command){if(lock.current)return false;lock.current=true;generation.current++;setBusy(true);setError("");const key=crypto.randomUUID();sessionWrite(key,true);
   try{const r=await fetch("/api/contextual-prompts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(command),signal:AbortSignal.timeout(15000)});const data=await r.json() as {state?:PromptState;searchPreferences?:SearchPreferences;error?:string};if(!r.ok||!data.state)throw new Error(data.error??"Choix non confirmé. Réessayez quand la connexion revient.");setState(data.state);setReady(true);accept.current(data.state,command.action==="level"?data.searchPreferences:undefined);requestAnimationFrame(()=>{if(document.activeElement===document.body)document.getElementById("workspace-title")?.focus({preventScroll:true});});return true;
-  }catch(problem){setError(problem instanceof Error?problem.message:"Choix non confirmé.");return false;}finally{sessionWrite(key,false);lock.current=false;setBusy(false);}
+  }catch(problem){setError(requestError(problem,"Choix non confirmé. Réessayez quand la connexion revient."));return false;}finally{sessionWrite(key,false);lock.current=false;setBusy(false);}
  }
  return <Context.Provider value={{state:readPromptState(state,now),now,ready,busy,error,load,write}}>{children}</Context.Provider>;
 }
