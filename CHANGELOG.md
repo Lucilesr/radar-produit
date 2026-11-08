@@ -3,6 +3,12 @@
 - Date et accueil personnel, séance prioritaire avec deux suites discrètes, semaine compacte et bilan du radar alignés sur ordinateur et mobile.
 - Journée terminée calme sans bouton, réglage initial en trois étapes, chargement et erreur avec reprise. Engagements tenus repliés sur mobile ; réglages, pauses et jokers restent accessibles. Aucune migration.
 
+## Offres — alignement des fiches ordinateur et mobile
+
+- Quatre informations clés, adéquation près du titre et annonce dépliable ; les autres conditions, dates et outils restent accessibles.
+- Décisions en bas de fiche, fiche mobile plein écran, fiche mystère à compléter et archives avec une seule action de retour.
+- Les annotations des maquettes décrivent des états alternatifs ; elles ne sont jamais affichées dans l’application.
+
 ## 8 novembre 2026 — Balayage vivant Q2b
 
 - Bilan aligné sur les maquettes ordinateur et mobile : radar et échos conservés, progression source par source, trois compteurs et état clair sans nouveauté.

@@ -1,4 +1,7 @@
 "use client";
+import { SignalMoment } from "@/components/signal/signal-moment";
+import { detectLevel, levelLabels } from "@/lib/seniority";
+import { formatPayRangeShort } from "@/lib/pay-range";
 import {ApplicationLessonCard} from "@/components/application-lesson";
 import {ApplicationFollowupCard} from "@/components/application-followup";
 import { requestError } from "@/lib/request-error";
@@ -22,7 +25,7 @@ import { ApplicationQuestions } from "@/components/application-questions";
 import { ApplicationTagBadges } from "@/components/application-tags";
 import { formatDate, fromZonedInput, reviewDue, statusLabels, zonedInput } from "@/lib/application-workflow";
 import { formatPay } from "@/lib/pay-range";
-import { fitLabels, isMysteryOffer, revealMessage } from "@/lib/fit";
+import { fitLabels, isGoodFind, isMysteryOffer, revealMessage } from "@/lib/fit";
 import { hasApplication, workspaceSections } from "@/lib/opportunity-views";
 import type { CandidateProfile, InterviewRecord, JobRecord, JobStatus } from "@/lib/types";
 
@@ -61,7 +64,9 @@ export function ApplicationTrackingAction({job,onStatus,onOpenApplication}:{job:
   return <button type="button" className="secondary-button reading-application-action" disabled={starting} aria-busy={starting} onClick={async()=>{if(hasApplication(job)){onOpenApplication();return;}setStarting(true);try{await onStatus(job.id,"applied");}finally{setStarting(false);}}}>{starting?<LoaderCircle size={14} className="animate-spin" aria-hidden/>:null}{hasApplication(job)?"Voir dans Candidatures":"J’ai postulé"}</button>;
 }
 
-export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onCancelApplication, onViewChange, showApplicationAction = true, showAnnouncement = true }: {
+export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onCancelApplication, onViewChange, showApplicationAction = true, showAnnouncement = true, pasteRequest, onEditingChange }: {
+  pasteRequest?: {jobId:string;revision:number};
+  onEditingChange?: (editing:boolean)=>void;
   showApplicationAction?: boolean;
   showAnnouncement?: boolean;
   onViewChange?: (view: WorkspaceView) => void;
@@ -75,6 +80,9 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   const [view, updateView] = useState<WorkspaceView>(initialView);
   const setView = (next: WorkspaceView) => { updateView(next); onViewChange?.(next); };
   useEffect(()=>updateView(initialView),[initialView]); const [editing, setEditing] = useState(false);
+  const [revealed,setRevealed]=useState<JobRecord|null>(null);
+  useEffect(()=>{if(pasteRequest?.jobId===job.id)setEditing(true);},[pasteRequest,job.id]);
+  useEffect(()=>{onEditingChange?.(editing);},[editing,onEditingChange]);
   const noteSave=useAutosave(`note:${job.id}`,job.candidateNote??"",2000);
   const note=noteSave.value,setNote=noteSave.setValue;
   const [statusBusy,setStatusBusy] = useState(false);
@@ -86,14 +94,15 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   const tabs = workspaceSections(context);
   const activeView = context === "opportunity" && (view === "application" || view === "interviews") ? "offer" : view;
   useEffect(() => { if (activeView !== "application" || job.status !== "offer") return; const frame = requestAnimationFrame(() => { noteEditorRef.current?.focus({preventScroll:true}); noteEditorRef.current?.scrollIntoView({block:"center"}); }); return () => cancelAnimationFrame(frame); }, [activeView,job.id,job.status]);
-  return <div className="signal-offer-workspace space-y-5">
+  return <div className={"signal-offer-workspace space-y-5"+(context==="opportunity"?" aligned-offer-workspace":"")}>
     {showAnnouncement ? <div className="signal-external-link">{sourceUrl || applyUrl ? <a href={sourceUrl || applyUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : <span className="offer-link-missing">Lien de l’annonce à renseigner</span>}</div> : null}
     <div className={context === "opportunity" ? "signal-offer-nav" : "signal-application-nav"}>
       <nav aria-label={context === "opportunity" ? "Sections de l’offre" : "Sections de la candidature"} className="signal-workspace-tabs">{tabs.map(id => <button type="button" key={id} onClick={() => setView(id)} aria-current={activeView === id ? "page" : undefined}>{labels[id]}</button>)}</nav>
       {context === "opportunity" && !job.deletedAt && showApplicationAction ? <ApplicationTrackingAction job={job} onStatus={onStatus} onOpenApplication={onOpenApplication} /> : null}
     </div>
     {context === "application" ? <ApplicationTagBadges jobId={job.id}/> : null}
-    {activeView === "offer" && !editing ? <>
+    {context==="opportunity"&&activeView==="offer"&&!editing?<AlignedOfferRead job={job} onEdit={()=>setEditing(true)} editRef={editTrigger}/>:null}
+    {activeView === "offer" && !editing && context!=="opportunity" ? <>
       <section aria-label="Informations clés de l’offre" className="review-conditions">
         <h3>Conditions de l’offre</h3>
         <dl className="review-criteria-grid">
@@ -113,7 +122,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
         <div className="offer-mystery-actions">{sourceUrl ? <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} aria-hidden />Ouvrir l’annonce</a> : null}
         <WorkspaceButton variant="primary" onClick={() => setEditing(true)}>Coller l’annonce</WorkspaceButton></div>
       </section> : <FitSummary job={job} />}
-      <div className="grid gap-3 sm:grid-cols-2"><Signals title={context==="opportunity"?"Pourquoi elle remonte":"Pourquoi c’est pertinent"} items={context==="opportunity"?job.reasons.slice(0,4):job.reasons} tone="positive" /><Signals title="Points à vérifier" items={job.flags} tone="caution" /></div>
+      <div className="grid gap-3 sm:grid-cols-2"><Signals title={"Pourquoi c’est pertinent"} items={job.reasons} tone="positive" /><Signals title="Points à vérifier" items={job.flags} tone="caution" /></div>
       <section className="reading-description"><div className="reading-description-heading"><div><h3 className="offer-section-title">Description, missions et exigences</h3><p className="review-coverage">{coverage}</p></div>{!job.deletedAt ? <button ref={editTrigger} onClick={() => setEditing(true)} className="secondary-button"><Pencil size={13} /> Compléter / corriger</button> : null}</div><p className="offer-description-read">{job.description || "Aucune description fournie. Ajoutez le contenu de l’annonce ou d’une alerte autorisée."}</p>{coverage !== "Description complète fournie" ? <p className="mt-2 text-xs leading-5 text-muted-foreground">{coverage} : les informations absentes restent à confirmer.{!job.deletedAt ? " Vous pouvez coller une description complète ici, sans recréer une fiche." : " Restaurez l’offre pour compléter sa description."}</p> : null}</section>
       <section className="review-offer-dates" aria-label="Dates de l’offre">
         <h3 className="review-dates-heading">Dates de l’offre</h3>
@@ -121,7 +130,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
       {!job.publishedAt ? <div className="inline-help"><span>Date de publication non précisée</span><HelpTooltip label="Date de publication">La date d’import ou de notification ne remplace pas la date réelle de publication.</HelpTooltip></div> : null}
       </section>
     </> : null}
-    {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); if (mystery && !isMysteryOffer(updated)) notify({ message: revealMessage(updated) }); }} onCancel={finishEditing} /> : null}
+    {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); if (mystery && !isMysteryOffer(updated)) { if(context==="opportunity"&&isGoodFind(updated))setRevealed(updated); else notify({ message: revealMessage(updated) }); } }} onCancel={finishEditing} /> : null}
     {activeView==="brief"||context==="application"&&activeView==="application"?<ApplicationCare key={`care:${job.id}`} job={job}/>:null}
     {context === "application" && activeView === "application" ? <div className="signal-application-form">
       <ApplicationLessonCard key={`lesson:${job.id}`} job={job}/>
@@ -137,7 +146,31 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
     {context==="application"&&activeView==="interviews"&&job.status==="rejected"?<ApplicationLessonCard key={`lesson-interviews:${job.id}`} job={job}/>:null}
     {context === "application" && activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
     {activeView === "brief" ? <PrivateBrief key={job.id} jobId={job.id} /> : null}
+    <SignalMoment open={!!revealed} onClose={()=>setRevealed(null)} title="Bonne pioche" description={revealed?`Cette offre colle à vos critères · ${revealed.fit} sur 100`:undefined} actionLabel="Voir la fiche"/>
   </div>;
+}
+function AlignedOfferRead({job,onEdit,editRef}:{job:JobRecord;onEdit:()=>void;editRef:React.RefObject<HTMLButtonElement|null>}) {
+  const mystery=isMysteryOffer(job),level=detectLevel(job.title,job.description??"");
+  const pay=job.dailyRate!=null||job.dailyRateMin!=null||job.dailyRateMax!=null
+    ?formatPayRangeShort(job.dailyRateMin??job.dailyRate,job.dailyRateMax??job.dailyRate,"daily")
+    :formatPayRangeShort(job.salaryMin??job.annualSalary,job.salaryMax??job.annualSalary,"annual");
+  const url=job.sourceUrl||job.applicationUrl;
+  return <div className="aligned-offer-read">
+    {mystery?<section className="offer-mystery" aria-labelledby={`mystery-${job.id}`}><h3 id={`mystery-${job.id}`}>Fiche mystère</h3><p>Complétez-la pour révéler son adéquation.</p></section>:null}
+    <dl className="aligned-offer-facts" aria-label="Informations clés de l’offre">
+      <ConditionRow label="Rémunération" value={pay??(job.dailyRate!=null||job.dailyRateMin!=null||job.dailyRateMax!=null?formatPay(job.dailyRateMin,job.dailyRateMax,job.dailyRate,"HT/jour"):formatPay(job.salaryMin,job.salaryMax,job.annualSalary,"brut/an"))??"Non communiquée"}/>
+      <ConditionRow label="Présence" value={{full_remote:"Full remote",exceptional:"Présence ponctuelle",hybrid:"Hybride",onsite:"Sur site",unknown:"À confirmer"}[job.remoteMode]}/>
+      <ConditionRow label="Contrat" value={{cdi:"CDI",cdd:"CDD",freelance:"Freelance",portage:"Portage salarial",part_time:"Temps partagé",other:"À confirmer",unknown:"À confirmer"}[job.contractType]??"À confirmer"}/>
+      <ConditionRow label="Niveau" value={level?levelLabels[level.level]:"À confirmer"}/>
+    </dl>
+    {!mystery?<section className="aligned-offer-reasons"><h3>Pourquoi elle remonte</h3><ul>{job.reasons.slice(0,4).map((reason,i)=><li key={i}><CheckCircle2 size={16} aria-hidden/>{reason}</li>)}</ul>{job.flags.length?<ul className="aligned-offer-warnings" aria-label="Points à vérifier">{job.flags.map((flag,i)=><li key={i}><CircleHelp size={16} aria-hidden/>{flag}</li>)}</ul>:null}</section>:null}
+    <section className="aligned-offer-description"><h3>L’annonce</h3><p className="aligned-offer-preview">{job.description||"Annonce complète à ajouter."}</p>{job.description?<details><summary>Lire toute l’annonce</summary><p className="offer-description-read">{job.description}</p></details>:null}<div className="aligned-offer-links">{url?<a className="signal-quiet-button" href={url} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden/>Ouvrir l’annonce</a>:null}{!job.deletedAt?<button ref={editRef} type="button" className="signal-quiet-button" onClick={onEdit}><Pencil size={14} aria-hidden/>{mystery?"Compléter la fiche":"Compléter / corriger"}</button>:null}</div></section>
+    <details className="aligned-offer-extra"><summary>Autres conditions et dates</summary><dl className="review-criteria-grid"><ConditionRow label="Lieu annoncé" value={job.announcedLocation||"À confirmer"}/><ConditionRow label="Présence sur site" value={[job.onsiteDaysPerWeek!=null?`${job.onsiteDaysPerWeek} j/semaine`:"",job.onsiteDaysPerMonth!=null?`${job.onsiteDaysPerMonth} j/mois`:"",job.onsiteCadence].filter(Boolean).join(" · ")||"À confirmer"}/><ConditionRow label="Pays autorisé" value={countryLabel(job.remoteCountry)}/><ConditionRow label="Langue" value={{fr:"Français",en:"Anglais",professional_en:"Anglais professionnel",advanced_en:"Anglais avancé",unknown:"À confirmer"}[job.language]}/><ConditionRow label="Publication" value={formatDate(job.publishedAt)}/><ConditionRow label="Ajout au Radar" value={formatDate(job.createdAt)}/>{job.notificationAt?<ConditionRow label="Notification source" value={formatDate(job.notificationAt)}/>:null}</dl></details>
+  </div>;
+}
+export function OfferFitCard({job}:{job:JobRecord}) {
+  if(isMysteryOffer(job))return null;
+  return <div className="aligned-offer-fit"><strong>{job.fitLabel&&job.fit!=null?`${job.fit}`:"—"}<small>{job.fitLabel&&job.fit!=null?" / 100":""}</small></strong><FitBadge job={job}/><span>{job.confidence==="high"?"Confiance élevée":job.confidence==="medium"?"Informations partielles":"Fiche à compléter"}</span>{job.missing?.length?<span>À confirmer : {job.missing.join(", ")}</span>:null}</div>;
 }
 function PrivateBrief({ jobId }: { jobId: string }) {
   const notify=useWorkspaceFeedback();

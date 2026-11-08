@@ -112,3 +112,8 @@ export function revealMessage(job: { fit?: number | null; fitLabel?: FitLabel })
   const label = `${fitLabels[job.fitLabel]} (${job.fit} sur 100)`;
   return job.fitLabel === "very_close" ? `Bonne pioche : ${label}.` : `Fiche complétée : ${label}.`;
 }
+
+/** Only a confirmed, very close fit deserves the optional reveal moment. */
+export function isGoodFind(job: {fit?: number|null;fitLabel?:FitLabel}) {
+  return job.fitLabel==="very_close" && typeof job.fit==="number" && job.fit>=80;
+}
