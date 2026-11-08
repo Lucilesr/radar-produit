@@ -39,6 +39,7 @@ import "./signal-preferences.css";
 import "./signal-domain-terms.css";
 import "./signal-contextual-prompts.css";
 import "./signal-four-spaces.css";
+import "./signal-today-aligned.css";
 import "./signin-page.css";
 
 export const metadata: Metadata = {

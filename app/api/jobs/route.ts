@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   const user = await getChatGPTUser();
   if (!user) return Response.json({ error: "Authentification requise" }, { status: 401 });
 
+  if(user.userId.startsWith("demo:")&&request.headers.get("cookie")?.split(";").some(cookie=>cookie.trim()==="radar_demo_mode=today-loading"))await new Promise(resolve=>setTimeout(resolve,4000));
   try {
     // Keep offer reads available if the maintenance query fails.
     await purgeExpiredTrash(user.userId).catch(error => console.error("Trash cleanup failed:", String(error)));

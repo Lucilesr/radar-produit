@@ -8,6 +8,7 @@ import { readRadarRoute, profileSectionForRoute } from "@/lib/radar-navigation";
 import { ensureOnboardingDemo } from "@/lib/onboarding-demo";
 import { ensureRecruiterDemo } from "@/lib/recruiter-demo";
 import { syncDemoSources } from "@/lib/demo-scan";
+import { demoTodayInitialState } from "@/lib/demo-today";
 import { demoAutoScan } from "@/lib/demo-scenarios";
 import { cookies } from "next/headers";
 
@@ -17,7 +18,7 @@ export default async function Home({searchParams}: {searchParams: Promise<Record
   const user = await requireChatGPTUser("/");
   const demoMode = user.userId.startsWith("demo:") ? (await cookies()).get("radar_demo_mode")?.value : undefined;
   if (user.userId.startsWith("demo:")) {
-    const fresh=await ensureRecruiterDemo(user.userId,{monthStoryDemo:demoMode==="month-story",funnelDemo:demoMode==="funnel",emptyProfile:demoMode==="onboarding",fridayDemo:demoMode==="friday",triageDemo:demoMode==="triage",scanDemo:demoMode?.startsWith("scan"),reducedMotion:demoMode==="scan-reduced"||demoMode==="weeks-reduced",weekScenario:demoMode?.startsWith("weeks-")?demoMode:undefined,sessionDemo:demoMode==="session",sessionEmpty:demoMode==="session-empty"});
+    const fresh=await ensureRecruiterDemo(user.userId,{monthStoryDemo:demoMode==="month-story",funnelDemo:demoMode==="funnel",emptyProfile:demoMode==="onboarding",fridayDemo:demoMode==="friday",triageDemo:demoMode==="triage",scanDemo:demoMode?.startsWith("scan")||demoMode==="today-partial",imminentInterview:demoMode==="today-interview",reducedMotion:demoMode==="scan-reduced"||demoMode==="weeks-reduced",weekScenario:demoMode?.startsWith("weeks-")?demoMode:undefined,sessionDemo:demoMode==="session",sessionEmpty:demoMode==="session-empty"});
     if(fresh&&demoMode==="scan-empty")await syncDemoSources(user.userId,"scan");
   }
   else await ensureOnboardingDemo(user.userId).catch(() => undefined);
@@ -33,5 +34,5 @@ export default async function Home({searchParams}: {searchParams: Promise<Record
     loadRadarState(user.userId, { jobs: owner => listOffers(owner, undefined, true), profile: readCandidateProfile }),
     initialRoute.tab === "radar" && (initialProfileSection === "experiences" || initialProfileSection === "stories") ? readExperienceLibrary(user.userId).catch(() => undefined) : Promise.resolve(undefined),
   ]);
-  return <RadarApp autoScanDemo={demoAutoScan(demoMode)} fridayDemo={demoMode === "friday"} ownerId={user.userId} userName={user.fullName ?? user.displayName} userEmail={user.email} signOutPath={chatGPTSignOutPath("/")} initialState={initialState} initialRoute={initialRoute} initialProfileSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} />;
+  return <RadarApp autoScanDemo={demoAutoScan(demoMode)} fridayDemo={demoMode === "friday"} ownerId={user.userId} userName={user.fullName ?? user.displayName} userEmail={user.email} signOutPath={chatGPTSignOutPath("/")} initialState={demoTodayInitialState(user.userId,demoMode,initialState)} initialRoute={initialRoute} initialProfileSection={initialProfileSection} initialExperienceLibrary={initialExperienceLibrary} />;
 }

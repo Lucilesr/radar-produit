@@ -82,3 +82,7 @@ OpportunitiesWorkspace, SignalProgress, FitBadge, OfferWorkspace, Select, Worksp
 ### Q2b — alignement Balayage
 
 SignalRadar, SignalProgress, SignalCounter, WorkspaceButton et HelpTooltip réutilisés ; détails natifs pour les replis. Rayons 20/16/10/999 et titres Bricolage40/24 ; radar200 sur ordinateur,120 sur mobile, conformément aux nouvelles maquettes. Les états en cours, nouvelles offres et sans nouveauté se remplacent ; les annotations de maquette ne sont pas affichées. Recette et captures dans docs/q2b-balayage-vivant/.
+
+### Alignement Aujourd’hui — #261
+
+En-tête horizontal et navigation de Balayage réutilisés sur Aujourd’hui ; date/compte réunis sur mobile. WorkspaceButton, RadarAccountMenu, Skeleton, contrôles et sauvegarde du plan existants. Surfaces 20/16, contrôles 10, puces 999 ; titres Bricolage 40/28 et 32/24. Les états annotés remplacent les blocs correspondants, sans bande d’annotations.
