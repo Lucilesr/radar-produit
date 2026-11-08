@@ -7,7 +7,7 @@ export type ReserveGroupId = "later" | "conditions" | "far" | "pay" | "old" | "o
 export const reserveGroups: Array<{ id: ReserveGroupId; label: string; help: string }> = [
   { id: "later", label: "Gardées pour plus tard", help: "Les offres que vous avez mises de côté." },
   { id: "conditions", label: "Hors de vos conditions", help: "Présence, contrat ou autre condition non remplie." },
-  { id: "far", label: "Loin de votre recherche", help: "Adéquation sous 50 sur 100." },
+  { id: "far", label: "Loin de votre recherche", help: "Offres classées « Loin » selon vos critères." },
   { id: "pay", label: "Rémunération non communiquée", help: "Ni salaire ni TJM dans l’annonce." },
   { id: "old", label: `Publiées il y a plus de ${ARCHIVE_AFTER_DAYS} jours`, help: "Annonces anciennes, souvent déjà pourvues." },
   { id: "other", label: "Les autres", help: "Le reste de la réserve." },
