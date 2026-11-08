@@ -48,3 +48,17 @@ test("C4 : les étapes vides sont comptées, sans groupe indéfini inutile", () 
   assert.deepEqual(groups.map(group=>group.column.id),["sent","interviews","offer","closed"]);
   assert(groups.every(group=>group.jobs.length===0));
 });
+
+const {mobileApplicationGroups,mobileCardWindow}=await import(moduleUrl("lib/application-mobile-presentation.ts"));
+test("Alignement mobile : urgences sans doublon, colonnes personnelles et dossiers clos conservés",()=>{
+ const now=Date.parse("2026-11-09T12:00:00Z"),columns=defaultBoard().columns;
+ columns.splice(2,0,{id:"custom-rh",label:"Échange personnel",stage:"interviews"});
+ const jobs=Array.from({length:50},(_,index)=>({id:String(index),status:index===49?"rejected":index>44?"interview":"applied",boardColumnId:index===46?"custom-rh":undefined,candidateNote:"Texte fictif conservé",applicationFollowup:index===0||index===49?{eligible:true,dueAt:"2026-11-08T12:00:00Z"}:undefined}));
+ const before=structuredClone({jobs,columns}),result=mobileApplicationGroups([...jobs,jobs[0]],columns,now);
+ assert.equal(result.due.length,1);assert.equal(result.due[0].id,"0");assert.equal(result.closed.flatMap(item=>item.jobs).length,1);
+ const all=[...result.due,...result.active.flatMap(item=>item.jobs),...result.closed.flatMap(item=>item.jobs)];
+ assert.equal(all.length,50);assert.equal(new Set(all.map(job=>job.id)).size,50);assert.equal(result.active.find(item=>item.column.id==="custom-rh").column.label,"Échange personnel");assert.deepEqual({jobs,columns},before);
+});
+test("Alignement mobile : deux cartes avant dépliage, aucun dossier perdu ni entrée mutée",()=>{
+ const jobs=Array.from({length:50},(_,id)=>({id}));assert.deepEqual(mobileCardWindow(jobs).items,jobs.slice(0,2));assert.equal(mobileCardWindow(jobs).remaining,48);assert.deepEqual(mobileCardWindow(jobs,true).items,jobs);assert.equal(mobileCardWindow(jobs,true).remaining,0);assert.equal(jobs.length,50);assert.deepEqual(mobileCardWindow([]),{items:[],remaining:0});
+});
