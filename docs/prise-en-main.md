@@ -4,7 +4,7 @@ Radar reste privé et sans personnage. Le bouton **Guide de prise en main** pré
 
 ## Commencer
 
-Dans **Ma recherche**, choisissez votre poste, puis les critères utiles et vos sources. **Niveau visé** et les rémunérations attendent **Terminé** ; un changement en cours n’est pas encore un choix enregistré. Les jetons permettent de retoucher un critère.
+Dans **Ma recherche**, choisissez votre poste, puis les critères utiles et vos sources. **Niveau visé** attend **Terminé** ; changer la sélection ne l’enregistre pas encore. Les jetons permettent de retoucher un critère.
 
 Les termes du domaine viennent de votre carnet validé et autorisé pour les candidatures. Cinq propositions apparaissent à la fois. **Confirmer** ajoute un terme, **Ignorer** le retire durablement ; **Termes ignorés (N)** permet de le restaurer. Sous une expérience, **Tout ajouter** confirme ses propositions ensemble, dans la limite de quarante termes. **Choisir** permet de les traiter individuellement ; **Plus tard** replie la proposition. Les droits sont revérifiés à la confirmation.
 
