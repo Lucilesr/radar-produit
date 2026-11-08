@@ -125,3 +125,5 @@
  .radar-page[data-scan=true]{padding:28px 32px 56px}
 }
 @media(min-width:641px) and (max-width:1100px){.scan-echo.is-quiet .signal-radar{width:96px;height:96px}}
+.radar-page[data-scan=true] .page-header-privacy{display:none}
+@media(min-width:641px){.radar-app:has(.radar-page[data-scan=true]) .sidebar-account{margin:0}.scan-page-return button{min-height:24px}}
