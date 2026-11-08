@@ -86,3 +86,4 @@ body:has(.week-plan-editor) .date-picker-popover button{min-width:44px;min-heigh
 body:has(:is(.week-plan-editor,.week-series-dialog)) [data-slot=drawer-content]{border-radius:20px 20px 0 0}
 body:has(:is(.week-plan-editor,.week-series-dialog)) [data-slot=drawer-content] button{border-radius:10px;min-height:44px}
 body:has(:is(.week-plan-editor,.week-series-dialog)) [data-slot=drawer-content] input:not([type=checkbox]):not([type=radio]):not([type=file]){border-radius:10px}
+body:has(.week-plan-editor) .date-picker-popover{max-height:min(calc(100dvh - 32px),var(--radix-popover-content-available-height,calc(100dvh - 32px)));overflow-y:auto;overscroll-behavior:contain}
