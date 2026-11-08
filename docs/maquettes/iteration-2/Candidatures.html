@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Radar — Candidatures</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F3F5F6}
+a{color:#193F50}a:hover{color:#24566B}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F3F5F6; font-family: Inter, system-ui, sans-serif; color: #203743">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 14px 32px; background: #FFFFFF; border-bottom: 1px solid #D4DFE5">
+<a href="Aujourdhui-v2.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #193F50">
+<svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true"><rect x="2" y="2" width="44" height="44" rx="12" fill="#193F50"></rect><circle cx="24" cy="24" r="15.5" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-opacity="0.5"></circle><circle cx="24" cy="24" r="3.3" fill="#FFFFFF"></circle><path d="M24 24 35 13" stroke="#FFFFFF" stroke-width="1.8"></path><circle cx="35" cy="13" r="4" fill="#E6EE53"></circle></svg>
+<span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.01em">Radar</span>
+</a>
+<nav aria-label="Navigation principale" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto">
+<a href="Aujourdhui-v2.dc.html" style="padding: 10px 16px; border-radius: 999px; color: #203743; font-weight: 500; font-size: 15px; text-decoration: none">Aujourd’hui</a>
+<a href="Offre-fiche.dc.html" style="padding: 10px 16px; border-radius: 999px; color: #203743; font-weight: 500; font-size: 15px; text-decoration: none">Offres</a>
+<a href="Candidatures.dc.html" aria-current="page" style="padding: 10px 16px; border-radius: 999px; background: #193F50; color: #FFFFFF; font-weight: 600; font-size: 15px; text-decoration: none">Candidatures</a>
+<a href="MonRadar.dc.html" style="padding: 10px 16px; border-radius: 999px; color: #203743; font-weight: 500; font-size: 15px; text-decoration: none">Mon radar</a>
+</nav>
+<button type="button" aria-label="Mon compte : Camille" style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid #D4DFE5; background: #EAF0F3; color: #193F50; font: 700 15px Inter, sans-serif; cursor: pointer">C</button>
+</header>
+
+<main style="max-width: 1200px; margin: 0 auto; padding: 28px 32px 56px; display: flex; flex-direction: column; gap: 20px">
+
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 40px; line-height: 1.1; font-weight: 750; letter-spacing: -0.01em; color: #193F50">Candidatures</h1>
+<p style="margin: 0; font-size: 15px; color: #5B6B76">9 en cours · 2 relances à faire · 1 entretien cette semaine</p>
+</div>
+<button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #D4DFE5; background: #FFFFFF; color: #193F50; font: 600 15px Inter, sans-serif; cursor: pointer">+ Ajouter une candidature</button>
+</div>
+
+<section aria-labelledby="next-title" style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 24px; align-items: center; padding: 20px 24px; border-radius: 16px; background: #193F50; color: #FFFFFF">
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #E6EE53">Prochaine étape</p>
+<h2 id="next-title" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 24px; font-weight: 700">Entretien jeudi 14 h, Néobanque : préparez l’histoire « un désaccord »</h2>
+<p style="margin: 0; font-size: 14px; color: #D8E6EC">5 minutes, dans votre carnet. Elle resservira.</p>
+</div>
+<a href="MonRadar.dc.html" style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; border-radius: 10px; background: #E6EE53; color: #193F50; font-weight: 700; font-size: 15px; text-decoration: none">Préparer</a>
+</section>
+
+<section aria-label="Entonnoir" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding: 14px 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5; font-size: 15px">
+<strong style="color: #193F50">Sur 90 jours</strong>
+<span style="font-variant-numeric: tabular-nums">14 candidatures → 3 entretiens → 1 offre</span>
+<span style="color: #5B6B76">À ce rythme, environ un entretien par mois.</span>
+<button type="button" aria-label="Comment c’est calculé" style="margin-left: auto; min-height: 44px; padding: 0 10px; border: 0; background: transparent; color: #24566B; font: 600 14px Inter, sans-serif; cursor: pointer">ⓘ Détail</button>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: start">
+
+<section aria-labelledby="col1" style="display: flex; flex-direction: column; gap: 10px">
+<h2 id="col1" style="margin: 0; display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; color: #193F50">À envoyer <span style="color: #5B6B76; font-weight: 600">2</span></h2>
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<div><strong style="font-size: 15px">Senior PO Data</strong><p style="margin: 2px 0 0; font-size: 14px; color: #5B6B76">Scale-up SaaS</p></div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div role="img" aria-label="Soignée à 3 sur 4" style="display: flex; gap: 4px"><span style="flex: 1; height: 6px; border-radius: 999px; background: #176947"></span><span style="flex: 1; height: 6px; border-radius: 999px; background: #176947"></span><span style="flex: 1; height: 6px; border-radius: 999px; background: #176947"></span><span style="flex: 1; height: 6px; border-radius: 999px; background: #D4DFE5"></span></div>
+<p style="margin: 0; font-size: 13px; color: #5B6B76">Soignée à 3 sur 4 · il manque le contact</p>
+</div>
+<a href="Candidatures.dc.html" style="font-size: 14px; font-weight: 600">Trouver le contact</a>
+</article>
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<div><strong style="font-size: 15px">PO Paiements</strong><p style="margin: 2px 0 0; font-size: 14px; color: #5B6B76">Néobanque B2C</p></div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div role="img" aria-label="Soignée à 4 sur 4" style="display: flex; gap: 4px"><span style="flex: 1; height: 6px; border-radius: 999px; background: #176947"></span><span style="flex: 1; height: 6px; border-radius: 999px; background: #176947"></span><span style="flex: 1; height: 6px; border-radius: 999px; background: #176947"></span><span style="flex: 1; height: 6px; border-radius: 999px; background: #176947"></span></div>
+<p style="margin: 0; font-size: 13px; color: #176947; font-weight: 600">Prête à envoyer</p>
+</div>
+<a href="Candidatures.dc.html" style="font-size: 14px; font-weight: 600">Marquer comme envoyée</a>
+</article>
+</section>
+
+<section aria-labelledby="col2" style="display: flex; flex-direction: column; gap: 10px">
+<h2 id="col2" style="margin: 0; display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; color: #193F50">Envoyées <span style="color: #5B6B76; font-weight: 600">5</span></h2>
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<div><strong style="font-size: 15px">Product Manager</strong><p style="margin: 2px 0 0; font-size: 14px; color: #5B6B76">Scale-up Paiements · envoyée il y a 8 jours</p></div>
+<p style="margin: 0; align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: #E6EE53; color: #193F50; font-size: 13px; font-weight: 700">Relance due aujourd’hui</p>
+<a href="Candidatures.dc.html" style="font-size: 14px; font-weight: 600">Relancer · 3 min</a>
+</article>
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<div><strong style="font-size: 15px">PO Plateforme</strong><p style="margin: 2px 0 0; font-size: 14px; color: #5B6B76">Éditeur SaaS RH · relancée mardi</p></div>
+<p style="margin: 0; font-size: 13px; color: #5B6B76">Prochaine relance le 17 novembre</p>
+</article>
+<button type="button" style="min-height: 44px; padding: 0; border: 0; background: transparent; color: #24566B; font: 600 14px Inter, sans-serif; cursor: pointer; text-align: left">+ 3 autres</button>
+</section>
+
+<section aria-labelledby="col3" style="display: flex; flex-direction: column; gap: 10px">
+<h2 id="col3" style="margin: 0; display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; color: #193F50">Entretiens <span style="color: #5B6B76; font-weight: 600">1</span></h2>
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 2px solid #193F50">
+<div><strong style="font-size: 15px">PO Paiements</strong><p style="margin: 2px 0 0; font-size: 14px; color: #5B6B76">Néobanque B2C</p></div>
+<p style="margin: 0; font-size: 14px; font-weight: 600; color: #193F50">Jeudi 12 novembre, 14 h · 2e entretien</p>
+<p style="margin: 0; font-size: 13px; color: #5B6B76">Histoire suggérée : « un désaccord »</p>
+</article>
+</section>
+
+<section aria-labelledby="col4" style="display: flex; flex-direction: column; gap: 10px">
+<h2 id="col4" style="margin: 0; display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; color: #193F50">Réponse attendue <span style="color: #5B6B76; font-weight: 600">1</span></h2>
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<div><strong style="font-size: 15px">Lead PO</strong><p style="margin: 2px 0 0; font-size: 14px; color: #5B6B76">Assurtech · après entretien final</p></div>
+<p style="margin: 0; font-size: 13px; color: #5B6B76">Réponse promise avant le 15 novembre</p>
+</article>
+<div style="margin-top: 8px; padding-top: 12px; border-top: 1px solid #D4DFE5; display: flex; flex-direction: column; gap: 6px">
+<button type="button" aria-expanded="false" style="min-height: 44px; padding: 0; border: 0; background: transparent; color: #24566B; font: 600 14px Inter, sans-serif; cursor: pointer; text-align: left">Terminées (5) ▸</button>
+<a href="Candidatures.dc.html" style="font-size: 14px; font-weight: 600">Mes leçons · 2 bilans</a>
+</div>
+</section>
+</div>
+
+<section aria-labelledby="etats-title" style="margin-top: 20px; display: flex; flex-direction: column; gap: 16px">
+<h2 id="etats-title" style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5B6B76">États à construire aussi</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px">
+
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #24566B">Aucune candidature</p>
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 20px; font-weight: 700; color: #193F50">Votre suivi commence ici</h3>
+<p style="margin: 0; font-size: 14px; color: #5B6B76">Sélectionnez une offre : Radar prépare la candidature et rappelle les relances.</p>
+<a href="Offre-fiche.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; background: #193F50; color: #FFFFFF; font-size: 14px; font-weight: 600; text-decoration: none">Voir mon lot du jour</a>
+</article>
+
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #24566B">Moins de 5 candidatures</p>
+<p style="margin: 0; font-size: 15px; color: #203743">Encore 3 candidatures pour voir votre entonnoir.</p>
+<p style="margin: 0; font-size: 13px; color: #5B6B76">Une ligne à la place de l’entonnoir, sans graphique vide.</p>
+</article>
+
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #24566B">Juste après un refus</p>
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 20px; font-weight: 700; color: #193F50">Deux questions, pour vous seule</h3>
+<p style="margin: 0; font-size: 14px; color: #5B6B76">« Ce que je garde » · « Ce que je change ». Privé, facultatif, compté comme un progrès.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 8px"><button type="button" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 0; background: #193F50; color: #FFFFFF; font: 600 14px Inter, sans-serif; cursor: pointer">Faire le bilan</button><button type="button" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #D4DFE5; background: #FFFFFF; color: #193F50; font: 600 14px Inter, sans-serif; cursor: pointer">Plus tard</button></div>
+</article>
+
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #24566B">Bilan enregistré</p>
+<p style="margin: 0; font-size: 14px; color: #5B6B76">« Bilan rangé dans Mes leçons. » Lien proposé : « En faire une histoire » (ouvre le carnet).</p>
+</article>
+
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #24566B">Déplacement non enregistré</p>
+<p style="margin: 0; font-size: 14px; color: #8A3B12">« La carte est revenue à sa place. Rien n’a changé. »</p>
+<p style="margin: 0; font-size: 13px; color: #5B6B76">Bouton « Réessayer ». Chaque carte a aussi « Déplacer vers… » au clavier.</p>
+</article>
+
+<article style="display: flex; flex-direction: column; gap: 10px; padding: 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #D4DFE5">
+<p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #24566B">50 candidatures</p>
+<p style="margin: 0; font-size: 14px; color: #5B6B76">3 cartes au plus par colonne, puis « + N autres ». Les terminées restent repliées.</p>
+</article>
+</div>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1700}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
