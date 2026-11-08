@@ -73,3 +73,5 @@ La jauge sur quatre est désormais reliée à quatre confirmations explicites, d
 ## C2 livré — relances J+7 et fuseaux
 
 Les candidatures envoyées/en attente, sans entretien non annulé déjà enregistré, disposent d’une proposition J+7 depuis leur date d’envoi. Date modifiable sur Terminé, rappel retirable et déclaration faite persistante via L1. Aujourd’hui et Q3 utilisent les mêmes échéances ; une seconde relance reste facultative. Propositions reçues et dossiers clos exclus. Dates d’envoi affichées selon le fuseau de l’appareil, sans Indian/Mauritius imposé. Calendrier Signal partagé porté à44px sur mobile. Les limites historiques constatées dans l’audit restent décrites ci-dessus ; elles sont désormais corrigées pour ce périmètre. Recette : `c2-relances/README.md`.
+
+L3 et C3 sont livrés ensemble : bilan privé facultatif après refus, deux questions et champ libre, brouillon et validation séparés ; Mes leçons dans le profil. Journal sans texte privé, sauvegarde des textes et versions, aucune nouvelle migration.

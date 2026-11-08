@@ -971,3 +971,20 @@ Les notes longues restent dans leur dossier : elles ne sont pas reproduites dans
 | Chargement / écriture | lecture ou confirmation du compte | dernière valeur, actions indisponibles pendant l’écriture | attendre la confirmation | oui |
 | Erreur / conflit | réponse non confirmée ou autre version | saisie de date conservée et comparaison | relire ou enregistrer après comparaison | oui |
 | Mobile / clavier / mouvement réduit |390px, Tab, préférence | contrôles Signal44px, focus après confirmation, même information | mêmes actions | oui |
+
+## L3 / C3 — Bilans après refus et Mes leçons
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Facultatif / compte neuf | Aucun refus ou bilan | Mes leçons vide, explication neutre | Revenir aux candidatures | oui |
+| Proposition | Statut passé à refusé | Invitation sans obligation, aucun encouragement du refus | Écrire / Pas maintenant | oui |
+| Brouillon | Édition de l’un des trois champs facultatifs | Brouillon privé conservé, compteurs de longueur | Reprendre plus tard / Valider | oui |
+| Chargement | Lecture du bilan ou des leçons | Lecture en cours, validation désactivée | Attendre | oui |
+| Erreur réseau / API | Écriture ou lecture échouée | Texte et bilans déjà chargés conservés | Réessayer / Relire | oui |
+| Partiel / conflit | Autre accès a validé | Dernier bilan à comparer, saisie conservée | Valider après comparaison | oui |
+| Succès | Validation confirmée | Bilan privé daté dans le dossier et les leçons | Modifier / Ouvrir le dossier | oui |
+| Volume / longs textes | Plus de20bilans, réponses longues | Pagination, retours à la ligne, trois champs bornés | Voir les précédents | oui |
+| Clavier / mobile390 / mouvement réduit | Interaction et préférences | Focus titre/erreur/reprise, cibles44px, aucun mouvement requis | Même parcours | oui |
+| Hors ligne | Connexion perdue | Brouillon local et dernier bilan confirmé ; validation non annoncée comme réussie | Garder l’onglet puis réessayer | partiel |
+
+Les erreurs de transaction, l’isolement de compte, la pagination, les versions et les textes privés dans la sauvegarde sont testés. La panne réseau système n’est pas simulée dans la recette visuelle ; les captures et mesures sont référencées dans docs/l3-bilan-refus/README.md.

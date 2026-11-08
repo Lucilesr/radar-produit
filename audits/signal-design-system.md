@@ -39,3 +39,5 @@ Les contrôles compacts de suivi et les indicateurs de sauvegarde remplacent les
 ## C2 — calendrier partagé sur mobile
 
 Le DateTimePicker existant est réutilisé pour les relances. Le calendrier partagé garde le même composant et ses comportements ; à390px, ses jours et sa navigation passent de36à44px par la variable de cellule, sans débordement. Focus de dialogue, confirmation sur Terminé et contrôles indisponibles pendant l’écriture vérifiés dans le lot.
+
+L3/C3 : WorkspaceFormSection, WorkspaceButton/Error/PanelHeader, Dialog, Textarea et AutosaveStatus réutilisés. Couleurs et espacements Signal, aucun contrôle natif ajouté ; focus titre, erreur et reprise,44px sur mobile, pagination et textes longs. Captures de recette dans docs/l3-bilan-refus/.

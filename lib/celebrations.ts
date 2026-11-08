@@ -1,4 +1,4 @@
-export const progressKinds=["application_sent","followup_done","interview_review","week_held"] as const;
+export const progressKinds=["application_sent","followup_done","interview_review","week_held","lesson_saved"] as const;
 export type ProgressKind=typeof progressKinds[number];
 export type ProgressEvent={kind:ProgressKind;objectId:string;stamp:string};
 export type RadarPreferences={reducedMotion?:boolean;celebrations?:boolean;triageShortcuts?:boolean};

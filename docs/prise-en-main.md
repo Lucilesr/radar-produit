@@ -115,3 +115,9 @@ Après une relance faite, aucune seconde n’est créée automatiquement. **Pré
 Une date d’envoi inconnue reste inconnue : Radar n’invente pas J+7. Les relances après un entretien se règlent dans **Entretiens**. Les choix, confirmations et versions sont conservés dans la sauvegarde intégrale ; aucun service tiers ne les reçoit.
 
 Les dates de publication importées gardent leur précision et leur fuseau. Corriger un TJM ne change pas l’âge de publication : une offre ancienne sans décision reste dans les archives restaurables. Une ancienne date invalide ne peut pas être devinée ; corrigez-la depuis la fiche si vous la connaissez.
+
+## Après un refus — L3 / C3
+
+Le statut **Refus reçu** propose un bilan facultatif. Vous pouvez choisir **Pas maintenant** et revenir dans **Ma candidature** : **Ce que je garde**, **Ce que je change** et **Mon espace libre privé**. Un seul champ peut suffire. Le brouillon se conserve ; **Valider mon bilan privé** est une action séparée et compte comme progrès. Le refus seul ne déclenche aucun encouragement.
+
+**Mon profil → Mes leçons** rassemble les bilans, avec un accès au dossier. Relire et modifier conserve les versions précédentes et ne crée pas un nouveau progrès pour le même envoi. En cas de conflit, comparez le dernier bilan du compte avec votre saisie conservée. Ces textes et brouillons sont privés, inclus dans votre sauvegarde et exclus des prompts de candidature ; aucun service tiers ne les reçoit.
