@@ -1065,3 +1065,15 @@ Les histoires sans thème continuent de compter dans le calcul Q4 ; le compteur 
 | Mobile / clavier | 390 px et clavier | Filtres et résumés nommés, commandes44px, focus sur la suite | Mêmes choix | oui |
 
 Les compteurs hebdomadaires sont calculés côté compte sur l’ensemble des événements de la semaine. Les résumés de jour concernent les objets chargés ; la suite partielle est indiquée. Le journal et le filtre sont des lectures, sans écriture ni migration.
+
+### P8 — Aides courtes et vocabulaire commun
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| repos | écran chargé | termes du glossaire, une instruction courte par bloc | bouton d’information pour les détails | oui |
+| aide ouverte | toucher, Entrée ou focus du bouton d’aide | explication contextuelle Signal | Échap ou toucher pour fermer | oui |
+| clavier seul | parcours des formulaires | titre et bouton d’aide nommés, focus visible | ouvrir l’aide sans modifier le formulaire | oui |
+| mobile à 390 px | écran étroit | aide à la demande, cible de 44 px | mêmes actions | oui |
+| suppression | compte réel, zone dangereuse | avertissement explicite toujours visible | confirmation existante | oui |
+
+Passe d’écriture uniquement : les règles d’enregistrement, erreurs, droits et données sont conservées. Captures fictives avant/après et comptage d’aide : p8-passe-ecriture/README.md. Les éléments métier (titres d’annonces, notes et dates) ne sont pas comptés comme aide.
