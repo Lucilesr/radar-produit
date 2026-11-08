@@ -324,7 +324,7 @@ Le critère n'est jamais modifié sans clic. Toute la logique est pure et testé
 - **Fréquence** : probabilité d'environ 1 sur 3, jamais deux fois dans la même heure.
 - **Forme** : petite animation corail et une phrase variée. Pas de son.
 - **Réglage dans « Mon profil »** : « Réduire les animations et célébrations ». Il coupe aussi le mouvement (§3.3) et les raccourcis de tri si la personne le souhaite. Il est stocké dans `profiles.data.preferences`.
-- **Jamais** après un refus ou une offre écartée.
+- **Jamais** au seul changement de statut en refus ou à l’écartement d’une offre. Décision L3/C3 de l’itération : la validation ultérieure d’un bilan privé est une action de progrès distincte, qui peut déclencher Q6.
 
 ---
 
