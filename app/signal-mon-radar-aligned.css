@@ -17,3 +17,5 @@
 
 @media(max-width:640px){.radar-app .radar-page[data-space=radar]>.workspace-page-header{width:calc(100% + 32px);margin-inline:-16px}.mon-radar-scope .signal-radar{animation:none!important}.mon-radar-overview .domain-proposals li{max-width:100%;flex-wrap:wrap}}
 .radar-app .mon-radar-overview .search-criteria-form :is(input:not([type=checkbox]),textarea,.choice-select-trigger){border-radius:10px;min-height:44px}.radar-app .mon-radar-overview .search-criteria-form button{min-height:44px;border-radius:10px}.search-criteria-popover{border-radius:16px}.search-criteria-popover :is(input:not([type=checkbox]),textarea,.choice-select-trigger){border-radius:10px;min-height:44px}
+@media(max-width:640px){.radar-app .mon-radar-overview .domain-terms-compact button{min-width:44px;min-height:44px}.radar-app .mon-radar-overview .domain-terms-compact .help-tooltip-trigger{width:44px;min-width:44px}.mon-radar-overview .domain-terms-compact summary{min-height:44px;display:flex;align-items:center}}
+.mon-radar-scope h2:focus-visible{outline:3px solid var(--signal-energy);outline-offset:4px;border-radius:10px}
