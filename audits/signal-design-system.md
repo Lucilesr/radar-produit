@@ -77,4 +77,4 @@ TodayWorkspace, WeekPlanCard, SignalRadar, WorkspaceButton, WorkspacePanelHeader
 
 ### L6 — Offres
 
-OpportunitiesWorkspace, SignalProgress, FitBadge, OfferWorkspace, Select, WorkspaceButton et HelpTooltip conservés. Typographie et surfaces Q0, commandes de 44 px, même sémantique de sélection et d’avertissement. Aucun changement des hauteurs de lecture, des débordements ou du mécanisme de fixation des panneaux. Recette dans docs/l6-offres/README.md avant fusion.
+OpportunitiesWorkspace, SignalProgress, FitBadge, OfferWorkspace, Select, WorkspaceButton et HelpTooltip conservés. Typographie et surfaces Q0, commandes de 44 px, même sémantique de sélection et d’avertissement. Aucun changement des hauteurs de lecture, des débordements ou du mécanisme de fixation des panneaux. Recette vérifiée sur le staging privé 80 dans docs/l6-offres/README.md.

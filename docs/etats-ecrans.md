@@ -1162,3 +1162,7 @@ Aucun nouvel état manquant bloquant ou gênant constaté dans ce périmètre. L
 ## L6 — Aujourd’hui
 
 Refonte visuelle sur les trois zones P6 : titres Bricolage et jetons Q0, séance plus compacte ; semaine et radar côte à côte sur grand écran, une colonne mobile. Priorités, textes, sauvegardes et repli restent identiques. Staging privé 78, captures avant/après : [recette Aujourd’hui](l6-aujourdhui/README.md). Plan en cours et tenu, fin de séance, reprise volontaire, aide au clavier, retour du récit, mouvement réduit et 390 px vérifiés. Les états sans plan et de progression sont reproduits en complément local. Les composants existants de chargement, erreur et reprise sont conservés ; aucune panne du staging n’est simulée pour cette passe CSS. Aucun nouvel état bloquant ou gênant constaté.
+
+## L6 — Offres
+
+Liste, fiche, éditeur et réserve reprennent les jetons Signal ; petites commandes de 44 px et même défilement global puis indépendant. Recette du staging 79–80 et captures avant/après : [Offres](l6-offres/README.md). Lot de 20, réserve de 5 groupes, filtre de 6 offres, confirmation annulée, archives (58), corbeille vide, fourchette, éditeur sans modification, retour à la liste, clavier, mouvement réduit et 390 px vérifiés. Le groupe Loin n’annonce plus un seuil incompatible avec son classement. Aucun nouveau blocage ou gêne constaté ; les erreurs existantes gardent leur rendu et leur reprise.
