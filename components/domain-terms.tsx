@@ -1,5 +1,7 @@
 "use client";
-import {useId,useRef,useState} from 'react';
+import {useContextualPrompts,PromptReadError} from "@/components/contextual-prompts";
+import {nextContextualStep} from "@/lib/next-steps";
+import {useId,useRef} from 'react';
 import {Check,X} from 'lucide-react';
 import {WorkspaceButton,WorkspaceFormError} from '@/components/workspace-form';
 import {HelpTooltip} from '@/components/help-tooltip';
@@ -32,8 +34,10 @@ export function DomainTermsPanel({active,knownTerms,referenceKey,onSaved,onCarne
  </div>;
 }
 export function ExperienceDomainTerms({controller,sourceIds,onChoose,choosing}:{controller:DomainController;sourceIds:string[];onChoose:()=>void;choosing:boolean}){
- const [later,setLater]=useState(false),proposals=controller.data.proposals.filter(proposal=>sourceIds.includes(proposal.sourceId)),root=useRef<HTMLDivElement>(null);
- if(later||!controller.ready||!proposals.length)return null;
+ const prompts=useContextualPrompts(),proposal=nextContextualStep({context:"terms",now:prompts.now,prompts:prompts.state,objectId:sourceIds[0]}),proposals=controller.data.proposals.filter(proposal=>sourceIds.includes(proposal.sourceId)),root=useRef<HTMLDivElement>(null);
+ if(!controller.ready||!proposals.length)return null;
+ if(!prompts.ready)return <PromptReadError/>;
+ if(!proposal)return null;
  const remaining=maxDomainTerms-controller.data.terms.length;
- return <div ref={root} tabIndex={-1} className="experience-domain-terms"><p>Radar a repéré {proposals.length} termes : {proposals.slice(0,3).map(proposal=>proposal.term).join(' · ')}{proposals.length>3?'…':''}.</p><div className="domain-experience-actions"><WorkspaceButton disabled={controller.busy||proposals.length>remaining} onClick={()=>void controller.write({action:'confirmMany',proposals}).then(()=>requestAnimationFrame(()=>{if(document.activeElement===document.body)document.getElementById('experience-title')?.focus();}))}>Tout ajouter</WorkspaceButton><WorkspaceButton disabled={controller.busy} onClick={onChoose} aria-expanded={choosing}>Choisir</WorkspaceButton><WorkspaceButton variant="quiet" disabled={controller.busy} onClick={()=>{setLater(true);requestAnimationFrame(()=>document.getElementById('experience-title')?.focus());}}>Plus tard</WorkspaceButton></div>{choosing?<DomainProposalChips controller={controller} proposals={proposals}/>:null}{proposals.length>remaining?<p className="signal-help">{remaining} places disponibles ; choisissez les termes à ajouter.</p>:null}</div>;
+ return <div ref={root} tabIndex={-1} className="experience-domain-terms"><p>Radar a repéré {proposals.length} termes : {proposals.slice(0,3).map(proposal=>proposal.term).join(' · ')}{proposals.length>3?'…':''}.</p><div className="domain-experience-actions"><WorkspaceButton disabled={controller.busy||prompts.busy||proposals.length>remaining} onClick={()=>void controller.write({action:'confirmMany',proposals}).then(()=>requestAnimationFrame(()=>{if(document.activeElement===document.body)document.getElementById('experience-title')?.focus();}))}>Tout ajouter</WorkspaceButton><WorkspaceButton disabled={controller.busy||prompts.busy} onClick={onChoose} aria-expanded={choosing}>Choisir</WorkspaceButton><WorkspaceButton variant="quiet" disabled={controller.busy||prompts.busy} onClick={()=>void prompts.write({action:"later",key:proposal.key}).then(saved=>{if(saved)requestAnimationFrame(()=>document.getElementById("experience-title")?.focus());})}>Plus tard</WorkspaceButton></div><WorkspaceFormError message={prompts.error}/>{choosing?<DomainProposalChips controller={controller} proposals={proposals}/>:null}{proposals.length>remaining?<p className="signal-help">{remaining} places disponibles ; choisissez les termes à ajouter.</p>:null}</div>;
 }

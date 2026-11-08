@@ -23,8 +23,8 @@ export function storyTheme(item:Pick<ExperienceItem,"data">){const id=item.data.
 /** An approved company description alone is not a personal interview story. */
 export function isInterviewStory(item:ExperienceItem){return item.kind==="fact"&&item.validation==="approved"&&!!item.data.context.trim()&&!!item.data.contribution.trim()&&!!(item.data.result.trim()||/\*\*(?:Le )?Résultat[.:]/i.test(item.data.context));}
 /** Inputs are the current, visible blocks of the account; no points are bought or inferred. */
-export function radarReach({roles,targetLevel,sources,facts,modeOf}:{roles:readonly string[];targetLevel?:string;sources:readonly ReachSource[];facts:readonly ExperienceItem[];modeOf:(name:string)=>string|undefined}){
-  const criteria=roles.some(role=>role.trim().length>=2),level=["junior","confirmed","senior","lead","head"].includes(targetLevel??"");
+export function radarReach({roles,targetLevel,targetLevelAny=false,sources,facts,modeOf}:{roles:readonly string[];targetLevel?:string;targetLevelAny?:boolean;sources:readonly ReachSource[];facts:readonly ExperienceItem[];modeOf:(name:string)=>string|undefined}){
+  const criteria=roles.some(role=>role.trim().length>=2),level=targetLevelAny||["junior","confirmed","senior","lead","head"].includes(targetLevel??"");
   const active=[...new Map(sources.filter(source=>source.selected!==false&&source.state!=="paused"&&!!modeOf(source.source)).map(source=>[source.source,source])).values()];
   const manual=active.filter(source=>["email","web","research"].includes(modeOf(source.source)??""));
   const visited=manual.some(source=>Number.isFinite(Date.parse(source.lastVisitedAt??"")));

@@ -60,3 +60,6 @@ Réutilisation de WorkspaceButton, WorkspacePanelHeader, SignalStepper, SignalPr
 
 ### P6 — Accueil en trois blocs
 Composition des contrôles Signal existants : WorkspaceButton, WorkspacePanelHeader, HelpTooltip, SignalRadar et badge de série. Trois zones seulement, une action principale et deux pistes facultatives. Contrastes pétrole/papier et focus citron, cibles 44 px, titres non comprimés sur mobile. Recette et captures : docs/p6-accueil-trois-blocs/README.md.
+
+### P7 — Propositions contextuelles
+WorkspaceButton, WorkspaceFormError, HelpTooltip et les choix Signal existants ; cartes discrètes aux tokens papier/bordure, cibles de 44 px, retour du focus après report et erreurs explicites. Le niveau en édition conserve sa validation par Terminé.

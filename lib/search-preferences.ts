@@ -118,6 +118,7 @@ export function searchPreferences(value: unknown): SearchPreferences {
     minimumDailyRate: amount(raw.minimumDailyRate, defaultSearchPreferences.minimumDailyRate),
     payTolerancePercent: typeof raw.payTolerancePercent === "number" && Number.isInteger(raw.payTolerancePercent) && raw.payTolerancePercent >= 0 && raw.payTolerancePercent <= 20 ? raw.payTolerancePercent : 0,
     targetLevel: ["junior", "confirmed", "senior", "lead", "head"].includes(raw.targetLevel as string) ? raw.targetLevel : undefined,
+    targetLevelAny: raw.targetLevelAny === true && !["junior","confirmed","senior","lead","head"].includes(raw.targetLevel as string) ? true : undefined,
     acceptLevelAbove: raw.acceptLevelAbove === true ? true : undefined,
     minimumMatchScore: typeof raw.minimumMatchScore === "number" && Number.isInteger(raw.minimumMatchScore) && raw.minimumMatchScore >= 0 && raw.minimumMatchScore <= 100 ? raw.minimumMatchScore : defaultSearchPreferences.minimumMatchScore,
   };

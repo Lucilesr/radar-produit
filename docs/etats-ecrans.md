@@ -1108,3 +1108,18 @@ Aucune migration. Les nouveaux nombres de repères du point de reprise ne contie
 | clavier / mobile à 390 px | navigation ou écran étroit | mêmes trois zones, titres lisibles et focus visible | mêmes contrôles | oui |
 
 Les anciens compteurs, l’agenda séparé et la portée compacte ne sont plus des blocs d’accueil. Les calculs, données et confirmations restent identiques. Le mois conserve son archive et son téléchargement. Recette : p6-accueil-trois-blocs/README.md.
+
+## P7 — Propositions contextuelles
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| niveau non renseigné | première offre Senior/Lead du lot | question et quatre choix | clic explicite ou Plus tard | oui |
+| entretien planifié | entretien futur confirmé | ligne de préparation | carnet sur un thème ou Plus tard | oui |
+| lot terminé | source manuelle due dans P4 | source et jours depuis la visite, ou jamais visitée | ouvrir la source ou Plus tard | oui |
+| bilan validé | validation privée confirmée | En faire une histoire ? | ouvrir le carnet ou Plus tard | oui |
+| expérience validée | termes disponibles et droits autorisés | ligne de termes P1 | confirmer, choisir ou Plus tard | oui |
+| report confirmé | Plus tard enregistré | proposition masquée pendant sept jours | navigation libre | oui |
+| lecture / erreur API | chargement ou connexion indisponible | pas de suggestion avant lecture ; erreur explicite ensuite | relire ou réessayer le choix | oui |
+| clavier / mouvement réduit / mobile | dispositif ou préférence | boutons Signal, aide à la demande, focus après repli | mêmes actions à 390 px | oui |
+
+Les reports sont privés dans profiles.data, protégés des anciens formulaires. Aucune migration, aucun service tiers. Les bilans et termes ne sont pas recopiés dans une histoire sans saisie volontaire.

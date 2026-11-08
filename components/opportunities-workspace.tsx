@@ -21,9 +21,9 @@ import type { CandidateProfile, JobRecord, JobStatus } from "@/lib/types";
 
 const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"],["trash","Corbeille"]];
 const remote={full_remote:"Full remote",exceptional:"Présence ponctuelle",hybrid:"Hybride",onsite:"Sur site",unknown:"Remote à confirmer"};
-export function OpportunitiesWorkspace({enabled=true,onReload,onReserveChanged,lot,jobs,rescueOffers=[],counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
+export function OpportunitiesWorkspace({contextualPrompt,enabled=true,onReload,onReserveChanged,lot,jobs,rescueOffers=[],counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
   enabled?:boolean;onReload?:()=>Promise<boolean>;onReserveChanged:(roleChanged:boolean)=>Promise<boolean>;rescueOffers?:JobRecord[];
-  lot?:DailyLot|null; currentJob?:JobRecord|null; jobs:JobRecord[];counts:Record<OpportunityView,number>;filter:OpportunityView;onFilter:(view:OpportunityView)=>void;query:string;onClearSearch:()=>void;
+  contextualPrompt?:ReactNode;lot?:DailyLot|null; currentJob?:JobRecord|null; jobs:JobRecord[];counts:Record<OpportunityView,number>;filter:OpportunityView;onFilter:(view:OpportunityView)=>void;query:string;onClearSearch:()=>void;
   activeId?:string;view:WorkspaceView;onOpen:(job:JobRecord)=>void;onClose:()=>void;profile:CandidateProfile;
   onReview:(id:string,state:"to_review"|"selected"|"later")=>Promise<boolean>;onDelete:(job:JobRecord,next?:JobRecord)=>void;onDeleteMany:(jobs:JobRecord[])=>void;onRestore:(job:JobRecord)=>Promise<boolean>;
   onStatus:(id:string,status:JobStatus)=>Promise<boolean>;onNote:(id:string,note:string)=>Promise<boolean>;onChange:(job:JobRecord)=>void;onApplication:(job:JobRecord)=>void;
@@ -125,6 +125,7 @@ export function OpportunitiesWorkspace({enabled=true,onReload,onReserveChanged,l
     <div className="opportunities-controls">
     <nav className="workspace-tabs" aria-label="Vues des offres">{views.map(([id,label])=><span className="opportunity-tab" key={id}><button type="button" aria-pressed={filter===id} onClick={()=>changeView(id)}>{label}<span>{counts[id]}</span></button>{id==="trash"?<HelpTooltip label="Corbeille">Les offres restent restaurables pendant 10 jours. Après ce délai, elles sont supprimées définitivement à la prochaine ouverture du radar.</HelpTooltip>:null}</span>)}</nav>
     {lotShown&&lot!.size>0?<DailyLotBanner lot={lot!} total={counts.to_review} hasRescue={rescueOffers.length>0} inLot={inLot} onToggle={()=>{setRetained(null);setSelection([]);setReserveGroupId(null);setAllOffers(inLot);onClose();requestAnimationFrame(()=>document.getElementById(inLot?"reserve-title":"workspace-title")?.focus());}}/>:null}
+    {filter==="to_review"&&!query&&!activeId?contextualPrompt:null}
     {filter==="to_review"&&!inReserve&&counts.archived>0?<button type="button" className="reserve-archives" onClick={()=>changeView("archived")}><Archive size={15} aria-hidden/>Archives ({counts.archived})</button>:null}
     {inReserve&&rescueOffers.length>0?<FridayRescue offers={rescueOffers} busy={trashBusy} onRestore={onRestore}/>:null}
     {inReserve?<ReserveGroups groups={groups} shown={reserveGroupId} total={reserveJobs.length} archived={counts.archived??0} busy={trashBusy} onShow={id=>{setRetained(null);setSelection([]);setReserveGroupId(id);onClose();requestAnimationFrame(()=>document.getElementById("reserve-title")?.focus());}} roles={profile.searchPreferences?.roles??[]} onChanged={async roleChanged=>{setRetained(null);setSelection([]);return onReserveChanged(roleChanged);}} onArchives={()=>changeView("archived")}/>:null}

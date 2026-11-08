@@ -74,6 +74,7 @@ export type CandidateProfile = {
   preferences?: { reducedMotion?: boolean; celebrations?: boolean; triageShortcuts?: boolean };
   searchPreferences?: SearchPreferences;
   ignoredDomainTerms?: string[];
+  contextualPrompts?: import("./contextual-prompts").PromptState;
   headline: string;
   summary: string;
   location: string;
@@ -148,6 +149,7 @@ export type SearchPreferences = {
   payTolerancePercent?: number;
   /** Seniority the account aims for; unset means offers are not compared on level. */
   targetLevel?: "junior" | "confirmed" | "senior" | "lead" | "head";
+  targetLevelAny?: boolean;
   /** An offer one level above the target is not flagged. */
   acceptLevelAbove?: boolean;
 };

@@ -1,0 +1,6 @@
+import {getChatGPTUser} from "@/app/chatgpt-auth";
+import {ensureSameOrigin} from "@/lib/server";
+import {readContextualPrompts,writeContextualPrompt,PromptConflict} from "@/lib/contextual-prompts-store";
+const headers={"Cache-Control":"private, no-store"};
+export async function GET(){const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401,headers});try{return Response.json(await readContextualPrompts(user.userId),{headers});}catch{return Response.json({error:"Vos propositions ne peuvent pas être relues."},{status:503,headers});}}
+export async function POST(request:Request){const user=await getChatGPTUser();if(!user)return Response.json({error:"Authentification requise"},{status:401,headers});if(!ensureSameOrigin(request))return Response.json({error:"Origine non autorisée"},{status:403,headers});try{return Response.json(await writeContextualPrompt(user.userId,await request.json()),{headers});}catch(error){const message=error instanceof Error&&!/SQL|D1|constraint/i.test(error.message)?error.message:"Enregistrement non confirmé. Votre choix précédent reste conservé.";return Response.json({error:message},{status:error instanceof PromptConflict?409:400,headers});}}
