@@ -2,44 +2,35 @@
 import {useRadarNextSteps} from "@/components/next-steps-context";
 import {useDisplayTimeZone} from "@/components/use-display-time-zone";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, ArrowUpRight, CalendarDays, ClipboardCheck, Columns3, List } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ClipboardCheck, Columns3, List } from "lucide-react";
 import { usePersonalBoard } from "@/components/use-personal-board";
 import {ApplicationCareBadge} from "@/components/application-care";
 import { ApplicationKanban } from "@/components/application-kanban";
-import { RadarMark } from "@/components/radar-mark";
+import {HelpTooltip} from "@/components/help-tooltip";
 import { WorkspaceButton, WorkspacePanelHeader } from "@/components/workspace-form";
-import { hasApplication, inOpportunityView } from "@/lib/opportunity-views";
+import {upcomingInterviews} from "@/lib/workspace-agenda";
 import { activeStatuses, applicationAge, formatDate, reviewDue, terminalStatuses } from "@/lib/application-workflow";
-import { upcomingInterviews } from "@/lib/workspace-agenda";
 import { StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
 import { PageHeader, WorkspaceState } from "@/components/workspace-ui";
 import type { JobRecord, JobStatus } from "@/lib/types";
-import { type DailyLot } from "@/lib/daily-lot";
 import { useRadarClock } from "@/components/use-radar-clock";
 
 // Recalculate deadlines on entry and explicit data changes; keep the page stable while reading.
 function useNow(jobs: JobRecord[]) { const [now,setNow]=useState(()=>Date.now()); useEffect(()=>setNow(Date.now()),[jobs]);return now; }
-export function TodayWorkspace({jobs,onTriage,onSelected,onOpen,radarLine,sessionAction,sessionNotice,reach,weekPlan,insight,monthStory}: {monthStory?:ReactNode;insight?:ReactNode;weekPlan?:ReactNode;reach?:ReactNode;sessionAction?:{ready:boolean;minutes:number;available:boolean;resumable:boolean;onStart:()=>void};sessionNotice?:ReactNode;manualRefresh?:boolean;radarLine?:ReactNode;setupRequired?:boolean;onConfigureSearch?:()=>void;jobs:JobRecord[];lot?:DailyLot|null;sources?:{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onOpenSource?:(name:string)=>void}) {
-  const now=useNow(jobs),clock=useRadarClock(),{queue,ready,onAction,stopped,onResume}=useRadarNextSteps();
-  const first=queue[0],following=queue.slice(1,3),upcoming=upcomingInterviews(jobs,now).slice(0,3);
-  const count=jobs.filter(job=>inOpportunityView(job,"to_review")).length,selected=jobs.filter(job=>inOpportunityView(job,"selected")).length,active=jobs.filter(job=>hasApplication(job)&&activeStatuses.includes(job.status)).length;
-  return <div className="today-layout next-step-home"><div className="today-main">
-    <section className="today-focus" aria-label="Prochaine étape">
-      <p className="today-session-date">{clock?new Date(clock).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}):"Aujourd’hui"}</p>
+export function TodayWorkspace({radarLine,sessionAction,sessionNotice,weekPlan,insight,monthStory}:{radarLine:ReactNode;weekPlan?:ReactNode;insight?:ReactNode;monthStory?:ReactNode;sessionNotice?:ReactNode;sessionAction:{resumable:boolean;onStart:()=>void}}){
+  const clock=useRadarClock(),{queue,ready,onAction,stopped,onResume}=useRadarNextSteps();
+  const first=queue[0],following=queue.slice(1,3);
+  return <div className="today-layout next-step-home today-three-blocks"><div className="today-main">
+    <section className="today-focus" aria-label="Votre séance">
+      <p className="today-session-date">Votre séance · {clock?new Date(clock).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}):"Aujourd’hui"}</p>
       <h2 className="today-focus-title">{!ready?"Préparation de votre prochaine étape…":stopped?"C’est tout pour aujourd’hui. Le radar veille.":sessionAction?.resumable?"Votre séance vous attend":first?.label??"C’est tout pour aujourd’hui. Le radar veille."}</h2>
       {!stopped&&first&&ready?<p className="workspace-caption">{sessionAction?.resumable?"Reprenez à l’étape conservée.":first.minutes+" min environ · à votre rythme."}</p>:null}
       {!stopped&&(first||sessionAction?.resumable)?<WorkspaceButton variant="primary" disabled={!ready} onClick={sessionAction?.onStart}>{sessionAction?.resumable?"Reprendre la séance":"Commencer ma séance"}<ArrowRight size={17} aria-hidden/></WorkspaceButton>:stopped?<WorkspaceButton onClick={onResume}>Revoir les étapes</WorkspaceButton>:null}
-      <RadarMark className="today-logo-watermark" watermark/>
+      {ready&&!stopped&&!sessionAction.resumable&&following.length?<div className="today-following" aria-labelledby="today-next-title"><h3 id="today-next-title">Puis, si vous le souhaitez</h3>{following.map(step=><WorkspaceButton key={step.id} variant="quiet" onClick={()=>onAction(step.action)}><ClipboardCheck size={16} aria-hidden/>{step.label} · {step.minutes} min</WorkspaceButton>)}</div>:null}
+      {sessionNotice?<div className="today-session-notice">{sessionNotice}</div>:null}
     </section>
-    {ready&&!stopped&&!sessionAction?.resumable&&following.length?<section className="today-next" aria-labelledby="today-next-title"><WorkspacePanelHeader id="today-next-title" title="Puis, si vous le souhaitez"/>{following.map(step=><WorkspaceButton key={step.id} variant="quiet" onClick={()=>onAction(step.action)}><ClipboardCheck size={16} aria-hidden/>{step.label} · {step.minutes} min</WorkspaceButton>)}</section>:null}
-    {sessionNotice}
-    {weekPlan}
-    {radarLine}
-    {reach?<details className="today-folded-info"><summary>Réglages du radar</summary>{reach}</details>:null}
-    {insight?<details className="today-folded-info"><summary>Vos candidatures en perspective</summary>{insight}</details>:null}
-    {monthStory?<details className="today-folded-info"><summary>Votre mois de recherche</summary>{monthStory}</details>:null}
-    <details className="today-folded-info"><summary>Prochains entretiens ({upcoming.length})</summary>{upcoming.length?upcoming.map(({job,event})=><WorkspaceButton key={event.id} variant="quiet" onClick={()=>onOpen(job,"interviews")}><CalendarDays size={16} aria-hidden/>{job.company||job.title} · {formatDate(event.startAt,event.timeZone,true)}</WorkspaceButton>):<p className="workspace-caption">Aucun entretien planifié.</p>}</details>
-    <div className="today-summary" role="group" aria-label="Résumé de votre recherche"><button type="button" onClick={onTriage}><strong>{count}</strong> à examiner</button><button type="button" onClick={onSelected}><strong>{selected}</strong> dans ma sélection</button><span><strong>{active}</strong> candidature{active>1?"s":""} active{active>1?"s":""}</span></div>
+    {weekPlan??<section className="week-plan-card" aria-labelledby="today-week-title"><WorkspacePanelHeader id="today-week-title" title="Votre semaine"/><p className="signal-help">Votre semaine apparaîtra quand le compte sera relu.</p></section>}
+    <section className="today-radar" aria-labelledby="today-radar-title"><WorkspacePanelHeader id="today-radar-title" title="Le radar" hint={<HelpTooltip label="Le radar">Les nouvelles offres viennent du dernier balayage. Après rechargement, le nombre d’offres à examiner reste disponible. Le détail de l’entonnoir se trouve dans Candidatures.</HelpTooltip>}/>{radarLine}{insight}{monthStory}</section>
   </div></div>;
 }
 

@@ -57,3 +57,6 @@ WorkspaceFormSection réutilise HelpTooltip et ses contrôles Signal, avec une c
 
 ### P4 — Prochaine étape commune
 Réutilisation de WorkspaceButton, WorkspacePanelHeader, SignalStepper, SignalProgress, SignalCounter et des détails repliables. Les informations se replient ; une seule action principale dans la zone proposée. Cibles de 44 px, date lisible sur fond pétrole, titre et focus vérifiés sur ordinateur/mobile. Recette : docs/p4-prochaine-etape/README.md.
+
+### P6 — Accueil en trois blocs
+Composition des contrôles Signal existants : WorkspaceButton, WorkspacePanelHeader, HelpTooltip, SignalRadar et badge de série. Trois zones seulement, une action principale et deux pistes facultatives. Contrastes pétrole/papier et focus citron, cibles 44 px, titres non comprimés sur mobile. Recette et captures : docs/p6-accueil-trois-blocs/README.md.

@@ -53,8 +53,9 @@ export function ScanWorkspace({busy,error,result,sources,sourcesKnown,knownCount
   </div>;
 }
 
-export function ScanStatusLine({sources,busy,hasResult,onOpen}:{sources:SourceSetting[];busy:boolean;hasResult:boolean;onOpen:()=>void}){
+export function ScanStatusLine({sources,busy,hasResult,onOpen,compact=false,newOffers,pendingOffers,error=""}:{sources:SourceSetting[];busy:boolean;hasResult:boolean;onOpen:()=>void;compact?:boolean;newOffers?:number;pendingOffers?:number;error?:string}){
   const readings=sources.filter(source=>(automaticSources as readonly string[]).includes(source.source)&&source.lastSyncedAt);
   const count=readings.reduce((total,source)=>total+(Number.isFinite(source.lastCount)?source.lastCount??0:0),0);
+  if(compact)return <div className="scan-status-line is-embedded" role="group" aria-label="Dernières lectures du radar" aria-busy={busy}><SignalRadar size={40} scanning={busy}/><div><p>{busy?"Balayage en cours…":refreshedAgo(lastRefreshAt(readings))}</p><p className="scan-new-offers">{newOffers!==undefined?newOffers+" nouvelle"+(newOffers!==1?"s":"")+" offre"+(newOffers!==1?"s":"")+" au dernier balayage":pendingOffers!==undefined?pendingOffers+" offre"+(pendingOffers!==1?"s":"")+" à examiner":"Offres à relire"}</p></div><WorkspaceButton disabled={busy} onClick={onOpen}>{hasResult?"Voir le bilan":"Actualiser"}</WorkspaceButton><WorkspaceFormError message={error}/></div>;
   return <section className="scan-status-line" aria-label="Dernières lectures du radar"><SignalRadar size={48} scanning={busy}/><div><p>{busy?"Balayage en cours…":refreshedAgo(lastRefreshAt(readings))}</p>{readings.length?<p className="signal-help">{count} offres lors des dernières lectures · {readings.length} source{readings.length>1?"s":""} automatique{readings.length>1?"s":""}</p>:<p className="signal-help">Vos sources à visiter restent accessibles dans Ma recherche.</p>}</div><WorkspaceButton disabled={busy} onClick={onOpen}>{hasResult?"Voir le bilan":"Actualiser"}</WorkspaceButton></section>;
 }

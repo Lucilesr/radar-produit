@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Accueil en trois blocs P6
+
+- Votre séance réunit la prochaine étape et deux pistes facultatives ; Votre semaine réunit engagements, série et pause ; Le radar rassemble lectures, nouveautés connues et tendance des candidatures.
+- La portée, les compteurs séparés et l’agenda quittent l’accueil. Le récit mensuel reste accessible dans Le radar. Ordre des actions et sauvegardes conservés, aucune migration.
+
 ## 8 novembre 2026 — Prochaine étape commune P4
 
 - Accueil, séance, portée, plan et préparation d’une candidature lisent une seule file de priorités. Trois propositions au plus, sans invitation indépendante.

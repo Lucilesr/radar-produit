@@ -1092,3 +1092,19 @@ Passe d’écriture uniquement : les règles d’enregistrement, erreurs, droits
 | clavier / mobile à 390 px | ouverture des étapes | focus vers le formulaire, contrôles Signal et textes à la ligne | mêmes actions | oui |
 
 Aucune migration. Les nouveaux nombres de repères du point de reprise ne contiennent aucun texte privé. Les pannes réelles et leurs limites de recette sont distinguées des tests dans p4-prochaine-etape/README.md.
+
+### P6 — Aujourd’hui en trois blocs
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| compte chargé | données relues | Votre séance, Votre semaine et Le radar | prochaine étape de P4 | oui |
+| plan absent | aucun plan confirmé cette semaine | état Pas de plan, série connue sans zéro inventé pendant la lecture | plan proposé par la file commune | oui |
+| séance terminée ou aucune action | fin confirmée ou file vide | « C’est tout pour aujourd’hui. Le radar veille. » | navigation libre ou reprise volontaire | oui |
+| lecture du radar | balayage confirmé pendant la visite | date et nouvelles offres du bilan | voir le bilan | oui |
+| rechargement | bilan de visite indisponible | nombre d’offres à examiner et date connue | actualiser | oui |
+| entonnoir disponible | au moins cinq envois dans le journal | une phrase sur le rythme observé | détail dans Candidatures | oui |
+| récit disponible | jours 1 à 7 du mois | lien discret dans Le radar | ouvrir à la demande | oui |
+| erreur de lecture | source, tendance ou récit indisponible | erreur visible dans sa zone, dernières données conservées | relire ou ouvrir le bilan | oui |
+| clavier / mobile à 390 px | navigation ou écran étroit | mêmes trois zones, titres lisibles et focus visible | mêmes contrôles | oui |
+
+Les anciens compteurs, l’agenda séparé et la portée compacte ne sont plus des blocs d’accueil. Les calculs, données et confirmations restent identiques. Le mois conserve son archive et son téléchargement. Recette : p6-accueil-trois-blocs/README.md.
