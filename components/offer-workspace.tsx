@@ -134,6 +134,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
         <AutosaveStatus save={noteSave}/><NoteHistory jobId={job.id}/>
       </WorkspaceFormSection>
     </div> : null}
+    {context==="application"&&activeView==="interviews"&&job.status==="rejected"?<ApplicationLessonCard key={`lesson-interviews:${job.id}`} job={job}/>:null}
     {context === "application" && activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
     {activeView === "brief" ? <PrivateBrief key={job.id} jobId={job.id} /> : null}
   </div>;
