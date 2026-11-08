@@ -1,6 +1,6 @@
 ## 8 novembre 2026 — Signal sur Offres L6
 
-- Titres, groupes de réserve et cartes reprennent la hiérarchie et les surfaces Signal ; les petites commandes atteignent 44 px.
+- Titres, groupes de réserve et cartes reprennent la hiérarchie et les surfaces Signal ; les petites commandes atteignent 44 px. Le texte du groupe Loin décrit le classement réel, sans annoncer un faux seuil.
 - Même lot, mêmes fourchettes et mêmes actions ; la page atteint les panneaux puis la liste et la fiche gardent leur défilement indépendant.
 
 ## 8 novembre 2026 — Signal sur Aujourd’hui L6
