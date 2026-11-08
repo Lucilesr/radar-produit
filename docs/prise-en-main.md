@@ -2,6 +2,8 @@
 
 Radar reste privé et sans personnage. Quatre espaces structurent la navigation : **Aujourd’hui**, **Offres**, **Candidatures** et **Mon radar**, sur ordinateur comme dans la barre du bas sur mobile. Le **menu de l’avatar** ouvre **Mon compte** et le **Guide de prise en main**, qui présente les quatre espaces. Les boutons d’information donnent les détails au clavier et au toucher.
 
+Sur ordinateur, le menu horizontal est identique partout. À droite, la recherche ouvre **Offres**, **Ajouter une offre** ouvre sa fiche de saisie et l’avatar donne accès au compte et au guide. Sur mobile, les quatre entrées restent en bas.
+
 ## Commencer
 
 Dans **Mon radar → Ce que je cherche**, choisissez votre poste, puis les critères utiles et vos sources. **Niveau visé** attend **Terminé** ; changer la sélection ne l’enregistre pas encore. Les jetons permettent de retoucher un critère.

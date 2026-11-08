@@ -3,6 +3,12 @@
 - Date et accueil personnel, séance prioritaire avec deux suites discrètes, semaine compacte et bilan du radar alignés sur ordinateur et mobile.
 - Journée terminée calme sans bouton, réglage initial en trois étapes, chargement et erreur avec reprise. Engagements tenus repliés sur mobile ; réglages, pauses et jokers restent accessibles. Aucune migration.
 
+## Menu horizontal commun
+
+- Un même menu d’ordinateur sur Aujourd’hui, Offres, Candidatures, Mon radar, Mon compte et Balayage ; recherche, ajout et avatar à droite.
+- Navigation mobile à quatre entrées conservée. Le guide vise le menu visible après changement de largeur.
+- La recherche garde le focus en ouvrant Offres ; Échap rend le focus au bouton d’ajout.
+
 ## Offres — alignement des fiches ordinateur et mobile
 
 - Quatre informations clés, adéquation près du titre et annonce dépliable ; les autres conditions, dates et outils restent accessibles.

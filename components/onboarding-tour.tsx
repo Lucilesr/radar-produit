@@ -105,7 +105,7 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate, initia
     if (!current || !state || !highlightTarget) { setGuideHost(null); return; }
     let target: HTMLElement | null = null;
     const attach = () => {
-      const found = document.querySelector<HTMLElement>('[data-radar-guide="' + highlightTarget + '"]');
+      const found = Array.from(document.querySelectorAll<HTMLElement>('[data-radar-guide="' + highlightTarget + '"]')).find(element=>element.getClientRects().length>0) ?? null;
       if (found === target) return;
       target?.removeAttribute("data-radar-guide-active");
       target = found;
@@ -121,8 +121,9 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate, initia
     attach();
     const observer = new MutationObserver(attach);
     observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener("resize", attach);
     document.addEventListener("click", clicked, true);
-    return () => { observer.disconnect(); document.removeEventListener("click", clicked, true); target?.removeAttribute("data-radar-guide-active"); };
+    return () => { observer.disconnect(); window.removeEventListener("resize", attach); document.removeEventListener("click", clicked, true); target?.removeAttribute("data-radar-guide-active"); };
   }, [current, state, highlightTarget, steps.length, persist]);
 
   if (!ownerId || !state) return null;
