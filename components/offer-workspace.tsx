@@ -95,12 +95,13 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   const tabs = workspaceSections(context);
   const activeView = context === "opportunity" && (view === "application" || view === "interviews") ? "offer" : view;
   useEffect(() => { if (activeView !== "application" || job.status !== "offer") return; const frame = requestAnimationFrame(() => { noteEditorRef.current?.focus({preventScroll:true}); noteEditorRef.current?.scrollIntoView({block:"center"}); }); return () => cancelAnimationFrame(frame); }, [activeView,job.id,job.status]);
-  return <div className={"signal-offer-workspace space-y-5"+(context==="opportunity"?" aligned-offer-workspace":"")}>
-    {showAnnouncement ? <div className="signal-external-link">{sourceUrl || applyUrl ? <a href={sourceUrl || applyUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : <span className="offer-link-missing">Lien de l’annonce à renseigner</span>}</div> : null}
-    <div className={context === "opportunity" ? "signal-offer-nav" : "signal-application-nav"}>
+  const navigation = <div className={context === "opportunity" ? "signal-offer-nav" : "signal-application-nav"}>
       <nav aria-label={context === "opportunity" ? "Sections de l’offre" : "Sections de la candidature"} className="signal-workspace-tabs">{tabs.map(id => <button type="button" key={id} onClick={() => setView(id)} aria-current={activeView === id ? "page" : undefined}>{labels[id]}</button>)}</nav>
       {context === "opportunity" && !job.deletedAt && showApplicationAction ? <ApplicationTrackingAction job={job} onStatus={onStatus} onOpenApplication={onOpenApplication} /> : null}
-    </div>
+    </div>;
+  return <div className={"signal-offer-workspace space-y-5"+(context==="opportunity"?" aligned-offer-workspace":"")}>
+    {showAnnouncement ? <div className="signal-external-link">{sourceUrl || applyUrl ? <a href={sourceUrl || applyUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : <span className="offer-link-missing">Lien de l’annonce à renseigner</span>}</div> : null}
+    {context === "application" ? navigation : null}
     {context === "application" ? <ApplicationTagBadges jobId={job.id}/> : null}
     {context==="opportunity"&&activeView==="offer"&&!editing?<AlignedOfferRead job={job} onEdit={()=>setEditing(true)} editRef={editTrigger}/>:null}
     {activeView === "offer" && !editing && context!=="opportunity" ? <>
@@ -147,6 +148,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
     {context==="application"&&activeView==="interviews"&&job.status==="rejected"?<ApplicationLessonCard key={`lesson-interviews:${job.id}`} job={job}/>:null}
     {context === "application" && activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
     {activeView === "brief" ? <PrivateBrief key={job.id} jobId={job.id} /> : null}
+    {context === "opportunity" ? navigation : null}
     <SignalMoment className="aligned-offer-moment" open={!!revealed} onClose={()=>setRevealed(null)} title="Bonne pioche" description={revealed?`Cette offre colle à vos critères · ${revealed.fit} sur 100`:undefined} actionLabel="Voir la fiche"/>
   </div>;
 }
