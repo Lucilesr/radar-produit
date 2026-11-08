@@ -1,5 +1,3 @@
-## 8 novembre 2026 — Aujourd’hui aligné sur les maquettes
-
 ## 9 novembre 2026 — Candidatures sur mobile
 
 - Liste compacte par action, deux cartes par groupe, préparation et relances visibles ; outils dans le menu et reprise après échec.
@@ -14,6 +12,8 @@
 
 - Alignement du retour, du titre et des commandes de Balayage ; absence de nouveauté comparée au balayage précédent.
 - Démo à sept sources actives et deux pauses, avec panne simulée récupérable ; prochaines étapes nommant leur candidature.
+
+## 8 novembre 2026 — Aujourd’hui aligné sur les maquettes
 
 - Date et accueil personnel, séance prioritaire avec deux suites discrètes, semaine compacte et bilan du radar alignés sur ordinateur et mobile.
 - Journée terminée calme sans bouton, réglage initial en trois étapes, chargement et erreur avec reprise. Engagements tenus repliés sur mobile ; réglages, pauses et jokers restent accessibles. Aucune migration.
