@@ -90,7 +90,7 @@ export function SearchCriteriaPanel({ overview=false,profile, jobs, onSave, onOp
   const [adding, setAdding] = useState(false);
   const [addTarget, setAddTarget] = useState<MissingCriterion | null>(null);
   const missing = missingCriteria(preferences).filter(item=>!overview||item.id!=="searchTracks");
-  function closeAdd() { setAdding(false); setAddTarget(null); }
+  function closeAdd() { setAdding(false); setAddTarget(null); requestAnimationFrame(()=>{if(document.activeElement===document.body)(document.querySelector<HTMLButtonElement>(".search-criteria-add")??editButton.current)?.focus();}); }
   const formPart = (target: CriteriaTarget) => target as CriteriaFormPart;
   // On a phone a floating panel has no room: the setting opens in the page, under the tags.
   const mobile = useIsMobile();
