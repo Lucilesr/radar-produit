@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useId, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, pointerWithin, rectIntersection, useDndContext, useDraggable, useDroppable, useSensor, useSensors, type Announcements, type KeyboardCoordinateGetter } from "@dnd-kit/core";
 import { Dialog } from "radix-ui";
 import { GripVertical } from "lucide-react";
@@ -32,12 +32,14 @@ const keyboardCoordinates = (destinations: string[]): KeyboardCoordinateGetter =
 const ApplicationMoveContext=createContext<((id:string,target:string)=>Promise<void>)|null>(null);
 export function ApplicationMoveSelect({job,columns,busy}:{job:JobRecord;columns:PersonalColumn[];busy:boolean}){const move=useContext(ApplicationMoveContext);return <ChoiceSelect label={`Déplacer vers · ${job.company||job.title}`} value={personalColumn(job,columns)} displayValue="Déplacer vers…" disabled={busy} options={columns.filter(column=>column.stage!=="other"||column.id===personalColumn(job,columns)).map(column=>({value:column.id,label:column.label}))} onChange={target=>void move?.(job.id,target)}/>;}
 
-function focusCard(id: string | null) {
-  requestAnimationFrame(() => {
-    const handle = id ? document.getElementById(`application-drag-${id}`) : null;
-    handle?.closest(".application-card")?.scrollIntoView({ block: "nearest", inline: "nearest" });
-    (handle?.getClientRects().length && !handle.hasAttribute("disabled") ? handle : document.getElementById("application-closed-summary")??document.getElementById("workspace-title"))?.focus({ preventScroll: true });
-  });
+function focusCard(id:string|null,attempt=0){
+ requestAnimationFrame(()=>{
+  const handle=id?document.getElementById(`application-drag-${id}`):null;
+  const ready=!!handle?.getClientRects().length&&!handle.hasAttribute("disabled");
+  if(!ready&&attempt<3){focusCard(id,attempt+1);return;}
+  if(ready){handle.closest(".application-card")?.scrollIntoView({block:"nearest",inline:"nearest"});handle.focus({preventScroll:true});}
+  else (document.getElementById("application-closed-summary")??document.getElementById("workspace-title"))?.focus({preventScroll:true});
+ });
 }
 
 export function ApplicationDrag({ jobs, busy, onStatus, children, columns = defaultBoard().columns }: { jobs: JobRecord[]; busy: string | null; onStatus: (job: JobRecord, status: JobStatus, columnId?: string) => Promise<boolean>; children: ReactNode; columns?: PersonalColumn[] }) {
@@ -50,6 +52,8 @@ export function ApplicationDrag({ jobs, busy, onStatus, children, columns = defa
   const [closure, setClosure] = useState<"rejected" | "withdrawn" | "">("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const pendingFocus=useRef<string|null>(null);
+  useLayoutEffect(()=>{if(!busy&&pendingFocus.current){const id=pendingFocus.current;pendingFocus.current=null;focusCard(id);}},[busy,jobs]);
   const lastMove=useRef<{jobId:string;target:string;reason?:JobStatus}|null>(null);
   const locked = useRef(false), lastFocus = useRef<string | null>(null);
   const active = jobs.find(job => job.id === activeId), closing = jobs.find(job => job.id === closingId);
@@ -67,6 +71,7 @@ export function ApplicationDrag({ jobs, busy, onStatus, children, columns = defa
     const plan = applicationMove(job, column.stage, reason);
     if (plan.kind === "confirm-close") { setClosingId(jobId); setClosingTarget(target); setClosure(""); setError(""); return; }
     if (plan.kind !== "status" && plan.kind !== "none") { setMessage("Déplacement annulé. Étape conservée."); focusCard(jobId); return; }
+    pendingFocus.current=jobId;
     lastMove.current={jobId,target,reason};
     locked.current = true; setError(""); setMessage(`Enregistrement vers ${columnName(target)}…`);
     try {
