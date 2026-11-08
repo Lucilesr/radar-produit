@@ -231,3 +231,4 @@
 .opportunities-workspace .opportunity-list-row:first-child { border-top-left-radius: var(--signal-surface-radius); }
 .opportunities-workspace .opportunity-open { border-radius: inherit; }
 @media(max-width:760px) { .opportunities-workspace .opportunity-list-row:first-child { border-top-right-radius: var(--signal-surface-radius); } }
+.opportunities-workspace .signal-workspace-tabs button { min-width: 44px; }
