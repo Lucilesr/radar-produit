@@ -1138,3 +1138,23 @@ Les reports sont privés dans profiles.data, protégés des anciens formulaires.
 | mobile / clavier / mouvement réduit | vue à 390 px ou préférence | quatre entrées, menu et contrôles Signal | mêmes actions et focus visible | oui |
 
 Les anciennes listes qui placent le journal, les leçons ou les critères dans les menus Profil/Recherche décrivent désormais l’historique : les destinations en vigueur sont celles de P5. Le contenu et les droits ne changent pas. C4 suit ce lot, puis L6 sur les quatre nouveaux espaces.
+
+## C4 — Candidatures sur la navigation à quatre espaces
+
+Les constats historiques de l’audit restent datés ; les colonnes horizontales du téléphone et le titre de fiche comprimé sont corrigés dans C4. [Captures et recette détaillée](c4-mobile/README.md), staging privé, données fictives, ordinateur et mobile.
+
+| État | Ce qui le déclenche | Ce que voit la personne | Action proposée | Existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Mobile à 390 px | Ouvrir Candidatures sur téléphone | Groupes verticaux et compteurs selon les étapes personnelles | Replier, ouvrir, choisir l’étape | oui |
+| Beaucoup de données | 50 candidatures parmi 1 000 offres | 50 dossiers dans Toutes, sans balayage horizontal des colonnes sur mobile | Filtrer En cours / Closes, replier les groupes | oui |
+| Texte très long | Titre de 180 caractères, note de 2 000 | Titre sur toute la largeur et note défilable | Lire et modifier dans le dossier | oui |
+| Chargement des colonnes | Lecture initiale du tableau personnel | Chargement des colonnes, puis groupes confirmés | Attendre ; Réessayer si la lecture échoue | oui |
+| Erreur d’écriture / conflit | La candidature a changé dans un autre accès | Dernier état lu conservé et message sans affirmation d’un état serveur inchangé | Actualiser puis réessayer | oui |
+| Succès | Déplacement confirmé | Compteurs et groupe mis à jour ; notes et entretiens conservés | Ouvrir le dossier ou continuer | oui |
+| Clôture à préciser | Choisir Closes | Dialogue de motif ; validation désactivée tant que rien n’est choisi | Refus reçu, J’arrête, ou Annuler | oui |
+| Mouvement réduit | Réglage de confort Radar activé | État final direct, mêmes contrôles | Continuer au même endroit | oui |
+| Clavier seul | Espace, Entrée, Échap dans la liste | Groupes repliables, tiroirs et dialogues accessibles, focus restauré | Replier, choisir, ouvrir et fermer | oui |
+| Hors ligne | Connexion locale coupée pendant le test complémentaire | Déplacement non confirmé, carte conservée | Réessayer après reconnexion | oui |
+| Sous-vue conservée | Ouvrir une candidature depuis Mes leçons | Fiche puis retour au bilan à la fermeture | Continuer depuis le bouton d’origine | oui |
+
+Aucun nouvel état manquant bloquant ou gênant constaté dans ce périmètre. La panne réseau est reproduite en local seulement ; le conflit 409 et les autres parcours sont vérifiés sur le staging. La règle métier d’archive des annonces et l’entonnoir ne changent pas ; C4 ne modifie pas les états de tri du §4 de la feuille de route.

@@ -77,3 +77,9 @@ Les candidatures envoyées/en attente, sans entretien non annulé déjà enregis
 L3 et C3 sont livrés ensemble : bilan privé facultatif après refus, deux questions et champ libre, brouillon et validation séparés ; Mes leçons dans le profil. Journal sans texte privé, sauvegarde des textes et versions, aucune nouvelle migration.
 
 L4 ajoute la vue Entonnoir à partir du journal privé : cohorte de90jours, seuil5, sources au moment de l’envoi, conversions par cycle et limites d’historique explicites. Tableau et Kanban restent accessibles.
+
+## C4 livré après P5 — liste mobile par étape
+
+Sous les quatre espaces, la liste mobile groupe les dossiers selon le tableau personnel, avec compteurs, repli, filtre En cours / Closes / Toutes et une action principale par carte. Le sélecteur Étape déplace après confirmation ; Closes garde le choix explicite du motif. Notes, entretiens, tags du dossier, préparation, relances et bilans restent accessibles. Les titres longs prennent la largeur de la fiche mobile et une proposition reçue est correctement nommée. Ouvrir un dossier depuis Mes leçons conserve cette sous-vue à la fermeture. Tableau et Kanban restent disponibles sur ordinateur.
+
+Les limites C4 relevées dans l’audit initial sont corrigées. Recette, captures, conflit réel et limites de contrôle : [C4 mobile](c4-mobile/README.md). Aucune migration.
