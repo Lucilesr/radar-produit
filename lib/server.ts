@@ -52,7 +52,8 @@ export function normalizeJobInput(value: unknown): JobInput {
     sourceUrl: asUrl(raw.sourceUrl),
     contact: asText(raw.contact, 160),
     description: asText(raw.description, 12000),
-    publishedAt: asText(raw.publishedAt, 30),
+    // Sources may include microseconds and an offset: preserve the whole ISO date.
+    publishedAt: asText(raw.publishedAt, 100),
     applicationUrl: asUrl(raw.applicationUrl),
     contentCoverage: ["full", "summary", "partial", "unknown"].includes(String(raw.contentCoverage)) ? raw.contentCoverage as JobInput["contentCoverage"] : "unknown",
     notificationAt: asText(raw.notificationAt, 30),

@@ -1,3 +1,7 @@
+## 8 novembre 2026 — Dates précises des sources
+
+- Les dates de publication avec microsecondes et fuseau restent complètes à l’import. Une correction de TJM ne rajeunit pas une offre ancienne avant son archivage restaurable. Aucune migration ni réécriture des anciennes dates inconnues.
+
 ## 8 novembre 2026 — Relances de candidature C2
 
 - Rappel proposé à J+7 pour les candidatures en attente, date choisie sur Terminé, retrait et déclaration faite dans le compte. Même rappel dans l’accueil, la séance et le suivi ; aucun message envoyé ni seconde relance automatique.
