@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Signal sur Aujourd’hui L6
+
+- Les trois blocs conservent leurs actions et leur ordre ; séance plus compacte, semaine et radar côte à côte sur grand écran, puis empilés sur mobile.
+- Titres Bricolage, surfaces et espacements Signal ; la semaine tenue reste repliée, avec un repère de réussite discret.
+
 ## 8 novembre 2026 — Candidatures mobiles C4
 
 - Liste verticale groupée par étape, compteurs et colonnes personnelles conservées ; fermeture explicite et dossiers inchangés en cas d’échec.

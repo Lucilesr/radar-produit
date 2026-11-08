@@ -1158,3 +1158,7 @@ Les constats historiques de l’audit restent datés ; les colonnes horizontales
 | Sous-vue conservée | Ouvrir une candidature depuis Mes leçons | Fiche puis retour au bilan à la fermeture | Continuer depuis le bouton d’origine | oui |
 
 Aucun nouvel état manquant bloquant ou gênant constaté dans ce périmètre. La panne réseau est reproduite en local seulement ; le conflit 409 et les autres parcours sont vérifiés sur le staging. La règle métier d’archive des annonces et l’entonnoir ne changent pas ; C4 ne modifie pas les états de tri du §4 de la feuille de route.
+
+## L6 — Aujourd’hui
+
+Refonte visuelle sur les trois zones P6 : titres Bricolage et jetons Q0, séance plus compacte ; semaine et radar côte à côte sur grand écran, une colonne mobile. Priorités, textes, sauvegardes et repli restent identiques. Staging privé 78, captures avant/après : [recette Aujourd’hui](l6-aujourdhui/README.md). Plan en cours et tenu, fin de séance, reprise volontaire, aide au clavier, retour du récit, mouvement réduit et 390 px vérifiés. Les états sans plan et de progression sont reproduits en complément local. Les composants existants de chargement, erreur et reprise sont conservés ; aucune panne du staging n’est simulée pour cette passe CSS. Aucun nouvel état bloquant ou gênant constaté.
