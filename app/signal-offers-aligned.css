@@ -27,7 +27,7 @@
 .aligned-offer-mobile-header{display:none}.aligned-offer-archive{display:flex;align-items:center;gap:8px;padding:12px 16px;border-radius:10px;background:var(--signal-mist);font-size:14px;margin-bottom:20px}
 .opportunities-workspace .opportunity-decision{position:sticky;bottom:0;z-index:5;display:flex;flex-wrap:nowrap;gap:10px;padding:16px 0;margin:20px 0 0;border:0;border-top:1px solid var(--signal-line);background:var(--signal-paper)}
 .opportunities-workspace .opportunity-decision>:is(button,a){min-height:48px;border-radius:10px;display:inline-flex;justify-content:center;align-items:center;gap:8px;padding:10px 14px;white-space:nowrap;font-size:14px}
-.opportunity-decision kbd{font:500 11px/1 var(--font-sans);border:1px solid currentColor;border-radius:4px;opacity:.65;padding:3px}
+.opportunity-decision kbd{font:500 11px/1 var(--font-sans);border:1px solid currentColor;border-radius:10px;opacity:.65;padding:3px}
 .opportunities-workspace .opportunity-reading-notes{margin-top:0;padding:12px 0;border:0;font-size:11px}
 .aligned-offer-tools{font-size:14px;margin-bottom:10px}.aligned-offer-tools[open]{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.aligned-offer-tools[open]>summary{width:100%}.aligned-offer-tools .radar-search{display:flex!important;margin:0;max-width:400px;flex:1}.aligned-offer-tools input{min-height:44px}.aligned-offer-tools>button{min-height:44px}
 .opportunities-workspace .daily-lot,.opportunities-workspace .daily-lot.is-done{background:var(--signal-paper);border:1px solid var(--signal-line);border-radius:16px;color:var(--signal-petrol-ink);padding:18px 20px}
@@ -65,3 +65,14 @@ body:has(.radar-page[data-space=offers]) [data-slot=drawer-content]{border-radiu
 body:has(.radar-page[data-space=offers]) [data-slot=drawer-content] button{min-height:44px;border-radius:10px}
 body:has(.radar-page[data-space=offers]) [data-slot=dialog-content]{border-radius:20px}
 @media(max-width:760px){.aligned-offer-moment h2{font-size:28px}}
+
+.radar-page[data-space=offers]{--signal-surface-radius:16px}
+.radar-page[data-space=offers] .page-refresh-action{border-radius:10px;min-height:44px}
+.aligned-offer-tools .radar-search{border-radius:10px}
+.opportunities-workspace :is(.offer-mystery,.workspace-state,.opportunities-batch,.reserve-archive-head,.scan-source-filter){border-radius:16px}
+.opportunity-detail :is(input:not([type=checkbox]):not([type=radio]),textarea,[data-slot=select-trigger],.signal-form-button){border-radius:10px;min-height:44px}
+body:has(.radar-page[data-space=offers]) :is(.opportunity-date-order-menu,.help-tooltip-content,.radar-account-menu){border-radius:16px}
+body:has(.radar-page[data-space=offers]) :is(.opportunity-date-order-menu [data-slot=select-item],.radar-account-menu [role=menuitem]){border-radius:10px;min-height:44px}
+body:has(.radar-page[data-space=offers]) .date-picker-popover{width:min(360px,calc(100vw - 32px));max-height:min(80dvh,var(--radix-popover-content-available-height,80dvh));overflow-y:auto}
+body:has(.radar-page[data-space=offers]) .date-picker-popover button{border-radius:10px;min-width:44px;min-height:44px}
+body:has(.radar-page[data-space=offers]) [data-slot=drawer-content] input{border-radius:10px;min-height:44px}
