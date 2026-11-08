@@ -21,7 +21,7 @@ export function useRadarScan({ onOffers, onSources, knownJobs, sources, sourcesK
   function run(source?:string,silent=false):Promise<boolean>{
     if(pending.current)return pending.current;
     const abort=new AbortController();controller.current=abort;
-    const overall=AbortSignal.any([abort.signal,AbortSignal.timeout(60000)]);
+    const overall=AbortSignal.any([abort.signal,AbortSignal.timeout(simulated?180000:60000)]);
     setBusy(true);setError("");setQuiet(silent);
     if(!source){saved.current=null;baseline.current=new Set(knownJobs.map(job=>job.id));setResult(null);setNewIds([]);}
     else if(!saved.current)baseline.current=new Set(knownJobs.map(job=>job.id));

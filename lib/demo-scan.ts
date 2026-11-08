@@ -24,9 +24,13 @@ export async function syncDemoSources(userId:string,mode:DemoScenario|"full",req
     const failed=mode==="scan-error"||mode==="scan-auto-error"||(mode!=="scan-empty"&&source==="Jobgether"&&!retry);
     const reading:SourceReading={source,state:failed?"error":"ok",ok:!failed,total:0,imported:0,deduplicated:0,matchedIds:[],...(failed?{error:"Panne fictive de cette source. Vous pouvez réessayer."}:{lastSyncedAt:now})};
     if(!failed){
-      // The repeated first item creates a real deduplication through the normal private write path.
+      // Identical rows in one fictional feed need only one normal private write.
+      const encountered=new Set<string>();
       for(const offer of mode==="scan-empty"?[]:Array.from({length:2+(demoScanActive as readonly string[]).indexOf(source)},(_,index)=>({...examples[index%3],source,company:`${examples[index%3].company} · ${source}`}))){
         reading.total++;
+        const identity=JSON.stringify(offer);
+        if(encountered.has(identity)){reading.deduplicated++;continue;}
+        encountered.add(identity);
         const saved=await saveOffer(userId,offer);
         if(saved.deduplicated)reading.deduplicated++;else reading.imported++;
         if(scanMatches(saved.job)&&!reading.matchedIds.includes(saved.job.id))reading.matchedIds.push(saved.job.id);
