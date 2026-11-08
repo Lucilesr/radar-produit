@@ -24,13 +24,13 @@ export function ApplicationMobileList({ jobs, board, busy, now, onStatus, onOpen
   const [closing, setClosing] = useState<{ job: JobRecord; target: string } | null>(null);
   const [reason, setReason] = useState<"rejected" | "withdrawn" | "">("");
   const [message, setMessage] = useState(""), [error, setError] = useState("");
-  const lock = useRef(false), lastJob = useRef<string | null>(null);
+  const lock = useRef(false), lastJob = useRef<string | null>(null), lastGroup = useRef<string | null>(null);
   const groups = applicationGroups(jobs, board.columns);
   const columns = groups.map(group => group.column);
   function returnFocus() {
     requestAnimationFrame(() => {
       const trigger = lastJob.current ? document.getElementById(`application-mobile-${lastJob.current}`) : null;
-      const groupTrigger = trigger?.closest(".application-mobile-group")?.querySelector<HTMLButtonElement>("h2 button");
+      const groupTrigger = lastGroup.current ? document.getElementById(`application-mobile-group-${lastGroup.current}`) : null;
       (trigger?.getClientRects().length ? trigger : groupTrigger ?? document.getElementById("workspace-title"))?.focus();
     });
   }
@@ -38,7 +38,7 @@ export function ApplicationMobileList({ jobs, board, busy, now, onStatus, onOpen
     if (busy || lock.current) return;
     const column = columns.find(item => item.id === target);
     if (!column || column.stage === "other" || personalColumn(job, columns) === target) return;
-    lastJob.current = job.id;
+    lastJob.current = job.id; lastGroup.current = target;
     const plan = applicationMove(job, column.stage, closure);
     if (plan.kind === "confirm-close") { setClosing({ job, target }); setReason(""); setError(""); return; }
     if (plan.kind !== "status" && plan.kind !== "none") return;
@@ -54,7 +54,7 @@ export function ApplicationMobileList({ jobs, board, busy, now, onStatus, onOpen
     <div className="application-mobile-summary"><p>{jobs.length} candidature{jobs.length === 1 ? "" : "s"}</p><WorkspaceButton variant="quiet" disabled={!!busy} onClick={() => onColumn()}><Plus size={16} aria-hidden/>Ajouter une étape</WorkspaceButton></div>
     <p className="sr-only" role="status">{message}</p><WorkspaceFormError message={closing ? "" : error}/>
     {groups.filter(group => scope === "closed" ? group.column.stage === "closed" : scope === "active" ? group.column.stage !== "closed" : true).map(({ column, jobs: items }) => <Collapsible key={column.id} defaultOpen className={`application-mobile-group is-${column.stage}`}>
-      <div className="application-mobile-group-heading"><h2><CollapsibleTrigger className="signal-quiet-button"><span>{column.label}</span><span className="workspace-badge" aria-label={`${items.length} candidature${items.length === 1 ? "" : "s"}`}>{items.length}</span><ChevronDown size={16} aria-hidden/></CollapsibleTrigger></h2><button type="button" className="board-column-edit" disabled={!!busy} aria-label={`Modifier la colonne ${column.label}`} onClick={() => onColumn(column)}><Pencil size={16} aria-hidden/></button></div>
+      <div className="application-mobile-group-heading"><h2><CollapsibleTrigger id={`application-mobile-group-${column.id}`} className="signal-quiet-button"><span>{column.label}</span><span className="workspace-badge" aria-label={`${items.length} candidature${items.length === 1 ? "" : "s"}`}>{items.length}</span><ChevronDown size={16} aria-hidden/></CollapsibleTrigger></h2><button type="button" className="board-column-edit" disabled={!!busy} aria-label={`Modifier la colonne ${column.label}`} onClick={() => onColumn(column)}><Pencil size={16} aria-hidden/></button></div>
       <CollapsibleContent className="application-mobile-cards">
         {items.map(job => {
           const closed = terminalStatuses.includes(job.status);
