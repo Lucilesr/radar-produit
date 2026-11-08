@@ -101,3 +101,15 @@ Dans une offre, ouvrez **Préparer / brief** ; dans un dossier suivi, ouvrez **M
 Chaque clic attend la confirmation du compte. À trois cases, la jauge affiche par exemple **Soignée à 3 sur 4 : il manque le contact** ; à quatre, **Soignée à 4 sur 4**. Vous pouvez retirer une coche. Le tableau, le Kanban et les actions de l’accueil reprennent ce repère ; il reste propre à la candidature. Il ne bloque jamais **J’ai postulé** ni un changement de statut.
 
 En cas d’erreur ou de modification depuis un autre onglet, les derniers choix confirmés restent affichés ; **Relire les repères** permet de poursuivre sans remplacer les autres coches. Le passage à trois repères confirmés figure dans le journal privé, sans texte de candidature. Ces choix et leurs versions sont inclus dans la sauvegarde intégrale ; aucun tiers n’y reçoit de données.
+
+## Relances proposées à J+7 — C2
+
+Après **J’ai postulé**, Radar propose un rappel sept jours après l’instant d’envoi enregistré. Il concerne une candidature envoyée ou en attente de retour, sans entretien non annulé déjà enregistré. Les dossiers clos et les propositions reçues n’ont pas ce rappel. Une candidature conservée dans la Corbeille garde son suivi.
+
+Quand la date arrive, la relance paraît dans **Aujourd’hui → À faire ensuite**, dans la séance et dans Candidatures. **Ouvrir le dossier** permet de retrouver vos échanges. Après votre propre envoi, **J’ai fait cette relance** enregistre votre déclaration dans le journal privé et retire le rappel, aussi après rechargement. Radar n’envoie aucun e-mail, message ou notification externe. Vous pouvez aussi la noter depuis le dossier avant la date proposée si vous l’avez déjà faite.
+
+Dans **Ma candidature → Votre relance**, **Modifier la date** ouvre le calendrier Signal. Le changement attend **Terminé** ; **Annuler** garde l’ancien rappel. Les horaires suivent le fuseau affiché de votre appareil, et les entretiens conservent leur fuseau enregistré. **Retirer le rappel** le désactive pour cette candidature. Si une autre page l’a modifié, comparez sa date à votre saisie avant **Enregistrer après comparaison**.
+
+Après une relance faite, aucune seconde n’est créée automatiquement. **Prévoir une autre relance** propose une date modifiable ; vous choisissez de la confirmer. Revenir à une date déjà notée faite pour le même envoi conserve sa confirmation, sans nouveau doublon. Annuler puis renvoyer une candidature démarre un nouveau suivi, distinct du précédent.
+
+Une date d’envoi inconnue reste inconnue : Radar n’invente pas J+7. Les relances après un entretien se règlent dans **Entretiens**. Les choix, confirmations et versions sont conservés dans la sauvegarde intégrale ; aucun service tiers ne les reçoit.

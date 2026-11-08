@@ -1,10 +1,12 @@
+import {dueFollowups,type FollowupEntry} from "./application-followup";
 import { reviewDue, terminalStatuses } from "./application-workflow";
 import type { JobRecord } from "./types";
 import { hasApplication, inOpportunityView, reviewState } from "./opportunity-views";
 
 export type TriageAction = {
   job: JobRecord;
-  kind: "interview_review" | "interview_date" | "application" | "offer_check";
+  kind: "interview_review" | "interview_date" | "application" | "followup" | "offer_check";
+  followup?:FollowupEntry;
   title: string;
   detail: string;
 };
@@ -46,6 +48,7 @@ export function selectTriageActions(jobs: JobRecord[], now = Date.now(), limit =
     .map(job => ({ job, kind: "interview_review" as const, title: "Faire le bilan de l’entretien", detail: `${job.company} · rendez-vous terminé, suite à choisir.` }));
   const undated = active.filter(job => job.status === "interview" && !job.interviews?.some(event => event.state === "planned" || event.state === "reviewed"))
     .map(job => ({ job, kind: "interview_date" as const, title: "Ajouter la date de l’entretien", detail: `${job.company} · la date est nécessaire pour le rappel.` }));
+  const followups=dueFollowups(active,now).map(entry=>({job:entry.job,kind:"followup" as const,followup:entry,title:"Faire cette relance",detail:`${entry.job.company||entry.job.title} · relance arrivée à échéance.`}));
   const candidatures = active.filter(job => (reviewState(job) === "selected" && !job.deletedAt) || ["applied", "awaiting_response", "next_step", "offer"].includes(job.status))
     .map(job => {
       const pending = reviewState(job) === "selected" && !hasApplication(job);
@@ -55,7 +58,7 @@ export function selectTriageActions(jobs: JobRecord[], now = Date.now(), limit =
   const offers = sortOffersForTriage(active, now)
     .map(job => ({ job, kind: "offer_check" as const, title: "Qualifier cette offre", detail: `${job.company} · ${firstQuestion(job)}` }));
   const seen = new Set<string>();
-  return [...due, ...undated, ...candidatures, ...offers].filter(action => {
+  return [...due, ...undated, ...followups, ...candidatures, ...offers].filter(action => {
     if (seen.has(action.job.id)) return false;
     seen.add(action.job.id); return true;
   }).slice(0, limit);

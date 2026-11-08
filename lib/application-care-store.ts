@@ -1,6 +1,6 @@
 import {env} from "cloudflare:workers";
 import {activityReceiptId,activityStatement} from "./activity-store";
-import {applicationMetadataRow} from "./application-metadata-store";
+import {applicationMetadataRow,applicationMetadataStatement} from "./application-metadata-store";
 import {readCare,careChecks,careCount,careValue,type CareField,type ApplicationCare} from "./application-care";
 const db=()=>env.DB as D1Database;
 const keyFor=(id:string)=>`application:care:${id}`;
@@ -15,7 +15,7 @@ export async function writeApplicationCare(userId:string,id:string,raw:unknown,n
  if(before[command.field]===command.checked)return before;
  if(command.version!==before.version)throw new CareConflict(before);
  const next={...before,[command.field]:command.checked,version:before.version+1},value=careValue(next),at=now.toISOString();
- const statement=db().prepare("INSERT INTO workspace_writes(user_id,key,version,value,created_at) SELECT ?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM workspace_writes WHERE user_id=? AND key=? AND version>?) AND EXISTS(SELECT 1 FROM jobs WHERE user_id=? AND id=?) ON CONFLICT(user_id,key,version) DO NOTHING RETURNING version").bind(userId,key,next.version,value,at,userId,key,before.version,userId,id);
+ const statement=applicationMetadataStatement(userId,id,key,before.version,value,at);
  const operations=[statement];
  if(careCount(before)<3&&careCount(next)>=3)operations.push(activityStatement(userId,{id:await activityReceiptId(userId,"application_cared",id,String(next.version)),action:"application_cared",objectType:"job",objectId:id,createdAt:at,data:{score:careCount(next),source:job.source}},"EXISTS(SELECT 1 FROM workspace_writes WHERE user_id=? AND key=? AND version=? AND value=? AND created_at=?)",[userId,key,next.version,value,at]));
  const result=await db().batch(operations);if(result[0].results.length)return next;

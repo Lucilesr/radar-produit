@@ -51,6 +51,7 @@ export type JobRecord = JobInput & ScoreV2 & {
   createdAt?: string;
   candidateNote?: string;
   applicationCare?: import("./application-care").ApplicationCare;
+  applicationFollowup?: import("./application-followup").ApplicationFollowup;
   boardColumnId?: string;
   interviews?: InterviewRecord[];
   updatedAt?: string;

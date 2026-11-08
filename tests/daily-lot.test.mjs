@@ -16,7 +16,7 @@ const preferences = moduleUrl("search-preferences", { "./location-criteria": loc
 const seniority = moduleUrl("seniority");
 const fit = moduleUrl("fit", { "./seniority": seniority, "./search-preferences": preferences });
 const views = moduleUrl("opportunity-views");
-const triage = moduleUrl("triage", { "./application-workflow": moduleUrl("application-workflow"), "./opportunity-views": views });
+const triage = moduleUrl("triage", { "./application-followup":moduleUrl("application-followup"), "./application-workflow": moduleUrl("application-workflow"), "./opportunity-views": views });
 const { buildDailyLot, pickLot, lotDay, lotHeadline } = await import(moduleUrl("daily-lot", { "./fit": fit, "./opportunity-views": views, "./triage": triage }));
 const { triageScore } = await import(triage);
 

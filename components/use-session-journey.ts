@@ -12,7 +12,7 @@ import type {JobRecord} from "@/lib/types";
 import type {ExperienceItem} from "@/lib/experience-domain";
 import type {Library} from "@/components/experience-library";
 
-export function useSessionJourney({owner,jobs,lot,sources,initialLibrary,now,onNavigate,ready,onFollowupSaved}:{onFollowupSaved:(id:string,at:string,doneAt:string)=>void;owner:string;jobs:JobRecord[];lot:DailyLot|null;sources:SessionSource[];initialLibrary?:Library;now:number;ready:boolean;onNavigate:(step:SessionStep,target?:string)=>void}){
+export function useSessionJourney({owner,jobs,lot,sources,initialLibrary,now,onNavigate,ready,onFollowupSaved}:{onFollowupSaved:(id:string,at:string,doneAt:string,followup?:import("@/lib/application-followup").ApplicationFollowup)=>void;owner:string;jobs:JobRecord[];lot:DailyLot|null;sources:SessionSource[];initialLibrary?:Library;now:number;ready:boolean;onNavigate:(step:SessionStep,target?:string)=>void}){
   const {session,save,getCurrent,ready:continuityReady,busy:continuityBusy,error:continuityError,reload}=useRadarSession(owner,now);
   const [facts,setFacts]=useState<ExperienceItem[]>(initialLibrary?.items??[]),[factsError,setFactsError]=useState("");
   const [factsLoaded,setFactsLoaded]=useState(!!initialLibrary);
@@ -56,9 +56,9 @@ export function useSessionJourney({owner,jobs,lot,sources,initialLibrary,now,onN
   async function next(){if(!session||pending.current.size)return;refreshRadarClock();if(session.current===session.steps.length-1){await finish();return;}const value={...session,current:session.current+1};await checkpoint(value,()=>open(value));}
   async function pause(){if(!session||pending.current.size)return;await checkpoint(pauseSession(session,Date.now()),()=>{onNavigate("triage","home");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());});}
   async function confirmFollowup(id:string){const entry=due.find(entry=>entry.id===id);if(!session||!entry||session.sent.includes(id)||actionLock.current||pending.current.size)return;actionLock.current=true;const key=crypto.randomUUID();sessionWrite(key,true);setError("");
-    try{const saved=await confirmActivity({action:"followup_done",objectId:id,stamp:entry.at});onFollowupSaved(id,entry.at,saved.doneAt??new Date().toISOString());confirmedProgress({kind:"followup_done",objectId:id,stamp:entry.at});if(!await save({...session,sent:[...session.sent,id]}))setError("La relance est enregistrée. Relisez le point de reprise avant de poursuivre la séance.");}
+    try{const saved=await confirmActivity({action:"followup_done",objectId:id,stamp:entry.at,...(entry.appliedFor?{appliedFor:entry.appliedFor}:{})});onFollowupSaved(id,entry.at,saved.doneAt??new Date().toISOString(),saved.followup);confirmedProgress({kind:"followup_done",objectId:id,stamp:entry.at});if(!await save({...session,sent:[...session.sent,id]}))setError("La relance est enregistrée. Relisez le point de reprise avant de poursuivre la séance.");}
     catch{setError("La relance n’est pas confirmée. Réessayez J’ai fait cette relance pour relire son résultat ; aucun message n’est envoyé par Radar.");}
-    finally{actionLock.current=false;sessionWrite(key,false);}
+    finally{actionLock.current=false;sessionWrite(key,false);requestAnimationFrame(()=>{if(document.activeElement===document.body)document.getElementById("session-followups-title")?.focus();});}
   }
   function closeFinish(){setFinished(null);requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}
   const tomorrow=sessionFollowups(jobs,now+86400000,sent).filter(entry=>Date.parse(entry.at)>now).length;
