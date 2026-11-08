@@ -78,3 +78,11 @@
 .week-plan-editor,.week-series-dialog{border-radius:20px}
 .week-plan-editor fieldset,.week-plan-editor details{border-radius:16px}
 .week-plan-editor :is(button,input,textarea),.week-series-dialog :is(button,input){border-radius:10px}
+.week-plan-editor input:not([type=checkbox]):not([type=radio]):not([type=file]),.week-plan-editor textarea{border-radius:10px}
+.week-plan-editor button,.week-series-dialog button{min-height:44px;min-width:44px}
+body:has(:is(.week-plan-editor,.week-series-dialog)) .choice-select-menu,body:has(.week-plan-editor) .date-picker-popover{border-radius:16px}
+body:has(:is(.week-plan-editor,.week-series-dialog)) .choice-select-menu [data-slot=select-item]{min-height:44px;border-radius:10px}
+body:has(.week-plan-editor) .date-picker-popover button{min-width:44px;min-height:44px;border-radius:10px}
+body:has(:is(.week-plan-editor,.week-series-dialog)) [data-slot=drawer-content]{border-radius:20px 20px 0 0}
+body:has(:is(.week-plan-editor,.week-series-dialog)) [data-slot=drawer-content] button{border-radius:10px;min-height:44px}
+body:has(:is(.week-plan-editor,.week-series-dialog)) [data-slot=drawer-content] input:not([type=checkbox]):not([type=radio]):not([type=file]){border-radius:10px}
