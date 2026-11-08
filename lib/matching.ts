@@ -65,7 +65,7 @@ export function assessJob(job: JobInput & { status?: JobStatus }, preferences?: 
   const roleMatch: RoleMatch = roleMatches.some(([, match]) => match === "exact") ? "exact" : matchedRole ? "ambiguous" : "none";
   if (!search.roles.length) {
     exception = true;
-    flags.push("Aucun poste choisi : indiquez le poste que vous cherchez dans Ma recherche.");
+    flags.push("Aucun poste choisi : indiquez le poste que vous cherchez dans Mon radar → Ce que je cherche.");
   } else if (matchedRole) {
     score += 38;
     reasons.push(`Intitulé proche de votre recherche : ${matchedRole}.`);

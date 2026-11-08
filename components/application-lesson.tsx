@@ -21,7 +21,7 @@ export function ApplicationLessonCard({job}:{job:JobRecord}){
  {!loaded&&!error?<p role="status">Lecture du bilan…</p>:null}<WorkspaceFormError message={error}/>{error?<WorkspaceButton onClick={()=>setAttempt(value=>value+1)}>Relire le bilan</WorkspaceButton>:null}
  {lesson.validatedAt?<><p role="status">Bilan privé validé le {formatDate(lesson.validatedAt)}.</p><LessonText lesson={lesson}/><LessonStoryPrompt jobId={job.id}/></>:null}
  {loaded&&job.status==="rejected"?<WorkspaceButton ref={trigger} variant="primary" onClick={()=>setEditor(true)}>{lesson.validatedAt?"Relire / modifier mon bilan":"Écrire mon bilan facultatif"}</WorkspaceButton>:null}
- <WorkspaceButton variant="quiet" onClick={()=>openWorkspace("/?tab=profile&profile=lessons")}>Mes leçons</WorkspaceButton>
+ <WorkspaceButton variant="quiet" onClick={()=>openWorkspace("/?tab=pipeline&section=lessons")}>Mes leçons</WorkspaceButton>
  {editor?<LessonEditor key={`lesson-editor:${job.id}`} jobId={job.id} lesson={lesson} onSaved={value=>{setLesson(value);setEditor(false);requestAnimationFrame(()=>region.current?.focus());}} onClose={()=>{setEditor(false);requestAnimationFrame(()=>trigger.current?.focus());}}/>:null}
  </WorkspaceFormSection></div>;
 }

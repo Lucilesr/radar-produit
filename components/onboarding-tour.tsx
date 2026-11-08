@@ -11,22 +11,21 @@ type Phase = "setup" | "intro" | "tour" | "paused" | "done";
 type State = { phase: Phase; index: number };
 type Step = { target: string; title: string; detail: string; mobileDetail?: string; action: "click" | "save" | "upload" | "verify" };
 const setup: Step[] = [
-  { target: "nav-sources", title: "Définissez votre recherche", detail: "Ouvrez Ma recherche pour choisir les offres qui vous intéressent.", action: "click" },
+  { target: "nav-radar", title: "Définissez votre recherche", detail: "Ouvrez Mon radar pour choisir les offres qui vous intéressent.", action: "click" },
   { target: "search-preferences-form", title: "Vos critères", detail: "Écrivez un poste et appuyez sur Entrée pour l’enregistrer. Réglez ensuite les autres critères si besoin.", action: "save" },
-  { target: "nav-profile", title: "Ouvrez votre profil", detail: "Votre CV et votre carnet d’expériences se trouvent ici.", action: "click" },
-  { target: "profile-documents", title: "Ajoutez votre CV", detail: "Ouvrez Mes documents. Le CV est recommandé pour préparer votre carnet, mais vous pouvez aussi le remplir à la main.", action: "click" },
+  { target: "radar-knowledge", title: "Ce que je sais faire", detail: "Ouvrez cette section de Mon radar pour votre carnet, vos histoires et vos documents.", action: "click" },
+  { target: "profile-documents", title: "Ajoutez votre CV", detail: "Ouvrez Documents. Le CV est recommandé pour préparer votre carnet, mais vous pouvez aussi le remplir à la main.", action: "click" },
   { target: "profile-documents-panel", title: "Déposez votre CV", detail: "Importez votre CV français ou anglais. Les expériences seront proposées dans le carnet : vous devrez les relire et les valider.", mobileDetail: "Touchez Importer sous CV français ou CV anglais, puis choisissez votre fichier. Vous relirez les expériences à l’étape suivante.", action: "upload" },
   { target: "profile-experiences", title: "Votre carnet d’expériences", detail: "Ouvrez le carnet pour relire les éléments du CV ou ajouter une expérience manuellement.", action: "click" },
-  { target: "experience-library", title: "Relisez votre première expérience", detail: "Ouvrez une expérience ou une réalisation, puis touchez le crayon pour relire les champs. Enregistrer valide les faits relus. L’autorisation d’usage en candidature reste un choix séparé.", mobileDetail: "Ouvrez une réalisation, touchez le crayon, puis Enregistrer pour valider les faits relus. Sans CV : Ajouter une expérience.", action: "verify" },
+  { target: "experience-library", title: "Votre première expérience", detail: "Ajoutez une expérience ou ouvrez un élément du carnet pour le relire. Enregistrer valide les faits ; les droits d’usage restent un choix séparé.", mobileDetail: "Ouvrez une réalisation, touchez le crayon, puis Enregistrer pour valider les faits relus. Sans CV : Ajouter une expérience.", action: "verify" },
 ];
 const tour = (demo: boolean): Step[] => [
   { target: "nav-dashboard", title: "Aujourd’hui", detail: "Trois blocs : votre séance, votre semaine et le radar. Une prochaine étape et deux pistes au plus. Vous pouvez passer ou arrêter ; seules les actions confirmées comptent.", action: "click" },
   { target: "nav-offers", title: "Offres", detail: "Triez votre lot du jour : sélectionner, Plus tard ou écarter. Le lot reste stable pendant le tri. La réserve et les archives permettent de retrouver une offre.", action: "click" },
   { target: "nav-pipeline", title: "Candidatures", detail: "Retrouvez vos dossiers, leur préparation, les relances et les entretiens. Radar n’envoie aucun message. Après un refus, un bilan privé reste facultatif.", action: "click" },
-  { target: "nav-profile", title: "Mon profil", detail: "Votre carnet réunit vos expériences et vos histoires d’entretien. Retrouvez aussi vos documents, vos mois de recherche et les réglages du radar. Le journal est dans Mon compte.", action: "click" },
-  { target: "nav-sources", title: "Ma recherche", detail: demo ? "Choisissez vos critères et vos sources fictives. Confirmez ou ignorez les termes repérés dans votre carnet." : "Choisissez vos critères et vos sources. Confirmez ou ignorez les termes du carnet ; vous pourrez restaurer un terme ignoré.", action: "click" },
+  { target: "nav-radar", title: "Mon radar", detail: demo ? "Critères, sources fictives, carnet et documents. Le compte est dans l’avatar." : "Critères, sources, carnet et documents. Le compte est dans l’avatar.", action: "click" },
 ];
-const mobileTourLabels: Record<string,string> = {"nav-dashboard":"Accueil","nav-offers":"Offres","nav-pipeline":"Suivi","nav-profile":"Profil","nav-sources":"Recherche"};
+const mobileTourLabels: Record<string,string> = {"nav-dashboard":"Aujourd’hui","nav-offers":"Offres","nav-pipeline":"Candidatures","nav-radar":"Mon radar"};
 // Criteria are set once the account has chosen a role: the neutral defaults have none.
 const complete = (p: CandidateProfile) => hasSearchedRole(searchPreferences(p.searchPreferences));
 
@@ -43,7 +42,7 @@ export function OnboardingTour({ ownerId, profile, activeTab, onNavigate, initia
   const ready = complete(profile);
   const steps = state?.phase === "setup" ? setup : tour(demo);
   const index = state?.phase === "tour" ? Math.max(0, steps.findIndex(step => step.target === "nav-" + activeTab)) : state?.index ?? 0;
-  const current = state?.phase === "intro" ? {target:"",title:"Découvrez Radar",detail:"Une visite en 5 étapes pour comprendre chaque écran. Cliquez sur les onglets entourés du halo : cette carte expliquera la page que vous venez d’ouvrir.",action:"click" as const} : state && (state.phase === "setup" || state.phase === "tour") ? steps[index] : null;
+  const current = state?.phase === "intro" ? {target:"",title:"Découvrez Radar",detail:"Une visite en 4 étapes pour comprendre chaque écran. Cliquez sur les onglets entourés du halo : cette carte expliquera la page que vous venez d’ouvrir.",action:"click" as const} : state && (state.phase === "setup" || state.phase === "tour") ? steps[index] : null;
   const highlightTarget = state?.phase === "tour" ? steps[index + 1]?.target : current?.target;
   const persist = useCallback((next: State) => {
     setState(next);

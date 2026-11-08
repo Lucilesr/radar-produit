@@ -63,3 +63,6 @@ Composition des contrôles Signal existants : WorkspaceButton, WorkspacePanelHea
 
 ### P7 — Propositions contextuelles
 WorkspaceButton, WorkspaceFormError, HelpTooltip et les choix Signal existants ; cartes discrètes aux tokens papier/bordure, cibles de 44 px, retour du focus après report et erreurs explicites. Le niveau en édition conserve sa validation par Terminé.
+
+### P5 — quatre espaces
+Réutilisation de ReachCompact/ReachWorkspace, des onglets Signal, de ProfileWorkspace, SourcePanel et AccountSettings. Le menu de l’avatar utilise DropdownMenu ; cibles 44 px, quatre entrées mobiles et retour du focus quand un contrôle disparaît. Les panneaux restent montés pour conserver les brouillons.
