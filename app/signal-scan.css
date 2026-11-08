@@ -97,3 +97,9 @@
  .scan-visits-list{display:block}.scan-visits-list>li{display:flex;justify-content:space-between;gap:8px;padding:0;border-radius:0;background:transparent;border-bottom:1px solid var(--signal-mist);font-size:15px}.scan-visits-list>li:last-child{border-bottom:0}.scan-visits-list a{padding:0;min-height:48px;background:transparent}
  .scan-mobile-label{display:inline}.scan-desktop-label{display:none}.scan-status-line{gap:10px;flex-wrap:wrap}.scan-status-line>.signal-form-button{margin-left:auto}
 }
+/* Match the reference control sizes; the mobile reference omits the duplicate help. */
+.radar-page[data-scan=true] .page-refresh-action{min-height:44px;padding:0 18px;border-radius:10px;font-size:15px}
+.scan-workspace .signal-form-button{font-size:15px;line-height:1.3;min-height:44px;padding:10px 18px}
+.scan-echo.is-moment .radar-add-button{font-weight:700}
+.scan-source-row .signal-form-button{font-size:14px}
+@media(max-width:640px){.scan-source-offers{min-width:44px;justify-content:center}.scan-actions>.help-tooltip-trigger{display:none}.scan-actions>.radar-add-button{font-size:16px}.radar-page[data-scan=true] .page-refresh-action{font-size:14px;padding:0 14px}}
