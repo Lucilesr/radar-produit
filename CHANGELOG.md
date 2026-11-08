@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Journal replié P3
+
+- Journal fermé par défaut, résumé par jour et filtres Tout, Tri, Candidatures, Profil et Semaine. Chaque action tient sur une ligne avec son horaire et son objet.
+- Afficher 20 de plus ajoute la suite sans refermer les jours lus. Compteur complet de la semaine, calendrier du compte et ancienne lecture nommée au passage du lundi ; aucune migration.
+
 ## 8 novembre 2026 — Réglages du radar P2
 
 - Même calcul, quatre paliers segmentés et six réglages concrets en trois groupes. Réglages faits et autres réglages repliés ; une seule prochaine action.

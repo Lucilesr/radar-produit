@@ -76,7 +76,7 @@ Dans **Voir la réserve**, le compteur indique les groupes traités pendant ce r
 
 ## Journal privé et reprise entre appareils — L1
 
-Dans **Mon profil → Mon compte → Journal privé d’activité**, relisez vos actions confirmées, vingt par page. **Actualiser le journal**, **Voir les actions plus anciennes** et **Actions plus récentes** permettent de parcourir la liste au clavier comme sur mobile. Le journal commence à son activation ; les actions passées ne sont pas reconstituées. Une erreur laisse la dernière page lisible et propose de réessayer.
+Dans **Mon profil → Mon compte**, le **Journal d’activité** est fermé par défaut et indique le nombre complet d’actions de la semaine. Ouvrez-le, choisissez **Tout**, **Tri**, **Candidatures**, **Profil** ou **Semaine**, puis une journée. Chaque ligne montre l’heure, l’action et son objet. **Afficher 20 de plus** ajoute les actions suivantes en gardant les jours ouverts. Une mention **suite à charger** précise les résumés encore partiels. **Actualiser le journal** relit les faits ; une erreur conserve la lecture précédente et propose de réessayer. Le journal commence à son activation, sans reconstituer le passé.
 
 Le journal conserve des repères (action, objet, date), pas le contenu des notes, bilans, CV ou histoires. Il reste dans votre compte, sans transmission à un service tiers, et figure dans la sauvegarde intégrale. Les droits de réutilisation des expériences restent indépendants.
 
@@ -147,3 +147,5 @@ Les cinq cartes reprennent les faits enregistrés : offres dont la dernière dé
 Dans les critères, **Domaine** rassemble vos choix. Ouvrez **N termes repérés dans votre carnet · Voir** pour choisir parmi cinq puces à la fois ; la suivante prend la place d’un terme traité. Le bouton d’aide montre le passage relu. **Confirmer** ajoute le terme ; **Ignorer** le retire des propositions, même après un nouveau document. **Termes ignorés (N)** permet de le restaurer explicitement.
 
 Sous une expérience validée et autorisée, **Tout ajouter** confirme ses propositions ensemble ; **Choisir** ouvre les puces, **Plus tard** replie cette invitation. S’il manque des places parmi les quarante, choisissez les termes individuellement. Les droits sont revérifiés au moment de confirmer ; un conflit n’applique pas un demi-lot.
+
+Le compteur hebdomadaire du journal couvre toutes les actions, même quand un filtre ou vingt lignes seulement sont affichés. Il suit le calendrier de la série ou du plan, puis celui de l’appareil. Au passage à une nouvelle semaine, une ancienne lecture est nommée et demande une actualisation.

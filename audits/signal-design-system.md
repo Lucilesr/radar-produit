@@ -49,3 +49,5 @@ L5 : SignalMoment, SignalStepper, SignalCounter, SignalRadar, ChoiceSelect, Work
 P1 : puces de domaine et boutons WorkspaceButton, aide HelpTooltip existante, détails natifs accessibles ; variables Signal et rayon commun. Aucune nouvelle sélection native.
 
 P2 : SignalProgress segmenté avec les mêmes valeurs accessibles, SignalRadar, WorkspaceButton, HelpTooltip, ChoiceSelect et ExpandableSection. Rayons et couleurs Signal ; une seule action principale dans les réglages et dans Mes histoires.
+
+P3 : journal en détails natifs, filtres workspace-tabs, WorkspaceButton, HelpTooltip, chevrons et variables Signal. Même lecture sur ordinateur et mobile, focus de reprise après rendu, aucune nouvelle sélection native.

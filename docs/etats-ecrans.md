@@ -1050,3 +1050,18 @@ Aucune migration. Le changement de vocabulaire général et la prochaine étape 
 | Clavier / mobile | 390 px, clavier ou mouvement réduit | Replis nommés, focus au carnet et retour de dialogue, commandes44px | Mêmes choix | oui |
 
 Les histoires sans thème continuent de compter dans le calcul Q4 ; le compteur sur8 décrit les thèmes déjà couverts. P4 fournira la prochaine étape centrale ; P2 laisse le calcul Q4 intact.
+
+## Itération 2 — P3, journal replié
+
+| État | Déclencheur | Affichage | Action | Existe ? |
+| --- | --- | --- | --- | --- |
+| Repos | Mon compte | Journal fermé, total complet de la semaine | Ouvrir | oui |
+| Vide | Aucun fait ou filtre sans résultat | Message neutre, aucun zéro inventé avant lecture | Choisir un autre filtre | oui |
+| Chargement | Première lecture, filtre ou suite | Lecture nommée, commandes de lecture suspendues | Attendre | oui |
+| Journées | Ouverture du journal | Un résumé par jour, lignes d’action à l’ouverture | Déplier un jour | oui |
+| Beaucoup de faits | Plus de vingt résultats | Suite ajoutée, jours ouverts conservés, jour partiel signalé | Afficher 20 de plus | oui |
+| Erreur | Lecture non confirmée | Dernières actions conservées | Réessayer la lecture | oui |
+| Nouvelle semaine | Lundi sans nouvelle lecture | Ancienne semaine explicitement nommée | Actualiser | oui |
+| Mobile / clavier | 390 px et clavier | Filtres et résumés nommés, commandes44px, focus sur la suite | Mêmes choix | oui |
+
+Les compteurs hebdomadaires sont calculés côté compte sur l’ensemble des événements de la semaine. Les résumés de jour concernent les objets chargés ; la suite partielle est indiquée. Le journal et le filtre sont des lectures, sans écriture ni migration.
