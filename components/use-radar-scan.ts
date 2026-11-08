@@ -21,7 +21,7 @@ export function useRadarScan({ owner, onOffers, onSources, knownJobs, sources, s
   const pending=useRef<Promise<boolean>|null>(null),baseline=useRef(new Set<string>()),known=useRef(knownJobs);
   useEffect(()=>{known.current=knownJobs;},[knownJobs]);
   useEffect(()=>()=>controller.current?.abort(),[]);
-  useEffect(()=>{if(!owner)return;const frame=requestAnimationFrame(()=>{try{const previous=readScanSession(sessionStorage.getItem(scanSessionKey(owner)));if(previous&&!pending.current){saved.current=previous.result;baseline.current=new Set(known.current.map(job=>job.id).filter(id=>!previous.newIds.includes(id)));setResult(previous.result);setConfirmedResult(previous.result);setPreviousAt(previous.previousAt);setNewIds(previous.newIds);}}catch{/* Session storage is optional. */}});return()=>cancelAnimationFrame(frame);},[owner]);
+  useEffect(()=>{if(!owner)return;const frame=requestAnimationFrame(()=>{try{const previous=readScanSession(sessionStorage.getItem(scanSessionKey(owner)));if(previous&&!pending.current){saved.current=previous.result;baseline.current=new Set(known.current.map(job=>job.id).filter(id=>!previous.newIds.includes(id)));setResult(previous.result);setConfirmedResult(previous.result);setProgress(previous.result.sources.map(({source,state})=>({source,state})));setPreviousAt(previous.previousAt);setNewIds(previous.newIds);}}catch{/* Session storage is optional. */}});return()=>cancelAnimationFrame(frame);},[owner]);
   function run(source?:string,silent=false):Promise<boolean>{
     if(pending.current)return pending.current;
     const abort=new AbortController();controller.current=abort;
