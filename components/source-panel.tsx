@@ -60,6 +60,7 @@ export function SourcePanel({overviewCriteria=false,displaySection="all",onSecti
     requestAnimationFrame(()=>element?.scrollIntoView({block:"start"}));
   }
   function openJobgether(){
+    if(overviewCriteria){const url=new URL(window.location.href);url.searchParams.set('source','Jobgether');window.history.replaceState(null,'',url.pathname+url.search+url.hash);selectSection('channels');return;}
     selectSection("channels");
     const source=sourceCatalog.find(item=>item.name==="Jobgether");
     if(source)openDetail(source);
