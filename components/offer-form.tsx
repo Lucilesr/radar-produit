@@ -18,11 +18,11 @@ function Field({label,children}:{label:string;children:ReactElement<{id?:string}
 export function OfferForm({job,onSave,onCancel,draftKey=""}:{draftKey?:string;job?:JobInput;onSave:(input:JobInput)=>Promise<void>;onCancel:()=>void}) {
  const demo=useDemoMode();
  const descriptionRef=useRef<HTMLTextAreaElement>(null);
- useEffect(()=>{if(job){descriptionRef.current?.focus({preventScroll:true});descriptionRef.current?.scrollIntoView({block:"nearest"});}},[job]);
  const initialDraft={...workDraft(job??{}),title:job?.title??"",company:job?.company??"",contractType:job?.contractType??"other",annualSalary:job?.annualSalary?.toString()??"",dailyRate:job?.dailyRate?.toString()??"",announcedLocation:job?.announcedLocation??"",source:job?.source??"Ajout manuel",sourceUrl:job?.sourceUrl??"",applicationUrl:job?.applicationUrl??"",publishedAt:job?.publishedAt?.slice(0,10)??"",contentCoverage:job?.contentCoverage??"unknown",description:job?.description??""};
  // Optional bounds keep older saved drafts readable; new drafts persist them with the amount.
  const savedForm=useSavedForm<typeof initialDraft & Pick<JobInput,"salaryMin"|"salaryMax"|"dailyRateMin"|"dailyRateMax">>(draftKey,initialDraft);
  const draft=savedForm.value,setDraft=savedForm.setValue;
+ useEffect(()=>{if(job&&savedForm.ready){descriptionRef.current?.focus({preventScroll:true});descriptionRef.current?.scrollIntoView({block:"nearest"});}},[job,savedForm.ready]);
  const [busy,setBusy]=useState(false),[error,setError]=useState("");
  const [employerUrl,setEmployerUrl]=useState(""),[employerBusy,setEmployerBusy]=useState(false),[employerError,setEmployerError]=useState(""),[employerPreview,setEmployerPreview]=useState<EmployerOfferPreviewData|null>(null);
  const update=<K extends keyof typeof draft>(key:K,value:typeof draft[K])=>setDraft(current=>({...current,[key]:value,...(key==="annualSalary"&&value!==current[key]?{salaryMin:null,salaryMax:null}:key==="dailyRate"&&value!==current[key]?{dailyRateMin:null,dailyRateMax:null}:{})}));

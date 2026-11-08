@@ -47,7 +47,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
   const groups=inReserve?groupReserve(reserveJobs,groupsNow):[];
   const shownGroup=groups.find(group=>group.id===reserveGroupId);
   const listed=inReserve?(shownGroup?.jobs??reserveJobs):jobs;
-  const orderedJobs=inLot?lot!.remaining:filter==="to_review"?pinMysteryOffers(sortOpportunitiesByDate(listed,filter,dateOrder)):sortOpportunitiesByDate(listed,filter,dateOrder);
+  const orderedJobs=inLot?pinMysteryOffers(lot!.remaining):filter==="to_review"?pinMysteryOffers(sortOpportunitiesByDate(listed,filter,dateOrder)):sortOpportunitiesByDate(listed,filter,dateOrder);
   const [retained,setRetained]=useState<{job:JobRecord;filter:OpportunityView;query:string;index:number}|null>(null);
   const kept=retained?.filter===filter&&retained.query===query?retained:null;
   const retainedJob=kept?(orderedJobs.find(job=>job.id===kept.job.id)??(currentJob?.id===kept.job.id?currentJob:kept.job)):undefined;
@@ -105,7 +105,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
     try{
       const saved=await onReview(current.id,next);
       if(viewIsCurrent()){
-        if(!saved){requestAnimationFrame(()=>selectionAction.current?.focus());setError({jobId:current.id,message:"Votre choix n’a pas été enregistré. L’offre reste ouverte et le compteur est inchangé."});}
+        if(!saved){requestAnimationFrame(()=>selectionAction.current?.focus());setError({jobId:current.id,message:"Votre choix n’a pas été enregistré. L’offre reste à sa place."});}
         else {setRetained(null);if(following)onOpen(following);else close();}
       }
     }catch{if(viewIsCurrent()){setError({jobId:current.id,message:"Votre choix n’a pas été enregistré. L’offre reste à sa place."});requestAnimationFrame(()=>selectionAction.current?.focus());}}
@@ -159,7 +159,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
         <OfferWorkspace key={active.id} pasteRequest={pasteRequest} onEditingChange={setEditing} showApplicationAction={false} showAnnouncement={false} job={active} profile={profile} initialView={view} onViewChange={next=>onViewChange(active,next)} context="opportunity" onStatus={async(id,status)=>{const saved=await onStatus(id,status);if(saved&&viewIsCurrent()){const updated={...active,status};setRetained({job:updated,filter,query,index:displayJobs.findIndex(job=>job.id===id)});onOpen(updated);}return saved;}} onNote={onNote} onChange={updated=>{if(kept?.job.id===updated.id)setRetained({...kept,job:updated});onChange(updated);}} onOpenApplication={()=>onApplication(active)}/>
         {!active.deletedAt&&!isArchived(active)?<details className="aligned-offer-application"><summary>Déjà candidaté à cette offre ?</summary><ApplicationTrackingAction job={active} onStatus={async(id,status)=>{const saved=await onStatus(id,status);if(saved&&viewIsCurrent()){const updated={...active,status};setRetained({job:updated,filter,query,index:displayJobs.findIndex(job=>job.id===id)});onOpen(updated);}return saved;}} onOpenApplication={()=>onApplication(active)}/></details>:null}
         </div>
-        {!editing?<div className={"opportunity-decision signal-opportunity-actions"+(isMysteryOffer(active)?" is-mystery":"")+(isArchived(active)||active.deletedAt?" is-restorable":"")}>
+        {!editing?<div role="group" aria-label="Décision sur cette offre" className={"opportunity-decision signal-opportunity-actions"+(isMysteryOffer(active)?" is-mystery":"")+(isArchived(active)||active.deletedAt?" is-restorable":"")}>
           {active.deletedAt?<button type="button" className="radar-add-button" disabled={trashBusy} onClick={async()=>{if(await onRestore(active))close();}}><Undo2 size={16} aria-hidden/>Restaurer l’offre</button>
           :isArchived(active)?<button type="button" className="radar-add-button" disabled={reviewing||trashBusy} onClick={()=>void review("to_review")}><Undo2 size={16} aria-hidden/>Remettre à examiner</button>
           :isMysteryOffer(active)?<><button type="button" className="radar-add-button" onClick={()=>{onViewChange(active,"offer");setPasteRequest(current=>({jobId:active.id,revision:(current?.revision??0)+1}));}}>Coller l’annonce</button>{announcementUrl?<a className="secondary-button" href={announcementUrl} target="_blank" rel="noopener noreferrer"><ExternalLink size={16} aria-hidden/>Ouvrir</a>:null}</>

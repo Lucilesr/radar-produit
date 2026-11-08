@@ -1,4 +1,5 @@
 "use client";
+import { announcementPreview } from "@/lib/offer-reading";
 import { SignalMoment } from "@/components/signal/signal-moment";
 import { detectLevel, levelLabels } from "@/lib/seniority";
 import { formatPayRangeShort } from "@/lib/pay-range";
@@ -146,7 +147,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
     {context==="application"&&activeView==="interviews"&&job.status==="rejected"?<ApplicationLessonCard key={`lesson-interviews:${job.id}`} job={job}/>:null}
     {context === "application" && activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
     {activeView === "brief" ? <PrivateBrief key={job.id} jobId={job.id} /> : null}
-    <SignalMoment open={!!revealed} onClose={()=>setRevealed(null)} title="Bonne pioche" description={revealed?`Cette offre colle à vos critères · ${revealed.fit} sur 100`:undefined} actionLabel="Voir la fiche"/>
+    <SignalMoment className="aligned-offer-moment" open={!!revealed} onClose={()=>setRevealed(null)} title="Bonne pioche" description={revealed?`Cette offre colle à vos critères · ${revealed.fit} sur 100`:undefined} actionLabel="Voir la fiche"/>
   </div>;
 }
 function AlignedOfferRead({job,onEdit,editRef}:{job:JobRecord;onEdit:()=>void;editRef:React.RefObject<HTMLButtonElement|null>}) {
@@ -164,7 +165,7 @@ function AlignedOfferRead({job,onEdit,editRef}:{job:JobRecord;onEdit:()=>void;ed
       <ConditionRow label="Niveau" value={level?levelLabels[level.level]:"À confirmer"}/>
     </dl>
     {!mystery?<section className="aligned-offer-reasons"><h3>Pourquoi elle remonte</h3><ul>{job.reasons.slice(0,4).map((reason,i)=><li key={i}><CheckCircle2 size={16} aria-hidden/>{reason}</li>)}</ul>{job.flags.length?<ul className="aligned-offer-warnings" aria-label="Points à vérifier">{job.flags.map((flag,i)=><li key={i}><CircleHelp size={16} aria-hidden/>{flag}</li>)}</ul>:null}</section>:null}
-    <section className="aligned-offer-description"><h3>L’annonce</h3><p className="aligned-offer-preview">{job.description||"Annonce complète à ajouter."}</p>{job.description?<details><summary>Lire toute l’annonce</summary><p className="offer-description-read">{job.description}</p></details>:null}<div className="aligned-offer-links">{url?<a className="signal-quiet-button" href={url} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden/>Ouvrir l’annonce</a>:null}{!job.deletedAt?<button ref={editRef} type="button" className="signal-quiet-button" onClick={onEdit}><Pencil size={14} aria-hidden/>{mystery?"Compléter la fiche":"Compléter / corriger"}</button>:null}</div></section>
+    <section className="aligned-offer-description"><h3>L’annonce</h3><p className="aligned-offer-preview">{announcementPreview(job.description)}</p>{job.description?<details><summary>Lire toute l’annonce</summary><p className="offer-description-read">{job.description}</p></details>:null}<div className="aligned-offer-links">{url?<a className="signal-quiet-button" href={url} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden/>Ouvrir l’annonce</a>:null}{!job.deletedAt?<button ref={editRef} type="button" className="signal-quiet-button" onClick={onEdit}><Pencil size={14} aria-hidden/>{mystery?"Compléter la fiche":"Compléter / corriger"}</button>:null}</div></section>
     <details className="aligned-offer-extra"><summary>Autres conditions et dates</summary><dl className="review-criteria-grid"><ConditionRow label="Lieu annoncé" value={job.announcedLocation||"À confirmer"}/><ConditionRow label="Présence sur site" value={[job.onsiteDaysPerWeek!=null?`${job.onsiteDaysPerWeek} j/semaine`:"",job.onsiteDaysPerMonth!=null?`${job.onsiteDaysPerMonth} j/mois`:"",job.onsiteCadence].filter(Boolean).join(" · ")||"À confirmer"}/><ConditionRow label="Pays autorisé" value={countryLabel(job.remoteCountry)}/><ConditionRow label="Langue" value={{fr:"Français",en:"Anglais",professional_en:"Anglais professionnel",advanced_en:"Anglais avancé",unknown:"À confirmer"}[job.language]}/><ConditionRow label="Publication" value={formatDate(job.publishedAt)}/><ConditionRow label="Ajout au Radar" value={formatDate(job.createdAt)}/>{job.notificationAt?<ConditionRow label="Notification source" value={formatDate(job.notificationAt)}/>:null}</dl></details>
   </div>;
 }

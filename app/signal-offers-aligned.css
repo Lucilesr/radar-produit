@@ -57,3 +57,11 @@
 }
 
 .opportunity-detail .offer-form :is(input,button,[data-slot=select-trigger]){min-height:44px;border-radius:10px}.opportunity-detail .offer-form textarea{border-radius:10px}.opportunity-detail .offer-form section{border-radius:16px}
+
+.aligned-offer-moment h2{font-size:40px;letter-spacing:-.01em}.aligned-offer-moment :is(button,.signal-form-button){border-radius:10px;min-height:44px}
+body:has(.radar-page[data-space=offers]) .choice-select-menu,body:has(.radar-page[data-space=offers]) .date-picker-popover{border-radius:16px}
+body:has(.radar-page[data-space=offers]) .choice-select-menu [data-slot=select-item]{min-height:44px;border-radius:10px}
+body:has(.radar-page[data-space=offers]) [data-slot=drawer-content]{border-radius:20px 20px 0 0}
+body:has(.radar-page[data-space=offers]) [data-slot=drawer-content] button{min-height:44px;border-radius:10px}
+body:has(.radar-page[data-space=offers]) [data-slot=dialog-content]{border-radius:20px}
+@media(max-width:760px){.aligned-offer-moment h2{font-size:28px}}
