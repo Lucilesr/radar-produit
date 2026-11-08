@@ -23,7 +23,7 @@ export function ActivityJournal(){
    const response=await fetch("/api/activity?"+params,{cache:"no-store",signal:AbortSignal.any([abort.signal,AbortSignal.timeout(15000)])}),result=await response.json() as Page;
    if(!response.ok||!Array.isArray(result.items)||typeof result.weekCount!=="number"||!Number.isSafeInteger(result.weekCount)||result.weekCount<0||typeof result.timeZone!=="string"||typeof result.weekStart!=="string"||activityDayKey(result.weekStart,result.timeZone)==="unknown"||result.filter!==request.filter)throw new Error();
    if(!alive.current||current!==generation.current)return;
-   const next={...result,items:request.append?mergeActivity(previous.items,result.items):result.items};if(focus){const known=new Set(previous.items.map(item=>item.id));focusIntent.current={kind:request.append?"append":"filter",filter:request.filter,first:result.items.find(item=>!known.has(item.id)),timeZone:result.timeZone};}pageRef.current=next;setPage(next);if(atRevision===revision.current)setDirty(false);
+   const next={...result,items:request.append?mergeActivity(previous.items,result.items):result.items};if(focus){const known=new Set(previous.items.map(item=>item.id));focusIntent.current={kind:request.append?"append":"filter",filter:request.filter,first:result.items.find(item=>!known.has(item.id)),timeZone:result.timeZone};}pageRef.current=next;setPage(next);if(!request.append&&atRevision===revision.current)setDirty(false);
 
   }catch{if(alive.current&&current===generation.current){if(focus)focusIntent.current={kind:"error",filter:request.filter};setError("Lecture non confirmée. Les dernières actions chargées sont conservées.");}}
   finally{if(current===generation.current){lock.current=false;if(alive.current)setLoading(false);}}
