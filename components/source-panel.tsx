@@ -154,8 +154,7 @@ export function SourcePanel({jobs,profile,onSave,onSync,syncBusy=false,syncError
       <Popover><PopoverTrigger asChild><WorkspaceButton variant="quiet" aria-label="Réglages d’actualisation"><MoreHorizontal size={18} aria-hidden/></WorkspaceButton></PopoverTrigger><PopoverContent align="end"><ChoiceSelect label="Actualisation" value={refreshMode(profile.refreshMode)} options={[{value:"on_open",label:refreshModeLabels.on_open},{value:"manual",label:refreshModeLabels.manual}]} onChange={mode=>void saveRefreshMode(mode)} disabled={demo||busy}/></PopoverContent></Popover>
     </div>,headerTarget):null}
     <div id="source-panel-criteria" className="source-subpanel">
-      <SearchCriteriaPanel active={active} profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
-      {domainContent}
+      <SearchCriteriaPanel domainContent={domainContent} active={active} profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
     </div>
     <div id="source-panel-channels" className="source-subpanel">
       <WorkspacePanelHeader id="source-settings-title" title={<span className="source-title-line"><span>Sources suivies</span>{summary?<span className="source-summary">{summary}</span>:null}</span>} actions={<WorkspaceButton variant="secondary" aria-haspopup="dialog" disabled={!settings} onClick={()=>setAddFilter("all")}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>

@@ -40,7 +40,7 @@ function storeView(view: View) {
 }
 
 /** Criteria read at a glance, expanded on demand, and edited with the existing form. */
-export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, active = true }: { profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void; active?:boolean }) {
+export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, active = true,domainContent }: { domainContent?:React.ReactNode; profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void; active?:boolean }) {
   // A first visit keeps the form open so the onboarding step can save the first criteria.
   const firstSetup = !profile.searchPreferences;
   const [resting, setResting] = useState(readView);
@@ -231,5 +231,6 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, ac
     </div> : null}
 
     {view === "edit" ? <SearchPreferencesForm commitRef={formCommit} jobs={jobs} profile={profile} onSave={saveWithImpact} showIntro={false} table onStatusChange={reportStatus} onOpenJobgether={onOpenJobgether} /> : null}
+    {domainContent}
   </section>;
 }

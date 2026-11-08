@@ -1,5 +1,7 @@
 "use client";
 
+import {ExperienceDomainTerms} from "@/components/domain-terms";
+import {useDomainTerms} from "@/components/use-domain-terms";
 import { sessionWrite } from "@/lib/session-write";
 import { ExpandableSection, revealCollapsibleAncestors } from "./experience-section";
 
@@ -11,7 +13,7 @@ import { Check, CircleHelp, Pencil, SlidersHorizontal, X, LoaderCircle, Plus, Un
 import { structuredReview, nextReviewTarget, contextPassages, replaceDocumentedField, reviewIssues, currentItems, detailHeading, emptyData, experienceHeading, isContextOnly, isSensitiveDetail, itemStatus, sectionType, type ExperienceItem, type ItemData, type ExperienceConflict, type ReviewIssue } from "@/lib/experience-domain";
 import { extractDocument } from "@/lib/extract-document";
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
-import { WorkspaceButton, WorkspacePanelHeader } from "@/components/workspace-form";
+import { WorkspaceButton, WorkspacePanelHeader,WorkspaceFormError } from "@/components/workspace-form";
 import { ExampleEditor, ExampleSummary } from "@/components/experience-example";
 import {exampleValues} from "@/lib/experience-fields";
 import { ChoiceSelect } from "@/components/choice-select";
@@ -41,7 +43,9 @@ async function read<T = Library>(path: string, body?: unknown): Promise<T> {
   } finally { clearTimeout(timeout); }
 }
 
-export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary }: { documentId?: string; onOpenDocuments?: () => void; initialLibrary?: Library }) {
+export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary,onDomainTermsSaved,active:isPanelActive=true }: { onDomainTermsSaved?:(terms:string[])=>void;active?:boolean;documentId?: string; onOpenDocuments?: () => void; initialLibrary?: Library }) {
+  const domain=useDomainTerms(isPanelActive,documentId??"",onDomainTermsSaved);
+  const [domainChoosing,setDomainChoosing]=useState<string|null>(null);
   const documentHistory = useRef<HTMLDivElement>(null);
   const searchInput = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<Library>(initialLibrary ?? { items: [], conflicts: [], extractions: [] });
@@ -297,6 +301,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary 
           actions={hidden?<WorkspaceButton disabled={busy||loading} onClick={()=>act({action:"restore",selection:selectedVersions(family(g))})}><Undo2 size={15}/>Restaurer</WorkspaceButton>:null}
           onHide={hidden?undefined:()=>prepare(family(g),"rejected")}/>
         {context.map(c=><DetailCard key={c.id} item={c} onEditing={editingChanged} focusTarget={focusTarget} metadata experiences={groups} selected={selected.includes(c.id)} busy={editorLocked(c.id)} onSelect={()=>toggle([c.id])} onSave={act}/>)}
+        {g.validation==="approved"&&g.applicationAllowed?<ExperienceDomainTerms controller={domain} sourceIds={family(g).map(item=>item.id)} choosing={domainChoosing===g.id} onChoose={()=>setDomainChoosing(current=>current===g.id?null:g.id)}/>:null}
         <div className="experience-details-heading"><p>{sectionType(g) === "knowledge" ? "Détails documentés" : "Missions et réalisations"}</p><span>{details.length?`${details.length} ${sectionType(g)==="knowledge"?"élément":"réalisation"}${details.length>1?"s":""}`:""}</span>{!hidden && addingTo!==g.id && sectionType(g) === "experience" ? <button type="button" className="secondary-button" disabled={busy||loading||adding||addingTo!==null||editing.length>0} onClick={() => setAddingTo(g.id)}><Plus size={15} /> Ajouter une réalisation</button> : null}</div>
         {addingTo === g.id ? <InlineExampleForm key={g.id} parentId={g.id} busy={busy} onCancel={() => setAddingTo(null)} onSave={async body => { if (await act(body,true)) { setAddingTo(null); setFilter("active"); setSearch(""); } }} /> : null}
         {details.map(card)}
@@ -312,6 +317,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary 
 
 
     <p className="workspace-caption mt-3">Vos expériences et réalisations aident Radar à personnaliser vos candidatures. À partir des expériences que vous avez détaillées, Radar peut préparer des pistes d’adaptation du CV et des réponses pour chaque offre.</p>
+    <WorkspaceFormError message={domain.error}/>{domain.error?<WorkspaceButton disabled={domain.busy} onClick={()=>void domain.load()}>Relire les termes</WorkspaceButton>:null}
     {state.extractions.find(e=>e.documentId===state.reference?.documentId)?.status==="needs_conversion"?<p role="alert" className="experience-error">{state.extractions.find(e=>e.documentId===state.reference?.documentId)?.issue||"Ce document nécessite une conversion en texte lisible."}</p>:null}
     <dialog ref={rightsDialog} aria-labelledby="library-rights-title" className="signal-library-dialog library-rights-dialog" onCancel={event=>{event.preventDefault();if(!rightsSaving&&!busy){setShowConsentManager(false);setRightsDraft({});}}}>
       <header className="library-dialog-heading"><div><h2 id="library-rights-title">Droits d’usage</h2><p>Choisissez où chaque contenu peut être utilisé. Sans autorisation, il reste privé.</p></div><button type="button" className="library-close" aria-label="Fermer les droits d’usage" disabled={rightsSaving||busy} onClick={()=>{setShowConsentManager(false);setRightsDraft({});}}><X size={19}/></button></header>

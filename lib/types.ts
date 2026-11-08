@@ -73,6 +73,7 @@ export type CandidateProfile = {
   triageDismissals?: Record<string, string>;
   preferences?: { reducedMotion?: boolean; celebrations?: boolean; triageShortcuts?: boolean };
   searchPreferences?: SearchPreferences;
+  ignoredDomainTerms?: string[];
   headline: string;
   summary: string;
   location: string;
