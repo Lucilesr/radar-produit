@@ -1,3 +1,8 @@
+## 9 novembre 2026 — Mon compte aligné sur Signal
+
+- En-tête et cartes du compte, titres, journal et contrôles alignés sur ordinateur et mobile. Préférences, historique et parcours de données conservés.
+- Après une lecture de préférences réussie, le focus revient au premier réglage ; l’avertissement de suppression reste visible.
+
 ## 9 novembre 2026 — Mon radar en trois sections
 
 - Portée, prochain réglage et radar fixe vers le dernier bilan confirmé ; critères, sources et carnet visibles dans un même aperçu.

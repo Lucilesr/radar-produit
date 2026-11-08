@@ -77,3 +77,5 @@ Un entretien planifié propose de préparer une histoire dans le carnet. Après 
 ### Votre accueil
 
 Aujourd’hui propose une prochaine étape et deux suites au plus. Un entretien sous 48 heures passe en priorité. Les engagements tenus se replient sur mobile ; « Réglages de la semaine » garde le plan, les jokers et la pause accessibles. Une séance terminée laisse une carte calme. Sans poste recherché, trois étapes vous guident : poste, sources, premier balayage.
+
+Dans **Mon compte**, réglez le mouvement et les raccourcis dans **Votre confort**. Le **Journal d’activité** se déplie ; ses filtres et jours sont lisibles au clavier et sur téléphone. L’export et la suppression restent séparés des réglages de confort ; la démo ne présente pas ces actions de compte.
