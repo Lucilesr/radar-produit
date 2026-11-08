@@ -120,7 +120,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
       </section>
     </> : null}
     {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); if (mystery && !isMysteryOffer(updated)) notify({ message: revealMessage(updated) }); }} onCancel={finishEditing} /> : null}
-    {activeView==="brief"||context==="application"&&activeView==="application"?<ApplicationCare key={job.id} job={job}/>:null}
+    {activeView==="brief"||context==="application"&&activeView==="application"?<ApplicationCare key={`care:${job.id}`} job={job}/>:null}
     {context === "application" && activeView === "application" ? <div className="signal-application-form">
       <WorkspaceFormSection title="Suivi de candidature" actions={<WorkspaceButton disabled={statusBusy} onClick={() => setView("interviews")}><CalendarDays size={15} aria-hidden />Voir les entretiens</WorkspaceButton>}>
         <div className="signal-status-field" aria-busy={statusBusy}><StatusSelect value={job.status} disabled={statusBusy} onChange={async status => { setStatusBusy(true); try { await onStatus(job.id, status); } finally { setStatusBusy(false); } }} />{job.status === "applied" && !job.interviews?.length && onCancelApplication ? <button type="button" className="signal-quiet-button" disabled={statusBusy} onClick={async()=>{setStatusBusy(true);try{await onCancelApplication();}finally{setStatusBusy(false);}}}><Undo2 size={14} aria-hidden />Annuler « J’ai postulé »</button> : null}</div>
