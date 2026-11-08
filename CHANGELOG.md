@@ -1,3 +1,7 @@
+## 8 novembre 2026 — Guide de l’itération 2
+
+Ajout de `docs/iteration-2.md` : moins de tâches visibles, une seule prochaine étape, termes du domaine compacts et ignorables, portée en réglages, journal replié, accueil en trois blocs, navigation en quatre espaces.
+
 ## 8 novembre 2026 — Votre mois de recherche L5
 
 - Cinq cartes plein écran : offres triées, préparations soignées, entretiens notés, semaines tenues et pépite sélectionnée. Accès depuis l’accueil du 1er au 7, puis toujours dans Mon profil → Mes mois de recherche.
