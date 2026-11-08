@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Écriture P8
+
+- Vocabulaire commun : offres, critères, carnet, réglages, paliers, séance, lot du jour et réserve.
+- Aides des formulaires à la demande, tour raccourci et guide de prise en main remis à jour. Avertissement de suppression toujours visible ; comportements conservés.
+
 ## 8 novembre 2026 — Journal replié P3
 
 - Journal fermé par défaut, résumé par jour et filtres Tout, Tri, Candidatures, Profil et Semaine. Chaque action tient sur une ligne avec son horaire et son objet.

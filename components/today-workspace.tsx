@@ -34,7 +34,7 @@ export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd
   const toVisit=onOpenSource?sourcesToVisit(sources??[],modeOf,new Date(now)).slice(0,3):[];
   // Tri Q1: the lot of the day replaces the full count, which is often discouraging.
   const lotLeft=lot&&lot.size&&count?lot.remaining.length:null;
-  const triageTitle=lotLeft==null?`${count} opportunité${count>1?"s":""} à examiner`:lotLeft?(lot!.triaged?`${lotHeadline(lot!)} dans votre lot du jour`:lotHeadline(lot!)):"Lot du jour bouclé";
+  const triageTitle=lotLeft==null?`${count} offre${count>1?"s":""} à examiner`:lotLeft?(lot!.triaged?`${lotHeadline(lot!)} dans votre lot du jour`:lotHeadline(lot!)):"Lot du jour bouclé";
   const triageAction=lotLeft==null?"Examiner les offres":lotLeft?"Trier mon lot du jour":"Voir les autres offres";
   const openAction=(action:typeof actions[number])=>onOpen(action.job,action.followup? action.followup.kind==="application"?"application":"interviews":action.kind.startsWith("interview")?"interviews":hasApplication(action.job)?"application":"brief");
   const preparing=setupRequired;

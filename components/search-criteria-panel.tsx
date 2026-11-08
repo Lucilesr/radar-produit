@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Pencil, Plus } from "lucide-react";
 import { SearchPreferencesForm, type CriteriaFormPart, type CriteriaSaveStatus, type CriteriaFormHandle } from "@/components/search-preferences-form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { HelpTooltip } from "@/components/help-tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { WorkspaceButton } from "@/components/workspace-form";
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
@@ -146,7 +147,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, ac
     <header className="search-criteria-panel-header">
       <div>
         <div className="search-criteria-title-line"><h2 id="search-criteria-title" className="source-heading">Critères</h2><span className="signal-help" role="status">{justSaved?"Enregistré à l’instant":"Enregistrés automatiquement"}</span></div>
-        <p>Radar classe vos offres selon ces critères ; celles qui en sortent sont masquées dans « À examiner ». Les alertes créées sur les sites externes ne sont pas modifiées.</p>
+        <div className="criteria-help-line"><p>Vos critères trient les offres.</p><HelpTooltip label="Critères">Les offres hors critères sont masquées dans À examiner. Les alertes des sites externes gardent leurs propres réglages.</HelpTooltip></div>
       </div>
       <div className="search-criteria-panel-actions">
         {view === "edit"

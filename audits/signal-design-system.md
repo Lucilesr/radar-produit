@@ -51,3 +51,6 @@ P1 : puces de domaine et boutons WorkspaceButton, aide HelpTooltip existante, d�
 P2 : SignalProgress segmenté avec les mêmes valeurs accessibles, SignalRadar, WorkspaceButton, HelpTooltip, ChoiceSelect et ExpandableSection. Rayons et couleurs Signal ; une seule action principale dans les réglages et dans Mes histoires.
 
 P3 : journal en détails natifs, filtres workspace-tabs, WorkspaceButton, HelpTooltip, chevrons et variables Signal. Même lecture sur ordinateur et mobile, focus de reprise après rendu, aucune nouvelle sélection native.
+
+### P8 — Aide et vocabulaire
+WorkspaceFormSection réutilise HelpTooltip et ses contrôles Signal, avec une cible de 44 px. Les avertissements irréversibles restent visibles. Les textes ne changent aucun enregistrement ni droit d’usage. Recette et comptage : docs/p8-passe-ecriture/README.md.
