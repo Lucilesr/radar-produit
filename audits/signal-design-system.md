@@ -73,4 +73,4 @@ Réutilisation de ChoiceSelect (tiroir tactile et sélecteur clavier), Workspace
 
 ### L6 — Aujourd’hui
 
-TodayWorkspace, WeekPlanCard, SignalRadar, WorkspaceButton, WorkspacePanelHeader et HelpTooltip conservés. Typographie Bricolage pour les titres, surfaces et espacements par jetons Q0 ; les trois zones restent ordonnées dans le document et se répartissent sur deux colonnes seulement à partir de1100px. Aucun comportement ni contrôle créé. Date blanche sur pétrole, mouvement réduit, focus et cibles44px à vérifier dans docs/l6-aujourdhui/README.md avant fusion.
+TodayWorkspace, WeekPlanCard, SignalRadar, WorkspaceButton, WorkspacePanelHeader et HelpTooltip conservés. Typographie Bricolage pour les titres, surfaces et espacements par jetons Q0 ; les trois zones restent ordonnées dans le document et se répartissent sur deux colonnes seulement à partir de1100px. Aucun comportement ni contrôle créé. Date blanche sur pétrole, mouvement réduit, focus et cibles44px vérifiés sur le staging privé 78 ; recette dans docs/l6-aujourdhui/README.md.
