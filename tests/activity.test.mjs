@@ -94,7 +94,7 @@ test("L1 SQLite : pagination stable, source propriétaire et aucune étiquette d
   f.sqlite.prepare("INSERT INTO jobs(id,user_id,fingerprint,title) VALUES('private-bob','bob','private-bob','SECRET_BOB_TITLE')").run();
   for(let i=0;i<45;i++)await activity.activityStatement("alice",{id:"event-"+String(i).padStart(3,"0"),action:"session_ended",objectType:i===0?"job":"session",objectId:i===0?"private-bob":"session-"+i,createdAt:"2026-11-04T10:00:00Z",data:{}}).all();
   await activity.activityStatement("bob",{action:"session_ended",objectType:"session",objectId:"private-session",createdAt:"2026-11-05T10:00:00Z"}).all();
-  const first=await activity.readActivity("alice"),second=await activity.readActivity("alice",first.cursor),third=await activity.readActivity("alice",second.cursor);assert.equal(first.items.length,20);assert.equal(second.items.length,20);assert.equal(third.items.length,5);assert.equal(third.cursor,null);assert.equal(new Set([...first.items,...second.items,...third.items].map(e=>e.id)).size,45);assert.doesNotMatch(JSON.stringify([first,second,third]),/SECRET_BOB_TITLE|private-session/);
+  const calendar={now:new Date("2026-11-05T12:00:00Z")},first=await activity.readActivity("alice",null,calendar),second=await activity.readActivity("alice",first.cursor,calendar),third=await activity.readActivity("alice",second.cursor,calendar);assert.equal(first.items.length,20);assert.equal(second.items.length,20);assert.equal(third.items.length,5);assert.equal(third.cursor,null);assert.equal(new Set([...first.items,...second.items,...third.items].map(e=>e.id)).size,45);assert.doesNotMatch(JSON.stringify([first,second,third]),/SECRET_BOB_TITLE|private-session/);
   const route=await import(moduleUrl("app/api/activity/route.ts"));globalThis.__trashUser=null;assert.equal((await route.GET(new Request("https://radar.test/api/activity"))).status,401);globalThis.__trashUser="alice";assert.equal((await route.POST(new Request("https://radar.test/api/activity",{method:"POST",headers:{Origin:"https://evil.test"},body:"{}"}))).status,403);
  }finally{f.sqlite.close();}
 });
@@ -148,5 +148,40 @@ test("L1 continuité : un ancien formulaire de profil ne remplace pas le point d
   const saved=await continuity.writeContinuity("alice",{kind:"session",owner:"alice",session:sessionFixture(),version:0},fixed);
   const route=await import(moduleUrl("app/api/profile/route.ts"));const response=await route.POST(new Request("https://radar.test/api/profile",{method:"POST",body:JSON.stringify({headline:"Profil modifié",radarContinuity:{session:null,sessionVersion:999}})}));assert.equal(response.status,200);
   assert.equal((await continuity.readContinuity("alice",fixed)).session.id,saved.session.id);assert.equal((await continuity.readContinuity("alice",fixed)).sessionVersion,1);
+ }finally{f.sqlite.close();}
+});
+
+const journal=await import(moduleUrl("lib/activity-presentation.ts"));
+const entry=(id,action,createdAt,extra={})=>({id,action,createdAt,objectType:"job",objectId:id,data:{},...extra});
+test("P3 : regroupement par jour du compte, doublons et historique source conservé",()=>{
+ const items=[entry("a","offer_sorted","2026-11-01T23:30:00Z",{objectId:"same",data:{decision:"selected"}}),entry("b","offer_sorted","2026-11-02T08:00:00Z",{objectId:"same",data:{decision:"later"}}),entry("c","followup_done","2026-11-02T09:00:00Z")],copy=structuredClone(items);
+ const groups=journal.groupActivityDays([...items,items[0]],"Europe/Paris");assert.equal(groups.length,1);assert.equal(groups[0].day,"2026-11-02");assert.equal(groups[0].items.length,3);assert.equal(groups[0].summary,"1 offre triée · 1 relance");assert.deepEqual(items,copy);
+ assert.equal(journal.mergeActivity(items,[items[0],entry("d","story_validated","2026-11-01T10:00:00Z")]).length,4);
+ assert.equal(journal.journalActionLabel(items[0]),"Sélectionnée");assert.equal(journal.journalActionLabel(items[1]),"Plus tard");assert.equal(journal.journalTime(items[0].createdAt,"Europe/Paris"),"00:30");
+});
+test("P3 : lundi et changement d’heure, jours relatifs et filtre invalide",()=>{
+ assert.equal(journal.activityWeekStart(new Date("2026-10-26T00:30:00Z"),"Europe/Paris"),"2026-10-25T23:00:00.000Z");
+ assert.equal(journal.activityWeekStart(new Date("2026-10-19T00:30:00Z"),"Europe/Paris"),"2026-10-18T22:00:00.000Z");
+ assert.equal(journal.activityWeekStart(new Date("2026-11-01T22:30:00Z"),"Pacific/Auckland"),"2026-11-01T11:00:00.000Z");
+ const now=new Date("2026-11-02T10:00:00Z");assert.equal(journal.activityDayLabel("2026-11-02",now,"Europe/Paris"),"Aujourd’hui");assert.equal(journal.activityDayLabel("2026-11-01",now,"Europe/Paris"),"Hier");assert.equal(journal.activityDayKey("inconnue","UTC"),"unknown");assert.equal(journal.journalTime("inconnue","UTC"),"—");
+ assert.equal(journal.isCurrentActivityWeek("2026-11-01T23:00:00.000Z",now,"Europe/Paris"),true);assert.equal(journal.isCurrentActivityWeek("2026-11-01T23:00:00.000Z",new Date("2026-11-09T00:00:00Z"),"Europe/Paris"),false);
+ assert.equal(journal.readActivityFilter(null),"all");assert.equal(journal.readActivityFilter("applications"),"applications");assert.throws(()=>journal.readActivityFilter("SQL"),journal.ActivityQueryError);assert.throws(()=>journal.activityWeekStart(now,"introuvable"),journal.ActivityQueryError);
+});
+test("P3 SQLite : compteur hebdomadaire intégral, filtres avant pagination, fuseau et isolement",async()=>{
+ const f=fixture(),activity=await import(moduleUrl("lib/activity-store.ts")),jobs=await import(moduleUrl("lib/job-store.ts"));try{
+  const a=(await jobs.saveOffer("alice",offer)).job,b=(await jobs.saveOffer("bob",{...offer,title:"SECRET_BOB_TITLE",company:"SECRET_BOB_COMPANY"})).job;
+  f.sqlite.prepare("UPDATE profiles SET data=json_set(data,'$.weekSeries.timeZone','Europe/Paris') WHERE user_id='alice'").run();
+  for(let i=0;i<44;i++)await activity.activityStatement("alice",{id:"send-"+String(i).padStart(3,"0"),action:"application_sent",objectType:"job",objectId:a.id,createdAt:"2026-11-02T10:00:00.000Z"}).all();
+  for(const [id,action,createdAt] of [["tri-a","offer_sorted","2026-11-02T11:00:00.000Z"],["tri-b","offer_sorted","2026-11-02T11:00:00.000Z"],["boundary","fact_validated","2026-11-01T23:00:00.000Z"],["story","story_validated","2026-11-03T09:00:00.000Z"],["before","fact_validated","2026-11-01T22:59:59.999Z"],["future","application_sent","2026-11-04T10:00:00.000Z"]])await activity.activityStatement("alice",{id,action,objectType:"job",objectId:a.id,createdAt,data:action==="offer_sorted"?{decision:"selected"}:{}}).all();
+  await activity.activityStatement("bob",{id:"bob-event",action:"offer_sorted",objectType:"job",objectId:b.id,createdAt:"2026-11-02T10:00:00.000Z"}).all();
+  const unchanged=f.sqlite.prepare("SELECT data FROM profiles WHERE user_id='alice'").get().data,now=new Date("2026-11-03T12:00:00Z");
+  const empty=await activity.readActivity("no-profile",null,{now});assert.deepEqual(empty.items,[]);assert.equal(empty.weekCount,0);assert.equal(f.sqlite.prepare("SELECT data FROM profiles WHERE user_id='no-profile'").get(),undefined);
+  const first=await activity.readActivity("alice",null,{zone:"Pacific/Auckland",now});assert.equal(first.items.length,20);assert(!first.items.some(item=>item.id==="future"));assert.equal(first.weekCount,48);assert.equal(first.weekStart,"2026-11-01T23:00:00.000Z");assert.equal(first.timeZone,"Europe/Paris");assert.equal(first.continuedDay,"2026-11-02");assert(first.items.some(item=>item.company==="Atelier fictif"));
+  const tri=await activity.readActivity("alice",null,{filter:"tri",now});assert.equal(tri.items.length,2);assert.equal(tri.cursor,null);assert.equal(tri.weekCount,48,"le compteur global ne devient pas le sous-total du filtre");
+  const second=await activity.readActivity("alice",first.cursor,{now});assert.equal(second.items.length,20);assert.equal(second.weekCount,48);assert.equal(new Set([...first.items,...second.items].map(item=>item.id)).size,40);
+  assert.doesNotMatch(JSON.stringify([first,second,tri]),/SECRET_BOB|SECRET_PROFILE|SECRET_DESCRIPTION/);assert.equal(f.sqlite.prepare("SELECT data FROM profiles WHERE user_id='alice'").get().data,unchanged);
+  const route=await import(moduleUrl("app/api/activity/route.ts"));globalThis.__trashUser="alice";
+  for(const query of ["filter=invalide","zone=invalide","cursor=invalide"])assert.equal((await route.GET(new Request("https://radar.test/api/activity?"+query))).status,400);
+  f.sqlite.prepare("UPDATE activity_events SET data='null',created_at=? WHERE id='send-043'").run(new Date().toISOString());assert.equal((await route.GET(new Request("https://radar.test/api/activity"))).status,503);
  }finally{f.sqlite.close();}
 });

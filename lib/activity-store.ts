@@ -3,6 +3,8 @@ import type {ActivityAction,ActivityData,ActivityEvent} from "./activity";
 import {declareApplicationFollowup} from "./application-followup-store";
 export {activityReceiptId} from "./activity";
 import {activityCursor,activityReceiptId} from "./activity";
+import {activityDayKey,activityWeekStart,readActivityFilter,activityFilterActions,ActivityQueryError} from "./activity-presentation";
+import {validTimeZone} from "./week-plan";
 export const activityDb=()=>env.DB as D1Database;
 export function activityPrepared(query:{toSQL:()=>{sql:string;params:unknown[]}}){const value=query.toSQL();return activityDb().prepare(value.sql).bind(...value.params);}
 /** Gate SQL comes only from reviewed application code; every value stays bound. */
@@ -13,12 +15,21 @@ export function activityStatement(userId:string,event:{action:ActivityAction;obj
 export function jobActivityStatement(userId:string,action:ActivityAction,ids:string[],createdAt:string,gate:string,args:unknown[]=[],decision:string|null=null){
  return activityDb().prepare(`INSERT INTO activity_events(id,user_id,action,object_type,object_id,created_at,data) SELECT lower(hex(randomblob(16))),?,?,'job',id,?,json_object('source',source,'status',status,'decision',?,'previousReviewState',review_state) FROM jobs WHERE user_id=? AND id IN (${ids.map(()=>"?").join(",")}) AND (${gate}) RETURNING id`).bind(userId,action,createdAt,decision,userId,...ids,...args);
 }
-export async function readActivity(userId:string,cursor?:string|null){
- const after=cursor?activityCursor(cursor):null;if(cursor&&!after)throw new Error("Page de journal invalide.");
- const scope=after?" AND (e.created_at<? OR(e.created_at=? AND e.id<?))":"";
- const rows=(await activityDb().prepare(`SELECT e.id,e.action,e.object_type AS objectType,e.object_id AS objectId,e.created_at AS createdAt,e.data,coalesce(j.title,ij.title,json_extract(x.data,'$.title'),'') AS label FROM activity_events e LEFT JOIN jobs j ON e.object_type='job' AND j.id=e.object_id AND j.user_id=e.user_id LEFT JOIN interviews i ON e.object_type='interview' AND i.id=e.object_id AND i.user_id=e.user_id LEFT JOIN jobs ij ON ij.id=i.job_id AND ij.user_id=e.user_id LEFT JOIN experience_items x ON e.object_type='experience' AND x.id=e.object_id AND x.user_id=e.user_id WHERE e.user_id=?${scope} ORDER BY e.created_at DESC,e.id DESC LIMIT 21`).bind(userId,...(after?[after[0],after[0],after[1]]:[])).all<Omit<ActivityEvent,"data">&{data:string}>()).results;
- const items=rows.slice(0,20).map(row=>({...row,data:JSON.parse(row.data) as ActivityData})),last=items.at(-1);
- return {items,cursor:rows.length>20&&last?btoa(JSON.stringify([last.createdAt,last.id])):null};
+export async function readActivity(userId:string,cursor?:string|null,options:{filter?:unknown;zone?:unknown;now?:Date}={}){
+ const after=cursor?activityCursor(cursor):null;if(cursor&&!after)throw new ActivityQueryError("Page de journal invalide.");
+ const filter=readActivityFilter(options.filter),now=options.now??new Date();
+ if(options.zone!=null&&!validTimeZone(options.zone))throw new ActivityQueryError("Fuseau du journal invalide.");
+ const row=await activityDb().prepare("SELECT data FROM profiles WHERE user_id=?").bind(userId).first<{data:string}>(),profile=row?JSON.parse(row.data):{};
+ if(!profile||typeof profile!=="object"||Array.isArray(profile))throw new Error("Calendrier du compte indisponible.");
+ const zone=validTimeZone(profile.weekSeries?.timeZone)?profile.weekSeries.timeZone:validTimeZone(profile.weekPlan?.timeZone)?profile.weekPlan.timeZone:validTimeZone(options.zone)?options.zone:"UTC",weekStart=activityWeekStart(now,zone);
+ const actions=filter==="all"?[]:[...activityFilterActions[filter]],scope=(actions.length?` AND e.action IN (${actions.map(()=>"?").join(",")})`:"")+(after?" AND (e.created_at<? OR(e.created_at=? AND e.id<?))":"");
+ const [records,count]=await Promise.all([
+  activityDb().prepare(`SELECT e.id,e.action,e.object_type AS objectType,e.object_id AS objectId,e.created_at AS createdAt,e.data,coalesce(j.title,ij.title,json_extract(x.data,'$.title'),'') AS label,coalesce(j.company,ij.company,'') AS company FROM activity_events e LEFT JOIN jobs j ON e.object_type='job' AND j.id=e.object_id AND j.user_id=e.user_id LEFT JOIN interviews i ON e.object_type='interview' AND i.id=e.object_id AND i.user_id=e.user_id LEFT JOIN jobs ij ON ij.id=i.job_id AND ij.user_id=e.user_id LEFT JOIN experience_items x ON e.object_type='experience' AND x.id=e.object_id AND x.user_id=e.user_id WHERE e.user_id=? AND e.created_at<=?${scope} ORDER BY e.created_at DESC,e.id DESC LIMIT 21`).bind(userId,now.toISOString(),...actions,...(after?[after[0],after[0],after[1]]:[])).all<Omit<ActivityEvent,"data">&{data:string}>(),
+  activityDb().prepare("SELECT count(*) AS total FROM activity_events WHERE user_id=? AND created_at>=? AND created_at<=?").bind(userId,weekStart,now.toISOString()).first<{total:number}>()
+ ]);
+ const rows=records.results,items=rows.slice(0,20).map(row=>{const data=JSON.parse(row.data);if(!data||typeof data!=="object"||Array.isArray(data)||!Number.isFinite(Date.parse(row.createdAt)))throw new Error("Action illisible.");return {...row,data} as ActivityEvent;}),last=items.at(-1),weekCount=Number(count?.total??0);
+ if(!Number.isSafeInteger(weekCount)||weekCount<0)throw new Error("Compteur indisponible.");
+ return {items,cursor:rows.length>20&&last?btoa(JSON.stringify([last.createdAt,last.id])):null,continuedDay:rows[20]?activityDayKey(rows[20].createdAt,zone):null,weekCount,weekStart,timeZone:zone,filter};
 }
 
 /** Only the two explicit declarations not already covered by a business write enter here. */
