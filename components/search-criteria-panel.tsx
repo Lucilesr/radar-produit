@@ -41,11 +41,11 @@ function storeView(view: View) {
 }
 
 /** Criteria read at a glance, expanded on demand, and edited with the existing form. */
-export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, active = true,domainContent }: { domainContent?:React.ReactNode; profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void; active?:boolean }) {
+export function SearchCriteriaPanel({ overview=false,profile, jobs, onSave, onOpenJobgether, active = true,domainContent }: { overview?:boolean;domainContent?:React.ReactNode; profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void; active?:boolean }) {
   // A first visit keeps the form open so the onboarding step can save the first criteria.
   const firstSetup = !profile.searchPreferences;
   const [resting, setResting] = useState(readView);
-  const [view, setView] = useState<View>(() => firstSetup ? "edit" : resting);
+  const [view, setView] = useState<View>(() => firstSetup&&!overview ? "edit" : resting);
   const focusTarget = useRef<CriteriaTarget | null>(null);
   const editButton = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef(false);
@@ -89,7 +89,7 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, ac
   // « + Critère » : the menu first, then the chosen criterion's own control, in the same panel.
   const [adding, setAdding] = useState(false);
   const [addTarget, setAddTarget] = useState<MissingCriterion | null>(null);
-  const missing = missingCriteria(preferences);
+  const missing = missingCriteria(preferences).filter(item=>!overview||item.id!=="searchTracks");
   function closeAdd() { setAdding(false); setAddTarget(null); }
   const formPart = (target: CriteriaTarget) => target as CriteriaFormPart;
   // On a phone a floating panel has no room: the setting opens in the page, under the tags.
@@ -137,16 +137,18 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, ac
     const next = view === "details" ? "summary" : "details";
     setView(next); setResting(next); storeView(next);
   }
-  function edit(target: CriteriaTarget | null) {
+  const edit=useCallback((target: CriteriaTarget | null) => {
     if (target === "jobgether") { onOpenJobgether(); return; }
     focusTarget.current = target; setView("edit");
-  }
+  },[onOpenJobgether]);
+  useEffect(()=>{if(!active)return;const receive=(event:Event)=>{const target=(event as CustomEvent).detail;if(target==='level'){setView('summary');setAddTarget({id:'level',label:'Niveau visé',help:'Le niveau recherché.',target:'level'});setAdding(true);setOpenToken(null);}else if(target==='roles')edit(target);};window.addEventListener('radar:edit-criterion',receive);return()=>window.removeEventListener('radar:edit-criterion',receive);},[active,edit]);
+  useEffect(()=>{if(!adding||addTarget?.id!=='level')return;const frame=requestAnimationFrame(()=>document.querySelector<HTMLElement>('#search-criteria-add-inline button,.search-criteria-popover button')?.focus());return()=>cancelAnimationFrame(frame);},[adding,addTarget?.id]);
   function done() { void finishEditor(() => { returnFocus.current = true; setView(resting); }); }
 
   return <section className="search-criteria-panel" aria-labelledby="search-criteria-title">
     <header className="search-criteria-panel-header">
       <div>
-        <div className="search-criteria-title-line"><h2 id="search-criteria-title" className="source-heading">Critères</h2><span className="signal-help" role="status">{justSaved?"Enregistré à l’instant":"Enregistrés automatiquement"}</span></div>
+        <div className="search-criteria-title-line"><h2 id="search-criteria-title" className="source-heading">{overview?"Vos critères":"Critères"}</h2><span className="signal-help" role="status">{justSaved?"Enregistré à l’instant":"Enregistrés automatiquement"}</span></div>
         <div className="criteria-help-line"><p>Vos critères trient les offres.</p><HelpTooltip label="Critères">Les offres hors critères sont masquées dans À examiner. Les alertes des sites externes gardent leurs propres réglages.</HelpTooltip></div>
       </div>
       <div className="search-criteria-panel-actions">
@@ -161,8 +163,9 @@ export function SearchCriteriaPanel({ profile, jobs, onSave, onOpenJobgether, ac
       </div>
     </header>
 
+    {view === "summary"&&overview?<dl className="mon-radar-criteria-lines">{criteriaGroups(preferences).flatMap(group=>group.rows).filter(row=>!['searchTracks','matchScore'].includes(row.id)).map(row=><div key={row.key??row.id}><dt>{row.label}</dt><dd>{row.id==='roles'?row.values.map(value=><span className="quiet-tag" key={value}>{value}</span>):row.values.join(' · ')}</dd></div>)}</dl>:null}
     {view === "summary" ? <ul className="search-criteria-tokens" aria-label="Critères enregistrés">
-      {criteriaTokens(preferences).map(token => {
+      {criteriaTokens(preferences).filter(()=>!overview).filter(token=>!["searchTracks","matchScore"].includes(token.id)).map(token => {
         const label = `${token.label} : ${token.fullValue}. Modifier${modified.has(token.id)?". Modifié lors de cette visite":""}`;
         const content = <><span>{token.label}</span><strong>{token.value}</strong>{modified.has(token.id)?<span className="search-criteria-changed-dot" aria-hidden="true"/>:null}</>;
         if (token.target === "jobgether") return <li key={token.key}><button type="button" className="search-criteria-token" data-tone={token.tone} title={token.fullValue} aria-label={label} onClick={onOpenJobgether}>{content}</button></li>;

@@ -44,6 +44,7 @@ import "./signal-offers-aligned.css";
 import "./signal-candidatures-aligned.css";
 import "./signal-global-header.css";
 import "./signal-candidatures-mobile.css";
+import "./signal-mon-radar-aligned.css";
 import "./signin-page.css";
 
 export const metadata: Metadata = {
