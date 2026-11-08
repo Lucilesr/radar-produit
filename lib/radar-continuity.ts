@@ -15,7 +15,7 @@ export function continuitySession(value:unknown,now=new Date()):RadarSession|nul
  if(!value||typeof value!=="object"||Array.isArray(value))return null;const candidate=value as RadarSession;
  if(!continuityDay(candidate.day,now))return null;
  const session=readSession(JSON.stringify(candidate),now.getTime(),candidate.day);if(!session)return null;
- return {id:session.id,day:session.day,startedAt:session.startedAt,activeMs:session.activeMs,resumedAt:session.resumedAt,steps:session.steps,current:session.current,initial:{decisions:session.initial.decisions,visits:session.initial.visits,approved:session.initial.approved},sent:session.sent,paused:session.paused};
+ return {id:session.id,day:session.day,startedAt:session.startedAt,activeMs:session.activeMs,resumedAt:session.resumedAt,steps:session.steps,current:session.current,initial:{decisions:session.initial.decisions,visits:session.initial.visits,approved:session.initial.approved,...(session.initial.care?{care:session.initial.care}:{})},sent:session.sent,paused:session.paused};
 }
 export function continuityState(userId:string,profile:Record<string,unknown>,now=new Date()):RadarContinuity{
  const saved=profile.radarContinuity as Partial<RadarContinuity>|undefined;

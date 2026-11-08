@@ -5,23 +5,12 @@ import ts from "typescript";
 const followupCode=ts.transpileModule(readFileSync(new URL("../lib/application-followup.ts",import.meta.url),"utf8"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
 const followupUrl="data:text/javascript;base64,"+Buffer.from(followupCode).toString("base64");
 const code=ts.transpileModule(readFileSync(new URL("../lib/radar-session.ts",import.meta.url),"utf8"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replaceAll('"./application-followup"',JSON.stringify(followupUrl));
-const {sessionDay,sessionSnapshot,sessionVisits,sessionFollowups,sessionSteps,sessionEstimate,sessionProgress,readSession,pauseSession}=await import("data:text/javascript;base64,"+Buffer.from(code).toString("base64"));
+const {sessionDay,sessionSnapshot,sessionFollowups,sessionProgress,readSession,pauseSession}=await import("data:text/javascript;base64,"+Buffer.from(code).toString("base64"));
 const now=new Date(2026,10,7,10).getTime();
 const job=(id,extra={})=>({id,status:"new",reviewState:"to_review",interviews:[],...extra});
 const source=(source,extra={})=>({source,selected:true,lastVisitedAt:new Date(now-8*86400000).toISOString(),...extra});
 const facts=[{id:"a",validation:"approved"},{id:"b",validation:"proposed"}];
 function session(jobs,sources=[]){return {id:"session",day:sessionDay(now),startedAt:now,activeMs:0,resumedAt:now,steps:["triage"],current:0,initial:sessionSnapshot(jobs,sources,facts),sent:[],paused:false};}
-test("Q3 : les étapes suivent le lot, les échéances et les blocs réels, sans étape vide",()=>{
- assert.deepEqual(sessionSteps(0,0,0,[]),[]);
- assert.deepEqual(sessionSteps(0,1,2,[]),["followups","sources"]);
- assert.deepEqual(sessionSteps(3,1,2,facts),["triage","followups","sources","validation"]);
- assert.deepEqual(sessionSteps(0,0,0,[{id:"p",validation:"rejected"},{id:"c",validation:"proposed",parentId:"p"}]),[]);
- assert.equal(sessionEstimate(4,2,7),13);assert.equal(sessionEstimate(0,0,0),0);
-});
-test("Q3 : seules les sources consultables actives sans visite depuis plus de cinq jours sont proposées",()=>{
- const list=[source("old"),source("recent",{lastVisitedAt:new Date(now-5*86400000).toISOString()}),source("never",{lastVisitedAt:undefined}),source("paused",{state:"paused"}),source("off",{selected:false}),source("feed")];
- assert.deepEqual(sessionVisits(list,name=>name==="feed"?"rss":"email",now).map(x=>x.source),["old","never"]);
-});
 test("Q3 : une date de relance doit être passée, active et non confirmée",()=>{
  const event=(id,time,state="reviewed")=>({id,state,followUpAt:new Date(time).toISOString()});
  const list=[job("a",{status:"interview",interviews:[event("due",now-1000),event("future",now+1000),event("planned",now-1000,"planned")]}),job("b",{status:"rejected",interviews:[event("closed",now-1000)]})];

@@ -1,5 +1,6 @@
 "use client";
 import {useCallback,useEffect,useId,useRef,useState} from "react";
+import {useRadarNextSteps} from "@/components/next-steps-context";
 import {Checkbox} from "@/components/ui/checkbox";
 import {WorkspaceButton,WorkspaceFormError,WorkspaceFormSection} from "@/components/workspace-form";
 import {SignalProgress} from "@/components/signal/signal-progress";
@@ -8,6 +9,8 @@ import {sessionWrite} from "@/lib/session-write";
 import type {JobRecord} from "@/lib/types";
 export function ApplicationCareBadge({job}:{job:Pick<JobRecord,'applicationCare'>}){const count=careCount(job.applicationCare);return <span className={`application-care-badge${count>=3?" is-careful":""}`}>{careSummary(job.applicationCare)}</span>;}
 export function ApplicationCare({job}:{job:JobRecord}){
+ const {queue,activeKind}=useRadarNextSteps(),suggested=queue.find(step=>step.kind==="care"&&step.action.type==="care"&&step.action.jobId===job.id);
+ const currentStep=!!suggested&&(queue[0]?.id===suggested.id||activeKind==="care");
  const [care,setCare]=useState<Care>(job.applicationCare??emptyCare()),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState("");
  const current=useRef(care),lock=useRef(false),live=useRef(true),generation=useRef(0),prefix=useId(),retry=useRef<HTMLButtonElement>(null);
  const accept=useCallback((next:Care)=>{if(next.version<current.current.version)return;current.current=next;setCare(next);window.dispatchEvent(new CustomEvent("radar:application-care",{detail:{id:job.id,care:next}}));},[job.id]);
@@ -18,6 +21,14 @@ export function ApplicationCare({job}:{job:JobRecord}){
   catch(problem){failed=true;setReady(false);setError(problem instanceof Error&&problem.message&&!['TypeError','AbortError','TimeoutError'].includes(problem.name)?problem.message:"Choix non confirmé. Relisez les repères avant de réessayer.");}
   finally{sessionWrite(key,false);lock.current=false;setBusy(false);requestAnimationFrame(()=>{if(document.activeElement===document.body){if(failed)retry.current?.focus();else if(trigger?.isConnected)trigger.focus();}});}
  }
+ useEffect(()=>{
+  if(!ready||!currentStep)return;
+  const frame=requestAnimationFrame(()=>{
+   if(document.activeElement!==document.body&&document.activeElement?.getAttribute("role")!=="dialog"&&!["H1","H2","H3"].includes(document.activeElement?.tagName??""))return;
+   const field=careChecks.find(item=>!care[item.id]);if(field)document.getElementById(prefix+"-"+field.id)?.focus();
+  });
+  return()=>cancelAnimationFrame(frame);
+ },[ready,currentStep,care,prefix]);
  const count=careCount(care);
  return <div className="application-care" aria-busy={busy||!ready&&!error}><WorkspaceFormSection title="Candidature soignée" description="Quatre repères choisis par vous, pour cette offre seulement. Le CV du profil ne les coche pas automatiquement. Cette préparation reste facultative et ne bloque aucun envoi."><p className="application-care-summary" role="status">{careSummary(care)}</p><SignalProgress value={count} max={4} label="Préparation de cette candidature"/>
  <fieldset disabled={!ready||busy}><legend className="sr-only">Préparation confirmée pour cette candidature</legend>{careChecks.map(item=><label key={item.id} htmlFor={`${prefix}-${item.id}`} className="application-care-check"><Checkbox id={`${prefix}-${item.id}`} className="radar-preference-toggle" checked={care[item.id]} onCheckedChange={checked=>void save(item.id,checked===true)}/><span><strong>{item.label}</strong><small>{item.detail}</small></span></label>)}</fieldset>

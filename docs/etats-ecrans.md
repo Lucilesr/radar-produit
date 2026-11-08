@@ -1077,3 +1077,18 @@ Les compteurs hebdomadaires sont calculés côté compte sur l’ensemble des é
 | suppression | compte réel, zone dangereuse | avertissement explicite toujours visible | confirmation existante | oui |
 
 Passe d’écriture uniquement : les règles d’enregistrement, erreurs, droits et données sont conservées. Captures fictives avant/après et comptage d’aide : p8-passe-ecriture/README.md. Les éléments métier (titres d’annonces, notes et dates) ne sont pas comptés comme aide.
+
+### P4 — Prochaine étape commune
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| priorités concurrentes | entretien proche, relances ou lot disponibles | une première étape et deux pistes au plus | commencer selon la file commune | oui |
+| plan déjà posé | plan de la semaine confirmé | engagements conservés, aucune nouvelle demande de plan | modifier à la demande | oui |
+| tout est fait | aucune étape disponible | « C’est tout pour aujourd’hui. Le radar veille. » | navigation libre | oui |
+| séance terminée | fin confirmée du compte | invitations repliées, fin conservée dans l’onglet après rechargement | Revoir les étapes | oui |
+| ancienne séance | reprise d’un point déjà enregistré | ordre conservé ; étapes devenues vides sautées | reprendre ou quitter | oui |
+| préparation confirmée | passage à trois repères pendant une nouvelle séance | une candidature soignée dans le bilan | terminer pour aujourd’hui | oui |
+| lecture partielle | source ou carnet indisponible | erreur et dernières données utiles ; pas de réglage supposé connu | relire la partie en erreur | oui |
+| clavier / mobile à 390 px | ouverture des étapes | focus vers le formulaire, contrôles Signal et textes à la ligne | mêmes actions | oui |
+
+Aucune migration. Les nouveaux nombres de repères du point de reprise ne contiennent aucun texte privé. Les pannes réelles et leurs limites de recette sont distinguées des tests dans p4-prochaine-etape/README.md.

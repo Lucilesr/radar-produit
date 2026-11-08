@@ -54,3 +54,6 @@ P3 : journal en détails natifs, filtres workspace-tabs, WorkspaceButton, HelpTo
 
 ### P8 — Aide et vocabulaire
 WorkspaceFormSection réutilise HelpTooltip et ses contrôles Signal, avec une cible de 44 px. Les avertissements irréversibles restent visibles. Les textes ne changent aucun enregistrement ni droit d’usage. Recette et comptage : docs/p8-passe-ecriture/README.md.
+
+### P4 — Prochaine étape commune
+Réutilisation de WorkspaceButton, WorkspacePanelHeader, SignalStepper, SignalProgress, SignalCounter et des détails repliables. Les informations se replient ; une seule action principale dans la zone proposée. Cibles de 44 px, date lisible sur fond pétrole, titre et focus vérifiés sur ordinateur/mobile. Recette : docs/p4-prochaine-etape/README.md.
