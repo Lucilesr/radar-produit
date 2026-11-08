@@ -38,7 +38,7 @@ export function ScanWorkspace({busy,error,result,sources,sourcesKnown,knownCount
           <SignalCounter value={result.imported} label={plural(result.imported,"nouvelle offre","nouvelles offres")}/>
           <SignalCounter value={result.deduplicated} label={plural(result.deduplicated,"doublon déjà présent","doublons déjà présents")}/>
         </div>:null}
-        {!busy?<div className="scan-actions"><WorkspaceButton variant="primary" onClick={onOffers}>{toReviewCount===0?"Voir mes opportunités":toReviewCount===1?"Voir l’offre à examiner":`Voir les ${toReviewCount} offres à examiner`}<ArrowRight size={16} aria-hidden/></WorkspaceButton>{result?.inactive?<WorkspaceButton onClick={()=>onSource("We Work Remotely")}>Choisir une source automatique</WorkspaceButton>:error?<WorkspaceButton onClick={()=>onRun()}><RefreshCw size={15} aria-hidden/>Réessayer</WorkspaceButton>:null}</div>:null}
+        {!busy?<div className="scan-actions"><WorkspaceButton variant="primary" onClick={onOffers}>{toReviewCount===0?"Voir mes offres":toReviewCount===1?"Voir l’offre à examiner":`Voir les ${toReviewCount} offres à examiner`}<ArrowRight size={16} aria-hidden/></WorkspaceButton>{result?.inactive?<WorkspaceButton onClick={()=>onSource("We Work Remotely")}>Choisir une source automatique</WorkspaceButton>:error?<WorkspaceButton onClick={()=>onRun()}><RefreshCw size={15} aria-hidden/>Réessayer</WorkspaceButton>:null}</div>:null}
       </div>
     </section>
     <WorkspaceFormError message={error}/>

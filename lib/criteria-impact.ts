@@ -7,7 +7,7 @@ import type { JobRecord, SearchPreferences } from "./types";
 
 /**
  * Offers that would sit in « À examiner » with these criteria. The jobs already loaded are
- * re-assessed in the browser, with the same rule as the Opportunités view; no server call.
+ * re-assessed in the browser, with the same rule as the Offres view; no server call.
  */
 export function countToReview(jobs: JobRecord[], preferences: SearchPreferences) {
   return jobs.filter(job => {

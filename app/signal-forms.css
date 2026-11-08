@@ -42,3 +42,9 @@
   .signal-note-toolbar button { width: 36px; min-width: 36px; min-height: 44px; }
   .signal-note-meta { flex-wrap: wrap; gap: 5px; }
 }
+
+/* Signal : une aide à la demande, sans éloigner le titre du bloc. */
+.signal-section-title-help,.criteria-help-line{display:flex;align-items:center;gap:8px;min-width:0}
+.signal-section-title-help h3{overflow-wrap:anywhere}
+.signal-section-title-help .help-tooltip-trigger,.criteria-help-line .help-tooltip-trigger,.week-series>.help-tooltip-trigger{min-width:44px;width:44px;min-height:44px;height:44px}
+.criteria-help-line p{margin:0}

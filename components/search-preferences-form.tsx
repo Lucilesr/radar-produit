@@ -2,6 +2,7 @@
 
 import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from "react";
 import { Plus, X } from "lucide-react";
+import { HelpTooltip } from "@/components/help-tooltip";
 import { suggestedRoles } from "@/lib/role-suggestions";
 import type { CandidateProfile, SearchPreferences, JobRecord } from "@/lib/types";
 import { foldKeyword, maxDismissedRoleSuggestions, normalizeRoleTitles, payFloor, remoteForContract, searchPreferences } from "@/lib/search-preferences";
@@ -327,14 +328,14 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
             </ul>
           </div>;
         })}
-        <p className="search-criteria-help">Les mots mis en avant remontent l’offre dans « À examiner ». Les mots écartés la masquent. La casse et les accents sont ignorés.</p>
+        <div className="criteria-help-line"><p className="search-criteria-help">Valorisez ou écartez des mots.</p><HelpTooltip label="Mots de l’annonce">Les mots mis en avant remontent l’offre dans « À examiner ». Les mots écartés la masquent. La casse et les accents sont ignorés.</HelpTooltip></div>
         <p role="status" className="search-form-status">{keywordMessage}</p></>;
   const controls:Record<CriteriaEditPart,ReactNode>={
  roles:<><label htmlFor="searched-role" className="search-field-label">Ajouter un poste</label>
         <div className="search-role-entry"><input ref={roleField} id="searched-role" type="text" maxLength={80} value={roleInput} disabled={savingRole || saving} onChange={event => { setRoleInput(event.target.value); setRoleMessage(""); }} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); addRole(); } }} placeholder="Ex. Product Owner" /><button type="button" className="secondary-button" disabled={savingRole || saving || !roleInput.trim()} onClick={addRole}>Ajouter</button></div>
         <ul className="search-role-list" aria-label="Postes enregistrés">{roles.map(role => <li key={role}>{role}<button type="button" aria-label={`Retirer ${role}`} disabled={savingRole || saving} onClick={() => removeRole(role)}>×</button></li>)}</ul>
         {roleMessage ? <p role="status" className="search-form-status">{roleMessage}</p> : null}
-        <p className="search-criteria-help">Les postes s’enregistrent dès l’ajout. Vous pouvez aussi appuyer sur Entrée.</p>
+        <p className="search-criteria-help">Ajouter ou Entrée enregistre un poste.</p>
         {suggestions.length?<div ref={suggestionList} className="role-suggestions" role="group" aria-label="Postes suggérés depuis vos offres">
           <p className="signal-help">Vus dans vos offres :</p>
           <ul>{suggestions.map(suggestion=><li key={suggestion.title} className="role-suggestion">
@@ -351,13 +352,13 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
           {([["", "Non précisé"], ...levels.map(level => [level, levelLabels[level]])] as const).map(([value, label]) => <button key={value || "none"} type="button" aria-pressed={(levelDraft.targetLevel ?? "") === value} disabled={levelSaving} onClick={() => previewLevel({ targetLevel: (value || undefined) as SearchPreferences["targetLevel"], acceptLevelAbove: value ? latestLevel.current.acceptLevelAbove : undefined })}>{label}</button>)}
         </div>
         <div className="search-contract-options search-level-above"><label><input type="checkbox" checked={!!levelDraft.acceptLevelAbove} disabled={levelSaving || !levelDraft.targetLevel} onChange={event => previewLevel({ ...latestLevel.current, acceptLevelAbove: event.target.checked || undefined })} /><span>J’accepte un niveau au-dessus</span></label></div>
-        <p className="search-criteria-help">Radar signale les offres trop junior ou trop senior, d’après l’intitulé, les années d’expérience demandées et l’encadrement. Cliquez sur « Terminé » pour enregistrer votre choix.</p><WorkspaceFormError message={levelError}/></>,
+        <div className="criteria-help-line"><p className="search-criteria-help">Choisissez le niveau, puis Terminé pour enregistrer.</p><HelpTooltip label="Niveau visé">Radar signale les offres trop junior ou trop senior, d’après l’intitulé, les années d’expérience demandées et l’encadrement. Cliquez sur « Terminé » pour enregistrer votre choix.</HelpTooltip></div><WorkspaceFormError message={levelError}/></>,
  contracts:<><fieldset className="search-contracts"><legend className={table?"sr-only":"search-field-label"}>Contrats</legend><div className="search-contract-options">{([["cdi", "CDI", ""], ["cdd", "CDD", ""], ["freelance", "Freelance", ""], ["portage", "Portage salarial", "comparé au TJM"], ["part_time", "Temps partagé", "rémunération à vérifier"]] as const).map(([value, label, hint]) => <label key={value}><input type="checkbox" checked={draft.contracts.includes(value)} onChange={() => toggle(value)} /><span>{label}{hint ? <small>{hint}</small> : null}</span></label>)}</div></fieldset></>,
  presence:<><fieldset className="search-presence-rows"><legend className="sr-only">Présence acceptable par contrat</legend>
  {draft.contracts.map(contract=><div key={contract} className="search-presence-contract"><span>{contractLabels[contract]}</span><div className="search-place-toggle" role="group" aria-label={`Présence acceptable · ${contractLabels[contract]}`}>
  {([{value:"full_remote",label:"Full remote"},{value:"exceptional",label:"Exceptionnelle"},{value:"hybrid",label:"Hybride"},{value:"onsite",label:"Sur site"}] as const).map(option=><button key={option.value} type="button" aria-pressed={presenceFor(contract)===option.value} disabled={saving} onClick={()=>scheduleSave({...latestDraft.current,remoteByContract:{...latestDraft.current.remoteByContract,[contract]:option.value}})}>{option.label}</button>)}
  </div></div>)}
- <p className="search-criteria-help">Présence exceptionnelle : quelques jours par an sur site, au plus.</p>
+ <p className="search-criteria-help">Exceptionnelle : quelques jours par an sur site.</p>
  </fieldset></>,
  locations:<><label className="search-pay-label" htmlFor="includedLocations">Chercher un pays ou une région</label>
         <div className="search-role-entry search-location-entry search-place-entry">
@@ -379,7 +380,7 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
             <button type="button" className="search-place-remove" aria-label={`Retirer ${label}`} disabled={savingLocation || savingRole || saving} onClick={() => removePlace(label)}>×</button>
           </li>)}
         </ul> : null}
-        <p id="search-location-help" className="search-criteria-help">Tapez un lieu, puis Inclure (Entrée) ou Exclure (Maj+Entrée). L’enregistrement est immédiat. Les exclusions priment : « Europe » incluse et « Roumanie » exclue signifie Europe sauf Roumanie. Un lieu trop vague reste à vérifier.</p>
+        <div className="criteria-help-line"><p id="search-location-help" className="search-criteria-help">Inclure ou Entrée ; exclure avec Maj+Entrée.</p><HelpTooltip label="Lieux inclus et exclus">Tapez un lieu, puis Inclure (Entrée) ou Exclure (Maj+Entrée). L’enregistrement est immédiat. Les exclusions priment : « Europe » incluse et « Roumanie » exclue signifie Europe sauf Roumanie. Un lieu trop vague reste à vérifier.</HelpTooltip></div>
         <p role="status" className="search-form-status">{locationMessage}</p></>,
  salary:<><label className="search-pay-field"><span className="search-pay-label">Salaire annuel minimum<span className="sr-only">, en euros bruts par an</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="1000" placeholder="Ex. 55000" value={draft.minimumSalary || ""} onChange={event => amount("minimumSalary", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ brut/an</span></span></label></>,
  dailyRate:<><label className="search-pay-field"><span className="search-pay-label">TJM minimum<span className="sr-only">, en euros hors taxes par jour</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate || ""} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></span></label></>,
@@ -388,11 +389,11 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
           <Slider min={0} max={20} step={1} value={[tolerance]} onValueChange={([value]) => setTolerancePreview(value)} onValueCommit={([value]) => { setTolerancePreview(null); if (value !== (latestDraft.current.payTolerancePercent ?? 0)) scheduleSave({ ...latestDraft.current, payTolerancePercent: value }); }} thumbLabel="Tolérance sous le minimum" thumbValueText={`${tolerance} %`} className="search-pay-tolerance-slider" />
         </div>
         <p className="search-criteria-help">{tolerance
-          ? `Les offres jusqu’à ${tolerance} % sous votre minimum restent visibles : dès ${euro(payFloor(draft.minimumSalary, tolerance))} brut/an ou ${euro(payFloor(draft.minimumDailyRate, tolerance))} HT/jour. En dessous, elles sont masquées dans « À examiner ».`
-          : "Toute rémunération connue sous votre minimum est masquée dans « À examiner », même si le contrat est à confirmer."}</p></>,
+          ? `Jusqu’à ${tolerance} % sous le minimum : dès ${euro(payFloor(draft.minimumSalary, tolerance))} brut/an ou ${euro(payFloor(draft.minimumDailyRate, tolerance))} HT/jour. En dessous, offres masquées.`
+          : "Les rémunérations connues sous le minimum sont masquées."}</p></>,
  boostKeywords:keywordControl("boostKeywords"),
  excludeKeywords:keywordControl("excludeKeywords"),
- excludeSources:<fieldset className="triage-learning-contracts"><legend>Sources écartées</legend><p className="signal-help">Décochez une source pour revoir ses offres. Les alertes sur les sites externes restent inchangées.</p>{excludedSources.map(source=><label key={source}><input type="checkbox" checked disabled={savingSources} onChange={async()=>{setSavingSources(true);try{await onSave({...profile,searchPreferences:{...searchPreferences(profile.searchPreferences),excludeSources:excludedSources.filter(name=>name!==source)}});}finally{setSavingSources(false);}}}/>{source}</label>)}</fieldset>,
+ excludeSources:<fieldset className="triage-learning-contracts"><legend>Sources écartées</legend><p className="signal-help">Décochez une source pour revoir ses offres.</p>{excludedSources.map(source=><label key={source}><input type="checkbox" checked disabled={savingSources} onChange={async()=>{setSavingSources(true);try{await onSave({...profile,searchPreferences:{...searchPreferences(profile.searchPreferences),excludeSources:excludedSources.filter(name=>name!==source)}});}finally{setSavingSources(false);}}}/>{source}</label>)}</fieldset>,
  minimums:null,
  jobgether:<WorkspaceButton variant="secondary" onClick={onOpenJobgether}>Régler le score Jobgether</WorkspaceButton>,
  };
@@ -402,7 +403,7 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
   return <section className={only ? "search-preferences-form search-preferences-form-single" : "search-preferences-form"} aria-label={only&&! ["roles","conditions","locations","pay","keywords"].includes(only)?criteriaEditGroups(draft).flatMap(group=>group.rows).find(row=>row.part===only)?.label:undefined} aria-labelledby={only ? ["roles","conditions","locations","pay","keywords"].includes(only)?partTitles[only]:undefined : showIntro ? "search-preferences-title" : "search-criteria-title"} data-radar-guide={only || table ? undefined : "search-preferences-form"}>
     {showIntro ? <header className="search-criteria-intro">
       <h2 id="search-preferences-title" className="source-heading">Ce que je recherche</h2>
-      <p>Ces critères classent vos offres dans Radar. Ils ne modifient pas les alertes créées sur les sites externes.</p>
+      <p>Vos critères classent les offres.</p>
     </header> : null}
     <form className="search-criteria-form" onSubmit={event => { event.preventDefault(); if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; void persistDraft(); } }}>
       {table?<div className="search-criteria-details search-criteria-edit-table" data-radar-guide="search-preferences-form">
@@ -468,7 +469,7 @@ function SearchTracksEditor({ profile, onSave, roles, disabled }: { profile: Can
   return <div className="search-tracks">
     <div className="search-tracks-head">
       <h4>Pistes de recherche</h4>
-      <p className="search-criteria-help">Radar interroge les sources avec ces termes. Sans piste, il utilise vos postes.</p>
+      <p className="search-criteria-help">Ces pistes guident les recherches.</p>
     </div>
     <ul>{shown.map(track => <li key={track.id} className="search-track">
       <div className="search-track-head">

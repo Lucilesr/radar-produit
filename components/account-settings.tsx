@@ -47,7 +47,7 @@ export function AccountSettings({ ownerId, userName, email, demo, signOutPath, p
       <WorkspaceFormSection title="Vos données" description="Téléchargez l’intégralité de votre compte : offres, candidatures, notes, carnet d’expériences, journal d’activité et fichiers originaux.">
         <div className="account-actions"><a className="secondary-button signal-form-button" href="/sauvegarde"><Download size={15} aria-hidden />Exporter mes données</a></div>
       </WorkspaceFormSection>
-      <WorkspaceFormSection className="account-danger" title="Supprimer mon compte" description="Efface définitivement vos critères, sources, offres, candidatures, entretiens, notes, réponses, carnet d’expériences, journal d’activité et documents (CV compris). Votre compte ChatGPT n’est pas concerné.">
+      <WorkspaceFormSection className="account-danger" descriptionInline title="Supprimer mon compte" description="Efface définitivement vos critères, sources, offres, candidatures, entretiens, notes, réponses, carnet d’expériences, journal d’activité et documents (CV compris). Votre compte ChatGPT n’est pas concerné.">
         {deleted ? <p role="status" className="account-deleted">Votre compte Radar a été supprimé. Déconnexion…</p> : <div className="account-actions"><WorkspaceButton ref={deleteTrigger} variant="danger" onClick={() => setOpen(true)}><Trash2 size={15} aria-hidden />Supprimer mon compte</WorkspaceButton></div>}
       </WorkspaceFormSection>
       <AccountDeletionDialog open={open} onReturnFocus={()=>deleteTrigger.current?.focus({preventScroll:true})} onClose={() => setOpen(false)} onDeleted={() => {
