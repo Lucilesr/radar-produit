@@ -30,8 +30,9 @@ export function ApplicationMobileList({ jobs, board, busy, now, onStatus, onOpen
   function returnFocus() {
     requestAnimationFrame(() => {
       const trigger = lastJob.current ? document.getElementById(`application-mobile-${lastJob.current}`) : null;
-      const groupTrigger = lastGroup.current ? document.getElementById(`application-mobile-group-${lastGroup.current}`) : null;
-      (trigger?.getClientRects().length ? trigger : groupTrigger ?? document.getElementById("workspace-title"))?.focus();
+      const groupTrigger = trigger?.closest(".application-mobile-group")?.querySelector<HTMLButtonElement>("h2 button")
+        ?? (lastGroup.current ? document.getElementById(`application-mobile-group-${lastGroup.current}`) : null);
+      (trigger?.getClientRects().length && !trigger.hasAttribute("disabled") ? trigger : groupTrigger ?? document.getElementById("workspace-title"))?.focus();
     });
   }
   async function move(job: JobRecord, target: string, closure?: JobStatus) {
