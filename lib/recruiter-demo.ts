@@ -47,9 +47,9 @@ const experience = [
   { title: "Product Manager · SaaS", organization: "Ligne Claire (fictif)", role: "Product Manager", period: "2020–2023", context: "Développement fictif d’une plateforme SaaS utilisée par plusieurs équipes métiers.", contribution: "Discovery, cadrage de la roadmap et coordination avec design, data et ingénierie.", result: "Livraisons mieux séquencées et retours utilisateurs intégrés aux décisions.", claimKey: "saas-discovery" },
 ];
 
-type DemoOptions={monthStoryDemo?:boolean;funnelDemo?:boolean;weekScenario?:string;emptyProfile?:boolean;fridayDemo?:boolean;triageDemo?:boolean;scanDemo?:boolean;reducedMotion?:boolean;sessionDemo?:boolean;sessionEmpty?:boolean};
+type DemoOptions={imminentInterview?:boolean;monthStoryDemo?:boolean;funnelDemo?:boolean;weekScenario?:string;emptyProfile?:boolean;fridayDemo?:boolean;triageDemo?:boolean;scanDemo?:boolean;reducedMotion?:boolean;sessionDemo?:boolean;sessionEmpty?:boolean};
 export async function ensureRecruiterDemo(userId: string, options: DemoOptions|boolean = {}): Promise<boolean> {
-  const {monthStoryDemo=false,funnelDemo=false,weekScenario,emptyProfile=false,fridayDemo=false,triageDemo=false,scanDemo=false,reducedMotion=false,sessionDemo=false,sessionEmpty=false}=typeof options==="boolean"?{emptyProfile:options}:options;
+  const {imminentInterview=false,monthStoryDemo=false,funnelDemo=false,weekScenario,emptyProfile=false,fridayDemo=false,triageDemo=false,scanDemo=false,reducedMotion=false,sessionDemo=false,sessionEmpty=false}=typeof options==="boolean"?{emptyProfile:options}:options;
   if (!userId.startsWith("demo:")) throw new Error("La démo exige une session fictive.");
   const db = getDb();
   const existing = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.userId, userId)).limit(1);
@@ -92,7 +92,7 @@ export async function ensureRecruiterDemo(userId: string, options: DemoOptions|b
     await db.insert(jobs).values({ id: crypto.randomUUID(), userId, fingerprint: createFingerprint(input), ...input, status: "new", reviewState: "to_review", deletedAt: index===4?null:daysAgo(index + 2), createdAt: daysAgo(index + 3), updatedAt: nowIso, matchScore: assessment.score, matchTier: assessment.tier, reasons: JSON.stringify(assessment.reasons), flags: JSON.stringify(assessment.flags) }).onConflictDoNothing({ target: [jobs.userId, jobs.fingerprint] });
   }
   const [interviewJob] = await db.select({ id: jobs.id }).from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.fingerprint, rows[5].fingerprint))).limit(1);
-  const interviewStart = new Date(now.getTime() + (sessionDemo?-2:4) * 86400000);
+  const interviewStart = new Date(now.getTime() + (sessionDemo?-2:imminentInterview?1:4) * 86400000);
   interviewStart.setUTCHours(9, 0, 0, 0);
   const interviewEnd = new Date(interviewStart.getTime() + 3600000);
   if (interviewJob) await db.insert(interviews).values({ id: interviewJob.id, userId, jobId: interviewJob.id, label: "Entretien métier · exemple", startAt: interviewStart.toISOString(), endAt: interviewEnd.toISOString(), timeZone: "Europe/Paris", format: "video", state: sessionDemo?"reviewed":"planned", data: sessionDemo?JSON.stringify({summary:"Entretien fictif terminé.",outcome:"waiting",followUpAt:daysAgo(1)}):"{}", updatedAt: nowIso }).onConflictDoNothing();

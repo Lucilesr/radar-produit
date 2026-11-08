@@ -86,6 +86,9 @@ test("démo recruteurs : deux visiteurs isolés, relance sans doublon ni résurr
     await assert.rejects(()=>syncDemoSources("owner","scan"),/compte fictif/);
   }finally{globalThis.fetch=originalFetch;}
 
+  await ensureRecruiterDemo("demo:imminent",{imminentInterview:true});
+  const imminent=sqlite.prepare("SELECT start_at FROM interviews WHERE user_id=?").get("demo:imminent");
+  assert.ok(Date.parse(imminent.start_at)>Date.now()&&Date.parse(imminent.start_at)<Date.now()+48*3600000);
   await ensureRecruiterDemo("demo:session",{sessionDemo:true});
   assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM experience_items WHERE user_id=? AND validation='proposed'").get("demo:session").n,1);
   const review=sqlite.prepare("SELECT state,data FROM interviews WHERE user_id=?").get("demo:session");assert.equal(review.state,"reviewed");assert.ok(Date.parse(JSON.parse(review.data).followUpAt)<Date.now());

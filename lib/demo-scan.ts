@@ -20,7 +20,7 @@ export async function syncDemoSources(userId:string,mode:DemoScenario|"full",req
     if(previous?.selected===false||previous?.state==="paused"||(source==="Jobgether"&&previous?.selected!==true)){
       readings.push({source,state:"paused",ok:true,total:0,imported:0,deduplicated:0,matchedIds:[]});continue;
     }
-    const failed=mode==="scan-error"||mode==="scan-auto-error"||(mode==="scan-partial"&&source==="Jobgether"&&!retry);
+    const failed=mode==="scan-error"||mode==="scan-auto-error"||((mode==="scan-partial"||mode==="today-partial")&&source==="Jobgether"&&!retry);
     const reading:SourceReading={source,state:failed?"error":"ok",ok:!failed,total:0,imported:0,deduplicated:0,matchedIds:[],...(failed?{error:"Panne fictive de cette source. Vous pouvez réessayer."}:{lastSyncedAt:now})};
     if(!failed){
       // The repeated first item creates a real deduplication through the normal private write path.

@@ -2,7 +2,7 @@
 import {useRadarNextSteps} from "@/components/next-steps-context";
 import {useDisplayTimeZone} from "@/components/use-display-time-zone";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, ArrowUpRight, ClipboardCheck, Columns3, List } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Columns3, List } from "lucide-react";
 import { usePersonalBoard } from "@/components/use-personal-board";
 import {ApplicationCareBadge} from "@/components/application-care";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -15,25 +15,40 @@ import { applicationAge, formatDate, reviewDue, terminalStatuses } from "@/lib/a
 import { StatusSelect, type WorkspaceView } from "@/components/offer-workspace";
 import { PageHeader, WorkspaceState } from "@/components/workspace-ui";
 import type { JobRecord, JobStatus } from "@/lib/types";
+import {todayStepLabel} from "@/lib/today-presentation";
+import type {DailyLot} from "@/lib/daily-lot";
+import {Skeleton} from "@/components/ui/skeleton";
 import { useRadarClock } from "@/components/use-radar-clock";
 
 // Recalculate deadlines on entry and explicit data changes; keep the page stable while reading.
 function useNow(jobs: JobRecord[]) { const [now,setNow]=useState(()=>Date.now()); useEffect(()=>setNow(Date.now()),[jobs]);return now; }
-export function TodayWorkspace({radarLine,sessionAction,sessionNotice,weekPlan,insight,monthStory}:{radarLine:ReactNode;weekPlan?:ReactNode;insight?:ReactNode;monthStory?:ReactNode;sessionNotice?:ReactNode;sessionAction:{resumable:boolean;onStart:()=>void}}){
-  const clock=useRadarClock(),{queue,ready,onAction,stopped,onResume}=useRadarNextSteps();
-  const first=queue[0],following=queue.slice(1,3);
-  return <div className="today-layout next-step-home today-three-blocks"><div className="today-main">
-    <section className="today-focus" aria-label="Votre séance">
-      <p className="today-session-date">Votre séance · {clock?new Date(clock).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}):"Aujourd’hui"}</p>
-      <h2 className="today-focus-title">{!ready?"Préparation de votre prochaine étape…":stopped?"C’est tout pour aujourd’hui. Le radar veille.":sessionAction?.resumable?"Votre séance vous attend":first?.label??"C’est tout pour aujourd’hui. Le radar veille."}</h2>
-      {!stopped&&first&&ready?<p className="workspace-caption">{sessionAction?.resumable?"Reprenez à l’étape conservée.":first.minutes+" min environ · à votre rythme."}</p>:null}
-      {!stopped&&(first||sessionAction?.resumable)?<WorkspaceButton variant="primary" disabled={!ready} onClick={sessionAction?.onStart}>{sessionAction?.resumable?"Reprendre la séance":"Commencer ma séance"}<ArrowRight size={17} aria-hidden/></WorkspaceButton>:stopped?<WorkspaceButton onClick={onResume}>Revoir les étapes</WorkspaceButton>:null}
-      {ready&&!stopped&&!sessionAction.resumable&&following.length?<div className="today-following" aria-labelledby="today-next-title"><h3 id="today-next-title">Puis, si vous le souhaitez</h3>{following.map(step=><WorkspaceButton key={step.id} variant="quiet" onClick={()=>onAction(step.action)}><ClipboardCheck size={16} aria-hidden/>{step.label} · {step.minutes} min</WorkspaceButton>)}</div>:null}
-      {sessionNotice?<div className="today-session-notice">{sessionNotice}</div>:null}
-    </section>
-    {weekPlan??<section className="week-plan-card" aria-labelledby="today-week-title"><WorkspacePanelHeader id="today-week-title" title="Votre semaine"/><p className="signal-help">Votre semaine apparaîtra quand le compte sera relu.</p></section>}
-    <section className="today-radar" aria-labelledby="today-radar-title"><WorkspacePanelHeader id="today-radar-title" title="Le radar" hint={<HelpTooltip label="Le radar">Les nouvelles offres viennent du dernier balayage. Après rechargement, le nombre d’offres à examiner reste disponible. Le détail de l’entonnoir se trouve dans Candidatures.</HelpTooltip>}/>{radarLine}{insight}{monthStory}</section>
-  </div></div>;
+export function TodayPageHeader({name,account,estimate=true}:{name:string;account:ReactNode;estimate?:boolean}){
+ const clock=useRadarClock(),{queue,ready,stopped}=useRadarNextSteps();
+ const minutes=queue.slice(0,3).reduce((total,step)=>total+step.minutes,0);
+ const firstName=name.trim().split(/\s+/)[0];
+ return <header className="workspace-page-header today-page-header"><div><p className="today-date">{clock?new Date(clock).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}):"Aujourd’hui"}</p><h1 id="workspace-title" tabIndex={-1}>Bonjour{firstName?" "+firstName:""}</h1></div>{estimate&&ready&&!stopped&&minutes?<p className="today-duration">Séance du jour : environ {minutes} minutes</p>:null}<div className="today-mobile-account">{account}</div></header>;
+}
+export function TodaySkeleton(){
+ return <div className="today-aligned today-skeleton" role="status" aria-label="Chargement de votre journée…"><span className="sr-only">Chargement de votre journée…</span><div className="today-skeleton-focus" aria-hidden><Skeleton className="h-4 w-36"/><Skeleton className="h-16 w-full"/><Skeleton className="h-12 w-56"/></div><div className="today-skeleton-lower" aria-hidden>{[0,1].map(i=><div key={i}><Skeleton className="h-6 w-40"/><Skeleton className="h-4 w-full"/><Skeleton className="h-12 w-full"/></div>)}</div></div>;
+}
+export function TodayWorkspace({radarLine,sessionAction,sessionNotice,weekPlan,insight,monthStory,lot,newAccount=false,onSetup,onScan,roleChosen=false}:{radarLine:ReactNode;weekPlan?:ReactNode;insight?:ReactNode;monthStory?:ReactNode;lot?:DailyLot|null;newAccount?:boolean;roleChosen?:boolean;onSetup?:(section:"criteria"|"sources")=>void;onScan?:()=>void;sessionNotice?:ReactNode;sessionAction:{resumable:boolean;onStart:()=>void}}){
+ const {queue,ready,onAction,stopped}=useRadarNextSteps();
+ const mobile=useIsMobile();
+ const first=queue[0],following=queue.slice(1,3),finished=ready&&(stopped||!first&&!sessionAction.resumable);
+ if(newAccount)return <section className="today-setup" aria-labelledby="today-setup-title"><h2 id="today-setup-title">Réglez votre radar en 3 étapes</h2><ol><li><span>1</span><WorkspaceButton variant="quiet" onClick={()=>onSetup?.("criteria")}>Le poste que vous cherchez</WorkspaceButton></li><li><span>2</span><WorkspaceButton variant="quiet" onClick={()=>onSetup?.("sources")}>Trois sources</WorkspaceButton></li><li><span>3</span><WorkspaceButton variant="primary" disabled={!roleChosen} onClick={onScan}>Premier balayage</WorkspaceButton></li></ol><p className="signal-help">Commencez par le poste que vous cherchez.</p></section>;
+ if(!ready&&!queue.length)return <TodaySkeleton/>;
+ return <div className="today-layout next-step-home today-three-blocks today-aligned"><div className="today-main">
+  <section className={`today-focus${finished?" is-finished":""}`} aria-label="Votre séance" aria-busy={!ready}>
+   {!finished?<p className="today-session-date">Prochaine étape<span className="today-mobile-estimate">{first?` · ${first.minutes} min`:""}</span></p>:null}
+   <h2 className="today-focus-title">{finished?"C’est tout pour aujourd’hui.":sessionAction.resumable?"Votre séance vous attend":first?todayStepLabel(first,lot):"Préparation de votre prochaine étape…"}</h2>
+   <p className="workspace-caption">{finished?"Le radar veille. Revenez demain, ou parcourez la réserve si l’envie vous prend.":sessionAction.resumable?"Reprenez à l’étape conservée.":first?`Environ ${first.minutes} minutes.${first.kind==="triage"?" Le reste attend en réserve, sans compter.":" À votre rythme."}`:""}</p>
+   {!finished&&(first||sessionAction.resumable)?<WorkspaceButton variant="primary" disabled={!ready} onClick={sessionAction.onStart}>{sessionAction.resumable?"Reprendre la séance":first?.kind==="interview"?"Préparer":"Commencer ma séance"}<ArrowRight size={18} aria-hidden/></WorkspaceButton>:null}
+   {ready&&!finished&&!sessionAction.resumable&&following.length?<div className="today-following" aria-labelledby="today-next-title"><h3 id="today-next-title">Ensuite :</h3>{following.map(step=><WorkspaceButton key={step.id} variant="quiet" onClick={()=>onAction(step.action)}><span>{step.label}</span><span className="today-step-time">{step.minutes} min<span className="today-mobile-chevron" aria-hidden> ›</span></span></WorkspaceButton>)}</div>:null}
+   {sessionNotice?<div className="today-session-notice">{sessionNotice}</div>:null}
+  </section>
+  {weekPlan??<section className="week-plan-card" aria-labelledby="today-week-title"><WorkspacePanelHeader id="today-week-title" title="Votre semaine"/><p className="signal-help">Votre semaine apparaîtra quand le compte sera relu.</p></section>}
+  <section className="today-radar" aria-labelledby="today-radar-title"><h2 id="today-radar-title">Le radar</h2>{radarLine}{insight?<details className="today-radar-insight" open={!mobile}><summary>Tendance sur 90 jours</summary>{insight}</details>:null}{monthStory}</section>
+ </div></div>;
 }
 
 export function ApplicationsWorkspace({lessonsActive=false,onLessons,onMainView,lessons,contextualPrompt,jobs,onStatus,onOpen,placeholder,notice,funnel}:{lessonsActive?:boolean;onLessons?:()=>void;onMainView?:()=>void;lessons?:ReactNode;contextualPrompt?:ReactNode;funnel?:ReactNode;placeholder?:ReactNode;notice?:ReactNode;jobs:JobRecord[];onStatus:(id:string,status:JobStatus,columnId?:string)=>Promise<boolean>;onOpen:(job:JobRecord,view?:WorkspaceView)=>void}) {

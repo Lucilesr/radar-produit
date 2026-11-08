@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Aujourd’hui aligné sur les maquettes
+
+- Date et accueil personnel, séance prioritaire avec deux suites discrètes, semaine compacte et bilan du radar alignés sur ordinateur et mobile.
+- Journée terminée calme sans bouton, réglage initial en trois étapes, chargement et erreur avec reprise. Engagements tenus repliés sur mobile ; réglages, pauses et jokers restent accessibles. Aucune migration.
+
 ## 8 novembre 2026 — Balayage vivant Q2b
 
 - Bilan aligné sur les maquettes ordinateur et mobile : radar et échos conservés, progression source par source, trois compteurs et état clair sans nouveauté.

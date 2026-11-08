@@ -69,3 +69,7 @@ Un entretien planifié propose de préparer une histoire dans le carnet. Après 
 ### Balayage vivant
 
 « Actualiser » ouvre Balayage : chaque source passe de l’attente à la lecture, puis au résultat. Une source en erreur a son propre bouton Réessayer. Le radar conserve un écho par offre correspondant aux critères ; les nouvelles pulsent brièvement, sauf si les animations sont réduites. « Voir ses offres » ouvre un filtre de source effaçable, sans modifier le lot du jour. Trois sources à visiter sont affichées ; les autres et les sources en pause se déplient à la demande. L’actualisation automatique à l’ouverture reste silencieuse.
+
+### Votre accueil
+
+Aujourd’hui propose une prochaine étape et deux suites au plus. Un entretien sous 48 heures passe en priorité. Les engagements tenus se replient sur mobile ; « Réglages de la semaine » garde le plan, les jokers et la pause accessibles. Une séance terminée laisse une carte calme. Sans poste recherché, trois étapes vous guident : poste, sources, premier balayage.
