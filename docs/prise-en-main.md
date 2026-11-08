@@ -141,3 +141,9 @@ Les cinq cartes reprennent les faits enregistrés : offres dont la dernière dé
 **Carte suivante** et **Carte précédente** parcourent le récit ; **Échap** le ferme. Le mouvement réduit de votre compte ou de votre appareil est respecté. Un mois vide reste à zéro et l’historique partiel est annoncé : Radar ne reconstruit pas d’actions manquantes.
 
 **Télécharger en image** crée une seule image PNG avec les cinq cartes, dans les téléchargements de votre navigateur. Le texte est limité aux compteurs et à la pépite : vos notes, bilans après refus, coordonnées et documents ne sont pas ajoutés. Rien n’est envoyé ou partagé automatiquement. Les données d’origine restent dans votre compte et sa sauvegarde intégrale.
+
+### Termes compacts, P1
+
+Dans les critères, **Domaine** rassemble vos choix. Ouvrez **N termes repérés dans votre carnet · Voir** pour choisir parmi cinq puces à la fois ; la suivante prend la place d’un terme traité. Le bouton d’aide montre le passage relu. **Confirmer** ajoute le terme ; **Ignorer** le retire des propositions, même après un nouveau document. **Termes ignorés (N)** permet de le restaurer explicitement.
+
+Sous une expérience validée et autorisée, **Tout ajouter** confirme ses propositions ensemble ; **Choisir** ouvre les puces, **Plus tard** replie cette invitation. S’il manque des places parmi les quarante, choisissez les termes individuellement. Les droits sont revérifiés au moment de confirmer ; un conflit n’applique pas un demi-lot.

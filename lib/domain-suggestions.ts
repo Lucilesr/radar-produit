@@ -10,8 +10,8 @@ export function eligibleDomainItems(state:Library){const blocked=new Set(state.c
 const escaped=(word:string)=>word.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
 const patterns=domainVocabulary.map(term=>({term,key:foldTerm(term),pattern:new RegExp(`(^|[^a-z0-9])(${escaped(foldTerm(term))})(?:s)?(?=$|[^a-z0-9])`,"i")}));
 function foldedOffsets(text:string){let value="",at=0;const offsets:number[]=[];for(const char of text){const next=foldTerm(char);value+=next;for(let n=0;n<next.length;n++)offsets.push(at);at+=char.length;}return {value,offsets};}
-export function domainProposals(state:Library,search:Pick<SearchPreferences,"boostKeywords"|"domainTerms">):DomainProposal[]{
- const known=new Set(domainKeywords(search).map(foldTerm)),result=new Map<string,DomainProposal>();
+export function domainProposals(state:Library,search:Pick<SearchPreferences,"boostKeywords"|"domainTerms">,ignored:readonly string[]=[]):DomainProposal[]{
+ const known=new Set([...domainKeywords(search),...ignored].map(foldTerm)),result=new Map<string,DomainProposal>();
  const items=eligibleDomainItems(state).sort((a,b)=>(a.kind==="fact"?0:1)-(b.kind==="fact"?0:1)||b.updatedAt.localeCompare(a.updatedAt)||a.id.localeCompare(b.id));
  for(const item of items){
   for(const field of [item.data.title,item.data.role,item.data.context,item.data.contribution,item.data.result]){

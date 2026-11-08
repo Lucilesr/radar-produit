@@ -1022,3 +1022,17 @@ Recette et limites documentées dans docs/l4-entonnoir/README.md. Les événemen
 | Hors ligne | Connexion perdue après lecture | Dernier récit disponible ; lecture nouvelle non annoncée réussie | Réessayer après connexion | partiel |
 
 La démo month-story simule seulement le calendrier du récit au1er du mois ; les échéances et autres écrans gardent le vrai calendrier. Aucune ouverture automatique imposée. Les captures, l’image exportée et les limites de recette sont dans docs/l5-votre-mois/README.md.
+
+## Itération 2 — P1, termes compacts
+
+| État | Déclencheur | Affichage | Action | Existe ? |
+| --- | --- | --- | --- | --- |
+| Repos | Critères ouverts | Domaine confirmé et propositions repliées | Voir | oui |
+| Propositions | Ouverture volontaire | Cinq puces au plus, + N autres, extrait derrière aide | Confirmer / Ignorer | oui |
+| Ignoré | Ignorer | Terme absent des propositions, ligne Termes ignorés | Restaurer | oui |
+| Carnet autorisé | Expérience validée et droits accordés | Ligne des termes sous cette expérience | Tout ajouter / Choisir / Plus tard | oui |
+| Limite | Quarante termes confirmés | Ajout désactivé, retrait disponible | Choisir un terme à retirer | oui |
+| Erreur / conflit | Lecture ou confirmation non aboutie | Choix confirmés conservés, propositions à relire | Relire les termes | oui |
+| Clavier / mobile | 390 px ou clavier | Boutons 44 px, détails et aide accessibles, focus conservé | Mêmes choix | oui |
+
+Aucune migration. Le changement de vocabulaire général et la prochaine étape centralisée sont livrés respectivement avec P8 et P4, suivant l’ordre du guide.

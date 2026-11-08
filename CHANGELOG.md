@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Termes compacts P1
+
+- Propositions du carnet en puces, cinq au plus, avec provenance sur demande. Ignorer reste durable jusqu’à restauration explicite.
+- Domaine intégré aux critères ; ajout groupé depuis une expérience validée et autorisée, dans la limite de quarante termes. Aucun service tiers ni migration.
+
 ## 8 novembre 2026 — Guide de l’itération 2
 
 Ajout de `docs/iteration-2.md` : moins de tâches visibles, une seule prochaine étape, termes du domaine compacts et ignorables, portée en réglages, journal replié, accueil en trois blocs, navigation en quatre espaces.
