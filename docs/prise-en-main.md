@@ -32,7 +32,7 @@ Une semaine entièrement cochée est tenue. Toutes les quatre semaines tenues, u
 
 ## Préparer et suivre une candidature
 
-**J’ai postulé** ouvre le suivi dans **Candidatures**, en tableau ou en Kanban. Le statut reste votre choix. **Closes** conserve les refus, retraits et dossiers terminés.
+**J’ai postulé** ouvre le suivi dans **Candidatures**, en tableau ou en Kanban sur ordinateur. Sur téléphone, la liste est groupée par étape, avec les mêmes colonnes personnelles et leurs compteurs. Touchez un titre d’étape pour replier son groupe ; **Étape** déplace un dossier après confirmation de l’enregistrement. **Closes** demande un motif. **Ouvrir** donne accès aux notes et aux entretiens. Le statut reste votre choix. **Closes** conserve les refus, retraits et dossiers terminés.
 
 Dans **Préparer / brief** ou **Ma candidature**, quatre repères facultatifs suivent le CV adapté, le message, le contact et les questions. Une candidature est dite soignée à partir de trois repères sur quatre. Aucun document ni statut ne coche ces cases à votre place ; elles ne bloquent jamais un envoi.
 

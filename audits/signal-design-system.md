@@ -66,3 +66,7 @@ WorkspaceButton, WorkspaceFormError, HelpTooltip et les choix Signal existants ;
 
 ### P5 — quatre espaces
 Réutilisation de ReachCompact/ReachWorkspace, des onglets Signal, de ProfileWorkspace, SourcePanel et AccountSettings. Le menu de l’avatar utilise DropdownMenu ; cibles 44 px, quatre entrées mobiles et retour du focus quand un contrôle disparaît. Les panneaux restent montés pour conserver les brouillons.
+
+### C4 — liste des candidatures sur mobile
+
+Réutilisation de ChoiceSelect (tiroir tactile et sélecteur clavier), WorkspaceButton, WorkspaceFormError, Collapsible Radix/Signal, badges de préparation, boîtes de dialogue et variables Signal. Aucun contrôle natif de sélection ajouté. Une action principale par dossier ; édition des colonnes et motifs de clôture réutilisent le vocabulaire existant. Vérification du staging et captures consignées dans docs/c4-mobile/README.md.
