@@ -50,9 +50,10 @@ test("P5 : un aller-retour vers Candidatures ne rouvre pas Documents par erreur"
  assert.equal(backToRadar.section,"criteria");assert.equal(readRadarRoute(original).section,"documents");
  assert.match(radarSearch(backToRadar,original),/utm_source=demo/);
 });
-test("P5 : le lien de leçons garde le dossier et revient à la vue normale",()=>{
+test("P5 et C4 : le dossier garde les leçons à la fermeture, la sortie reste explicite",()=>{
  const source="?tab=profile&profile=lessons&offer=fictif&view=application",route=readRadarRoute(source);
  assert.equal(route.tab,"pipeline");assert.equal(route.section,"lessons");assert.equal(route.offer,"fictif");assert.equal(route.view,"application");
+ const closed=readRadarRoute(radarSearch({...route,offer:undefined,view:"offer"},source));assert.equal(closed.section,"lessons");assert.equal(closed.offer,undefined);
  const normal=readRadarRoute(radarSearch({...route,section:undefined,offer:undefined},source));assert.equal(normal.section,undefined);assert.equal(normal.offer,undefined);
 });
 test("P5 : les lecteurs de formulaires anciens restent compatibles",()=>{
