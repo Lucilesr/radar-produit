@@ -29,13 +29,13 @@ export async function POST(request: Request) {
     const current = stored ? parseProfile(JSON.parse(stored.data)) : profileTemplate;
     // Document links and job notes have dedicated writes; a stale profile form
     // must not undo an upload or overwrite another candidature's private note.
-    const profile = { ...incoming, ignoredDomainTerms:current.ignoredDomainTerms, searchPreferences: {...searchPreferences(incoming.searchPreferences),domainTerms:searchPreferences(current.searchPreferences).domainTerms}, ...documentLinks(current), applicationNotes: current.applicationNotes,
+    const profile = { ...incoming, contextualPrompts:current.contextualPrompts, ignoredDomainTerms:current.ignoredDomainTerms, searchPreferences: {...searchPreferences(incoming.searchPreferences),domainTerms:searchPreferences(current.searchPreferences).domainTerms}, ...documentLinks(current), applicationNotes: current.applicationNotes,
       triageDismissals: normalizeTriageDismissals({...current.triageDismissals,...incoming.triageDismissals}) };
     const now = new Date().toISOString();
     await getDb()
       .insert(profiles)
-      .values({ userId: user.userId, data: sql`json_remove(${JSON.stringify(profile)}, '$.radarContinuity', '$.weekSeries')`, updatedAt: now })
-      .onConflictDoUpdate({ target: profiles.userId, set: { data: sql`json_set(${JSON.stringify(profile)}, '$.weekPlan', json_extract(${profiles.data}, '$.weekPlan'), '$.weekPlans', json_extract(${profiles.data}, '$.weekPlans'), '$.weekPlanRevision', coalesce(json_extract(${profiles.data}, '$.weekPlanRevision'),0), '$.preferences', json_extract(${profiles.data}, '$.preferences'), '$.celebrationState', json_extract(${profiles.data}, '$.celebrationState'), '$.searchPreferences.domainTerms', json_extract(${profiles.data}, '$.searchPreferences.domainTerms'), '$.ignoredDomainTerms', json_extract(${profiles.data}, '$.ignoredDomainTerms'), '$.radarContinuity', json_extract(${profiles.data}, '$.radarContinuity'), '$.weekSeries', json_extract(${profiles.data}, '$.weekSeries'))`, updatedAt: now } });
+      .values({ userId: user.userId, data: sql`json_remove(${JSON.stringify(profile)}, '$.radarContinuity', '$.weekSeries', '$.contextualPrompts')`, updatedAt: now })
+      .onConflictDoUpdate({ target: profiles.userId, set: { data: sql`json_set(${JSON.stringify(profile)}, '$.weekPlan', json_extract(${profiles.data}, '$.weekPlan'), '$.weekPlans', json_extract(${profiles.data}, '$.weekPlans'), '$.weekPlanRevision', coalesce(json_extract(${profiles.data}, '$.weekPlanRevision'),0), '$.preferences', json_extract(${profiles.data}, '$.preferences'), '$.celebrationState', json_extract(${profiles.data}, '$.celebrationState'), '$.searchPreferences.domainTerms', json_extract(${profiles.data}, '$.searchPreferences.domainTerms'), '$.ignoredDomainTerms', json_extract(${profiles.data}, '$.ignoredDomainTerms'), '$.radarContinuity', json_extract(${profiles.data}, '$.radarContinuity'), '$.contextualPrompts', json_extract(${profiles.data}, '$.contextualPrompts'), '$.weekSeries', json_extract(${profiles.data}, '$.weekSeries'))`, updatedAt: now } });
     return Response.json({ profile: await readCandidateProfile(user.userId) });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Erreur inattendue" }, { status: 400 });

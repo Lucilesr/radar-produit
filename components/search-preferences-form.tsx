@@ -29,7 +29,7 @@ const partTitles: Record<CriteriaFormPart, string> = { roles: "search-roles-titl
 export type CriteriaSaveStatus = { state: "idle"|"draft"|"pending"|"saving"|"saved"|"error"; retry?:()=>void };
 
 export type CriteriaFormHandle = { commit: () => Promise<boolean> };
-type LevelDraft = Pick<SearchPreferences, "targetLevel" | "acceptLevelAbove">;
+type LevelDraft = Pick<SearchPreferences, "targetLevel" | "targetLevelAny" | "acceptLevelAbove">;
 
 /** The whole criteria form, or with `only` a single group of it (popover or table row). */
 export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro = true, only, table = false, onStatusChange, onOpenJobgether, jobs = [], commitRef }: { profile: CandidateProfile; onSave: (profile: CandidateProfile) => Promise<boolean>; showIntro?: boolean; only?: CriteriaFormPart; table?:boolean; onStatusChange?:(status:CriteriaSaveStatus)=>void; onOpenJobgether?:()=>void; jobs?:JobRecord[]; commitRef?:Ref<CriteriaFormHandle> }) {
@@ -66,20 +66,20 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
   const baseDraft=useRef(searchPreferences(profile.searchPreferences));
   const [draft, setDraft] = useState<SearchPreferences>(() => searchPreferences(profile.searchPreferences));
   // Level changes stay local until the editor's « Terminé » action commits both values.
-  const initialLevel: LevelDraft = { targetLevel: draft.targetLevel, acceptLevelAbove: draft.acceptLevelAbove };
-  const [levelDraft, setLevelDraft] = useState(initialLevel);
+  const initialLevel: LevelDraft = { targetLevel: draft.targetLevel, targetLevelAny: draft.targetLevelAny, acceptLevelAbove: draft.acceptLevelAbove };
+  const [levelDraft, setLevelDraft] = useState(initialLevel), [savedLevelValue,setSavedLevelValue] = useState(initialLevel);
   const latestLevel = useRef(initialLevel), savedLevel = useRef(initialLevel);
   const [levelSaving, setLevelSaving] = useState(false), [levelError, setLevelError] = useState("");
-  const levelChanged = levelDraft.targetLevel !== savedLevel.current.targetLevel || levelDraft.acceptLevelAbove !== savedLevel.current.acceptLevelAbove;
+  const levelChanged = levelDraft.targetLevelAny !== savedLevelValue.targetLevelAny || levelDraft.targetLevel !== savedLevelValue.targetLevel || levelDraft.acceptLevelAbove !== savedLevelValue.acceptLevelAbove;
   function previewLevel(next: LevelDraft) { latestLevel.current = next; setLevelDraft(next); setLevelError(""); }
   async function commitLevel() {
     const next = latestLevel.current;
-    if (next.targetLevel === savedLevel.current.targetLevel && next.acceptLevelAbove === savedLevel.current.acceptLevelAbove) return true;
+    if (next.targetLevelAny === savedLevel.current.targetLevelAny && next.targetLevel === savedLevel.current.targetLevel && next.acceptLevelAbove === savedLevel.current.acceptLevelAbove) return true;
     setLevelSaving(true); setLevelError("");
     try {
       const current = savedProfile.current;
       const saved = await onSave({ ...current, searchPreferences: { ...searchPreferences(current.searchPreferences), ...next } });
-      if (saved) savedLevel.current = next;
+      if (saved) {savedLevel.current = next;setSavedLevelValue(next);}
       else setLevelError("Niveau non enregistré. Réessayez avec « Terminé ».");
       return saved;
     } catch { setLevelError("Niveau non enregistré. Réessayez avec « Terminé »."); return false; }
@@ -349,7 +349,7 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
  tracks:<><SearchTracksEditor profile={profile} onSave={onSave} roles={roles} disabled={savingRole || saving} /></>,
  level:<>{table?null:<p className="search-field-label">Niveau visé</p>}
         <div className="search-place-toggle search-level-toggle" role="group" aria-label="Niveau visé">
-          {([["", "Non précisé"], ...levels.map(level => [level, levelLabels[level]])] as const).map(([value, label]) => <button key={value || "none"} type="button" aria-pressed={(levelDraft.targetLevel ?? "") === value} disabled={levelSaving} onClick={() => previewLevel({ targetLevel: (value || undefined) as SearchPreferences["targetLevel"], acceptLevelAbove: value ? latestLevel.current.acceptLevelAbove : undefined })}>{label}</button>)}
+          {([["", "Non précisé"], ["any", "Peu importe"], ...levels.map(level => [level, levelLabels[level]])] as const).map(([value, label]) => <button key={value || "none"} type="button" aria-pressed={(levelDraft.targetLevelAny ? "any" : levelDraft.targetLevel ?? "") === value} disabled={levelSaving} onClick={() => previewLevel({ targetLevel: (value && value!=="any" ? value : undefined) as SearchPreferences["targetLevel"], targetLevelAny: value==="any" ? true : undefined, acceptLevelAbove: value && value!=="any" ? latestLevel.current.acceptLevelAbove : undefined })}>{label}</button>)}
         </div>
         <div className="search-contract-options search-level-above"><label><input type="checkbox" checked={!!levelDraft.acceptLevelAbove} disabled={levelSaving || !levelDraft.targetLevel} onChange={event => previewLevel({ ...latestLevel.current, acceptLevelAbove: event.target.checked || undefined })} /><span>J’accepte un niveau au-dessus</span></label></div>
         <div className="criteria-help-line"><p className="search-criteria-help">Choisissez le niveau, puis Terminé pour enregistrer.</p><HelpTooltip label="Niveau visé">Radar signale les offres trop junior ou trop senior, d’après l’intitulé, les années d’expérience demandées et l’encadrement. Cliquez sur « Terminé » pour enregistrer votre choix.</HelpTooltip></div><WorkspaceFormError message={levelError}/></>,

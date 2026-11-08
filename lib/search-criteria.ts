@@ -76,7 +76,7 @@ export function criteriaGroups(preferences: SearchPreferences): CriteriaGroup[] 
     { id: "role", title: "Le poste", rows: [
       { id: "roles", label: "Postes visés", values: preferences.roles.length ? preferences.roles : [noRoleChosen], tone: "include", target: "roles" },
       ...tracks,
-      ...(preferences.targetLevel ? [{ id: "level" as const, label: "Niveau visé", values: [levelLabels[preferences.targetLevel] + (preferences.acceptLevelAbove ? " · niveau supérieur accepté" : "")], tokenValues: [levelLabels[preferences.targetLevel]], tone: "include" as const, target: "level" as const }] : []),
+      ...(preferences.targetLevel || preferences.targetLevelAny ? [{ id: "level" as const, label: "Niveau visé", values: [(preferences.targetLevel ? levelLabels[preferences.targetLevel] : "Peu importe") + (preferences.acceptLevelAbove ? " · niveau supérieur accepté" : "")], tokenValues: [preferences.targetLevel ? levelLabels[preferences.targetLevel] : "Peu importe"], tone: "include" as const, target: "level" as const }] : []),
       { id: "contracts", label: "Contrats", values: contracts.map(contract => contractLabels[contract]), tone: "include", target: "conditions" },
     ] },
     { id: "presence", title: "La présence", rows: presenceRows(preferences) },
@@ -127,7 +127,7 @@ export function missingCriteria(preferences: SearchPreferences): MissingCriterio
     ...((preferences.excludeKeywords ?? []).length ? [] : [{ id: "excludeKeywords" as const, label: "Mots-clés à écarter", help: "Les offres qui les contiennent sont masquées.", target: "keywords" as const }]),
     ...(paid && !(preferences.payTolerancePercent ?? 0) ? [{ id: "payTolerance" as const, label: "Tolérance sous le minimum", help: "Garder les offres un peu sous votre minimum.", target: "pay" as const }] : []),
     ...((preferences.searchTracks ?? []).length ? [] : [{ id: "searchTracks" as const, label: "Pistes de recherche", help: "Grouper les intitulés cherchés sur les sources.", target: "roles" as const }]),
-    ...(preferences.targetLevel ? [] : [{ id: "level" as const, label: "Niveau visé", help: "Repérer les offres trop junior ou trop senior.", target: "level" as const }]),
+    ...(preferences.targetLevel || preferences.targetLevelAny ? [] : [{ id: "level" as const, label: "Niveau visé", help: "Repérer les offres trop junior ou trop senior.", target: "level" as const }]),
   ];
 }
 
@@ -136,7 +136,7 @@ export function changedCriteriaIds(before: SearchPreferences, after: SearchPrefe
   const fields: [CriteriaRow["id"], unknown, unknown][] = [
     ["roles", before.roles, after.roles],
     ["searchTracks", before.searchTracks ?? [], after.searchTracks ?? []],
-    ["level", [before.targetLevel ?? null, before.acceptLevelAbove ?? false], [after.targetLevel ?? null, after.acceptLevelAbove ?? false]],
+    ["level", [before.targetLevel ?? null, !!before.targetLevelAny, before.acceptLevelAbove ?? false], [after.targetLevel ?? null, !!after.targetLevelAny, after.acceptLevelAbove ?? false]],
     ["contracts", before.contracts, after.contracts],
     ["remote", before.contracts.map(contract => [contract, remoteForContract(before, contract)]), before.contracts.map(contract => [contract, remoteForContract(after, contract)])],
     ["salary", before.minimumSalary, after.minimumSalary],

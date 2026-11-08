@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Propositions au bon moment P7
+
+- Niveau visé proposé dans un lot Senior ou Lead, préparation près d’un entretien, visite manuelle après le lot, histoire après un bilan privé et termes sous une expérience validée.
+- « Plus tard » masque chaque proposition sept jours sur le compte. Le moteur de prochaine étape respecte ces choix ; aucun enregistrement au simple affichage. « Peu importe » est un choix de niveau explicite et modifiable. Aucune migration.
+
 ## 8 novembre 2026 — Accueil en trois blocs P6
 
 - Votre séance réunit la prochaine étape et deux pistes facultatives ; Votre semaine réunit engagements, série et pause ; Le radar rassemble lectures, nouveautés connues et tendance des candidatures.
