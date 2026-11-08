@@ -113,3 +113,14 @@ test("Tri Q1b : groupes exclusifs, dans l'ordre, sans groupe vide", () => {
   // A range alone counts as pay.
   assert.equal(reserveGroup(offer("fourchette", { annualSalary: null, salaryMax: 70000 }), now), "other");
 });
+
+
+test("archives : l’import conserve microsecondes et fuseau de publication malgré un TJM corrigé", async () => {
+ const pay=moduleUrl("pay-range"), facts=moduleUrl("explicit-offer-facts",{"./pay-range":pay});
+ const {normalizeJobInput}=await import(moduleUrl("server",{"./countries":moduleUrl("countries"),"./application-workflow":moduleUrl("application-workflow"),"./explicit-offer-facts":facts,"./pay-range":pay}));
+ const publishedAt="2026-10-01T12:00:00.123456+04:00", input=normalizeJobInput({title:"Offre fictive",publishedAt,dailyRate:700});
+ assert.equal(input.publishedAt,publishedAt);assert.ok(Number.isFinite(Date.parse(input.publishedAt)));
+ const job=offer("precision",{...input,createdAt:daysAgo(0),updatedAt:daysAgo(0)});
+ assert.equal(archiveReferenceTime(job),Date.parse(publishedAt));assert.ok(isArchived(job,now));
+ assert.equal(normalizeJobInput({title:"Date simple",publishedAt:"2026-10-01"}).publishedAt,"2026-10-01");
+});

@@ -113,3 +113,5 @@ Dans **Ma candidature → Votre relance**, **Modifier la date** ouvre le calendr
 Après une relance faite, aucune seconde n’est créée automatiquement. **Prévoir une autre relance** propose une date modifiable ; vous choisissez de la confirmer. Revenir à une date déjà notée faite pour le même envoi conserve sa confirmation, sans nouveau doublon. Annuler puis renvoyer une candidature démarre un nouveau suivi, distinct du précédent.
 
 Une date d’envoi inconnue reste inconnue : Radar n’invente pas J+7. Les relances après un entretien se règlent dans **Entretiens**. Les choix, confirmations et versions sont conservés dans la sauvegarde intégrale ; aucun service tiers ne les reçoit.
+
+Les dates de publication importées gardent leur précision et leur fuseau. Corriger un TJM ne change pas l’âge de publication : une offre ancienne sans décision reste dans les archives restaurables. Une ancienne date invalide ne peut pas être devinée ; corrigez-la depuis la fiche si vous la connaissez.
