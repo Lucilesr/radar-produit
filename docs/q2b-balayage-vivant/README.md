@@ -7,7 +7,7 @@ Références : [ordinateur](../maquettes/iteration-2/Balayage-v2.html) et [mobil
 | Ordinateur 1360 px | ![Avant](avant-ordinateur.jpg) | ![Maquette](maquette-ordinateur.jpg) |
 | Mobile 390 px | ![Avant mobile](avant-mobile.jpg) | ![Maquette mobile](maquette-mobile.jpg) |
 
-1. [ ] **Structure et colonne** : retour avant le titre sur ordinateur, retour/titre/Actualiser sur une ligne mobile, alignés sur le contenu ; bilan puis sources et visites, maximum 1120 px de contenu.
+1. [ ] **Structure et colonne** : retour avant le titre sur ordinateur, retour/titre/Actualiser sur une ligne mobile, alignés sur le contenu ; bilan puis sources et visites, maximum 1120 px de contenu. Navigation latérale actuelle remplacée, sur Balayage seulement, par l’en-tête horizontal de la maquette ; mêmes quatre destinations et menu du compte.
 2. [ ] **Trois états** : moment pétrole pendant la lecture et avec nouvelles offres ; bilan calme clair sans nouveauté ; trois compteurs seulement dans le moment (parcourues / pour vous / nouvelles), doublons derrière ⓘ.
 3. [ ] **Radar** : balayage arrêté à la fin ; un écho persistant par offre unique correspondant aux critères, pulsation courte pour les nouvelles ; texte « Balayage terminé · N offres collent à vos critères » ; mouvement réduit statique.
 4. [ ] **Lecture progressive** : états attente / en cours / terminé / erreur par source, progression globale N sources sur M, résultats dès leur arrivée, reprise ciblée sans effacer les succès ; arrêt au plus à 60 s.
