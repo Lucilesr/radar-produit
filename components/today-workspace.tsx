@@ -22,11 +22,11 @@ import { useRadarClock } from "@/components/use-radar-clock";
 
 // Recalculate deadlines on entry and explicit data changes; keep the page stable while reading.
 function useNow(jobs: JobRecord[]) { const [now,setNow]=useState(()=>Date.now()); useEffect(()=>setNow(Date.now()),[jobs]);return now; }
-export function TodayPageHeader({name,account}:{name:string;account:ReactNode}){
+export function TodayPageHeader({name,account,estimate=true}:{name:string;account:ReactNode;estimate?:boolean}){
  const clock=useRadarClock(),{queue,ready,stopped}=useRadarNextSteps();
  const minutes=queue.slice(0,3).reduce((total,step)=>total+step.minutes,0);
  const firstName=name.trim().split(/\s+/)[0];
- return <header className="workspace-page-header today-page-header"><div><p className="today-date">{clock?new Date(clock).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}):"Aujourd’hui"}</p><h1 id="workspace-title" tabIndex={-1}>Bonjour{firstName?" "+firstName:""}</h1></div>{ready&&!stopped&&minutes?<p className="today-duration">Séance du jour : environ {minutes} minutes</p>:null}<div className="today-mobile-account">{account}</div></header>;
+ return <header className="workspace-page-header today-page-header"><div><p className="today-date">{clock?new Date(clock).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}):"Aujourd’hui"}</p><h1 id="workspace-title" tabIndex={-1}>Bonjour{firstName?" "+firstName:""}</h1></div>{estimate&&ready&&!stopped&&minutes?<p className="today-duration">Séance du jour : environ {minutes} minutes</p>:null}<div className="today-mobile-account">{account}</div></header>;
 }
 export function TodaySkeleton(){
  return <div className="today-aligned today-skeleton" role="status" aria-label="Chargement de votre journée…"><span className="sr-only">Chargement de votre journée…</span><div className="today-skeleton-focus" aria-hidden><Skeleton className="h-4 w-36"/><Skeleton className="h-16 w-full"/><Skeleton className="h-12 w-56"/></div><div className="today-skeleton-lower" aria-hidden>{[0,1].map(i=><div key={i}><Skeleton className="h-6 w-40"/><Skeleton className="h-4 w-full"/><Skeleton className="h-12 w-full"/></div>)}</div></div>;
