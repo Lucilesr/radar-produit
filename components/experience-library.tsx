@@ -1,6 +1,6 @@
 "use client";
 
-import {ExperienceDomainTerms} from "@/components/domain-terms";
+import {ExperienceDomainTerms,recoverDomainFocus} from "@/components/domain-terms";
 import {useDomainTerms} from "@/components/use-domain-terms";
 import { sessionWrite } from "@/lib/session-write";
 import { ExpandableSection, revealCollapsibleAncestors } from "./experience-section";
@@ -317,7 +317,7 @@ export function ExperienceLibrary({ documentId, onOpenDocuments, initialLibrary,
 
 
     <p className="workspace-caption mt-3">Vos expériences et réalisations aident Radar à personnaliser vos candidatures. À partir des expériences que vous avez détaillées, Radar peut préparer des pistes d’adaptation du CV et des réponses pour chaque offre.</p>
-    <WorkspaceFormError message={domain.error}/>{domain.error?<WorkspaceButton data-domain-retry disabled={domain.busy} onClick={()=>void domain.load()}>Relire les termes</WorkspaceButton>:null}
+    <WorkspaceFormError message={domain.error}/>{domain.error?<WorkspaceButton data-domain-retry disabled={domain.busy} onClick={()=>void domain.load().then(()=>requestAnimationFrame(()=>recoverDomainFocus()))}>Relire les termes</WorkspaceButton>:null}
     {state.extractions.find(e=>e.documentId===state.reference?.documentId)?.status==="needs_conversion"?<p role="alert" className="experience-error">{state.extractions.find(e=>e.documentId===state.reference?.documentId)?.issue||"Ce document nécessite une conversion en texte lisible."}</p>:null}
     <dialog ref={rightsDialog} aria-labelledby="library-rights-title" className="signal-library-dialog library-rights-dialog" onCancel={event=>{event.preventDefault();if(!rightsSaving&&!busy){setShowConsentManager(false);setRightsDraft({});}}}>
       <header className="library-dialog-heading"><div><h2 id="library-rights-title">Droits d’usage</h2><p>Choisissez où chaque contenu peut être utilisé. Sans autorisation, il reste privé.</p></div><button type="button" className="library-close" aria-label="Fermer les droits d’usage" disabled={rightsSaving||busy} onClick={()=>{setShowConsentManager(false);setRightsDraft({});}}><X size={19}/></button></header>
