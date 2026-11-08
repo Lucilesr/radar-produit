@@ -129,12 +129,12 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
     {tools}
     {source?<div className="scan-source-filter"><span>Source : <strong>{source}</strong></span><button type="button" className="secondary-button" onClick={onClearSource}>Effacer le filtre de source</button></div>:null}
     <nav className="workspace-tabs" aria-label="Vues des offres">{views.map(([id,label])=><span className="opportunity-tab" key={id}><button type="button" aria-pressed={filter===id} onClick={()=>changeView(id)}>{label}<span>{counts[id]}</span></button>{id==="trash"?<HelpTooltip label="Corbeille">Les offres restent restaurables pendant 10 jours. Après ce délai, elles sont supprimées définitivement à la prochaine ouverture du radar.</HelpTooltip>:null}</span>)}</nav>
-    {lotShown&&lot!.size>0?<DailyLotBanner lot={lot!} total={counts.to_review} hasRescue={rescueOffers.length>0} inLot={inLot} onToggle={()=>{setRetained(null);setSelection([]);setReserveGroupId(null);setAllOffers(inLot);onClose();requestAnimationFrame(()=>document.getElementById(inLot?"reserve-title":"workspace-title")?.focus());}}/>:null}
+    {lotShown&&lot!.size>0?<DailyLotBanner lot={lot!} hasRescue={rescueOffers.length>0} inLot={inLot} onToggle={()=>{setRetained(null);setSelection([]);setReserveGroupId(null);setAllOffers(inLot);onClose();requestAnimationFrame(()=>document.getElementById(inLot?"reserve-title":"workspace-title")?.focus());}}/>:null}
     {filter==="to_review"&&!query&&!activeId?contextualPrompt:null}
     {filter==="to_review"&&!inReserve&&counts.archived>0?<button type="button" className="reserve-archives" onClick={()=>changeView("archived")}><Archive size={15} aria-hidden/>Archives ({counts.archived})</button>:null}
     {inReserve&&rescueOffers.length>0?<FridayRescue offers={rescueOffers} busy={trashBusy} onRestore={onRestore}/>:null}
     {inReserve?<ReserveGroups groups={groups} shown={reserveGroupId} total={reserveJobs.length} archived={counts.archived??0} busy={trashBusy} onShow={id=>{setRetained(null);setSelection([]);setReserveGroupId(id);onClose();requestAnimationFrame(()=>document.getElementById("reserve-title")?.focus());}} roles={profile.searchPreferences?.roles??[]} onChanged={async roleChanged=>{setRetained(null);setSelection([]);return onReserveChanged(roleChanged);}} onArchives={()=>changeView("archived")}/>:null}
-    {filter==="archived"?<div className="reserve-archive-head"><p><Archive size={16} aria-hidden/>Annonces de plus de {ARCHIVE_AFTER_DAYS} jours. Elles restent consultables et peuvent être remises à examiner.</p><button type="button" className="secondary-button" onClick={()=>changeView("to_review")}><ArrowLeft size={15} aria-hidden/>Retour à « À examiner »</button></div>:null}
+    {filter==="archived"?<div className="reserve-archive-head"><p><Archive size={16} aria-hidden/>Annonces de plus de {ARCHIVE_AFTER_DAYS} jours, restaurables.</p><button type="button" className="secondary-button" onClick={()=>changeView("to_review")}><ArrowLeft size={15} aria-hidden/>Retour à « À examiner »</button></div>:null}
     <div className="opportunities-toolbar">
       <div className="review-view-summary">
         {inLot?<span className="daily-lot-order">Classées par adéquation</span>:<Select value={dateOrder} onValueChange={value=>{setDateOrder(value as "newest"|"oldest");setRetained(null);}}><SelectTrigger className="opportunity-date-order" aria-label={filter==="trash"?"Trier par date d’écartement":"Trier par date de mapping"}><span className="opportunity-date-order-label">Trier :</span><SelectValue /></SelectTrigger><SelectContent position="popper" side="bottom" sideOffset={6} align="start" className="opportunity-date-order-menu"><SelectItem value="newest">Du plus récent au plus ancien</SelectItem><SelectItem value="oldest">Du plus ancien au plus récent</SelectItem></SelectContent></Select>}
@@ -197,7 +197,7 @@ function ReserveGroups({groups,shown,total,archived,busy,roles,onShow,onChanged,
   }
   return <section className="reserve" aria-labelledby="reserve-title" aria-busy={working}>
     <div className="reserve-head"><h3 id="reserve-title" tabIndex={-1}>La réserve <span>{total} offre{total>1?"s":""}</span></h3>
-      <p>Rangée par groupes : choisissez une action pour un groupe. Les annonces publiées il y a au moins {ARCHIVE_AFTER_DAYS} jours partent aux archives. Une remise à examiner ou « Plus tard » vous redonne {ARCHIVE_AFTER_DAYS} jours.</p></div>
+      <details className="reserve-help"><summary>Comment fonctionne la réserve ?</summary><p>Rangée par groupes : choisissez une action pour un groupe. Les annonces publiées il y a au moins {ARCHIVE_AFTER_DAYS} jours partent aux archives. Une remise à examiner ou « Plus tard » vous redonne {ARCHIVE_AFTER_DAYS} jours.</p></details></div>
     <p className="reserve-progress" role="status">{done.length} groupe{done.length>1?"s":""} rangé{done.length>1?"s":""} sur {Math.max(initialGroups,done.length)} · {removed} offre{removed>1?"s":""} en moins dans la réserve</p>
     {recent?<div className="reserve-undo"><span>{recent.receipt.action==="keep"?`${recent.receipt.count} offre${recent.receipt.count>1?"s":""} gardée${recent.receipt.count>1?"s":""} pour plus tard.`:recent.receipt.action==="role"?"Poste ajouté à vos critères.":`${recent.receipt.count} offre${recent.receipt.count>1?"s":""} ${recent.receipt.action==="archive"?"archivée":"écartée"}${recent.receipt.count>1?"s":""}.`}</span><button type="button" className="secondary-button" disabled={disabled} onClick={()=>void decide("undo")}>Annuler le dernier rangement</button></div>:null}
     {error?<div><WorkspaceFormError message={error}/><button type="button" className="secondary-button" disabled={disabled} onClick={()=>void onChanged(recent?.receipt.action==="role").then(ok=>{if(ok){setError("");pending.current=null;setRecent(null);setDone([]);setRemoved(0);}})}>Actualiser la réserve</button></div>:null}
@@ -215,12 +215,12 @@ function ReserveGroups({groups,shown,total,archived,busy,roles,onShow,onChanged,
   </section>;
 }
 
-function DailyLotBanner({lot,total,inLot,hasRescue=false,onToggle}:{lot:DailyLot;total:number;inLot:boolean;hasRescue?:boolean;onToggle:()=>void}){
+function DailyLotBanner({lot,inLot,hasRescue=false,onToggle}:{lot:DailyLot;inLot:boolean;hasRescue?:boolean;onToggle:()=>void}){
   const left=lot.remaining.length,done=!left;
   const others=lot.waiting;
   const caption=done
-    ?`Vous avez trié les ${lot.size} offres du jour.${others?` ${others} autre${others>1?"s":""} attend${others>1?"ent":""}, sans urgence.`:""}`
-    :lot.triaged?`${lot.triaged} triée${lot.triaged>1?"s":""} sur ${lot.size} · les mieux classées des ${total} à examiner`:`Les ${lot.size} mieux classées des ${total} à examiner. Le lot ne se remplit pas pendant que vous triez.`;
+    ?others?`${others} offre${others>1?"s":""} attend${others>1?"ent":""} en réserve, sans urgence.`:"Votre lot du jour est terminé."
+    :lot.triaged?`${lot.triaged} triée${lot.triaged>1?"s":""} sur ${lot.size}`:"Le lot ne se remplit pas pendant le tri.";
   return <section className={"daily-lot"+(done?" is-done":"")} aria-label="Lot du jour">
     <div className="daily-lot-text">
       <p className="daily-lot-headline" aria-live="polite"><strong>{lotHeadline(lot)}</strong>{left&&lot.triaged?<span> dans votre lot du jour</span>:null}</p>

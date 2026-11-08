@@ -76,3 +76,6 @@ body:has(.radar-page[data-space=offers]) :is(.opportunity-date-order-menu [data-
 body:has(.radar-page[data-space=offers]) .date-picker-popover{width:min(360px,calc(100vw - 32px));max-height:min(80dvh,var(--radix-popover-content-available-height,80dvh));overflow-y:auto}
 body:has(.radar-page[data-space=offers]) .date-picker-popover button{border-radius:10px;min-width:44px;min-height:44px}
 body:has(.radar-page[data-space=offers]) [data-slot=drawer-content] input{border-radius:10px;min-height:44px}
+
+.reserve-help>summary{min-height:44px;align-content:center;cursor:pointer;font-size:13px;font-weight:600}.reserve-help[open]>p{margin-block:8px 0}
+.radar-page[data-space=offers] :is(.secondary-button,.signal-form-button,.workspace-state button){border-radius:10px;min-height:44px}
