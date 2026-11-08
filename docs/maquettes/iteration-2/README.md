@@ -1,6 +1,6 @@
 # Maquettes de l'itération 2
 
-Référence visuelle pour `docs/iteration-2.md`. Ces six maquettes statiques, à données fictives, s'ouvrent dans un navigateur. Chaque écran est suivi d'une bande « États à construire aussi » ; ces états font partie du lot au même titre que l'écran principal.
+Référence visuelle pour `docs/iteration-2.md`. Ces six maquettes statiques, à données fictives, s'ouvrent dans un navigateur. Chaque écran est suivi d'annotations (blocs hachurés, voir plus bas) qui décrivent ses autres états. Ces états font partie du lot au même titre que l'écran principal.
 
 | Fichier | Écran | Lots |
 | --- | --- | --- |
@@ -16,6 +16,16 @@ Référence visuelle pour `docs/iteration-2.md`. Ces six maquettes statiques, à
 | `MonRadar-mobile.html` | Mon radar sur mobile : portée en tête, trois sections en accordéon, une seule ouverte | P5 |
 
 Chaque écran a sa version mobile (390 px). Les maquettes ordinateur passent aussi sur plusieurs lignes quand la largeur diminue ; à 390 px, c'est la maquette mobile qui fait foi.
+
+## Annotations : à lire, pas à afficher
+
+Les blocs **hachurés à bordure pointillée** dont le titre commence par « Annotation · ne pas afficher » sont des **indications pour le développement**. Ils ne doivent jamais apparaître dans l'interface.
+
+- **« Autres états de cet écran »** : chaque carte décrit un état du **même écran** (vide, erreur, compte neuf, tout est fait…). On le construit comme un état qui remplace ou modifie le bloc concerné, pas comme une bande ajoutée en bas de page.
+- **« État 1, 2, 3 sur 3 »** (Balayage) : trois états successifs du même écran, jamais affichés ensemble.
+- **Mobile** : les annotations décrivent les autres états de l'écran mobile, à construire de la même façon.
+
+Chaque état annoncé est capturé dans la PR du lot.
 
 ## Règles visuelles
 
