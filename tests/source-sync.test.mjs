@@ -49,3 +49,16 @@ test("Q2b : seuls les deux scénarios fictifs explicites autorisent l’actualis
  for(const mode of [undefined,"full","scan","scan-error","scan-partial","onboarding","__proto__"]){assert.equal(demoAutoScan(mode),false);}
  assert.match(demoScenarioNotice("scan-auto"),/ouverture/);assert.match(demoScenarioNotice("scan-auto-error"),/panne simulée/);
 });
+
+const sessionCode=ts.transpileModule(readFileSync(new URL('../lib/scan-session.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace(/from ['"]\.\/source-sync['"]/g,`from ${JSON.stringify(moduleUrl('source-sync'))}`);
+const {readScanSession,scanSessionKey}=await import('data:text/javascript;base64,'+Buffer.from(sessionCode).toString('base64'));
+test('Mon radar : bilan confirmé relu, échos inconnus exclus et comptes séparés',()=>{
+ const result=summarizeScan([reading('A'),reading('B',{matchedIds:['A-1','B-1']})],at),before=JSON.stringify(result);
+ const restored=readScanSession(JSON.stringify({result,previousAt:'2026-11-06T17:00:00Z',newIds:['A-1','A-1','hors-bilan',7]}));
+ assert.deepEqual(restored.result,result);assert.deepEqual(restored.newIds,['A-1']);assert.equal(restored.previousAt,'2026-11-06T17:00:00Z');assert.equal(JSON.stringify(result),before);
+ assert.notEqual(scanSessionKey('demo:a'),scanSessionKey('demo:b'));
+});
+test('Mon radar : session illisible ou résultat invalide ne crée aucun bilan',()=>{
+ for(const value of [null,'{','null',JSON.stringify({result:{at,sources:[reading('A',{total:-1})]}})])assert.equal(readScanSession(value),null);
+ const restored=readScanSession(JSON.stringify({result:summarizeScan([],at),previousAt:'inconnu',newIds:['invente']}));assert.equal(restored.previousAt,undefined);assert.deepEqual(restored.newIds,[]);
+});

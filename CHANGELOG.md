@@ -1,3 +1,8 @@
+## 9 novembre 2026 — Mon radar en trois sections
+
+- Portée, prochain réglage et radar fixe vers le dernier bilan confirmé ; critères, sources et carnet visibles dans un même aperçu.
+- Accordéons mobiles mémorisés, critères épurés et domaine vide avec lien vers le carnet. Les éditeurs détaillés et les données restent conservés.
+
 ## 9 novembre 2026 — Candidatures sur mobile
 
 - Liste compacte par action, deux cartes par groupe, préparation et relances visibles ; outils dans le menu et reprise après échec.

@@ -35,7 +35,7 @@ const initialAlertSources = new Set(["Collective", "Apec", "Free-Work", "We Work
 const initialJobboardSources = new Set(["LinkedIn Jobs", "Welcome to the Jungle", "Wellfound", "Himalayas"]);
 const allInitialSources = new Set([...initialAlertSources, ...initialJobboardSources]);
 
-export function SourcePanel({displaySection="all",onSection,jobs,profile,onSave,onSync,syncBusy=false,syncError="",syncedSettings,onSettingsChanged,onAddOffer,onQuitSession,sessionWriting=false,active=true,headerTarget,domainContent}:{displaySection?:"all"|"criteria"|"channels"|"outreach";onSection?:(section:SearchSection)=>void;domainContent?:ReactNode;jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSync:(quiet?:boolean)=>Promise<boolean>;syncBusy?:boolean;syncError?:string;syncedSettings?:SourceSetting[];onSettingsChanged:(sources:SourceSetting[])=>void;onAddOffer?:(url:string)=>void;onQuitSession?:()=>void;sessionWriting?:boolean;active?:boolean;headerTarget?:HTMLElement|null}) {
+export function SourcePanel({overviewCriteria=false,displaySection="all",onSection,jobs,profile,onSave,onSync,syncBusy=false,syncError="",syncedSettings,onSettingsChanged,onAddOffer,onQuitSession,sessionWriting=false,active=true,headerTarget,domainContent}:{overviewCriteria?:boolean;displaySection?:"all"|"criteria"|"channels"|"outreach";onSection?:(section:SearchSection)=>void;domainContent?:ReactNode;jobs:JobRecord[];profile:CandidateProfile;onSave:(profile:CandidateProfile)=>Promise<boolean>;onSync:(quiet?:boolean)=>Promise<boolean>;syncBusy?:boolean;syncError?:string;syncedSettings?:SourceSetting[];onSettingsChanged:(sources:SourceSetting[])=>void;onAddOffer?:(url:string)=>void;onQuitSession?:()=>void;sessionWriting?:boolean;active?:boolean;headerTarget?:HTMLElement|null}) {
   const demo=useDemoMode();
   const notify=useWorkspaceFeedback();
   const [settings,setSettings]=useState<SourceSetting[]|null>(null);
@@ -60,6 +60,7 @@ export function SourcePanel({displaySection="all",onSection,jobs,profile,onSave,
     requestAnimationFrame(()=>element?.scrollIntoView({block:"start"}));
   }
   function openJobgether(){
+    if(overviewCriteria){const url=new URL(window.location.href);url.searchParams.set('source','Jobgether');window.history.replaceState(null,'',url.pathname+url.search+url.hash);selectSection('channels');return;}
     selectSection("channels");
     const source=sourceCatalog.find(item=>item.name==="Jobgether");
     if(source)openDetail(source);
@@ -153,11 +154,11 @@ export function SourcePanel({displaySection="all",onSection,jobs,profile,onSave,
   return <div className="source-workspace signal-sources-workspace">
     {active&&headerTarget?createPortal(<div className="source-refresh-actions">
       <span className="signal-help" role="status">{refreshedAgo(lastRefreshAt(settings??[]))}</span>
-      <WorkspaceButton variant="primary" busy={syncBusy} disabled={busy||!settings||!hasSearchedRole(searchPreferences(profile.searchPreferences))} onClick={()=>void sync()}><RefreshCw size={14} aria-hidden/>Actualiser maintenant</WorkspaceButton>
+      <WorkspaceButton variant="secondary" busy={syncBusy} disabled={busy||!settings||!hasSearchedRole(searchPreferences(profile.searchPreferences))} onClick={()=>void sync()}><RefreshCw size={14} aria-hidden/>Actualiser maintenant</WorkspaceButton>
       <Popover><PopoverTrigger asChild><WorkspaceButton variant="quiet" aria-label="Réglages d’actualisation"><MoreHorizontal size={18} aria-hidden/></WorkspaceButton></PopoverTrigger><PopoverContent align="end"><ChoiceSelect label="Actualisation" value={refreshMode(profile.refreshMode)} options={[{value:"on_open",label:refreshModeLabels.on_open},{value:"manual",label:refreshModeLabels.manual}]} onChange={mode=>void saveRefreshMode(mode)} disabled={demo||busy}/></PopoverContent></Popover>
     </div>,headerTarget):null}
     <div id="source-panel-criteria" className="source-subpanel" hidden={displaySection!=="all"&&displaySection!=="criteria"}>
-      <SearchCriteriaPanel domainContent={domainContent} active={active&&(displaySection==="all"||displaySection==="criteria")} profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
+      <SearchCriteriaPanel overview={overviewCriteria} domainContent={domainContent} active={active&&(displaySection==="all"||displaySection==="criteria")} profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
     </div>
     <div id="source-panel-channels" className="source-subpanel" hidden={displaySection!=="all"&&displaySection!=="channels"&&displaySection!=="outreach"}>
       <WorkspacePanelHeader id="source-settings-title" title={<span className="source-title-line"><span>Sources suivies</span>{summary?<span className="source-summary">{summary}</span>:null}</span>} hint={demo?<HelpTooltip label="Sources fictives">Les balayages sont fictifs : aucun flux externe n’est contacté. L’ajout d’alertes Collective reste désactivé dans la démo.</HelpTooltip>:undefined} actions={<WorkspaceButton variant="secondary" aria-haspopup="dialog" disabled={!settings} onClick={()=>setAddFilter("all")}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>

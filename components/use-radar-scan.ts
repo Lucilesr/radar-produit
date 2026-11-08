@@ -4,20 +4,24 @@ import { requestError } from "@/lib/request-error";
 import { mergeScan, readScanSummary, summarizeScan, type ScanSummary, type SourceReading } from "@/lib/source-sync";
 import { scanPlan, scanSources, type ScanSourceProgress } from "@/lib/scan-presentation";
 import type { JobRecord } from "@/lib/types";
+import {readScanSession,scanSessionKey} from "@/lib/scan-session";
 import {lastRefreshAt} from "@/lib/refresh-schedule";
 import type { SourceSetting } from "@/components/source-card";
 
-export function useRadarScan({ onOffers, onSources, knownJobs, sources, sourcesKnown, simulated=false }: {
-  onOffers: (jobs: JobRecord[]) => void; onSources: (sources: SourceSetting[]) => void;
+export function useRadarScan({ owner, onOffers, onSources, knownJobs, sources, sourcesKnown, simulated=false }: {
+  owner:string;onOffers: (jobs: JobRecord[]) => void; onSources: (sources: SourceSetting[]) => void;
   knownJobs: readonly JobRecord[]; sources: SourceSetting[]; sourcesKnown: boolean; simulated?:boolean;
 }) {
+  const [confirmedResult,setConfirmedResult]=useState<ScanSummary|null>(null);
   const [busy,setBusy]=useState(false),[error,setError]=useState(""),[quiet,setQuiet]=useState(false);
   const [result,setResult]=useState<ScanSummary|null>(null),[progress,setProgress]=useState<ScanSourceProgress[]>([]);
   const [previousAt,setPreviousAt]=useState<string|undefined>();
   const [newIds,setNewIds]=useState<string[]>([]);
   const saved=useRef<ScanSummary|null>(null),controller=useRef<AbortController|null>(null);
-  const pending=useRef<Promise<boolean>|null>(null),baseline=useRef(new Set<string>());
+  const pending=useRef<Promise<boolean>|null>(null),baseline=useRef(new Set<string>()),known=useRef(knownJobs);
+  useEffect(()=>{known.current=knownJobs;},[knownJobs]);
   useEffect(()=>()=>controller.current?.abort(),[]);
+  useEffect(()=>{if(!owner)return;const frame=requestAnimationFrame(()=>{try{const previous=readScanSession(sessionStorage.getItem(scanSessionKey(owner)));if(previous&&!pending.current){saved.current=previous.result;baseline.current=new Set(known.current.map(job=>job.id).filter(id=>!previous.newIds.includes(id)));setResult(previous.result);setConfirmedResult(previous.result);setProgress(previous.result.sources.map(({source,state})=>({source,state})));setPreviousAt(previous.previousAt);setNewIds(previous.newIds);}}catch{/* Session storage is optional. */}});return()=>cancelAnimationFrame(frame);},[owner]);
   function run(source?:string,silent=false):Promise<boolean>{
     if(pending.current)return pending.current;
     const abort=new AbortController();controller.current=abort;
@@ -52,6 +56,8 @@ export function useRadarScan({ onOffers, onSources, knownJobs, sources, sourcesK
         if(jobs.status==="fulfilled"&&Array.isArray(jobs.value.jobs))onOffers(jobs.value.jobs);
         if(reloadedSources.status==="fulfilled"&&Array.isArray(reloadedSources.value.sources))onSources(reloadedSources.value.sources);
         if(jobs.status==="rejected"||reloadedSources.status==="rejected")throw new Error("Le bilan est conservé, mais l’affichage n’a pas pu être entièrement relu. Réessayez.");
+        if(saved.current)setConfirmedResult(saved.current);
+        if(saved.current&&owner){try{sessionStorage.setItem(scanSessionKey(owner),JSON.stringify({result:saved.current,previousAt:source?previousAt:lastRefreshAt(settings),newIds:[...new Set(saved.current.sources.flatMap(item=>item.matchedIds))].filter(id=>!baseline.current.has(id))}));}catch{/* The confirmed result remains in memory. */}}
         if(saved.current?.allFailed){setError("Le balayage n’a pas abouti. Vos offres restent conservées.");return false;}
         return true;
       }catch(problem){if(!abort.signal.aborted)setError(requestError(problem,"Le balayage n’a pas abouti. Vos offres restent conservées.").replace("Votre saisie est conservée.","Vos offres restent disponibles."));return false;}
@@ -59,5 +65,5 @@ export function useRadarScan({ onOffers, onSources, knownJobs, sources, sourcesK
     };
     pending.current=execute();return pending.current;
   }
-  return {busy,error,result,progress,newIds,quiet,previousAt,run};
+  return {busy,error,result,confirmedResult,progress,newIds,quiet,previousAt,run};
 }
