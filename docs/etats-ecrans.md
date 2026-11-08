@@ -932,3 +932,17 @@ Recette staging39 : exactement 1 000 offres et 50 candidatures fictives, tableau
 | Mobile / clavier / mouvement réduit | 390 px, Tab, préférence appareil | dates sous le texte, boutons Signal, focus conservé, aucune animation du journal | mêmes actions | oui |
 
 Les notes longues restent dans leur dossier : elles ne sont pas reproduites dans les événements. La fermeture hors ligne ne promet pas une synchronisation ; le dernier point confirmé du compte reste la référence.
+
+## Complément L2 — série et pause sur Aujourd’hui
+
+| état | ce qui le déclenche | ce que voit la personne | action proposée | existe aujourd’hui ? |
+| --- | --- | --- | --- | --- |
+| Neuf | aucun plan tenu | 0 semaines tenues, 0 jokers | poser un plan, pause facultative | oui |
+| Chargement | lecture du compte | lecture de la série, bouton indisponible | attendre | oui |
+| Semaine ouverte / partielle | quelques engagements cochés | série précédente préservée, progression du plan | continuer ou replanifier | oui |
+| Tenue | toutes les cases cochées | badge actualisé et moment Semaine tenue | continuer | oui |
+| Nouvelle semaine | première visite du compte cette semaine | moment, série et jokers | poser le plan ou Plus tard | oui |
+| Pause | choix confirmé, de une à quatre semaines | dates et série conservée | gérer puis reprendre cette semaine | oui |
+| Sans joker | semaine passée non tenue | série à zéro, Nouvelle semaine, page blanche | reprendre à son rythme | oui |
+| Erreur / conflit | lecture ou écriture non confirmée | dernier état conservé, erreur explicite | Relire ma série | oui |
+| Mobile / clavier / mouvement réduit | 390 px, Tab, préférence | choix Signal, focus du dialogue, mêmes données sans mouvement requis | mêmes actions | oui |

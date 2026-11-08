@@ -16,7 +16,7 @@ export default async function Home({searchParams}: {searchParams: Promise<Record
   const user = await requireChatGPTUser("/");
   const demoMode = user.userId.startsWith("demo:") ? (await cookies()).get("radar_demo_mode")?.value : undefined;
   if (user.userId.startsWith("demo:")) {
-    const fresh=await ensureRecruiterDemo(user.userId,{emptyProfile:demoMode==="onboarding",fridayDemo:demoMode==="friday",triageDemo:demoMode==="triage",scanDemo:demoMode?.startsWith("scan"),reducedMotion:demoMode==="scan-reduced",sessionDemo:demoMode==="session",sessionEmpty:demoMode==="session-empty"});
+    const fresh=await ensureRecruiterDemo(user.userId,{emptyProfile:demoMode==="onboarding",fridayDemo:demoMode==="friday",triageDemo:demoMode==="triage",scanDemo:demoMode?.startsWith("scan"),reducedMotion:demoMode==="scan-reduced"||demoMode==="weeks-reduced",weekScenario:demoMode?.startsWith("weeks-")?demoMode:undefined,sessionDemo:demoMode==="session",sessionEmpty:demoMode==="session-empty"});
     if(fresh&&demoMode==="scan-empty")await syncDemoSources(user.userId,"scan");
   }
   else await ensureOnboardingDemo(user.userId).catch(() => undefined);

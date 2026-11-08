@@ -1,3 +1,4 @@
+import {demoWeekSeries} from "./demo-week-series";
 import { and, eq } from "drizzle-orm";
 import { env } from "cloudflare:workers";
 import { getDb } from "@/db";
@@ -45,16 +46,17 @@ const experience = [
   { title: "Product Manager · SaaS", organization: "Ligne Claire (fictif)", role: "Product Manager", period: "2020–2023", context: "Développement fictif d’une plateforme SaaS utilisée par plusieurs équipes métiers.", contribution: "Discovery, cadrage de la roadmap et coordination avec design, data et ingénierie.", result: "Livraisons mieux séquencées et retours utilisateurs intégrés aux décisions.", claimKey: "saas-discovery" },
 ];
 
-type DemoOptions={emptyProfile?:boolean;fridayDemo?:boolean;triageDemo?:boolean;scanDemo?:boolean;reducedMotion?:boolean;sessionDemo?:boolean;sessionEmpty?:boolean};
+type DemoOptions={weekScenario?:string;emptyProfile?:boolean;fridayDemo?:boolean;triageDemo?:boolean;scanDemo?:boolean;reducedMotion?:boolean;sessionDemo?:boolean;sessionEmpty?:boolean};
 export async function ensureRecruiterDemo(userId: string, options: DemoOptions|boolean = {}): Promise<boolean> {
-  const {emptyProfile=false,fridayDemo=false,triageDemo=false,scanDemo=false,reducedMotion=false,sessionDemo=false,sessionEmpty=false}=typeof options==="boolean"?{emptyProfile:options}:options;
+  const {weekScenario,emptyProfile=false,fridayDemo=false,triageDemo=false,scanDemo=false,reducedMotion=false,sessionDemo=false,sessionEmpty=false}=typeof options==="boolean"?{emptyProfile:options}:options;
   if (!userId.startsWith("demo:")) throw new Error("La démo exige une session fictive.");
   const db = getDb();
   const existing = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.userId, userId)).limit(1);
   if (existing.length) return false;
   const now = new Date();
   const nowIso = now.toISOString();
-  const demoProfile: CandidateProfile = fridayDemo || triageDemo || scanDemo ? { ...profile, preferences:{reducedMotion}, searchPreferences: { ...demoSearchPreferences, targetLevel: "senior" } } : profile;
+  const series=demoWeekSeries(weekScenario,now);
+  const demoProfile: CandidateProfile = { ...profile,...(series??{}),preferences:{reducedMotion},...(fridayDemo||triageDemo||scanDemo?{searchPreferences:{...demoSearchPreferences,targetLevel:"senior" as const}}:{}) };
   const daysAgo = (days: number) => new Date(now.getTime() - days * 86400000).toISOString();
   const rows = examples.map((example, index) => {
     const input = normalizeJobInput({ ...example, language: "fr", contentCoverage: "summary" });
