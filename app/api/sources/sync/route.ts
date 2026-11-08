@@ -19,6 +19,6 @@ export async function POST(request: Request) {
     const result=user.userId.startsWith("demo:")
       ?await syncDemoSources(user.userId,demoScenario((await cookies()).get("radar_demo_mode")?.value),input.source,input.retry)
       :await syncAuthorizedFeeds(user.userId,input.source as typeof automaticSources[number]|undefined);
-    return Response.json({...result,...(result.allFailed?{error:"Aucune source n’a pu être actualisée. Vos offres existantes sont conservées."}:{})},{status:result.allFailed?503:200,headers:{"Cache-Control":"private, no-store"}});
+    return Response.json({...result,...(result.allFailed?{error:"Aucune source n’a pu être actualisée. Vos offres existantes sont conservées."}:{})},{status:result.allFailed&&!user.userId.startsWith("demo:")?503:200,headers:{"Cache-Control":"private, no-store"}});
   }catch{return Response.json({error:"Les flux n’ont pas pu être actualisés. Vos offres existantes sont conservées."},{status:503});}
 }
