@@ -1,0 +1,4 @@
+import {getChatGPTUser} from "@/app/chatgpt-auth";
+import {cookies} from "next/headers";
+import {readMonthStory,MonthRequestError} from "@/lib/month-story-store";
+export async function GET(request:Request){const user=await getChatGPTUser(),headers={"Cache-Control":"private, no-store"};if(!user)return Response.json({error:"Authentification requise"},{status:401,headers});try{const params=new URL(request.url).searchParams,mode=user.userId.startsWith("demo:")?(await cookies()).get("radar_demo_mode")?.value:undefined;return Response.json(await readMonthStory(user.userId,{month:params.get("month"),zone:params.get("zone")??"UTC",mode}),{headers});}catch(error){return Response.json({error:error instanceof MonthRequestError?error.message:"Votre récit ne peut pas être relu. Vos données restent conservées."},{status:error instanceof MonthRequestError?400:503,headers});}}

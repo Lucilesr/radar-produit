@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Votre mois de recherche L5
+
+- Cinq cartes plein écran : offres triées, préparations soignées, entretiens notés, semaines tenues et pépite sélectionnée. Accès depuis l’accueil du 1er au 7, puis toujours dans Mon profil → Mes mois de recherche.
+- Image des cinq cartes créée et téléchargée dans le navigateur, sans partage automatique ni service tiers. Historique manquant explicite, mouvement réduit, clavier et mobile ; aucune migration ni modification des données existantes.
+
 ## 8 novembre 2026 — Entonnoir réaliste L4
 
 - Nouvelle vue Entonnoir dans Candidatures : envois des 90 derniers jours, taux vers les entretiens puis les offres, sources attribuées à l’envoi et rythme mensuel observé.

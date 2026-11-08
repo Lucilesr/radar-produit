@@ -43,3 +43,5 @@ Le DateTimePicker existant est réutilisé pour les relances. Le calendrier part
 L3/C3 : WorkspaceFormSection, WorkspaceButton/Error/PanelHeader, Dialog, Textarea et AutosaveStatus réutilisés. Couleurs et espacements Signal, aucun contrôle natif ajouté ; focus titre, erreur et reprise,44px sur mobile, pagination et textes longs. Captures de recette dans docs/l3-bilan-refus/.
 
 L4 : le sélecteur de vue existant reçoit Entonnoir ; WorkspacePanelHeader/Button/Error, SignalCounter et SignalProgress sont réutilisés. Aucune barre sans dénominateur, compteurs annoncés une seule fois, grille de sources responsive, cibles44px et focus après relecture.
+
+L5 : SignalMoment, SignalStepper, SignalCounter, SignalRadar, ChoiceSelect, WorkspacePanelHeader/Button/Error réutilisés. Les options className du moment et label du stepper gardent leurs valeurs par défaut pour les autres écrans. Étapes blanches sur pétrole, action principale citron, image avec jetons Signal et polices locales ; focus par carte, cibles44px, retour au déclencheur et mouvement réduit.

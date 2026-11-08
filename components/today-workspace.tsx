@@ -21,7 +21,7 @@ import { useRadarClock } from "@/components/use-radar-clock";
 
 // Recalculate deadlines on entry and explicit data changes; keep the page stable while reading.
 function useNow(jobs: JobRecord[]) { const [now,setNow]=useState(()=>Date.now()); useEffect(()=>setNow(Date.now()),[jobs]);return now; }
-export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd, onOpen, onOpenSource, setupRequired=false, onConfigureSearch, radarLine, sessionAction, sessionNotice, manualRefresh=false,reach,weekPlan,insight }: {insight?:ReactNode;weekPlan?:ReactNode;reach?:ReactNode;sessionAction?:{ready:boolean;minutes:number;available:boolean;resumable:boolean;onStart:()=>void};sessionNotice?:ReactNode;manualRefresh?:boolean;radarLine?:ReactNode;setupRequired?:boolean;onConfigureSearch?:()=>void;jobs:JobRecord[];lot?:DailyLot|null;sources?:{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onOpenSource?:(name:string)=>void}) {
+export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd, onOpen, onOpenSource, setupRequired=false, onConfigureSearch, radarLine, sessionAction, sessionNotice, manualRefresh=false,reach,weekPlan,insight,monthStory }: {monthStory?:ReactNode;insight?:ReactNode;weekPlan?:ReactNode;reach?:ReactNode;sessionAction?:{ready:boolean;minutes:number;available:boolean;resumable:boolean;onStart:()=>void};sessionNotice?:ReactNode;manualRefresh?:boolean;radarLine?:ReactNode;setupRequired?:boolean;onConfigureSearch?:()=>void;jobs:JobRecord[];lot?:DailyLot|null;sources?:{source:string;lastVisitedAt?:string;visitEveryDays?:number;remindInToday?:boolean;state?:string;selected?:boolean;health?:string}[];onTriage:()=>void;onSelected:()=>void;onAdd:()=>void;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onOpenSource?:(name:string)=>void}) {
   const now=useNow(jobs);
   const dateClock=useRadarClock(),displayZone=useDisplayTimeZone();
   const count=jobs.filter(job=>inOpportunityView(job,"to_review")).length;
@@ -55,6 +55,7 @@ export function TodayWorkspace({ jobs, lot, sources, onTriage, onSelected, onAdd
         {preparing?<ol className="workspace-caption list-decimal pl-5 space-y-2"><li>Choisissez vos postes et vos critères.</li><li>Choisissez les sources à suivre dans Ma recherche.</li><li>Lancez une première actualisation, ou ajoutez une annonce à la main.</li></ol>:null}
         <RadarMark className="today-logo-watermark" watermark/>
       </section>
+      {!preparing?monthStory:null}
       {!preparing?sessionNotice:null}
       {!preparing?radarLine:null}
       {!preparing?weekPlan:null}
