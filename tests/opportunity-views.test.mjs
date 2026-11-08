@@ -5,7 +5,7 @@ import ts from "typescript";
 
 const source = readFileSync(new URL("../lib/opportunity-views.ts", import.meta.url), "utf8");
 const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
-const { inOpportunityView, sortOpportunitiesByDate, workspaceSections } = await import("data:text/javascript;base64," + Buffer.from(code).toString("base64"));
+const { inOpportunityView, sortOpportunitiesByDate, workspaceSections, hasApplication } = await import("data:text/javascript;base64," + Buffer.from(code).toString("base64"));
 const job = { id: "a", status: "new", matchScore: 80, matchTier: "match" };
 
 test("vues distinctes : score, choix et candidature ne se substituent pas", () => {
@@ -69,4 +69,14 @@ test("Score v2 S3 : « Correspondances Radar » lit l'adéquation et la fiabilit
   assert(!inOpportunityView({ ...v2, fit: 95, conditions: "excluded" }, "good_matches"));
   assert(!inOpportunityView({ ...v2, fit: null }, "good_matches"));
   assert(inOpportunityView({ ...job, matchScore: 80 }, "good_matches")); // older record without fit
+});
+
+
+test("C4 : une date d’envoi valide ou une ancienne clôture garde le dossier dans Candidatures", () => {
+  assert(hasApplication({...job,status:"closed"}));
+  assert(hasApplication({...job,status:"ready",appliedAt:"2026-11-01T10:00:00Z"}));
+  assert(!hasApplication({...job,status:"ready",appliedAt:null}));
+  assert(!hasApplication({...job,status:"ready",appliedAt:"inconnue"}));
+  assert(inOpportunityView({...job,status:"ready",appliedAt:null},"selected"));
+  assert(!inOpportunityView({...job,status:"ready",appliedAt:"2026-11-01T10:00:00Z"},"selected"));
 });

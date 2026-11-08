@@ -37,10 +37,31 @@
 }
 @media(max-width:640px) {
   .applications-workspace .application-row { padding: 18px 16px; gap: 14px 12px; }
-  .signal-dialog-header { gap: 10px; }
-  .signal-dialog-tools { max-width: 120px; flex-direction: column-reverse; flex-wrap: nowrap; align-items: flex-end; }
+  .signal-dialog-header { gap: 10px; flex-direction: column; }
+  .signal-dialog-heading { width: 100%; }
+  .signal-dialog-tools { width: 100%; max-width: none; flex-direction: row; flex-wrap: wrap; align-items: center; }
   .signal-dialog-tools:has(.application-tag-trigger) { max-width: none; flex-direction: row; flex-wrap: wrap; }
   .signal-dialog-tools > .signal-quiet-button { min-height: 44px; font-size: 11px; padding-inline: 5px; }
   .workspace-dialog { max-height: 94dvh; border-radius: 10px 10px 0 0; }
   .workspace-dialog h2 { font-size: 22px; }
 }
+
+/* C4: the personal board becomes vertical groups on phones. Signal controls stay shared. */
+.application-mobile-list { min-width: 0; display: grid; gap: 16px; }
+.application-mobile-summary { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.application-mobile-summary p { margin: 0; color: var(--muted-foreground); font-size: 13px; }
+.application-mobile-group { min-width: 0; border-top: 1px solid var(--border); }
+.application-mobile-group-heading { display: flex; align-items: center; gap: 8px; padding-block: 8px; }
+.application-mobile-group-heading h2 { min-width: 0; flex: 1; margin: 0; font: 600 16px/1.4 var(--font-sans); }
+.application-mobile-group-heading h2 button { width: 100%; min-height: 44px; justify-content: flex-start; text-align: left; }
+.application-mobile-group-heading h2 button > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.application-mobile-group-heading h2 button > svg { flex: none; margin-left: auto; }
+.application-mobile-group-heading h2 button[data-state="open"] > svg { transform: rotate(180deg); }
+.application-mobile-group-heading .board-column-edit { flex: none; width: 44px; min-height: 44px; }
+.application-mobile-cards { display: grid; gap: 12px; }
+.application-mobile-card { min-width: 0; display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 5px; background: var(--card); }
+.application-mobile-card h3 { min-width: 0; margin: 0; font: 600 16px/1.45 var(--font-sans); overflow-wrap: anywhere; }
+.application-mobile-card p { margin: 0; overflow-wrap: anywhere; }
+.application-mobile-card > .workspace-badge { justify-self: start; }
+.application-mobile-sent { color: var(--muted-foreground); font-size: 12px; }
+.application-mobile-card > .signal-form-button { width: 100%; min-height: 44px; }

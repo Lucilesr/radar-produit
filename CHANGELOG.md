@@ -1,3 +1,8 @@
+## 8 novembre 2026 — Candidatures mobiles C4
+
+- Liste verticale groupée par étape, compteurs et colonnes personnelles conservées ; fermeture explicite et dossiers inchangés en cas d’échec.
+- Titres longs de fiche sur toute la largeur mobile ; propositions reçues correctement nommées et anciens dossiers envoyés conservés dans le suivi.
+
 ## 8 novembre 2026 — Quatre espaces P5
 
 - Navigation Aujourd’hui, Offres, Candidatures et Mon radar, avec quatre entrées sur mobile. Mon radar rassemble critères, sources, carnet, histoires et documents, avec la portée en en-tête.

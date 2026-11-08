@@ -1,9 +1,9 @@
 import type { JobRecord } from "./types";
 
-const appliedStatuses = new Set(["applied", "interview", "awaiting_response", "next_step", "offer", "rejected", "withdrawn"]);
+const appliedStatuses = new Set(["applied", "interview", "awaiting_response", "next_step", "offer", "rejected", "withdrawn", "closed"]);
 
 export function hasApplication(job: JobRecord) {
-  return appliedStatuses.has(job.status) || !!job.interviews?.length;
+  return appliedStatuses.has(job.status) || !!job.interviews?.length || !!job.appliedAt && Number.isFinite(Date.parse(job.appliedAt));
 }
 
 export function workspaceSections(context: "opportunity" | "application") {
