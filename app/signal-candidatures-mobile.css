@@ -20,3 +20,5 @@
 .application-mobile-dossier-dates{display:none}@media(max-width:640px){.application-mobile-dossier-dates{display:grid;gap:8px;margin-block:16px}.workspace-dialog[data-application-detail=true] [role=toolbar] button{min-width:44px;min-height:44px;border-radius:10px}}
 
 @media(max-width:640px){.application-mobile-tools{align-items:center;gap:8px}.application-mobile-active-tag{margin-right:auto;min-height:44px;border-radius:999px!important}.application-mobile-tools>details:not([open])>.application-mobile-tools-panel,.application-mobile-card-actions:not([open])>div,.application-closed:not([open])>:not(summary){display:none}.application-funnel-monthly{display:none}}
+
+@media(max-width:640px){.application-funnel-summary>p.has-funnel-counts{font-size:13px}.has-funnel-counts .application-funnel-mobile-prefix{display:none}}
