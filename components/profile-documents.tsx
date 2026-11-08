@@ -8,6 +8,7 @@ import { Check, Download, FileText, LoaderCircle, RefreshCw, Upload } from "luci
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
 import { WorkspaceButton, WorkspacePanelHeader } from "@/components/workspace-form";
 import { ChoiceSelect } from "@/components/choice-select";
+import { HelpTooltip } from "@/components/help-tooltip";
 import { validateDocumentMeta, type DocumentLinks, type DocumentSlot, type PrivateDocument } from "@/lib/document-input";
 import { useDemoMode } from "@/components/demo-mode";
 
@@ -63,9 +64,8 @@ export function ProfileDocuments({ links, onLinked, onBusyChange }: { links: Doc
   }
   return <section className="profile-documents" aria-busy={loading||!!busy} aria-labelledby="profile-documents-title">
     <div data-radar-guide-slot />
-    <WorkspacePanelHeader id="profile-documents-title" title="Documents privés" className="profile-documents-heading" actions={<WorkspaceButton disabled={loading||!!busy} onClick={()=>{setError(null);void refresh();}} aria-label="Actualiser les fichiers"><RefreshCw size={15} className={loading?"animate-spin":""} aria-hidden/>Actualiser</WorkspaceButton>}/>
-    <p className="profile-document-intro">{demo?"Documents fictifs de la démo, consultables sans import de fichier.":"Importez votre CV français ou anglais pour préparer le carnet d’expériences. Vous pourrez relire et corriger les éléments extraits. Le document détaillé reste prioritaire si vous en ajoutez un."}</p>
-    {!demo?<p className="profile-document-formats">PDF, DOC, DOCX, MD ou TXT · 8 Mo max. · Versions précédentes conservées.</p>:null}
+    <WorkspacePanelHeader id="profile-documents-title" title="Documents privés" className="profile-documents-heading" hint={!demo?<HelpTooltip label="Utilisation des documents">Relisez et corrigez les éléments extraits dans le carnet. Le document détaillé reste prioritaire si vous en ajoutez un. Les anciennes versions sont conservées.</HelpTooltip>:null} actions={<WorkspaceButton disabled={loading||!!busy} onClick={()=>{void refresh();document.getElementById("profile-documents-title")?.focus({preventScroll:true});}} aria-label="Actualiser les fichiers"><RefreshCw size={15} className={loading?"animate-spin":""} aria-hidden/>Actualiser</WorkspaceButton>}/>
+    <p className="profile-document-intro">{demo?"Documents fictifs de la démo, consultables sans import de fichier.":"PDF, DOC, DOCX, MD ou TXT · 8 Mo max."}</p>
     {error?<p role="alert" className="experience-error">{error}</p>:null}
     <div className="profile-document-list">{slots.map(slot=><DocumentCard key={slot.id} slot={slot} document={files.find(file=>file.id===links[slot.id])} linkedId={links[slot.id]} files={files} busy={busy} loading={loading} loadFailed={loadFailed} readOnly={demo} onUpload={upload} onLink={link} onError={message=>setError(message)}/>)}</div>
     {loading?<LoadingSkeleton label="Lecture de vos fichiers…" rows={2}/>:null}

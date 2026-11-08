@@ -1,3 +1,8 @@
+## 9 novembre 2026 — Carnet détaillé aligné sur Signal
+
+- Carnet, histoires, documents et mois ont une navigation commune et une colonne alignée. Les droits, fichiers et décisions restent inchangés.
+- Le carnet permet de relancer une lecture interrompue ; le choix du doublon utilise le contrôle Signal.
+
 ## 9 novembre 2026 — Mon compte aligné sur Signal
 
 - En-tête et cartes du compte, titres, journal et contrôles alignés sur ordinateur et mobile. Préférences, historique et parcours de données conservés.
