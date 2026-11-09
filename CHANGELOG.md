@@ -1,3 +1,8 @@
+## 9 novembre 2026 — Kanban : colonnes à ajouter, déplacer et supprimer
+
+- Chaque colonne a un menu ⋯ : Renommer, Déplacer à gauche ou à droite, Supprimer pour les colonnes ajoutées. Son en-tête se glisse aussi pour changer de place, à la souris ou au clavier.
+- « Ajouter une colonne » est visible en fin de tableau. Les colonnes par défaut se renomment et se déplacent, sans suppression.
+
 ## 9 novembre 2026 — Kanban : filtre par tag sur « À envoyer »
 
 - Le filtre par tag s’applique aussi à la colonne « À envoyer » sur ordinateur, comme sur mobile.

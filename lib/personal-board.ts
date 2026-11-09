@@ -19,6 +19,15 @@ export function editBoard(board: PersonalBoard, action: unknown): PersonalBoard 
     if (!column || !column.id.startsWith("custom-") || !board.columns.some(c => c.id === column.stage)) throw new Error("Seule une colonne créée par vous peut être supprimée.");
     return { columns: board.columns.filter(c => c.id !== column.id), version: board.version + 1 };
   }
+  if (value.action === "move" && typeof value.id === "string" && typeof value.targetId === "string") {
+    const from = board.columns.findIndex(c => c.id === value.id), to = board.columns.findIndex(c => c.id === value.targetId);
+    if (from < 0 || to < 0) throw new Error("Colonne introuvable. Rechargez le tableau puis réessayez.");
+    if ((board.columns[from].stage === "closed") !== (board.columns[to].stage === "closed")) throw new Error("Une colonne terminée reste avec les colonnes terminées.");
+    const columns = [...board.columns];
+    const [moved] = columns.splice(from, 1);
+    columns.splice(to, 0, moved);
+    return { columns, version: board.version + 1 };
+  }
   const label = typeof value.label === "string" ? value.label.trim() : "";
   if (!label || label.length > 60) throw new Error("Choisissez un nom de 1 à 60 caractères.");
   if (value.action === "rename" && typeof value.id === "string" && board.columns.some(c => c.id === value.id)) {
