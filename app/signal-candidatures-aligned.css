@@ -12,3 +12,10 @@
 .applications-aligned .refusal-lesson-invitation{margin:0;padding:20px 24px;border:1px solid var(--signal-line);border-radius:16px;background:var(--signal-paper);color:var(--signal-ink)}.applications-aligned .refusal-lesson-invitation h2{font:700 22px/1.25 var(--font-display);letter-spacing:-.01em}.applications-aligned .refusal-lesson-invitation p{font-size:14px}.applications-aligned .refusal-lesson-invitation .signal-form-button{min-height:44px;border-radius:10px}
 
 .application-move-dialog{border-radius:20px}.application-move-dialog .application-move-company,.application-move-dialog fieldset label,.application-move-dialog .signal-form-button{border-radius:10px}.lesson-editor{border-radius:20px!important}.lesson-editor textarea{border-radius:10px}
+/* Bascule Kanban / Entonnoir : l’entonnoir reste verrouillé sous le seuil d’envois. */
+.application-view-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+.applications-aligned .application-view-toggle{margin-left:0;border-color:var(--signal-line);border-radius:calc(var(--signal-radius-control) + 4px);background:var(--signal-paper)}
+.application-view-toggle button{font-size:13px}
+.application-view-toggle button.is-locked{color:var(--signal-muted);opacity:.6;cursor:not-allowed}
+.application-view-toggle button.is-locked:hover{background:transparent;color:var(--signal-muted)}
+@media(max-width:640px){.application-view-toggle button{min-height:44px}}

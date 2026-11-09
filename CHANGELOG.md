@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Candidatures : bascule Kanban / Entonnoir
+
+- Le bloc « Encore N candidatures pour voir votre entonnoir » et sa modale laissent place à une bascule Kanban / Entonnoir. L’entonnoir s’affiche à la place du suivi ; grisé, il indique au survol, au focus ou au toucher combien d’envois manquent.
+
 ## 9 novembre 2026 — « Check-list d’envoi »
 
 - « Candidature soignée » devient « Check-list d’envoi » partout : fiche, badge, étape du jour, plan de la semaine, journal et récit du mois. L’aide de la section est retirée.

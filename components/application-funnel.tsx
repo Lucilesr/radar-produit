@@ -1,6 +1,7 @@
 "use client";
-import {useRef,useState} from "react";
-import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from "@/components/ui/dialog";
+import {useId,useState} from "react";
+import {Funnel as FunnelIcon,SquareKanban} from "lucide-react";
+import {Tooltip,TooltipContent,TooltipProvider,TooltipTrigger} from "@/components/ui/tooltip";
 import {HelpTooltip} from "@/components/help-tooltip";
 import {useDisplayTimeZone} from "@/components/use-display-time-zone";
 import {SignalCounter} from "@/components/signal/signal-counter";
@@ -8,7 +9,8 @@ import {SignalProgress} from "@/components/signal/signal-progress";
 import {WorkspaceButton,WorkspaceFormError,WorkspacePanelHeader} from "@/components/workspace-form";
 import {funnelMonthlyLabel,type ApplicationFunnel as Funnel} from "@/lib/application-funnel";
 import {formatDate} from "@/lib/application-workflow";
-type Props={value:Funnel|null;loading:boolean;error:string;refresh:()=>Promise<boolean>};
+export type FunnelProps={value:Funnel|null;loading:boolean;error:string;refresh:()=>Promise<boolean>};
+type Props=FunnelProps;
 const rate=(value:number|null)=>value==null?"Non calculable":`${Math.round(value*100)} %`;
 export function FunnelHeadline({value,loading,error,refresh}:Props){
  if(!value?.visible&&!error)return null;
@@ -23,8 +25,18 @@ export function ApplicationFunnel({value,loading,error,refresh}:Props){
  {value?<p className="signal-help">Période : {formatDate(value.windowStart,zone)} au {formatDate(value.windowEnd,zone)}.{value.firstRecordedAt?` Premiers événements disponibles le ${formatDate(value.firstRecordedAt,zone)}.`:" Votre journal ne contient pas encore d’événement de candidature."}</p>:null}</section>;
 }
 
-export function ApplicationFunnelSummary(props:Props){
- const trigger=useRef<HTMLButtonElement>(null);
- const [open,setOpen]=useState(false),{value,loading,error,refresh}=props;
- return <section className="application-funnel-summary" aria-label="Entonnoir sur 90 jours" aria-busy={loading}><strong>Sur 90 jours</strong><p className={value?.visible?"has-funnel-counts":undefined}><span className="application-funnel-mobile-prefix">90 jours : </span>{value?.visible?<>{`${value.applications} candidatures → ${value.interviews} entretiens → ${value.offers} offres`}<span className="application-funnel-monthly"> · {funnelMonthlyLabel(value.monthlyInterviews)}</span></>:value?`Encore ${value.missing} candidature${value.missing>1?"s":""} pour voir votre entonnoir`:loading?"Lecture de votre entonnoir…":"Entonnoir indisponible"}</p><WorkspaceButton ref={trigger} variant="quiet" aria-label="Comprendre l’entonnoir" onClick={()=>setOpen(true)}>ⓘ <span>Détail</span></WorkspaceButton>{error?<><WorkspaceFormError message={error}/><WorkspaceButton disabled={loading} onClick={()=>void refresh()}>Réessayer</WorkspaceButton></>:null}<Dialog open={open} onOpenChange={setOpen}><DialogContent className="application-funnel-dialog" onCloseAutoFocus={event=>{event.preventDefault();trigger.current?.focus();}}><DialogHeader><DialogTitle>Votre entonnoir sur 90 jours</DialogTitle><DialogDescription>Les événements confirmés du journal, sans reconstituer un historique absent.</DialogDescription></DialogHeader><ApplicationFunnel {...props}/></DialogContent></Dialog></section>;
+export type ApplicationView="board"|"funnel";
+/* Kanban (or list on mobile) and funnel share one place. The funnel stays locked,
+   with its reason on hover, focus or tap, until enough applications are sent. */
+export function ApplicationViewToggle({view,onView,funnel,boardLabel}:{view:ApplicationView;onView:(view:ApplicationView)=>void;funnel:Props;boardLabel:string}){
+ const {value}=funnel,locked=!value?.visible,missing=value?.missing??5,hintId=useId();
+ const [open,setOpen]=useState(false);
+ const hint=!value?(funnel.error?"Entonnoir indisponible pour le moment.":"Lecture de vos candidatures…"):missing>=5?"Disponible après 5 candidatures envoyées.":`Disponible après ${missing} candidature${missing>1?"s":""} envoyée${missing>1?"s":""} de plus.`;
+ const icon=<FunnelIcon size={15} aria-hidden/>;
+ return <div className="application-display-toggle application-view-toggle" role="group" aria-label="Affichage des candidatures">
+  <button type="button" aria-pressed={view==="board"} onClick={()=>onView("board")}><SquareKanban size={15} aria-hidden/>{boardLabel}</button>
+  {locked?<TooltipProvider delayDuration={150}><Tooltip open={open} onOpenChange={setOpen}><TooltipTrigger asChild onClick={event=>{event.preventDefault();setOpen(true);}} onPointerDown={event=>event.preventDefault()}><button type="button" className="is-locked" aria-pressed={false} aria-disabled="true" aria-describedby={hintId}>{icon}Entonnoir</button></TooltipTrigger><TooltipContent sideOffset={6} collisionPadding={16} className="help-tooltip-content" onPointerDownOutside={event=>{if((event.target as HTMLElement|null)?.closest?.(".application-view-toggle .is-locked"))event.preventDefault();}}>{hint}</TooltipContent></Tooltip></TooltipProvider>
+  :<button type="button" aria-pressed={view==="funnel"} onClick={()=>onView("funnel")}>{icon}Entonnoir</button>}
+  <span id={hintId} hidden>{hint}</span>
+ </div>;
 }
