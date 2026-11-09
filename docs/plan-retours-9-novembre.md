@@ -20,7 +20,7 @@ Une fois le lot livré, retirer son idée de `docs/idees.md`.
 | R2 | Résumé du prompt ChatGPT | M |
 | R3 | Score chiffré et coloré dans Offres | S |
 | R4 | ✓ verts dans « Pourquoi elle remonte » | XS |
-| R5 | Dette CSS (facultatif) | M |
+| R5 | Dette CSS | Fait dans #288 |
 
 ---
 
@@ -178,7 +178,9 @@ La route ne renvoie aujourd’hui que `{brief, factCount}`.
 
 ---
 
-## R5 — Dette CSS (facultatif, à valider avant de commencer)
+## R5 — Dette CSS (réalisé par Claude dans #288)
+
+Gardé pour mémoire : le lot est livré, avec ses garde-fous dans `tests/css-signal.test.mjs`. Codex n’a rien à faire ici.
 
 **Problème.** Le lot #271 (cohérence Signal) a ajouté `app/signal-coherence.css`, chargé en dernier, qui **réécrase** des règles d’autres fichiers. Ça marche, mais :
 
