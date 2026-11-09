@@ -165,7 +165,7 @@ export function SourcePanel({overviewCriteria=false,displaySection="all",onSecti
       <SearchCriteriaPanel overview={overviewCriteria} domainContent={domainContent} active={active&&(displaySection==="all"||displaySection==="criteria")} profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
     </div>
     <div id="source-panel-channels" className="source-subpanel" hidden={displaySection!=="all"&&displaySection!=="channels"&&displaySection!=="outreach"}>
-      <WorkspacePanelHeader id="source-settings-title" title="Sources suivies" hint={demo?<HelpTooltip label="Sources fictives">Démo : balayages fictifs, aucun site contacté.</HelpTooltip>:undefined} actions={<WorkspaceButton variant="primary" aria-haspopup="dialog" disabled={!settings} onClick={event=>openCatalogue("all",event.currentTarget)}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>
+      <WorkspacePanelHeader id="source-settings-title" title="Sources suivies" actions={<WorkspaceButton variant="primary" aria-haspopup="dialog" disabled={!settings} onClick={event=>openCatalogue("all",event.currentTarget)}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>
       {summary?<p className="source-summary">{summary}</p>:null}
       <WorkspaceFormError message={syncError}/><WorkspaceFormError message={loadError}/>
       {settings&&!followedSources.length?<section className="source-empty" aria-labelledby="source-empty-title">

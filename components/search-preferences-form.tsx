@@ -328,7 +328,7 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
             </ul>
           </div>;
         })}
-        <div className="criteria-help-line"><p className="search-criteria-help">Valorisez ou écartez des mots.</p><HelpTooltip label="Mots de l’annonce">Mis en avant : l’offre remonte. Écarté : elle est masquée.</HelpTooltip></div>
+        <div className="criteria-help-line"><p className="search-criteria-help">Valorisez ou écartez des mots.</p><HelpTooltip label="Mots de l’annonce">Les mots mis en avant remontent l’offre dans « À examiner ». Les mots écartés la masquent. La casse et les accents sont ignorés.</HelpTooltip></div>
         <p role="status" className="search-form-status">{keywordMessage}</p></>;
   const controls:Record<CriteriaEditPart,ReactNode>={
  roles:<><label htmlFor="searched-role" className="search-field-label">Ajouter un poste</label>
@@ -380,7 +380,7 @@ export function SearchPreferencesForm({ profile, onSave: saveProfile, showIntro 
             <button type="button" className="search-place-remove" aria-label={`Retirer ${label}`} disabled={savingLocation || savingRole || saving} onClick={() => removePlace(label)}>×</button>
           </li>)}
         </ul> : null}
-        <div className="criteria-help-line"><p id="search-location-help" className="search-criteria-help">Inclure ou Entrée ; exclure avec Maj+Entrée.</p><HelpTooltip label="Lieux inclus et exclus">Entrée pour inclure, Maj+Entrée pour exclure. Une exclusion l’emporte : « Europe » sauf « Roumanie ».</HelpTooltip></div>
+        <div className="criteria-help-line"><p id="search-location-help" className="search-criteria-help">Inclure ou Entrée ; exclure avec Maj+Entrée.</p><HelpTooltip label="Lieux inclus et exclus">Tapez un lieu, puis Inclure (Entrée) ou Exclure (Maj+Entrée). L’enregistrement est immédiat. Les exclusions priment : « Europe » incluse et « Allemagne » exclue signifie Europe sauf Allemagne.</HelpTooltip></div>
         <p role="status" className="search-form-status">{locationMessage}</p></>,
  salary:<><label className="search-pay-field"><span className="search-pay-label">Salaire annuel minimum<span className="sr-only">, en euros bruts par an</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="1000" placeholder="Ex. 55000" value={draft.minimumSalary || ""} onChange={event => amount("minimumSalary", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ brut/an</span></span></label></>,
  dailyRate:<><label className="search-pay-field"><span className="search-pay-label">TJM minimum<span className="sr-only">, en euros hors taxes par jour</span></span><span className="search-pay-control"><input className="search-pay-input" type="number" min="0" max="1000000" step="10" placeholder="Ex. 500" value={draft.minimumDailyRate || ""} onChange={event => amount("minimumDailyRate", event.target.value)} /><span className="search-pay-unit" aria-hidden="true">€ HT/jour</span></span></label></>,

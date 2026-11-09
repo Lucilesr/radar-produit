@@ -31,7 +31,7 @@ export function ApplicationCare({job}:{job:JobRecord}){
   return()=>cancelAnimationFrame(frame);
  },[ready,currentStep,care,prefix]);
  const count=careCount(care);
- return <div className="application-care" aria-busy={busy||!ready&&!error}><WorkspaceFormSection title="Candidature soignée" description="Quatre repères à cocher pour cette offre. Facultatif : rien ne bloque l’envoi."><p className="application-care-summary" role="status">{careSummary(care)}</p><SignalProgress value={count} max={4} label="Préparation de cette candidature"/>
+ return <div className="application-care" aria-busy={busy||!ready&&!error}><WorkspaceFormSection title="Candidature soignée" description="Cochez ce qui est prêt avant l’envoi."><p className="application-care-summary" role="status">{careSummary(care)}</p><SignalProgress value={count} max={4} label="Préparation de cette candidature"/>
  <fieldset disabled={!ready||busy}><legend className="sr-only">Préparation confirmée pour cette candidature</legend>{careChecks.map(item=><label key={item.id} htmlFor={`${prefix}-${item.id}`} className="application-care-check"><Checkbox id={`${prefix}-${item.id}`} className="radar-preference-toggle" checked={care[item.id]} onCheckedChange={checked=>void save(item.id,checked===true)}/><span><strong>{item.label}</strong><small>{item.detail}</small></span></label>)}</fieldset>
  <p className="signal-help" role="status">{busy?"Enregistrement du choix…":!ready&&!error?"Lecture des repères…":"Les cases affichent les derniers choix confirmés pour cette candidature."}</p><WorkspaceFormError message={error}/>{error?<WorkspaceButton ref={retry} disabled={busy} onClick={()=>void load(true)}>Relire les repères</WorkspaceButton>:null}</WorkspaceFormSection></div>;
 }
