@@ -1,8 +1,8 @@
 # Prise en main de Radar
 
-Radar reste privé et sans personnage. Quatre espaces structurent la navigation : **Aujourd’hui**, **Offres**, **Candidatures** et **Mon radar**, sur ordinateur comme dans la barre du bas sur mobile. Le **menu de l’avatar** ouvre **Mon compte** et le **Guide de prise en main**, qui présente les quatre espaces. Les boutons d’information donnent les détails au clavier et au toucher.
+Radar reste privé et sans personnage. Quatre espaces structurent la navigation : **Aujourd’hui**, **Offres**, **Candidatures** et **Mon radar**, sur ordinateur comme dans la barre du bas sur mobile, où Aujourd’hui et Candidatures s’abrègent en **Accueil** et **Suivi**. Le **menu de l’avatar** ouvre **Mon compte** et le **Guide de prise en main**, qui présente les quatre espaces. Les boutons d’information donnent les détails au clavier et au toucher.
 
-Les boutons d’aide **ⓘ** donnent le détail au clavier ou au toucher. Le bandeau clair signale le mode démo ; les moments de Radar gardent leur fond sombre.
+Le bandeau clair signale le mode démo ; les moments de Radar gardent leur fond sombre.
 
 Sur ordinateur, le menu horizontal est identique partout. À droite, la recherche ouvre **Offres**, **Ajouter une offre** ouvre sa fiche de saisie et l’avatar donne accès au compte et au guide. Sur mobile, les quatre entrées restent en bas.
 
