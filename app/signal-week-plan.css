@@ -18,6 +18,8 @@
 .week-plan-description{margin-top:-8px;color:var(--signal-muted);font-size:14px}
 .week-plan-rhythm .choice-select{display:grid;grid-template-columns:max-content minmax(0,22rem);align-items:center;gap:12px}
 .week-plan-rhythm .choice-select>p{margin:0}
+.week-action-entry{display:flex;align-items:end;gap:8px;min-width:0}
+.week-action-entry>label{flex:1;min-width:0}
 .week-plan-head h2{font:700 24px/1.2 var(--font-display);letter-spacing:-.01em;color:var(--signal-ink)}
 .week-plan-close{flex:none;margin:-8px -8px 0 0}
 @media(min-width:700px){.week-plan-editor fieldset{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px;align-items:end}.week-plan-editor fieldset>legend{grid-column:1/-1}}
