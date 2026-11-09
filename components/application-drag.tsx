@@ -91,7 +91,7 @@ export function ApplicationDrag({ jobs, busy, onStatus, children, columns = defa
     onDragStart={({ active }) => { setActiveId(String(active.id)); setMessage(""); }}
     onDragCancel={({ active }) => { setActiveId(null); setMessage("Déplacement annulé. Étape conservée."); focusCard(String(active.id)); }}
     onDragEnd={({ active, over }) => { setActiveId(null); if (over) void move(String(active.id), String(over.id)); else { setMessage("Déplacement annulé. Étape conservée."); focusCard(String(active.id)); } }}>
-    <ApplicationMoveContext.Provider value={move}><div className="application-board-area"><div className="application-drag-guide"><p>Déplacez une carte pour changer d’étape.</p><HelpTooltip label="Déplacer une candidature">Utilisez le choix « Déplacer vers » de chaque carte, ou sa poignée avec Entrée puis les flèches gauche et droite. Échap annule. Clore demande un motif ; notes et entretiens restent conservés.</HelpTooltip></div>
+    <ApplicationMoveContext.Provider value={move}><div className="application-board-area"><div className="application-drag-guide"><p>Déplacez une carte pour changer d’étape.</p><HelpTooltip label="Déplacer une candidature">« Déplacer vers » sur chaque carte, ou la poignée : Entrée puis flèches. Clore demande un motif.</HelpTooltip></div>
     <p className={message ? "application-drag-help" : "sr-only"} role="status">{message}</p>
     {error&&!closing?<div className="application-move-error"><WorkspaceFormError message={error}/><WorkspaceButton disabled={!!busy} onClick={()=>{const last=lastMove.current;if(last)void move(last.jobId,last.target,last.reason);}}>Réessayer le déplacement</WorkspaceButton></div>:null}
     {children}

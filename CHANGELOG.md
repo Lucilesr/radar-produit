@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Aides plus courtes
+
+- Les textes d’aide vont à l’essentiel : une ou deux phrases sur ce que fait l’élément, sans détail technique.
+
 ## 9 novembre 2026 — Aides et pastilles de Mon radar sur mobile
 
 - L’aide du domaine suit son libellé, les bulles d’aide gardent une marge avec les bords de l’écran.
