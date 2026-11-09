@@ -13,6 +13,7 @@ export function usePersonalBoard(jobs: JobRecord[] = []) {
   const [editor, setEditor] = useState<PersonalColumn | "new" | null>(null);
   const [label, setLabel] = useState(""), [stage, setStage] = useState("interviews"), [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [moving, setMoving] = useState(false), [notice, setNotice] = useState("");
   const lock = useRef(false);
   async function load() {
     try {
@@ -42,6 +43,23 @@ export function usePersonalBoard(jobs: JobRecord[] = []) {
     } catch (problem) { setError(requestError(problem, "Colonne non enregistrée.")); }
     finally { lock.current = false; setSaving(false); }
   }
+  /** Places the column where the target column is; the server keeps one order for all devices. */
+  async function move(id: string, targetId: string) {
+    if (lock.current || id === targetId) return false;
+    const column = board.columns.find(c => c.id === id), target = board.columns.find(c => c.id === targetId);
+    if (!column || !target) return false;
+    if ((column.stage === "closed") !== (target.stage === "closed")) { setNotice("Une colonne terminée reste avec les colonnes terminées."); return false; }
+    lock.current = true; setMoving(true); setNotice(`Déplacement de « ${column.label} »…`);
+    try {
+      const response = await fetch("/api/application-board", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "move", id, targetId, version: board.version }), signal: AbortSignal.timeout(15000) });
+      const result = await response.json() as {board?:PersonalBoard;error?:string};
+      if (result.board) setBoard(result.board);
+      if (!response.ok) throw new Error(result.error ?? "Colonne non déplacée. Réessayez.");
+      setNotice(`« ${column.label} » déplacée.`); return true;
+    } catch (problem) { setNotice(requestError(problem, "Colonne non déplacée.")); return false; }
+    finally { lock.current = false; setMoving(false); }
+  }
+  function openDelete(column: PersonalColumn) { open(column); if (column.id.startsWith("custom-")) setConfirmDelete(true); }
   async function remove() {
     if (lock.current || !editor || editor === "new" || !editor.id.startsWith("custom-")) return;
     lock.current = true; setSaving(true); setError("");
@@ -65,5 +83,5 @@ export function usePersonalBoard(jobs: JobRecord[] = []) {
       <WorkspaceFormError message={error}/><div className="application-move-actions">{custom ? <WorkspaceButton variant="danger" disabled={saving} onClick={()=>{setConfirmDelete(true);setError("");}}>Supprimer</WorkspaceButton> : null}<WorkspaceButton disabled={saving} onClick={()=>setEditor(null)}>Annuler</WorkspaceButton><WorkspaceButton variant="primary" busy={saving} disabled={!label.trim()} onClick={()=>void save()}>Enregistrer</WorkspaceButton></div>
     </form>}
   </Dialog.Content></Dialog.Portal></Dialog.Root>;
-  return { board, ready, error, load, open, dialog };
+  return { board, ready, error, load, open, openDelete, move, moving, notice, dialog };
 }
