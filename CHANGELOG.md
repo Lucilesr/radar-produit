@@ -1,3 +1,8 @@
+## 9 novembre 2026 — Sources détaillées alignées sur Signal
+
+- Retour, titre, commandes et liste alignés sur ordinateur et mobile. Le catalogue et les fiches gardent leurs actions, leurs réglages et leurs états.
+- Les filtres et le catalogue sont accessibles au clavier ; le focus revient après fermeture ou reprise d’une lecture.
+
 ## 9 novembre 2026 — Carnet détaillé aligné sur Signal
 
 - Carnet, histoires, documents et mois ont une navigation commune et une colonne alignée. Les droits, fichiers et décisions restent inchangés.

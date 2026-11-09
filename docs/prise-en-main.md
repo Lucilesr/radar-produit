@@ -10,7 +10,7 @@ Sur ordinateur, le menu horizontal est identique partout. À droite, la recherch
 
 Dans **Mon radar → Ce que je cherche**, choisissez votre poste, puis les critères utiles et vos sources. **Niveau visé** attend **Terminé** ; changer la sélection ne l’enregistre pas encore. Les jetons permettent de retoucher un critère.
 
-**Où chercher** rassemble vos sources. **Ce que je sais faire** rassemble le carnet, les histoires, les documents et les mois de recherche. Les anciens liens vers le profil ou la recherche ouvrent la bonne section, sans modifier leurs données.
+**Où chercher** rassemble vos sources. **Gérer mes sources** ouvre la liste détaillée : filtrez les sources ou ouvrez leurs réglages. **← Mon radar** revient à l’aperçu. **Ce que je sais faire** rassemble le carnet, les histoires, les documents et les mois de recherche. Les anciens liens vers le profil ou la recherche ouvrent la bonne section, sans modifier leurs données.
 
 Les termes du domaine viennent de votre carnet validé et autorisé pour les candidatures. Cinq propositions apparaissent à la fois. **Confirmer** ajoute un terme, **Ignorer** le retire durablement ; **Termes ignorés (N)** permet de le restaurer. Sous une expérience, **Tout ajouter** confirme ses propositions ensemble, dans la limite de quarante termes. **Choisir** permet de les traiter individuellement ; **Plus tard** masque cette proposition pendant sept jours sur le compte. Les droits sont revérifiés à la confirmation.
 

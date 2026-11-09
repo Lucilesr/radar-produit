@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search } from "lucide-react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Plus, Search, X } from "lucide-react";
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { SourceLogo } from "@/components/source-logo";
 import { WorkspaceButton, WorkspaceFormError } from "@/components/workspace-form";
 import { searchPreferences } from "@/lib/search-preferences";
@@ -16,10 +16,10 @@ export type AddFilter = "all" | "automatic" | "manual";
 const filters: [AddFilter, string][] = [["all", "Toutes"], ["automatic", "Automatiques"], ["manual", "À consulter"]];
 
 /** The catalogue, ordered by what the account searches, plus a field for a site of its own. */
-export function SourceAddSheet({ open, initialFilter = "all", sources, followed, profile, adding, error, onAdd, onAddSite, onClose }: {
+export function SourceAddSheet({ open, initialFilter = "all", sources, followed, profile, adding, error, onAdd, onAddSite, onClose, onReturnFocus }: {
   open: boolean; initialFilter?: AddFilter; sources: readonly Source[]; followed: (name: string) => boolean;
   profile: CandidateProfile; adding: string | null; error: string;
-  onAdd: (name: string) => Promise<void>; onAddSite: (url: string) => Promise<boolean>; onClose: () => void;
+  onAdd: (name: string) => Promise<void>; onAddSite: (url: string) => Promise<boolean>; onClose: () => void; onReturnFocus: () => void;
 }) {
   const [filter, setFilter] = useState<AddFilter>(initialFilter);
   const [query, setQuery] = useState("");
@@ -30,18 +30,18 @@ export function SourceAddSheet({ open, initialFilter = "all", sources, followed,
     .filter(source => matchesSourceQuery(source, query));
 
   return <Sheet open={open} onOpenChange={next => { if (!next) onClose(); }}>
-    <SheetContent side="right" className="source-add-sheet">
+    <SheetContent side="right" className="source-add-sheet" showCloseButton={false} onCloseAutoFocus={event=>{event.preventDefault();onReturnFocus();}}>
       <SheetHeader>
         <SheetTitle>Ajouter une source</SheetTitle>
-        <SheetDescription>Les plus proches de vos critères sont en tête. Radar ne crée aucun compte à votre place.</SheetDescription>
+        <SheetDescription>Les plus proches de vos critères sont en tête.</SheetDescription>
       </SheetHeader>
       <div className="source-add-body">
         <label className="source-add-search">
           <Search size={16} aria-hidden />
           <input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Chercher une source" aria-label="Chercher une source" />
         </label>
-        <div role="tablist" aria-label="Filtrer le catalogue" className="signal-source-filters">
-          {filters.map(([id, label]) => <button type="button" key={id} role="tab" aria-selected={filter === id} onClick={() => setFilter(id)}>{label}</button>)}
+        <div role="group" aria-label="Filtrer le catalogue" className="signal-source-filters">
+          {filters.map(([id, label]) => <button type="button" key={id} aria-pressed={filter === id} onClick={() => setFilter(id)}>{label}</button>)}
         </div>
         <ul className="source-add-list">{ranked.map(source => {
           const already = followed(source.name);
@@ -64,13 +64,14 @@ export function SourceAddSheet({ open, initialFilter = "all", sources, followed,
           try { if (await onAddSite(site.trim())) setSite(""); } finally { setSavingSite(false); }
         }}>
           <h3>Votre site n’est pas dans la liste ?</h3>
-          <p className="signal-help">Collez l’URL de votre recherche. Elle devient une source à consulter ; Radar n’y collecte rien.</p>
+          <p className="signal-help">Ajoutez le lien d’une recherche à consulter, sans collecte.</p>
           <div className="search-role-entry">
             <input type="url" value={site} onChange={event => setSite(event.target.value)} placeholder="https://…" aria-label="URL de votre recherche" />
             <WorkspaceButton type="submit" variant="secondary" busy={savingSite} disabled={savingSite || !site.trim()}>Ajouter</WorkspaceButton>
           </div>
         </form>
       </div>
+      <SheetClose asChild><WorkspaceButton variant="quiet" className="source-add-close" aria-label="Fermer le catalogue"><X size={20} aria-hidden/></WorkspaceButton></SheetClose>
     </SheetContent>
   </Sheet>;
 }

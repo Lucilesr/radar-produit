@@ -48,6 +48,7 @@ import "./signal-mon-radar-aligned.css";
 import "./signin-page.css";
 import "./signal-account-aligned.css";
 import "./signal-carnet-aligned.css";
+import "./signal-sources-aligned.css";
 
 export const metadata: Metadata = {
   title: "Radar Produit",

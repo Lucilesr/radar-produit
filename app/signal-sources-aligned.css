@@ -1,0 +1,61 @@
+.radar-page[data-space=sources]{width:100%;max-width:1184px;margin-inline:auto;padding:24px 32px 56px}
+.radar-page[data-space=sources]>.source-back{display:inline-flex;align-items:center;min-height:44px;padding-inline:0;border-radius:10px;color:var(--signal-petrol-ink);text-decoration:underline;text-underline-offset:3px}
+.radar-app .radar-page[data-space=sources]>.workspace-page-header{width:100%;max-width:none;margin:2px 0 20px;align-items:center}
+.radar-page[data-space=sources]>.workspace-page-header h1{font:750 40px/1.12 var(--font-display);letter-spacing:-.01em;color:var(--signal-ink)}
+.radar-page[data-space=sources] .source-refresh-actions{justify-content:flex-end;gap:8px}
+.radar-page[data-space=sources] .source-refresh-actions .signal-quiet-button{min-width:44px}
+.radar-page[data-space=sources] .source-workspace{gap:16px}
+.radar-page[data-space=sources] :is(#source-panel-channels,.source-research.signal-source-research){padding:24px 28px;border:1px solid var(--signal-line);border-radius:16px;background:var(--signal-paper);box-shadow:none}
+.radar-page[data-space=sources] .source-summary{font:400 14px/1.5 var(--font-sans);margin:6px 0 14px;color:var(--signal-muted)}
+.radar-page[data-space=sources] :is(#source-settings-title,#source-empty-title,.signal-source-group-head h3){font:750 24px/1.2 var(--font-display);letter-spacing:-.01em;color:var(--signal-ink)}
+.radar-page[data-space=sources] .signal-source-group ul{gap:8px;border:0;background:none}
+.radar-page[data-space=sources] .signal-source-group li{min-width:0;border:1px solid var(--signal-line);border-radius:10px;background:var(--signal-canvas)}
+.radar-page[data-space=sources] .signal-source-row :is(.signal-source-row-name,.signal-source-row-meta){min-width:0;overflow-wrap:anywhere}
+.radar-page[data-space=sources] .signal-source-row-meta{flex-shrink:1}
+.radar-page[data-space=sources] .signal-source-row-open{min-width:44px;min-height:44px;width:fit-content;border-radius:10px;overflow-wrap:anywhere}
+.radar-page[data-space=sources] :is(.source-empty,.source-empty-choices>button){border-radius:16px}
+.radar-page[data-space=sources] .source-empty-choices{grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr))}
+.radar-page[data-space=sources] .source-empty-choices>button{min-height:44px}
+:is(.radar-page[data-space=sources],.source-detail,.source-add-sheet,.signal-source-remove-dialog) :is(.signal-form-button,.secondary-button,.choice-select-trigger){min-height:44px;border-radius:10px}
+:is(.radar-page[data-space=sources],.source-add-sheet) .signal-source-filters{gap:6px;border:0;padding:0;margin:12px 0}
+:is(.radar-page[data-space=sources],.source-add-sheet) .signal-source-filters>button{margin:0;padding:8px 14px;border:1px solid var(--signal-line);border-radius:999px;background:var(--signal-paper);color:var(--signal-petrol-ink)}
+:is(.radar-page[data-space=sources],.source-add-sheet) .signal-source-filters>button[aria-pressed=true]{border-color:var(--signal-petrol);background:var(--signal-mist);font-weight:650}
+:is(.radar-page[data-space=sources],.source-detail,.source-add-sheet) :is(.signal-source-pill,.quiet-tag){border-radius:999px}
+.radar-page[data-space=sources] .help-tooltip-trigger{min-width:44px;min-height:44px;border-radius:999px}
+.radar-page[data-space=sources] .library-section-toggle,.source-detail .library-section-toggle{min-width:44px;min-height:44px;border-radius:10px}
+.source-detail .library-section-toggle{flex-basis:44px}
+.source-detail .source-detail-switch{min-height:44px}
+.source-detail .source-detail-switch [role=switch]{min-width:44px}
+.source-detail :is(.source-detail-searches>li,.source-detail-rhythm,.source-setup-help,.signal-source-form input,.signal-source-form textarea,.source-detail-offer input),.source-add-sheet :is(.source-add-search,.source-add-list>li,.source-add-site input){border-radius:10px}
+.source-detail :is(.source-detail-searches>li,.source-detail-head [data-slot=sheet-title],.source-detail-body p),.source-add-list>li{min-width:0;overflow-wrap:anywhere}
+:is(.source-detail,.source-add-sheet) [data-slot=sheet-title],.signal-source-remove-dialog h2{font:750 24px/1.2 var(--font-display);letter-spacing:-.01em;color:var(--signal-ink)}
+.source-detail .source-detail-head>[data-slot=sheet-title]{font:750 24px/1.2 var(--font-display);letter-spacing:-.01em}
+.source-add-sheet [data-slot=sheet-header]{padding-inline-end:68px}
+.source-add-sheet .source-add-close{position:absolute;z-index:1;top:12px;right:12px;width:44px;padding:0}
+.signal-source-remove-dialog.workspace-dialog{border-radius:20px}
+.signal-source-remove-dialog .signal-dialog-close{min-width:44px;min-height:44px;border-radius:10px}
+:is(.radar-page[data-space=sources],.source-detail,.source-add-sheet,.signal-source-remove-dialog) :is(button,a,input,textarea,summary):focus-visible{outline:3px solid var(--signal-petrol-ink);outline-offset:2px}
+@media(min-width:641px){[data-slot=sheet-content]:is(.source-detail,.source-add-sheet){border-radius:20px 0 0 20px}}
+@media(max-width:640px){
+ .radar-app:has(.radar-page[data-space=sources]) .radar-sidebar>div:first-child,.radar-app:has(.radar-page[data-space=sources]) .radar-sidebar-bottom,.radar-app:has(.radar-page[data-space=sources]) .radar-sidebar>.radar-search{display:none!important}
+ .radar-page[data-space=sources]{padding:12px 16px 112px}
+ .radar-app .radar-page[data-space=sources]>.workspace-page-header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;width:calc(100% + 32px);margin:0 -16px 16px;padding:12px 16px;border-bottom:1px solid var(--signal-line);background:var(--signal-paper)}
+ .radar-page[data-space=sources]>.workspace-page-header h1{font-size:28px;grid-row:1;grid-column:1}
+ .radar-page[data-space=sources]>.workspace-page-header>div,.radar-page[data-space=sources]>.workspace-page-header .page-tools{display:contents}
+ .radar-page[data-space=sources] .page-header-privacy{display:none}
+ .radar-page[data-space=sources] .mon-radar-mobile-account{display:inline-flex;grid-row:1;grid-column:2;justify-self:end}
+ .radar-page[data-space=sources] #source-refresh-header{grid-column:1/-1}
+ .radar-page[data-space=sources] .source-refresh-actions{justify-content:flex-end}
+ .radar-page[data-space=sources] :is(#source-panel-channels,.source-research.signal-source-research){padding:18px 16px}
+ .radar-page[data-space=sources] :is(#source-settings-title,#source-empty-title,.signal-source-group-head h3){font-size:20px}
+ .radar-page[data-space=sources] .signal-source-row{gap:6px 8px;padding:10px}
+ .radar-page[data-space=sources] .signal-source-row-name{flex-basis:calc(100% - 54px)}
+ .radar-page[data-space=sources] .signal-source-row-actions .signal-form-button{flex-basis:auto}
+ :is(.radar-page[data-space=sources],.source-add-sheet) .signal-source-filters>button{padding-inline:10px;font-size:13px}
+ .source-detail .source-detail-head{grid-template-columns:32px minmax(0,1fr) 44px;gap:4px 8px}
+ .source-detail .source-detail-head-actions{display:contents}
+ .source-detail .source-detail-head-actions>.signal-source-pill{grid-column:2;grid-row:3;justify-self:start}
+ .source-detail .source-detail-close{grid-column:3;grid-row:1/span 2}
+ :is(.source-detail,.source-add-sheet) :is(input,textarea){font-size:16px}
+ .source-detail .source-detail-head>[data-slot=sheet-title],.source-add-sheet [data-slot=sheet-title],.signal-source-remove-dialog h2{font-size:22px}
+}
