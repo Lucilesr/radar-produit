@@ -40,7 +40,22 @@ test("Q5 : places facultatives, limite du rythme et dates valides sans coche fab
  for(const count of [0,1])assert.deepEqual(rules.validateWeekPlan({...original,commitments:original.commitments.slice(0,count)},now).commitments.map(item=>item.id),count?["a"]:[]);
  const tooMany=[...original.commitments,{...original.commitments[0],id:"c"}];
  for(const invalid of [{...plan(),rhythm:"unknown"},{...plan(),commitments:tooMany},{...plan(),timeZone:"Mars"},{...plan(),week:"2026-W46"}])assert.throws(()=>rules.validateWeekPlan(invalid,now));
- for(const change of [{when:"2026-11-09T10:00"},{when:"2026-11-04T25:00"},{action:"send-email"},{label:" "},{id:"b"}]){const value=plan();Object.assign(value.commitments[0],change);assert.throws(()=>rules.validateWeekPlan(value,now));}
+ for(const change of [{when:"2026-11-09T10:00"},{when:"2026-11-04T25:00"},{action:"send-email"},{label:"x".repeat(301)},{id:"b"}]){const value=plan();Object.assign(value.commitments[0],change);assert.throws(()=>rules.validateWeekPlan(value,now));}
+});
+test("Plan : précision facultative, titre de la cible séparé et coche d’un ancien plan conservée",()=>{
+ const previous=plan();
+ Object.assign(previous.commitments[0],{label:"Prioriser",doneAt:now.toISOString()});
+ const next=plan();
+ Object.assign(next.commitments[0],{label:" ",targetLabel:"Prioriser"});
+ next.commitments[1].label="";
+ const saved=rules.validateWeekPlan(next,now);
+ assert.equal(saved.commitments[0].label,"");
+ assert.equal(saved.commitments[0].targetLabel,"Prioriser");
+ assert.equal(rules.weekActionDescription(saved.commitments[0]),"Écrire · Prioriser");
+ assert.equal(rules.weekActionDescription(saved.commitments[1]),"Faire le bilan");
+ assert.equal(rules.carryDone(previous,saved).commitments[0].doneAt,now.toISOString());
+ saved.commitments[0].label="Préparer les notes";
+ assert.equal(rules.carryDone(previous,saved).commitments[0].doneAt,undefined);
 });
 test("Q5 : déplacer conserve le progrès, changer d’action ou de cible retire la coche",()=>{
  const old=plan();old.commitments[0].doneAt=now.toISOString();let next=plan();next.commitments[0].when="2026-11-06T10:00";assert.equal(rules.carryDone(old,next).commitments[0].doneAt,now.toISOString());
