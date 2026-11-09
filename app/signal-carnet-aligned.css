@@ -1,5 +1,5 @@
 .radar-page[data-space=carnet]{width:100%;max-width:1184px;margin-inline:auto;padding:24px 32px 56px}
-.radar-page[data-space=carnet]>.carnet-back{display:inline-flex;align-items:center;min-height:44px;border-radius:10px;color:var(--signal-petrol-ink);text-decoration:underline;text-underline-offset:3px}
+.radar-page[data-space=carnet]>.carnet-back{display:inline-flex;align-items:center;min-height:44px;padding-inline:0;border-radius:10px;color:var(--signal-petrol-ink);text-decoration:underline;text-underline-offset:3px}
 .radar-app .radar-page[data-space=carnet]>.workspace-page-header{width:100%;max-width:none;margin:2px 0 20px;align-items:center}
 .radar-page[data-space=carnet]>.workspace-page-header h1{font:750 40px/1.12 var(--font-display);letter-spacing:-.01em;color:var(--signal-ink);overflow-wrap:anywhere}
 .radar-page[data-space=carnet] .profile-workspace{width:100%;max-width:none;margin:0}

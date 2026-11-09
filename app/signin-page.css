@@ -1,9 +1,9 @@
 /* Radar sign-in page: Signal foundations, outside the workspace shell. */
 .signin-page { min-height: 100vh; display: grid; place-items: center; padding: 48px 24px; background: var(--signal-canvas); color: var(--signal-ink); font-family: var(--font-sans); }
 .signin-layout { display: grid; grid-template-columns: minmax(0, 480px) minmax(0, 360px); gap: 40px; align-items: center; width: 100%; max-width: 920px; }
-.signin-card { display: flex; flex-direction: column; gap: 16px; padding: 36px; background: var(--signal-paper); border: 1px solid var(--signal-line); border-radius: 8px; }
+.signin-card { display: flex; flex-direction: column; gap: 16px; padding: 36px; background: var(--signal-paper); border: 1px solid var(--signal-line); border-radius: var(--signal-radius-panel); }
 .signin-card .workspace-brand { margin-bottom: 8px; }
-.signin-card h1 { margin: 0; font: 600 28px/1.2 var(--font-sans); letter-spacing: -.03em; color: var(--signal-ink); }
+.signin-card h1 { margin: 0; font: 750 28px/1.2 var(--font-display); letter-spacing: -.01em; color: var(--signal-ink); }
 .signin-lead { margin: 0; color: var(--signal-muted); font-size: 15px; line-height: 1.5; }
 .signin-card .signin-primary { min-height: 46px; margin-top: 8px; color: #fff; font-size: 14px; text-decoration: none; }
 .signin-help { margin: 0; color: var(--signal-muted); font-size: 13px; line-height: 1.5; }

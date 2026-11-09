@@ -1,7 +1,7 @@
 /* Small visual refinements on the existing Radar screens.
    The opportunity and application components, data, actions and layout stay in place. */
 :root {
-  --signal-surface-radius: 8px;
+  --signal-surface-radius: var(--signal-radius-card);
   --signal-soft-shadow: 0 7px 22px #193f500b;
   --signal-raised-shadow: 0 12px 26px #193f5019;
 }
@@ -12,7 +12,7 @@
 }
 .radar-sidebar .radar-nav button:hover:not(.is-active) { transform: translateX(2px); }
 .radar-sidebar .radar-nav button.is-active { box-shadow: inset 3px 0 0 var(--signal-citron); }
-.workspace-page-header h1 { letter-spacing: -.045em; }
+.workspace-page-header h1 { letter-spacing: -.01em; }
 
 .opportunities-toolbar,
 .applications-toolbar { animation: signal-enter .42s cubic-bezier(.2,.8,.2,1) both; }
@@ -26,7 +26,7 @@
   animation: signal-selected .42s ease-out both;
 }
 .opportunity-open > strong,
-.opportunity-detail-header h2 { letter-spacing: -.025em; }
+.opportunity-detail-header h2 { letter-spacing: -.01em; }
 .offer-signal { border-radius: var(--signal-surface-radius); }
 
 .applications-workspace .applications-list {
@@ -35,9 +35,9 @@
   animation: signal-enter .48s cubic-bezier(.2,.8,.2,1) both;
 }
 .applications-workspace .application-row { transition: background-color .22s ease; }
-.applications-workspace .application-identity h2 { letter-spacing: -.015em; }
+.applications-workspace .application-identity h2 { letter-spacing: -.01em; }
 .application-display-toggle { border-radius: var(--signal-surface-radius); }
-.application-display-toggle button { border-radius: 6px; transition: background-color .22s ease, color .22s ease; }
+.application-display-toggle button { border-radius: var(--signal-radius-control); transition: background-color .22s ease, color .22s ease; }
 .application-display-toggle,
 .applications-workspace .application-status .choice-select-trigger,
 .application-card .choice-select-trigger { border-color: var(--signal-input); }

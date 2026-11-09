@@ -1,3 +1,8 @@
+## 9 novembre 2026 — Cohérence des styles et commandes Signal
+
+- Rayons communs pour les commandes, surfaces et pastilles ; titres et moments harmonisés aux deux formats.
+- Bandeau de démo et aides sur fond clair, cibles mobiles agrandies dans les dialogues, notifications et réglages.
+
 ## 9 novembre 2026 — Sources détaillées alignées sur Signal
 
 - Retour, titre, commandes et liste alignés sur ordinateur et mobile. Le catalogue et les fiches gardent leurs actions, leurs réglages et leurs états.
