@@ -14,7 +14,7 @@ export async function writeWeekPlan(userId:string,command:{version:number;plan?:
  if(!row)throw new Error("Le plan n’a pas pu être relu.");
  const state=weekPlanState(row.data);let plan:WeekPlan,history=state.history;
  if(command.plan!==undefined){plan=carryDone(state.plan,validateWeekPlan(command.plan,now));history=archivePlan(history,state.plan,plan);if(JSON.stringify(plan)===JSON.stringify(state.plan))return state;}
- else {if(!state.plan||state.plan.week!==weekKey(now,state.plan.timeZone)||typeof command.done!=="boolean"||!state.plan.commitments.some(item=>item.id===command.id))throw new Error("Cet engagement n’appartient pas au plan de cette semaine.");
+ else {if(!state.plan||state.plan.week!==weekKey(now,state.plan.timeZone)||typeof command.done!=="boolean"||!state.plan.commitments.some(item=>item.id===command.id))throw new Error("Cette action n’appartient pas au plan de cette semaine.");
   if((state.plan.commitments.find(item=>item.id===command.id)?.doneAt!==undefined)===command.done)return state;
   plan={...state.plan,commitments:state.plan.commitments.map(item=>item.id===command.id?{...item,doneAt:command.done?now.toISOString():undefined}:item)};
  }

@@ -1,5 +1,10 @@
 ## 9 novembre 2026 — Plan de la semaine
 
+- Vider une action libère une place. Le plan peut être enregistré avec moins d’actions ou sans aucune action.
+- Les suggestions préremplissent une place libre. Les champs affichent « Quand », « Je » et « Pour », et les rythmes parlent d’actions.
+
+## 9 novembre 2026 — Plan de la semaine
+
 - La fenêtre de planification accueille avec une nouvelle introduction. Le menu « Mon rythme » est aligné avec son libellé et chaque rythme commence par un émoji.
 
 ## 9 novembre 2026 — Logo Lueur
