@@ -113,3 +113,16 @@ test("colonnes personnelles : ajout, renommage et projection préservent les dos
   assert.throws(()=>personal.editBoard(next,{action:"delete",id:"interviews"}),/Seule une colonne créée/);
   assert.throws(()=>personal.editBoard(next,{action:"delete",id:"custom-inconnue"}),/Seule une colonne créée/);
 });
+
+test("colonnes personnelles : déplacer une colonne garde les autres et refuse de mêler les terminées", () => {
+  const board = personal.defaultBoard();
+  const ids = board.columns.map(c => c.id);
+  const moved = personal.editBoard(board, {action:"move", id:ids[0], targetId:ids[2]});
+  assert.deepEqual(moved.columns.map(c => c.id), [ids[1], ids[2], ids[0], ...ids.slice(3)]);
+  assert.equal(moved.version, board.version + 1);
+  const back = personal.editBoard(moved, {action:"move", id:ids[0], targetId:ids[0] === moved.columns[0].id ? ids[1] : moved.columns[0].id});
+  assert.equal(back.columns[0].id, ids[0]);
+  const closed = board.columns.find(c => c.stage === "closed");
+  if (closed) assert.throws(() => personal.editBoard(board, {action:"move", id:closed.id, targetId:ids[0]}), /terminée/);
+  assert.throws(() => personal.editBoard(board, {action:"move", id:"inconnue", targetId:ids[0]}), /introuvable/);
+});

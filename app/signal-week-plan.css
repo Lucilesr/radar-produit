@@ -11,3 +11,12 @@
 @media(max-width:700px){.week-plan-card{padding:20px}.week-plan-card .signal-panel-header{flex-wrap:wrap;gap:12px}.week-plan-editor fieldset{padding:12px}.week-plan-editor .date-time-field{grid-template-columns:minmax(0,1fr)}.week-plan-editor .signal-save-actions{flex-wrap:wrap}.week-plan-editor .signal-save-actions button{white-space:normal;min-height:44px}}
 .week-series{margin:16px 0;padding:16px 0;border-block:1px solid var(--signal-line)}.week-series-line{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.week-series-summary{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0;font-size:14px}.week-series-badge{padding:6px 10px;border-radius:var(--signal-control-radius);background:var(--signal-energy);color:var(--signal-petrol-ink);font-weight:600}.week-series-summary span,.week-series-summary p{color:var(--signal-muted)}.week-series-summary p{flex-basis:100%;margin:0;overflow-wrap:anywhere}.week-series-dialog{display:grid;gap:20px;max-height:calc(100dvh - 32px);overflow-y:auto}.week-series-dialog>button{min-height:44px}.signal-moment .week-series-summary{justify-content:center;margin:24px 0}
 .signal-moment .week-series-summary span,.signal-moment .week-series-summary p{color:var(--signal-paper)}
+/* Même géométrie que la fiche candidature : largeur, marges, rayon ; en-tête et fermeture restent visibles au défilement. */
+[data-slot=dialog-content].week-plan-editor{width:min(870px,calc(100vw - 32px));max-width:none;max-height:92dvh;gap:16px;padding:0 28px 28px;border-radius:var(--signal-radius-panel);background:var(--card)}
+.week-plan-head{position:sticky;top:0;z-index:2;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:0 -28px;padding:28px 28px 12px;background:var(--card);align-items:center}
+.week-plan-head h2{min-width:0}
+.week-plan-description{margin-top:-8px;color:var(--signal-muted);font-size:14px}
+.week-plan-head h2{font:700 24px/1.2 var(--font-display);letter-spacing:-.01em;color:var(--signal-ink)}
+.week-plan-close{flex:none;margin:-8px -8px 0 0}
+@media(min-width:700px){.week-plan-editor fieldset{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px;align-items:end}.week-plan-editor fieldset>legend{grid-column:1/-1}}
+@media(max-width:640px){[data-slot=dialog-content].week-plan-editor{padding:0 20px 20px}.week-plan-head{margin:0 -20px;padding:20px 20px 12px}.week-plan-head h2{font-size:20px}}

@@ -182,3 +182,21 @@ button.application-tag:hover,button.application-tag[aria-pressed=true] { outline
  .applications-workspace .application-open { grid-column:3; grid-row:1/3; align-self:center; white-space:normal; width:100%; max-width:120px; }
  .applications-workspace .application-status .choice-select-trigger,.applications-workspace .application-open { min-height:44px; }
 }
+/* Colonnes : poignée, menu d’actions, tuile d’ajout. */
+.application-column-heading.is-draggable{cursor:grab;touch-action:pan-y}
+.application-column-heading.is-dragging{opacity:.5}
+.application-column-grip{display:grid;place-items:center;flex:none;width:28px;height:28px;margin-left:-6px;border-radius:var(--signal-radius-control);color:var(--signal-muted);background:transparent;cursor:grab}
+.application-column-grip:hover{background:var(--muted);color:var(--primary)}
+.application-column-grip:disabled{cursor:default;opacity:.4}
+.board-column-menu{min-width:220px}
+.board-column-menu [role=menuitem]{gap:10px}
+.application-column-add{display:flex;align-items:center;justify-content:center;gap:8px;align-self:start;min-height:56px;padding:12px 16px;border:1px dashed var(--signal-input);border-radius:var(--signal-radius-card);background:transparent;color:var(--signal-petrol-ink);font:600 14px/1.4 var(--font-sans)}
+.application-column-add:hover:not(:disabled){background:var(--signal-paper);border-style:solid}
+.application-drag-preview.is-column{min-width:200px;border-top:3px solid var(--primary)}
+@media(max-width:640px){.application-column-grip{width:44px;height:44px}}
+/* Menu ⋯ de carte : remplace le sélecteur « Déplacer vers » toujours visible. */
+.application-card-menu{display:grid;place-items:center;flex:none;width:32px;height:32px;margin-left:auto;border-radius:var(--signal-radius-control);color:var(--signal-muted);background:transparent}
+.application-card-menu:hover{background:var(--muted);color:var(--primary)}
+.application-card-menu-content{min-width:200px}
+.application-card-menu-current{color:var(--signal-muted)}
+@media(max-width:640px){.application-card-menu{width:44px;height:44px}}
