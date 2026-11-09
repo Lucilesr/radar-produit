@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Plan de la semaine
+
+- La fenêtre de planification accueille avec une nouvelle introduction. Le menu « Mon rythme » est aligné avec son libellé et chaque rythme commence par un émoji.
+
 ## 9 novembre 2026 — Logo Lueur
 
 - Le logo Lueur, dans les couleurs pétrole et citron de Signal, remplace l’ancien logo dans l’en-tête et sur l’écran de connexion. L’onglet utilise la nouvelle icône.
