@@ -8,7 +8,7 @@ export function readCare(value:unknown,version=0):ApplicationCare{
  return {cv:data.cv===true,message:data.message===true,contact:data.contact===true,questions:data.questions===true,version};
 }
 export function careCount(value:ApplicationCare|undefined){return careChecks.filter(item=>value?.[item.id]===true).length;}
-export function careSummary(value:ApplicationCare|undefined){const count=careCount(value),missing=careChecks.filter(item=>!value?.[item.id]).map(item=>item.missing);return count>=3?`Soignée à ${count} sur 4${missing.length?` : il manque ${missing[0]}`:""}`:`${count} sur 4 préparés`;}
+export function careSummary(value:ApplicationCare|undefined,withName=true){const count=careCount(value),missing=careChecks.filter(item=>!value?.[item.id]).map(item=>item.missing),summary=count===4?"complète":count===3?`3 sur 4 : il manque ${missing[0]}`:`${count} sur 4`;return withName?`Check-list ${summary}`:summary.charAt(0).toUpperCase()+summary.slice(1);}
 export const careValue=(value:ApplicationCare)=>JSON.stringify(Object.fromEntries(careChecks.map(item=>[item.id,value[item.id]])));
 
 export const latestCare=(before:ApplicationCare|undefined,after:ApplicationCare|undefined)=>(after?.version??0)>=(before?.version??0)?after:before;

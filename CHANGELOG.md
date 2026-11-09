@@ -2,6 +2,18 @@
 
 - Le bloc « Encore N candidatures pour voir votre entonnoir » et sa modale laissent place à une bascule Kanban / Entonnoir. L’entonnoir s’affiche à la place du suivi ; grisé, il indique au survol, au focus ou au toucher combien d’envois manquent.
 
+## 9 novembre 2026 — « Check-list d’envoi »
+
+- « Candidature soignée » devient « Check-list d’envoi » partout : fiche, badge, étape du jour, plan de la semaine, journal et récit du mois. L’aide de la section est retirée.
+
+## 9 novembre 2026 — Aides plus courtes
+
+- Les textes d’aide vont à l’essentiel : une ou deux phrases sur ce que fait l’élément, sans détail technique.
+
+## 9 novembre 2026 — Aides : ouverture prévisible
+
+- Une aide ouverte au survol ou au clavier reste ouverte quand on l’active. Une seconde activation la ferme, au clavier, à la souris comme au toucher.
+
 ## 9 novembre 2026 — Aides et pastilles de Mon radar sur mobile
 
 - L’aide du domaine suit son libellé, les bulles d’aide gardent une marge avec les bords de l’écran.
@@ -883,6 +895,7 @@ Les salaires et TJM connus inférieurs aux minimums du compte sont exclus sans t
 - Le carnet d’expériences et les sources utilisent un bouton discret à double chevron, avec un statut visible et des détails encadrés.
 - Espacements corrigés : retraits réguliers autour des cartes et statuts, contenus imbriqués alignés et historique des documents avec marges internes.
 - Le repli conserve les saisies en cours ; les liens vers l’historique et le prochain bloc à relire ouvrent les sections concernées.
+
 ## 20 octobre 2026 — Recherche PO/PM sans collecte de plateformes
 
 - Ajout de liens Google/Bing pour repérer des annonces PO/PM en français, tous pays. LinkedIn et Welcome to the Jungle restent consultés manuellement ; Radar ne récupère pas leurs contenus et n’utilise aucun compte LinkedIn.
