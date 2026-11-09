@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { type SourceSetting } from "@/components/source-card";
 import { SourceLogo } from "@/components/source-logo";
+import { HelpTooltip } from "@/components/help-tooltip";
 import { WorkspaceButton } from "@/components/workspace-form";
 import { formatDate } from "@/lib/application-workflow";
 import { sourceCatalog } from "@/lib/source-catalog";
@@ -17,7 +18,7 @@ export type SourceFilter = "all" | "automatic" | "manual" | "action";
 const filters: [SourceFilter, string][] = [["all", "Toutes"], ["automatic", "Automatiques"], ["manual", "À consulter"], ["action", "Action requise"]];
 const groups: [Exclude<SourceFilter, "all" | "action">, string, string][] = [
   ["automatic", "Automatiques", "Radar collecte ces offres pour vous."],
-  ["manual", "À consulter", "Radar prépare les recherches ; vous ouvrez le site. Radar ne lit pas vos comptes."],
+  ["manual", "À consulter", "Radar prépare les recherches ; vous ouvrez le site."],
 ];
 
 /** Sources grouped by how they work, each row saying where it stands and what to do next. */
@@ -38,8 +39,8 @@ export function SourceList({ sources, settings, jobs, profile, onOpen, onVisit }
 
 
   return <section className="signal-source-list" aria-labelledby="source-settings-title">
-    <div role="tablist" aria-label="Filtrer les sources" className="signal-source-filters">
-      {filters.map(([id, label]) => <button type="button" key={id} role="tab" aria-selected={filter === id} onClick={() => setFilter(id)}>
+    <div role="group" aria-label="Filtrer les sources" className="signal-source-filters">
+      {filters.map(([id, label]) => <button type="button" key={id} aria-pressed={filter === id} onClick={() => setFilter(id)}>
         {label}{id === "action" && counts.action ? <span className="quiet-tag">{counts.action}</span> : null}
       </button>)}
     </div>
@@ -47,7 +48,7 @@ export function SourceList({ sources, settings, jobs, profile, onOpen, onVisit }
       const rows = sources.filter(source => sourceKind(source.mode) === kind && keep(source));
       if (!rows.length) return null;
       return <div className="signal-source-group" key={kind}>
-        <div className="signal-source-group-head"><h3>{title}</h3><p className="signal-help">{help}</p></div>
+        <div className="signal-source-group-head"><div className="signal-section-title-help"><h3>{title}</h3>{kind==="manual"?<HelpTooltip label="Sources à consulter">Radar ne lit pas vos comptes.</HelpTooltip>:null}</div><p className="signal-help">{help}</p></div>
         <ul>{rows.map(source => {
           const setting = settingFor(source.name);
           const status = statusFor(source);

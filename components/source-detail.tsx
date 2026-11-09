@@ -119,7 +119,7 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
             </a>
             {visitable ? <WorkspaceButton variant="secondary" disabled={busy} onClick={async () => { setBusy(true); try { await onVisit(source); } finally { setBusy(false); } }}>J’ai fait le tour</WorkspaceButton> : null}
           </div>
-          {visitable ? <p className="signal-help">Ouvrez une recherche puis marquez la visite comme terminée.</p> : <p className="signal-help">{source.note}</p>}
+          {visitable ? <p className="signal-help">Marquez la visite après avoir consulté la source.</p> : <p className="signal-help">{source.note}</p>}
         </section>
 
         {visitable ? <section aria-label="Recherches">
@@ -147,7 +147,7 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
             <input type="url" value={offerUrl} onChange={event => setOfferUrl(event.target.value)} placeholder="https://…" aria-label={`Coller l’URL d’une offre vue sur ${source.name}`} />
             <WorkspaceButton type="submit" variant="secondary" disabled={!offerUrl.trim()}>Ajouter cette offre</WorkspaceButton>
           </form> : null}
-          {onAddOffer ? <p className="signal-help">Collez l’URL d’une offre vue sur ce site : le formulaire d’ajout s’ouvre, prérempli.</p> : null}
+          {onAddOffer ? <p className="signal-help">Collez une URL pour préremplir le formulaire.</p> : null}
         </section>
 
       </div>

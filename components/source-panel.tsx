@@ -78,6 +78,10 @@ export function SourcePanel({overviewCriteria=false,displaySection="all",onSecti
   },[addingSource,settings]);
   const [detailSource,setDetailSource]=useState<typeof sourceCatalog[number]|null>(null);
   const [addFilter,setAddFilter]=useState<AddFilter|null>(null);
+  const catalogueTrigger=useRef<HTMLElement|null>(null);
+  function openCatalogue(filter:AddFilter,trigger:HTMLElement){catalogueTrigger.current=trigger;setAddFilter(filter);}
+  function restoreCatalogueFocus(){if(catalogueTrigger.current?.isConnected)catalogueTrigger.current.focus();else document.getElementById("source-settings-title")?.focus();}
+  function retrySources(){void load();document.getElementById("source-settings-title")?.focus({preventScroll:true});}
   const [removingSource,setRemovingSource]=useState<typeof sourceCatalog[number]|null>(null);
   const detailTrigger=useRef<HTMLElement|null>(null);
   function openDetail(source:typeof sourceCatalog[number]){
@@ -149,7 +153,7 @@ export function SourcePanel({overviewCriteria=false,displaySection="all",onSecti
     await addSource(name);
   }
   const cards=(modes:readonly string[])=>settings===null
-    ? <div className="signal-source-panel">{loadError?<WorkspaceButton disabled={loading} busy={loading} onClick={()=>void load()}>Réessayer de charger les sources</WorkspaceButton>:<LoadingSkeleton label="Chargement des configurations…" rows={2}/>}</div>
+    ? <div className="signal-source-panel">{loadError?<WorkspaceButton disabled={loading} busy={loading} onClick={retrySources}>Réessayer de charger les sources</WorkspaceButton>:<LoadingSkeleton label="Chargement des configurations…" rows={2}/>}</div>
     : <div className="source-settings-grid">{sourceCatalog.filter(source=>modes.includes(source.mode)).map(source=><SourceCard key={source.name} source={source} setting={settings.find(item=>item.source===source.name)} count={jobs.filter(job=>job.source===source.name).length} profile={profile} onSaveSearch={onSave} onSaved={onSourceSaved}/>)}</div>;
   return <div className="source-workspace signal-sources-workspace">
     {active&&headerTarget?createPortal(<div className="source-refresh-actions">
@@ -161,18 +165,19 @@ export function SourcePanel({overviewCriteria=false,displaySection="all",onSecti
       <SearchCriteriaPanel overview={overviewCriteria} domainContent={domainContent} active={active&&(displaySection==="all"||displaySection==="criteria")} profile={profile} jobs={jobs} onSave={onSave} onOpenJobgether={openJobgether}/>
     </div>
     <div id="source-panel-channels" className="source-subpanel" hidden={displaySection!=="all"&&displaySection!=="channels"&&displaySection!=="outreach"}>
-      <WorkspacePanelHeader id="source-settings-title" title={<span className="source-title-line"><span>Sources suivies</span>{summary?<span className="source-summary">{summary}</span>:null}</span>} hint={demo?<HelpTooltip label="Sources fictives">Les balayages sont fictifs : aucun flux externe n’est contacté. L’ajout d’alertes Collective reste désactivé dans la démo.</HelpTooltip>:undefined} actions={<WorkspaceButton variant="secondary" aria-haspopup="dialog" disabled={!settings} onClick={()=>setAddFilter("all")}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>
+      <WorkspacePanelHeader id="source-settings-title" title="Sources suivies" hint={demo?<HelpTooltip label="Sources fictives">Les balayages sont fictifs : aucun flux externe n’est contacté. L’ajout d’alertes Collective reste désactivé dans la démo.</HelpTooltip>:undefined} actions={<WorkspaceButton variant="primary" aria-haspopup="dialog" disabled={!settings} onClick={event=>openCatalogue("all",event.currentTarget)}><Plus size={16} aria-hidden/>Ajouter une source</WorkspaceButton>}/>
+      {summary?<p className="source-summary">{summary}</p>:null}
       <WorkspaceFormError message={syncError}/><WorkspaceFormError message={loadError}/>
       {settings&&!followedSources.length?<section className="source-empty" aria-labelledby="source-empty-title">
         <h2 id="source-empty-title">Où Radar doit-il chercher ?</h2>
         <p className="signal-help">Choisissez un premier endroit. Vous pourrez en ajouter d’autres à tout moment.</p>
         <div className="source-empty-choices">
-          <button type="button" onClick={()=>setAddFilter("automatic")}><strong>Automatiques</strong><span>Radar collecte les offres pour vous, sans compte ni clé. Par exemple Jobgether ou We Work Remotely.</span></button>
-          <button type="button" onClick={()=>setAddFilter("manual")}><strong>À consulter</strong><span>Radar prépare les recherches, vous ouvrez le site. Par exemple LinkedIn Jobs ou Welcome to the Jungle.</span></button>
+          <button type="button" onClick={event=>openCatalogue("automatic",event.currentTarget)}><strong>Automatiques</strong><span>Radar collecte les offres pour vous.</span></button>
+          <button type="button" onClick={event=>openCatalogue("manual",event.currentTarget)}><strong>À consulter</strong><span>Radar prépare les recherches ; vous ouvrez le site.</span></button>
         </div>
       </section>:null}
       {settings===null
-        ? <div className="signal-source-panel">{loadError?<WorkspaceButton disabled={loading} busy={loading} onClick={()=>void load()}>Réessayer de charger les sources</WorkspaceButton>:<LoadingSkeleton label="Chargement des configurations…" rows={3}/>}</div>
+        ? <div className="signal-source-panel">{loadError?<WorkspaceButton disabled={loading} busy={loading} onClick={retrySources}>Réessayer de charger les sources</WorkspaceButton>:<LoadingSkeleton label="Chargement des configurations…" rows={3}/>}</div>
         : followedSources.length?<SourceList sources={followedSources} settings={settings} jobs={jobs} profile={profile} onOpen={openDetail} onVisit={visitSource}/>:null}
       {settings&&suggested.length?<div className="source-suggestions" role="group" aria-label="Sources suggérées pour vos critères"><span className="signal-help">Suggérées pour vos critères :</span>{suggested.map(source=><WorkspaceButton key={source.name} variant="quiet" disabled={addingSource!==null} busy={addingSource===source.name} onClick={event=>void addSuggested(source.name,event.currentTarget)}><Plus size={14} aria-hidden/>{source.name}</WorkspaceButton>)}</div>:null}
       {addFilter===null?<WorkspaceFormError message={addSourceError}/>:null}
@@ -184,7 +189,7 @@ export function SourcePanel({overviewCriteria=false,displaySection="all",onSecti
       {cards(["manual"])}
     </div>
     </ExpandableSection></div>
-    {settings?<SourceAddSheet open={addFilter!==null} initialFilter={addFilter??"all"} sources={[...jobboardCatalog,...alertCatalog]} followed={name=>sourceVisible(name,allInitialSources)} profile={profile} adding={addingSource} error={addSourceError} onAdd={async name=>{await addSource(name);}} onAddSite={addCustomSite} onClose={()=>{setAddFilter(null);setAddSourceError("");}}/>:null}
+    {settings&&addFilter!==null?<SourceAddSheet open initialFilter={addFilter} onReturnFocus={restoreCatalogueFocus} sources={[...jobboardCatalog,...alertCatalog]} followed={name=>sourceVisible(name,allInitialSources)} profile={profile} adding={addingSource} error={addSourceError} onAdd={async name=>{await addSource(name);}} onAddSite={addCustomSite} onClose={()=>{setAddFilter(null);setAddSourceError("");}}/>:null}
     <SourceDetail sessionWriting={sessionWriting} onQuitSession={onQuitSession?()=>{setDetailSource(null);onQuitSession();}:undefined} key={detailSource?.name ?? "closed"} onReturnFocus={restoreDetailFocus} source={detailSource} setting={detailSource?settings?.find(item=>item.source===detailSource.name):undefined} jobs={jobs} profile={profile} onClose={()=>setDetailSource(null)} onSaveSearch={onSave} onSaved={onSourceSaved} onRemove={source=>{setDetailSource(null);setRemovingSource(source);}} onVisit={visitSource} onAddOffer={onAddOffer?url=>{setDetailSource(null);onAddOffer(url);}:undefined}/>
     <SourceRemovalDialog focusAfterCancel={restoreDetailFocus} source={removingSource} onClose={()=>setRemovingSource(null)} onRemoved={updated=>{onSourceSaved(updated);setRemovingSource(null);notify({message:`${updated.source} supprimé des sources suivies.`});}} focusAfterRemoval={()=>document.querySelector<HTMLElement>("#source-panel-channels button")?.focus()}/>
   </div>;
