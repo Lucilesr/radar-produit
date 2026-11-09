@@ -24,7 +24,7 @@ export function buildMonthStory(month:string,zone:string,events:ActivityEvent[],
 export function availableStoryMonths(firstKnownAt:string|null,latest:string,zone="UTC"){let first=firstKnownAt&&Number.isFinite(Date.parse(firstKnownAt))?monthDay(new Date(firstKnownAt),zone).slice(0,7):latest;if(!isMonth(first)||first>latest)first=latest;const months=[];for(let month=latest;month>=first;month=shiftMonth(month,-1)){months.push({value:month,label:monthLabel(month)});if(month==="1970-01")break;}return months;}
 export function monthStoryCards(story:MonthStory){return [
  {title:"Offres triées",value:story.sorted,detail:story.sorted?"Des décisions prises pour faire de la place à ce qui vous convient.":"Aucun tri enregistré sur cette période. Vous avancez à votre rythme."},
- {title:"Candidatures soignées",value:story.cared,detail:"Préparations ayant atteint au moins trois repères sur quatre, envoyées ou non. Une offre compte une fois."},
+ {title:"Check-lists d’envoi",value:story.cared,detail:"Candidatures avec au moins 3 points cochés sur 4, envoyées ou non. Une offre compte une fois."},
  {title:"Entretiens",value:story.interviews,detail:"Échanges dont vous avez noté le bilan pendant ce mois. Plusieurs notes du même entretien comptent une fois."},
  {title:"Semaines tenues",value:story.weeks,detail:"Plans dont tous les engagements ont été cochés sur cette période. Vous choisissez votre rythme."},
  {title:"Votre pépite du mois",value:null,detail:story.gem?"Une offre sélectionnée ce mois-ci, toujours accessible dans votre Radar.":"Pas de pépite sélectionnée pour ce mois. La prochaine peut encore arriver."},
