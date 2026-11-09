@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Kanban : « Déplacer vers » dans le menu de la carte
+
+- Le sélecteur « Déplacer vers » quitte les cartes et passe dans leur menu ⋯. Le glisser-déposer reste la voie principale.
+
 ## 9 novembre 2026 — Kanban : colonnes à ajouter, déplacer et supprimer
 
 - Chaque colonne a un menu ⋯ : Renommer, Déplacer à gauche ou à droite, Supprimer pour les colonnes ajoutées. Son en-tête se glisse aussi pour changer de place, à la souris ou au clavier.
