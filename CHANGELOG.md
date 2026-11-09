@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Candidatures : bascule Kanban / Entonnoir
+
+- Le bloc « Encore N candidatures pour voir votre entonnoir » et sa modale laissent place à une bascule Kanban / Entonnoir. L’entonnoir s’affiche à la place du suivi ; grisé, il indique au survol, au focus ou au toucher combien d’envois manquent.
+
 ## 9 novembre 2026 — Aides et pastilles de Mon radar sur mobile
 
 - L’aide du domaine suit son libellé, les bulles d’aide gardent une marge avec les bords de l’écran.

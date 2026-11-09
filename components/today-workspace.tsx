@@ -8,7 +8,8 @@ import { usePersonalBoard } from "@/components/use-personal-board";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ApplicationMobileList } from "@/components/application-mobile-list";
 import { ApplicationKanban } from "@/components/application-kanban";
-import { WorkspaceButton, WorkspacePanelHeader } from "@/components/workspace-form";
+import { WorkspaceButton, WorkspaceFormError, WorkspacePanelHeader } from "@/components/workspace-form";
+import { ApplicationFunnel, ApplicationViewToggle, type ApplicationView, type FunnelProps } from "@/components/application-funnel";
 import {upcomingInterviews} from "@/lib/workspace-agenda";
 import { terminalStatuses } from "@/lib/application-workflow";
 import { type WorkspaceView } from "@/components/offer-workspace";
@@ -50,7 +51,7 @@ export function TodayWorkspace({radarLine,sessionAction,sessionNotice,weekPlan,i
  </div></div>;
 }
 
-export function ApplicationsWorkspace({lessonsActive=false,onLessons,onMainView,onOffers,onReport,lessons,refusal,jobs,preparedJobs=[],onStatus,onOpen,placeholder,notice,funnel}:{lessonsActive?:boolean;onLessons?:()=>void;onMainView?:()=>void;onOffers?:(selection?:boolean)=>void;onReport?:(job:JobRecord)=>void;lessons?:ReactNode;refusal?:ReactNode;funnel?:ReactNode;placeholder?:ReactNode;notice?:ReactNode;jobs:JobRecord[];preparedJobs?:JobRecord[];onStatus:(id:string,status:JobStatus,columnId?:string)=>Promise<boolean>;onOpen:(job:JobRecord,view?:WorkspaceView)=>void}) {
+export function ApplicationsWorkspace({lessonsActive=false,onLessons,onMainView,onOffers,onReport,lessons,refusal,jobs,preparedJobs=[],onStatus,onOpen,placeholder,notice,funnel}:{lessonsActive?:boolean;onLessons?:()=>void;onMainView?:()=>void;onOffers?:(selection?:boolean)=>void;onReport?:(job:JobRecord)=>void;lessons?:ReactNode;refusal?:ReactNode;funnel?:FunnelProps;placeholder?:ReactNode;notice?:ReactNode;jobs:JobRecord[];preparedJobs?:JobRecord[];onStatus:(id:string,status:JobStatus,columnId?:string)=>Promise<boolean>;onOpen:(job:JobRecord,view?:WorkspaceView)=>void}) {
   const [busy,setBusy]=useState<string|null>(null),[error,setError]=useState(""),[errorJob,setErrorJob]=useState<string|null>(null);
   const zone=useDisplayTimeZone();
   const mobile=useIsMobile(),personal=usePersonalBoard(jobs),now=useNow(jobs);
@@ -60,6 +61,10 @@ export function ApplicationsWorkspace({lessonsActive=false,onLessons,onMainView,
   const followups=active.filter(job=>job.applicationFollowup?.eligible&&job.applicationFollowup.dueAt&&!job.applicationFollowup.doneAt&&Date.parse(job.applicationFollowup.dueAt)<=now).length;
   const interviews=upcomingInterviews(active,now).filter(({event})=>weekKey(Date.parse(event.startAt),zone)===weekKey(now,zone)).length;
   const statusLock=useRef(false);
+  const [view,setView]=useState<ApplicationView>("board");
+  useEffect(()=>{const frame=requestAnimationFrame(()=>{try{if(sessionStorage.getItem("radar:applications-view")==="funnel")setView("funnel");}catch{}});return()=>cancelAnimationFrame(frame);},[]);
+  function chooseView(next:ApplicationView){setView(next);try{sessionStorage.setItem("radar:applications-view",next);}catch{}}
+  const showFunnel=view==="funnel"&&!!funnel?.value?.visible;
   async function changeStatus(job:JobRecord,status:JobStatus,columnId?:string){if(statusLock.current)return false;statusLock.current=true;setBusy(job.id);setErrorJob(job.id);setError("");try{const saved=await onStatus(job.id,status,columnId);if(!saved)setError("Le déplacement n’est pas confirmé. Le dernier statut confirmé reste affiché.");return saved;}catch{setError("Statut non confirmé. Actualisez pour vérifier avant de réessayer.");return false;}finally{statusLock.current=false;setBusy(null);requestAnimationFrame(()=>{if(document.activeElement!==document.body)return;document.getElementById("workspace-title")?.focus({preventScroll:true});});}}
   const lessonLink=<a href="?tab=pipeline&section=lessons" className="application-lessons-link" onClick={event=>{event.preventDefault();onLessons?.();}}>Mes leçons</a>;
   if(lessonsActive)return <div className="applications-aligned"><a href="?tab=pipeline" className="application-return" onClick={event=>{event.preventDefault();onMainView?.();}}>← Candidatures</a><PageHeader title="Mes leçons"/>{lessons}</div>;
@@ -67,9 +72,11 @@ export function ApplicationsWorkspace({lessonsActive=false,onLessons,onMainView,
     {!placeholder?<p className="application-overview">{active.length} en cours · {followups} relance{followups!==1?"s":""} à faire · {interviews} entretien{interviews!==1?"s":""} cette semaine</p>:null}
     {placeholder??<div className="applications-workspace">{notice}
       {refusal??(ready&&next?<section className="application-next-step" aria-labelledby="application-next-title"><div><p>Prochaine étape</p><h2 id="application-next-title">{next.label}</h2><span className="application-next-help">{next.minutes} minutes, à votre rythme.</span></div><WorkspaceButton variant="primary" onClick={()=>onAction(next.action)}>{next.kind==="interview"?"Préparer":next.kind==="followups"?"Relancer":"Préparer la candidature"}<span className="application-next-mobile-duration"> · {next.minutes} min</span></WorkspaceButton></section>:null)}
-      {funnel}
+      {funnel?<div className="application-view-bar"><ApplicationViewToggle view={showFunnel?"funnel":"board"} onView={chooseView} funnel={funnel} boardLabel={mobile?"Liste":"Kanban"}/>{funnel.error&&!showFunnel?<><WorkspaceFormError message={funnel.error}/><WorkspaceButton disabled={funnel.loading} onClick={()=>void funnel.refresh()}>Réessayer</WorkspaceButton></>:null}</div>:null}
+      {showFunnel&&funnel?<ApplicationFunnel {...funnel}/>:<>
       {error&&preparedJobs.some(job=>job.id===errorJob)?<WorkspaceState error title="Déplacement non enregistré">{error}</WorkspaceState>:null}
       {!personal.ready?<WorkspaceState error={!!personal.error} title={personal.error?"Colonnes indisponibles":"Chargement des colonnes…"}>{personal.error}{personal.error?<WorkspaceButton onClick={()=>void personal.load()}>Réessayer</WorkspaceButton>:null}</WorkspaceState>:!jobs.length&&!preparedJobs.length?<WorkspaceState title="Votre suivi commence ici">Sélectionnez une offre pour préparer votre candidature.<WorkspaceButton variant="primary" onClick={()=>onOffers?.()}>Voir mon lot du jour</WorkspaceButton></WorkspaceState>:mobile?<ApplicationMobileList jobs={jobs} preparedJobs={preparedJobs} board={personal.board} now={now} busy={busy} onStatus={changeStatus} onOpen={onOpen} onReport={onReport} onColumn={personal.open}/>:<ApplicationKanban board={personal.board} onColumn={personal.open} jobs={jobs} preparedJobs={preparedJobs} now={now} busy={busy} onStatus={changeStatus} onOpen={onOpen}/>}
+      </>}
       {lessonLink}{personal.dialog}
     </div>}
   </div>;
