@@ -1,3 +1,9 @@
+## 9 novembre 2026 — Accueil : étape claire
+
+- Pendant le chargement, l’accueil affiche « Préparation de votre prochaine étape… » au lieu d’une étape provisoire qui change ensuite.
+- Une séance en cours dit où l’on reprend : « Reprendre votre séance : trier le lot », avec « Étape 3 sur 7 ».
+- Le plan de la semaine porte le même nom et la même durée partout : « Poser mon plan · 5 min ».
+
 ## 9 novembre 2026 — Entretiens : préparer sans réécrire d’histoire
 
 - Quand un entretien approche, la séance propose « Préparer votre entretien chez … · jour heure » et ouvre l’onglet Entretiens de la candidature, au lieu d’un formulaire d’histoire « Prioriser ».
