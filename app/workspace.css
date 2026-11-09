@@ -18,10 +18,7 @@ body { background: var(--background); font-family: var(--font-sans); letter-spac
 .radar-app { padding: 0; background: var(--background); color: var(--foreground); }
 .radar-shell { max-width: 1760px; min-height: 100dvh; grid-template-columns: 224px minmax(0,1fr); border: 0; border-radius: 0; box-shadow: none; }
 .radar-sidebar { top: 0; height: 100dvh; padding: 28px 18px 20px; border-radius: 0; border-color: var(--border); background: var(--card); }
-.workspace-brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
-.workspace-brand>span { display: grid; place-items: center; flex: none; width: 35px; height: 35px; border-radius: var(--signal-radius-pill); background: var(--primary); color: #fff; }
-.workspace-brand p { min-width: 0; overflow-wrap: anywhere; font-size: 19px; font-weight: 650; letter-spacing: -.8px; }
-.workspace-brand p span { color: var(--muted-foreground); font-weight: 400; }
+.workspace-brand { display: block; width: 108px; max-width: 100%; height: auto; }
 .radar-search { margin-top: 24px; border: 1px solid var(--input); border-radius: var(--signal-radius-control); background: var(--background); }
 .radar-search input:not([type=checkbox]):not([type=radio]):not([type=file]) { font-size: 13px; }
 .radar-nav { margin-top: 22px; gap: 6px; }

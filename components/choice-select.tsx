@@ -9,7 +9,7 @@ import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 
-export type ChoiceOption<T extends string> = { value: T; label: string; group?: string };
+export type ChoiceOption<T extends string> = { value: T; label: string; group?: string; emoji?: string };
 
 export function ChoiceSelect<T extends string>({ label, value, options, onChange, disabled = false, searchable = false, displayValue, portalContainer }: {
   label: string; value: T; options: readonly ChoiceOption<T>[];
@@ -23,11 +23,15 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
   function changeOpen(next:boolean) { if(next)setSearch("");setOpen(next); }
   const fold=(text:string)=>text.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
   const mobileOptions=options.filter(option=>!search||fold(option.label).includes(fold(search)));
-  const selected = options.find(option => option.value === value)?.label ?? "Choisir";
+  const selected = options.find(option => option.value === value);
+  const selectedLabel = displayValue ?? selected?.label ?? "Choisir";
   const groups = [...new Set(options.map(option => option.group ?? ""))];
   function choose(next: T) { onChange(next); setOpen(false); }
+  function optionLabel(label: string, emoji?: string) {
+    return <>{emoji ? <span aria-hidden="true">{emoji}{" "}</span> : null}{label}</>;
+  }
   function desktopOptions(group: string) {
-    return options.filter(option => (option.group ?? "") === group).map(option => <SelectItem key={option.value} value={"option:"+option.value} className="min-h-10 rounded-lg pl-3 pr-9 py-2 text-sm text-foreground focus:bg-accent focus:text-primary">{option.label}</SelectItem>);
+    return options.filter(option => (option.group ?? "") === group).map(option => <SelectItem key={option.value} value={"option:"+option.value} textValue={option.label} className="min-h-10 rounded-lg pl-3 pr-9 py-2 text-sm text-foreground focus:bg-accent focus:text-primary">{optionLabel(option.label, option.emoji)}</SelectItem>);
   }
 
   return <div className="choice-select min-w-0">
@@ -35,7 +39,7 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
     <div className="hidden sm:block">
       <Select value={"option:"+value} onValueChange={next => { if(next.startsWith("option:")&&options.some(option=>option.value===next.slice(7)))onChange(next.slice(7) as T); }} disabled={disabled}>
         <SelectTrigger aria-labelledby={`${labelId} ${desktopValueId}`} className="choice-select-trigger h-11 w-full rounded-xl border-border bg-white px-3 text-left text-sm text-foreground shadow-none focus-visible:ring-ring">
-          <SelectValue id={desktopValueId} placeholder="Choisir">{displayValue??selected}</SelectValue>
+          <SelectValue id={desktopValueId} placeholder="Choisir">{optionLabel(selectedLabel, selected?.emoji)}</SelectValue>
         </SelectTrigger>
         <SelectContent portalContainer={portalContainer} aria-label={label} position="popper" side="bottom" sideOffset={6} align="start" className="choice-select-menu z-[80] max-h-[min(70dvh,460px,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] rounded-2xl border-border bg-card p-1 shadow-xl">
           {groups.map(group => group ? <SelectGroup key={group}>
@@ -48,7 +52,7 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
     <div className="sm:hidden">
       <Drawer open={open} onOpenChange={changeOpen} autoFocus>
         <DrawerTrigger asChild><button type="button" disabled={disabled} aria-labelledby={`${labelId} ${mobileValueId}`} className="choice-select-trigger flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-border bg-white px-3 text-left text-sm font-normal text-foreground shadow-sm disabled:opacity-50">
-          <span id={mobileValueId} className="min-w-0 truncate">{displayValue??selected}</span><ChevronDown size={17} className="shrink-0 text-muted-foreground" />
+          <span id={mobileValueId} className="min-w-0 truncate">{optionLabel(selectedLabel, selected?.emoji)}</span><ChevronDown size={17} className="shrink-0 text-muted-foreground" />
         </button></DrawerTrigger>
         <DrawerContent portalContainer={portalContainer} className="z-[80] rounded-t-[26px] border-border bg-card shadow-2xl">
           <DrawerHeader className="border-b border-border px-5 pb-3 text-left">
@@ -60,7 +64,7 @@ export function ChoiceSelect<T extends string>({ label, value, options, onChange
             {groups.map(group => <div key={group || "all"}>
               {group ? <p className="px-3 pb-1 pt-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{group}</p> : null}
               {mobileOptions.filter(option => (option.group ?? "") === group).map(option => <button type="button" key={option.value} onClick={() => choose(option.value)} aria-current={option.value === value ? "true" : undefined} className={`mb-1 flex min-h-12 w-full items-center justify-between gap-3 rounded-xl px-4 py-3 text-left text-sm ${option.value === value ? "bg-accent font-semibold text-primary" : "bg-white text-foreground"}`}>
-                <span>{option.label}</span>{option.value === value ? <Check size={17} className="shrink-0" /> : null}
+                <span>{optionLabel(option.label, option.emoji)}</span>{option.value === value ? <Check size={17} className="shrink-0" /> : null}
               </button>)}
             </div>)}
           </div>

@@ -1,5 +1,4 @@
 "use client";
-import { RadarMark } from "@/components/radar-mark";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { AlertCircle, Inbox, LockKeyhole } from "lucide-react";
@@ -40,5 +39,7 @@ export class WorkspaceBoundary extends Component<{children: ReactNode}, {failed:
     return this.props.children;
   }
 }
-export function WorkspaceBrand() { return <div className="workspace-brand"><span><RadarMark /></span><p>Radar <span>produit</span></p></div>; }
+export function WorkspaceBrand() {
+  return <img className="workspace-brand" src="/brand/radar-lueur.svg" alt="Radar Produit" width={108} height={28} />;
+}
 export function PrivateLabel() { return <span className="workspace-private"><LockKeyhole size={13} aria-hidden /> Privé</span>; }

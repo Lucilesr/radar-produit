@@ -110,9 +110,6 @@
  .radar-app:has(.radar-page[data-aligned=true]) .radar-sidebar>div:first-child{display:contents}
  .radar-app:has(.radar-page[data-aligned=true]) .radar-header-actions,.radar-app:has(.radar-page[data-aligned=true]) .radar-search,.radar-app:has(.radar-page[data-aligned=true]) .radar-guide-launcher{display:none}
  .radar-app:has(.radar-page[data-aligned=true]) .radar-home-link{flex:none;margin:0;padding:0}
- .radar-app:has(.radar-page[data-aligned=true]) .radar-home-link .workspace-brand>span{width:34px;height:34px}
- .radar-app:has(.radar-page[data-aligned=true]) .workspace-brand p{font:800 22px/1.2 var(--font-display);letter-spacing:-.01em}
- .radar-app:has(.radar-page[data-aligned=true]) .workspace-brand p>span{display:none}
  .radar-app:has(.radar-page[data-aligned=true]) .radar-nav{display:flex;position:static;flex:1;flex-wrap:wrap;gap:4px;margin:0;padding:0;border:0;background:transparent;overflow:visible}
  .radar-app:has(.radar-page[data-aligned=true]) .radar-nav button{min-height:44px;border-radius:var(--signal-radius-pill);padding:10px 16px;gap:8px;color:var(--signal-ink);font-size:15px}
  .radar-app:has(.radar-page[data-aligned=true]) .radar-nav button>svg,.radar-app:has(.radar-page[data-aligned=true]) .radar-nav button:before{display:none}
