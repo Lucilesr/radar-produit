@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Plan de la semaine : modale alignée
+
+- La modale du plan prend la largeur et les marges de la fiche candidature ; le titre et la croix restent visibles au défilement. Le titre affiche « semaine du 9 novembre » au lieu du code de semaine.
+
 ## 9 novembre 2026 — Aides et pastilles de Mon radar sur mobile
 
 - L’aide du domaine suit son libellé, les bulles d’aide gardent une marge avec les bords de l’écran.
