@@ -1,5 +1,5 @@
 export const weekRhythms = [{value:"calm",label:"Tranquille · 2 engagements",count:2},{value:"regular",label:"Régulier · 3 engagements",count:3},{value:"intense",label:"Intense · 4 engagements",count:4}] as const;
-export const weekActions = [{value:"followup",label:"je relance"},{value:"care",label:"je soigne"},{value:"visit",label:"je visite"},{value:"write",label:"j’écris"},{value:"prepare",label:"je prépare"},{value:"review",label:"je fais le bilan"}] as const;
+export const weekActions = [{value:"followup",label:"je relance"},{value:"care",label:"je coche ma check-list"},{value:"visit",label:"je visite"},{value:"write",label:"j’écris"},{value:"prepare",label:"je prépare"},{value:"review",label:"je fais le bilan"}] as const;
 export type WeekAction = typeof weekActions[number]["value"];
 export type WeekCommitment = {id:string;when:string;action:WeekAction;targetId?:string;targetType?:"job"|"source"|"story";label:string;doneAt?:string};
 export type WeekPlan = {week:string;timeZone:string;rhythm:typeof weekRhythms[number]["value"];commitments:WeekCommitment[]};

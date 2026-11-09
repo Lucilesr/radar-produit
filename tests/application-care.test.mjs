@@ -40,7 +40,7 @@ function fixture(){
 const offer={title:"Product Owner fictif",company:"Atelier fictif",contractType:"cdi",remoteMode:"full_remote",language:"fr",source:"Ajout manuel",description:"Description privée fictive."};
 test("C1 : quatre repères explicites, seuil trois et manque précis",()=>{
  assert.equal(rules.careCount(rules.emptyCare()),0);assert.equal(rules.careCount(rules.readCare({cv:"true",message:1})),0);
- const care=rules.readCare({cv:true,message:true,questions:true});assert.equal(rules.careSummary(care),"Soignée à 3 sur 4 : il manque le contact");assert.equal(rules.careSummary({...care,contact:true}),"Soignée à 4 sur 4");assert.equal(rules.careCount(rules.readCare("not-json")),0);
+ const care=rules.readCare({cv:true,message:true,questions:true});assert.equal(rules.careSummary(care),"Check-list 3 sur 4 : il manque le contact");assert.equal(rules.careSummary({...care,contact:true}),"Check-list complète");assert.equal(rules.careCount(rules.readCare("not-json")),0);
  assert.deepEqual(rules.latestCare({...care,version:3},{...rules.emptyCare(),version:1}),{...care,version:3});
 });
 test("C1 SQLite : CV global sans coche automatique, indépendance des offres et du compte",async()=>{
@@ -58,7 +58,7 @@ test("C1 SQLite : actions confirmées, reçu du seuil, réessai et retrait de co
   for(const field of ["cv","message","questions"]){const value=await store.writeApplicationCare("alice",job.id,{field,checked:true,version});version=value.version;}
   assert.equal(f.events().filter(e=>e.action==="application_cared").length,1);assert.equal(f.events()[0].data.score,3);assert.equal(f.events()[0].data.source,"Ajout manuel");
   const retry=await store.writeApplicationCare("alice",job.id,{field:"questions",checked:true,version:2});assert.equal(retry.version,3);assert.equal(f.events().length,1);
-  await store.writeApplicationCare("alice",job.id,{field:"contact",checked:true,version:3});assert.equal(f.events().length,1,"le quatrième repère ne double pas la candidature soignée");
+  await store.writeApplicationCare("alice",job.id,{field:"contact",checked:true,version:3});assert.equal(f.events().length,1,"le quatrième point ne double pas la check-list remplie");
   const unchecked=await store.writeApplicationCare("alice",job.id,{field:"cv",checked:false,version:4});assert.equal(rules.careCount(unchecked),3);assert.equal((await jobs.getOffer("alice",job.id)).status,"new");assert.doesNotMatch(JSON.stringify(f.events()),/Description privée|SECRET_PROFILE/);
  }finally{f.sqlite.close();}
 });
