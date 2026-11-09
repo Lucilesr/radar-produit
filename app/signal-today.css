@@ -1,31 +1,31 @@
-/* Today — approved compact petrol priority, with the shared Orbite mark. */
+/* Today — approved compact petrol priority. */
 .today-layout { gap:28px; }
 .radar-app .today-next { margin-top:28px; padding:24px; border:1px solid var(--border); border-radius:5px; background:var(--card); }
 .today-next>.signal-panel-header { margin-bottom:4px; }
 .today-next>.workspace-caption { margin-top:12px; font:400 13px/1.65 var(--font-sans); }
-.today-next .workspace-task { padding-block:18px; gap:12px; }
-.today-next .workspace-task:last-of-type { border-bottom:0; padding-bottom:0; }
-.today-next .workspace-task strong { font:600 14px/1.5 var(--font-sans); }
-.today-next .workspace-task small { font:400 12px/1.65 var(--font-sans); }
-.today-next .workspace-task-icon { width:36px; height:36px; border-radius:4px; background:var(--signal-soft); color:var(--primary); }
-.today-next .workspace-task:hover strong { color:var(--primary); }
-.today-summary { margin-top:24px; padding-top:18px; gap:8px 24px; }
-.today-summary strong { font:600 20px/1.5 var(--font-sans); color:var(--primary); font-variant-numeric:tabular-nums; }
-.radar-app .today-agenda { min-width:0; padding:23px; border:1px solid var(--border); border-radius:5px; background:#fcfdfd; }
-.today-agenda>.signal-panel-header { gap:12px; margin-bottom:2px; }
-.today-agenda .signal-panel-actions { color:var(--primary); width:auto; }
-.today-agenda .agenda-event { padding-block:18px; gap:8px; border-radius:0; }
-.today-agenda .agenda-event:first-of-type { padding-top:12px; }
-.today-agenda .agenda-event:last-of-type { border-bottom:0; padding-bottom:0; }
-.today-agenda .agenda-event strong { font:600 15px/1.5 var(--font-sans); overflow-wrap:anywhere; }
-.today-agenda .agenda-event>span { font:400 13px/1.65 var(--font-sans); overflow-wrap:anywhere; }
-.today-agenda .agenda-event-heading>.workspace-caption { font:400 12px/1.65 var(--font-sans); }
-.today-agenda>.workspace-caption { margin-top:12px; font:400 13px/1.65 var(--font-sans); }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @media(max-width:640px) {
  .today-layout { gap:20px; }
- .radar-app .today-next,.radar-app .today-agenda { padding:20px 16px; }
- .today-agenda .signal-panel-title { flex:1; }
- .today-agenda>.signal-panel-header { flex-wrap:nowrap; align-items:center; }
+ .radar-app .today-next{ padding:20px 16px; }
+ 
+ 
 }
 .radar-app .today-focus { position:relative; overflow:hidden; background:var(--signal-petrol); padding:28px; border:1px solid var(--signal-petrol); border-radius:6px; }
 .radar-app .today-focus h2.today-focus-title { max-width:calc(100% - 112px); font:600 24px/1.3 var(--font-sans); letter-spacing:-.6px; margin:0; color:white; overflow-wrap:anywhere; }
@@ -33,16 +33,16 @@
 .radar-app .today-focus>.radar-add-button { margin-top:22px; min-height:42px; font-size:13px; padding:8px 12px; background:white; color:var(--signal-petrol-dark); border-color:white; box-shadow:none; max-width:100%; }
 .radar-app .today-focus>.radar-add-button:hover { background:#ebf1f4; border-color:#ebf1f4; }
 .radar-app .today-focus>.radar-add-button:focus-visible { outline:2px solid var(--signal-citron); outline-offset:4px; }
-.radar-app .today-focus>.today-logo-watermark { position:absolute; z-index:0; pointer-events:none; right:-64px; bottom:-155px; top:auto; width:340px; height:340px; opacity:.85; }
+
 @media(max-width:1100px) {
  .radar-app .today-focus h2.today-focus-title { font-size:22px; max-width:calc(100% - 56px); }
  .radar-app .today-focus>.workspace-caption { max-width:calc(100% - 56px); }
- .radar-app .today-focus>.today-logo-watermark { width:290px; height:290px; right:-58px; bottom:-142px; }
+ 
 }
 @media(max-width:640px) {
  .radar-app .today-focus { padding:22px; }
  .radar-app .today-focus h2.today-focus-title,.radar-app .today-focus>.workspace-caption { max-width:100%; }
- .radar-app .today-focus>.today-logo-watermark { width:260px; height:260px; bottom:-138px; right:-56px; opacity:.65; }
+ 
  .radar-app .today-focus>.radar-add-button { min-height:44px; }
 }
 
@@ -64,7 +64,7 @@
 .funnel-headline>.signal-form-error{flex-basis:100%}
 .month-story-home-link{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--signal-line)}
 .month-story-home-link>button{min-height:44px;white-space:normal;text-align:left}
-.week-overview{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;font:400 14px/1.6 var(--font-sans);color:var(--signal-muted)}
+
 .today-three-blocks .week-series{margin:16px 0 0;padding-top:0;border:0}
 @media(max-width:640px){.today-radar{padding:20px}.today-following{margin-top:20px}.today-following>button{width:100%}}
 
@@ -76,7 +76,7 @@
 
 .today-three-blocks .week-plan-card>.signal-panel-header{align-items:flex-start}
 .today-three-blocks .week-plan-card .signal-panel-title{display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex:1 1 160px}
-.today-three-blocks .week-overview{margin-top:0}
+
 
 /* L6 — the three existing zones use Q0 type, surfaces and spacing. */
 .radar-app .radar-page[data-space="dashboard"] .workspace-page-header h1 {
@@ -125,7 +125,7 @@
 .today-three-blocks .week-plan-card > .signal-panel-header { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; align-items: center; }
 .today-three-blocks .week-plan-card .signal-panel-title { display: contents; }
 .today-three-blocks .week-plan-card .signal-panel-title h2 { grid-column: 1; grid-row: 1; }
-.today-three-blocks .week-plan-card .week-overview { grid-column: 1/-1; grid-row: 2; }
+
 .today-three-blocks .week-plan-card .signal-panel-actions { grid-column: 2; grid-row: 1; }
 .today-three-blocks .week-plan-card h2,
 .today-three-blocks .today-radar h2 { font: 650 20px/1.3 var(--font-display); color: var(--signal-petrol-ink); }

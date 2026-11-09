@@ -49,14 +49,13 @@ import "./signin-page.css";
 import "./signal-account-aligned.css";
 import "./signal-carnet-aligned.css";
 import "./signal-sources-aligned.css";
-import "./signal-coherence.css";
 
 export const metadata: Metadata = {
   title: "Radar Produit",
   description: "Votre espace privé de veille et de candidatures produit.",
   icons: {
-    icon: "/favicon.svg?v=orbite-1",
-    shortcut: "/favicon.svg?v=orbite-1",
+    icon: "/favicon-lueur.svg",
+    shortcut: "/favicon-lueur.svg",
   },
 };
 

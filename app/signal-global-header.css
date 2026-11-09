@@ -5,24 +5,21 @@
  .radar-app .radar-shell>.radar-sidebar{display:none!important}
  .radar-app .radar-shell>.radar-global-header{display:flex;align-items:center;gap:24px;min-height:74px;padding:14px 32px;background:var(--signal-paper);border-bottom:1px solid var(--signal-line);min-width:0}
  .radar-app .radar-shell .radar-global-header .radar-home-link{flex:none;padding:0;margin:0}
- .radar-global-header .workspace-brand>span{width:34px;height:34px}
- .radar-global-header .workspace-brand p{font:800 22px/1.2 var(--font-display);letter-spacing:-.01em;white-space:nowrap}
- .radar-global-header .workspace-brand p>span{display:none}
  .radar-app .radar-shell .radar-global-header .radar-nav{display:flex;position:static;flex:none;flex-direction:row;flex-wrap:nowrap;gap:4px;margin:0;padding:0;border:0;background:transparent;overflow:visible;box-shadow:none}
- .radar-app .radar-shell .radar-global-header .radar-nav button{min-height:44px;flex:none;display:flex;align-items:center;gap:8px;border-radius:999px;padding:10px 14px;font:500 14px/1.4 var(--font-sans);color:var(--signal-ink);white-space:nowrap;border:0;box-shadow:none}
+ .radar-app .radar-shell .radar-global-header .radar-nav button{min-height:44px;flex:none;display:flex;align-items:center;gap:8px;border-radius:var(--signal-radius-pill);padding:10px 14px;font:500 14px/1.4 var(--font-sans);color:var(--signal-ink);white-space:nowrap;border:0;box-shadow:none}
  .radar-app .radar-shell .radar-global-header .radar-nav button>svg,.radar-app .radar-shell .radar-global-header .radar-nav button:before,.radar-global-header .radar-mobile-label{display:none}
  .radar-app .radar-shell .radar-global-header .radar-nav button.is-active{background:var(--signal-petrol-ink);color:var(--signal-paper)}
  .radar-global-header .radar-global-tools{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-left:auto;min-width:0}
- .radar-app .radar-shell .radar-global-header .radar-search{display:flex;align-items:center;flex:none;width:clamp(140px,15vw,210px);min-height:44px;gap:8px;padding:0 12px;margin:0;border:1px solid var(--signal-line);border-radius:10px;background:var(--signal-paper)}
+ .radar-app .radar-shell .radar-global-header .radar-search{display:flex;align-items:center;flex:none;width:clamp(140px,15vw,210px);min-height:44px;gap:8px;padding:0 12px;margin:0;border:1px solid var(--signal-line);border-radius:var(--signal-radius-control);background:var(--signal-paper)}
  .radar-global-header .radar-search>svg{flex:none}.radar-global-header .radar-search input{width:100%;min-width:0;min-height:42px;padding:0;border:0;background:transparent;font-size:13px;box-shadow:none;outline-offset:4px}
  .radar-global-header .radar-search:focus-within{outline:3px solid var(--ring);outline-offset:3px}
- .radar-global-header .radar-add-button{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;margin:0;border-radius:10px;white-space:nowrap;font-size:13px}
+ .radar-global-header .radar-add-button{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;margin:0;border-radius:var(--signal-radius-control);white-space:nowrap;font-size:13px}
  .radar-global-header .radar-account-mobile{display:block;flex:none}
- .radar-global-header .radar-account-trigger{display:flex;align-items:center;justify-content:center;min-width:44px;width:44px;height:44px;padding:0;border-radius:999px}
- .radar-global-header .radar-account-trigger .avatar{display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--signal-line);border-radius:999px;background:var(--signal-mist);font-size:15px}
+ .radar-global-header .radar-account-trigger{display:flex;align-items:center;justify-content:center;min-width:44px;width:44px;height:44px;padding:0;border-radius:var(--signal-radius-pill)}
+ .radar-global-header .radar-account-trigger .avatar{display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--signal-line);border-radius:var(--signal-radius-pill);background:var(--signal-mist);font-size:15px}
  .radar-global-header .radar-account-name{display:none}
  .aligned-offer-tools{display:none}
- .radar-account-menu{border-radius:16px}.radar-account-menu [role=menuitem]{min-height:44px;border-radius:10px}
+ .radar-account-menu{border-radius:var(--signal-radius-card)}.radar-account-menu [role=menuitem]{min-height:44px;border-radius:var(--signal-radius-control)}
 }
 @media(min-width:641px) and (max-width:1100px){
  .radar-app .radar-shell>.radar-global-header{gap:12px;padding:12px 20px}
@@ -32,8 +29,14 @@
 }
 @media(min-width:641px) and (max-width:760px){
  .radar-app .radar-shell>.radar-global-header{gap:6px;padding:10px 8px}
- .radar-global-header .workspace-brand>span{width:28px;height:28px}.radar-global-header .workspace-brand>div{display:none}.radar-global-header .nav-count{display:none}
+ .radar-global-header .workspace-brand{width:89px}
+ .radar-global-header .nav-count{display:none}
  .radar-app .radar-shell .radar-global-header .radar-nav{gap:0}.radar-app .radar-shell .radar-global-header .radar-nav button{font-size:12px;padding:8px 6px;gap:4px}
  .radar-app .radar-shell .radar-global-header .radar-search{width:92px;padding-inline:8px}.radar-global-header .radar-global-tools{gap:6px}
  .radar-app:has(.radar-page[data-offer-open=true]) .radar-shell>.radar-global-header{display:none}
 }
+/* Recherche, avatar et menu du compte : fond papier, pastille, cibles de 44 px. */
+.radar-app .radar-search{background:var(--signal-paper)}
+.radar-app .radar-search input{background:transparent}
+.radar-app .avatar{background:var(--signal-mist);color:var(--signal-petrol-ink);border-color:var(--signal-line)}
+.radar-account-menu [role=menuitem]{min-height:44px;border-radius:var(--signal-radius-control)}

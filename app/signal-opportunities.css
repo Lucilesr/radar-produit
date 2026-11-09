@@ -26,9 +26,9 @@
 .review-source { display: inline-flex; align-items: center; gap: 7px; background: transparent; border: 0; border-radius: 0; color: var(--muted-foreground); font: 400 11px/1.5 var(--font-sans); }
 .review-source .source-logo { width: 28px; height: 18px; }
 .opportunity-decision { align-items: center; justify-content: space-between; gap: 10px; margin: 14px 0 10px; padding-bottom: 12px; }
-.opportunity-action-main, .opportunity-action-secondary { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-.opportunity-action-main > :is(button,a), .opportunity-action-secondary > button { min-height: 38px; padding-block: 8px; }
-.signal-selected-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 10px 14px; border: 1px solid #a7b528; border-radius: 5px; background: var(--signal-citron); color: var(--signal-petrol-dark); font: 600 13px/1.45 var(--font-sans); }
+
+
+.signal-selected-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 10px 14px; border: 1px solid #a7b528; border-radius: var(--signal-radius-control); background: var(--signal-citron); color: var(--signal-petrol-dark); font: 600 13px/1.45 var(--font-sans); }
 .signal-selected-button:hover { background: #dce63f; border-color: #829217; }
 .reading-application-action { flex: none; align-self: flex-start; min-height: 38px; padding: 8px 12px; white-space: nowrap; }
 .signal-offer-workspace { min-width: 0; }
@@ -46,7 +46,7 @@
 .review-condition-row { min-width: 0; padding-block: 9px; border-bottom: 1px solid var(--border); }
 .review-condition-row dt { font: 400 12px/1.5 var(--font-sans); color: var(--muted-foreground); }
 .review-condition-row dd { margin-top: 4px; font: 600 13px/1.5 var(--font-sans); color: var(--foreground); overflow-wrap: anywhere; }
-.offer-signal { padding: 12px; border: 1px solid var(--border); border-left: 3px solid var(--primary); border-radius: 5px; background: var(--card); }
+.offer-signal { padding: 12px; border: 1px solid var(--border); border-left: 3px solid var(--primary); border-radius: var(--signal-radius-card); background: var(--card); }
 .offer-signal--caution { border-color: var(--border); border-left-color: #ad770e; background: var(--card); }
 .offer-signal ul { display: grid; gap: 5px; margin-top: 8px; font-size: 13px; line-height: 1.65; }
 .offer-signal--positive .offer-section-title > svg { color: var(--primary); }
@@ -65,7 +65,7 @@
 .opportunity-reading-notes > span { display: flex; align-items: center; gap: 6px; }
 .opportunity-reading-notes > span:last-child { margin-left: auto; text-align: right; }
 .workspace-dialog:has(.signal-offer-workspace) { max-width: 870px; }
-.radar-app .application-age { min-height: 26px; padding: 4px 8px; border-radius: 4px; font: 500 12px/16px var(--font-sans); text-align: center; }
+
 @media(min-width:761px) {
   /* Scroll the whole workspace up to the reading panes, then scroll each pane. */
   body:has(.opportunities-workspace) { position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
@@ -107,8 +107,8 @@
   .opportunity-detail-header h2 { font-size: 22px; }
   .reading-application-action { margin-left: auto; min-height: 44px; }
   .opportunity-decision button { flex: initial; }
-  .opportunity-action-main { flex: 1; }
-  .opportunity-action-main > :is(button,a),.opportunity-action-secondary > button,.opportunity-detail .signal-quiet-button { min-height: 44px; }
+  
+  .opportunity-detail .signal-quiet-button{ min-height: 44px; }
   .review-criteria-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 16px; }
   .signal-workspace-tabs { gap: 6px 16px; }
   .signal-workspace-tabs button { font-size: 14px; }
@@ -131,7 +131,7 @@
 .daily-lot-headline{margin:0;color:var(--foreground);font-size:15px;line-height:1.35}
 .daily-lot-headline strong{font-size:22px;font-weight:700;letter-spacing:-.01em;color:var(--signal-petrol-dark)}
 .daily-lot-caption{margin:4px 0 10px;color:var(--muted-foreground);font-size:13px;line-height:1.45}
-.daily-lot-bar{height:8px;max-width:420px;overflow:hidden;border-radius:999px;background:var(--signal-soft)}
+.daily-lot-bar{height:8px;max-width:420px;overflow:hidden;border-radius:var(--signal-radius-pill);background:var(--signal-soft)}
 .daily-lot-bar>span{display:block;height:100%;border-radius:inherit;background:var(--signal-petrol);transition:width .45s cubic-bezier(.2,.8,.2,1)}
 .daily-lot.is-done .daily-lot-bar>span{background:#a7b528}
 .daily-lot-switch{flex:none}
@@ -139,12 +139,12 @@
 @media(max-width:760px){.has-open-offer>.daily-lot{display:none}.daily-lot{padding:14px}.daily-lot-headline strong{font-size:20px}.daily-lot-switch{width:100%;justify-content:center}}
 
 /* Tri Q1b — réserve rangée par groupes, « Plus tard » et archives. */
-.reserve{margin:0 0 14px;padding:16px 18px;border:1px solid var(--signal-line);border-radius:5px;background:var(--card)}
+.reserve{margin:0 0 14px;padding:16px 18px;border:1px solid var(--signal-line);border-radius:var(--signal-radius-card);background:var(--card)}
 .reserve-head h3{display:flex;align-items:baseline;gap:8px;margin:0;color:var(--signal-petrol-dark);font-size:17px;font-weight:700}
 .reserve-head h3 span{color:var(--muted-foreground);font-size:13px;font-weight:500}
 .reserve-head p{margin:4px 0 12px;color:var(--muted-foreground);font-size:13px;line-height:1.45}
 .reserve-groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin:0;padding:0;list-style:none}
-.reserve-group{display:flex;flex-direction:column;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--signal-line);border-radius:5px;background:var(--signal-paper)}
+.reserve-group{display:flex;flex-direction:column;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--signal-line);border-radius:var(--signal-radius-card);background:var(--signal-paper)}
 .reserve-group.is-shown{border-color:var(--signal-petrol);box-shadow:inset 0 0 0 1px var(--signal-petrol)}
 .reserve-group-text{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline}
 .reserve-group-text strong{color:var(--foreground);font-size:14px;line-height:1.35}
@@ -156,13 +156,13 @@
 .reserve-archives:focus-visible{outline:2px solid var(--ring);outline-offset:3px;border-radius:3px}
 .reserve-archive-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 14px;padding:12px 16px;border:1px dashed var(--signal-input);border-radius:5px;background:var(--card)}
 .reserve-archive-head p{display:flex;align-items:center;gap:8px;margin:0;color:var(--muted-foreground);font-size:13px;line-height:1.45}
-.opportunity-later-badge{display:inline-flex;align-items:center;gap:5px}
+
 @media(max-width:760px){.has-open-offer>.reserve,.has-open-offer>.reserve-archive-head{display:none}.reserve{padding:14px}.reserve-group-actions .secondary-button,.reserve-group-actions .signal-quiet-button,.reserve-group-actions .signal-danger-button{min-height:44px}}
 
 /* Q1c — an optional second look, using the same reserve cards and controls. */
 .friday-rescue { border:1px solid var(--signal-line);border-left:4px solid var(--signal-petrol);background:var(--signal-paper);padding:20px;margin:0 0 20px;border-radius:5px; }
 .friday-rescue h3 { margin:0 0 6px;font:700 16px/1.4 var(--font-sans); }
-.friday-rescue>p,.friday-rescue-done { color:var(--signal-muted);font-size:13px; }
+.friday-rescue>p{ color:var(--signal-muted);font-size:13px; }
 .friday-rescue ul { list-style:none;margin:16px 0 0;padding:0; }
 .friday-rescue li { display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0;border-top:1px solid var(--signal-line); }
 .friday-rescue-identity { min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px;overflow-wrap:anywhere; }
@@ -176,8 +176,8 @@
 .triage-learning-contracts{border:0;padding:0;margin:12px 0;display:grid;gap:8px}
 .triage-learning-contracts label{display:flex;gap:8px;align-items:center;min-height:44px;overflow-wrap:anywhere}
 .triage-learning-contracts input{width:18px;height:18px;flex:none}
-.triage-shortcuts{margin:0 0 12px;color:var(--signal-muted);font-size:13px}
-.triage-shortcuts kbd{font:600 12px/1 var(--font-sans);padding:3px 5px;border:1px solid var(--signal-input);border-radius:4px;background:var(--signal-paper)}
+
+
 
 .reserve-progress{margin:0 0 12px;color:var(--signal-petrol-dark);font-weight:600;font-size:var(--signal-type-section)}
 .reserve-undo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
@@ -193,7 +193,7 @@
 .opportunities-workspace .reserve,
 .opportunities-workspace .reserve-group,
 .opportunities-workspace .reserve-archive-head,
-.opportunities-workspace .offer-mystery { border-radius: var(--signal-surface-radius); }
+.opportunities-workspace .offer-mystery { border-radius: var(--signal-radius-card); }
 .opportunities-workspace .daily-lot { margin-bottom: 12px; border-left-color: var(--signal-petrol-ink); }
 .opportunities-workspace .daily-lot-headline strong { font-family: var(--font-display); font-weight: 650; color: var(--signal-petrol-ink); }
 .opportunities-workspace .reserve-head h3 { font: 650 21px/1.3 var(--font-display); color: var(--signal-petrol-ink); }
@@ -201,14 +201,7 @@
 .opportunities-workspace .reserve-group-count { font: 650 24px/1.2 var(--font-display); font-variant-numeric: tabular-nums; }
 .opportunities-workspace .reserve-group.is-shown { background: var(--signal-mist); }
 .opportunities-workspace .opportunities-toolbar { margin-bottom: 12px; }
-.opportunities-workspace .review-toolbar-actions > button,
-.opportunities-workspace .opportunity-date-order,
-.opportunities-workspace .reserve-group-actions > button,
-.opportunities-workspace .reserve-archives,
-.opportunities-workspace .reading-description-heading > button,
-.opportunities-workspace .opportunity-action-main > :is(button,a),
-.opportunities-workspace .opportunity-action-secondary > button,
-.opportunities-workspace .reading-application-action { min-height: 44px; }
+.opportunities-workspace .review-toolbar-actions > button,.opportunities-workspace .opportunity-date-order,.opportunities-workspace .reserve-group-actions > button,.opportunities-workspace .reserve-archives,.opportunities-workspace .reading-description-heading > button,.opportunities-workspace .reading-application-action{ min-height: 44px; }
 .opportunities-workspace .help-tooltip-trigger { width: 44px; min-width: 44px; height: 44px; min-height: 44px; }
 .opportunities-workspace .reserve-archives { margin-top: 8px; }
 .opportunities-workspace .opportunities-split { border: 1px solid var(--signal-line); border-radius: var(--signal-surface-radius); }
@@ -219,7 +212,7 @@
 .opportunities-workspace .opportunity-evidence { margin-top: 4px; }
 .opportunities-workspace .review-source { font-size: 12px; }
 .opportunities-workspace .opportunity-detail-header h2 { font: 650 24px/1.3 var(--font-display); color: var(--signal-petrol-ink); }
-.opportunities-workspace .offer-signal { border-radius: var(--signal-surface-radius); background: var(--signal-mist); }
+.opportunities-workspace .offer-signal { border-radius: var(--signal-radius-card); background: var(--signal-mist); }
 .opportunities-workspace .offer-signal--caution { border-left-color: var(--signal-warning); background: var(--signal-warning-bg); }
 @media(max-width:760px) {
   .opportunities-workspace .workspace-tabs { flex-wrap: wrap; gap: 4px 12px; }
