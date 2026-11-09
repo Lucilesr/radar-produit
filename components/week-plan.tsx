@@ -9,7 +9,7 @@ import {Dialog,DialogContent,DialogTitle,DialogDescription} from "@/components/u
 import {useSavedForm,AutosaveStatus} from "@/components/autosave";
 import {SignalMoment} from "@/components/signal/signal-moment";
 import {WorkspaceButton,WorkspaceFormError} from "@/components/workspace-form";
-import {weekKey,weekRhythms,weekActions,planHeld,commitmentOverdue,localDateTime,localTimeInZone,type WeekPlan,type WeekPlanState,type WeekCommitment} from "@/lib/week-plan";
+import {weekKey,weekRhythms,weekActions,weekActionDescription,planHeld,commitmentOverdue,localDateTime,localTimeInZone,type WeekPlan,type WeekPlanState,type WeekCommitment} from "@/lib/week-plan";
 import {useWeekSeries,WeekSeriesControls,SeriesSummary} from "@/components/week-series";
 import {weekMonday} from "@/lib/week-series";
 import {confirmedProgress} from "@/lib/progress-event";
@@ -76,14 +76,14 @@ export function WeekPlanCard({owner,profile,jobs,sources,allowMoment,onState,onO
  function markWelcome(){if(moment==="week")void series.write("welcome");}
  function edit(){markWelcome();setMoment(null);setEditor(true);}
  function closeMoment(){markWelcome();setMoment(null);requestAnimationFrame(()=>document.getElementById("week-plan-title")?.focus());}
- function commitments(items:WeekCommitment[]){return <ul className="week-commitments">{items.map(item=><li key={item.id} className={item.doneAt?"is-done":""}><div className="week-commitment-main"><button id={`week-check-${item.id}`} type="button" role="checkbox" aria-checked={!!item.doneAt} aria-label={`Action réalisée : ${item.label}`} className="week-check" disabled={!ready||planBusy} onClick={()=>{void write({version:state.version,id:item.id,done:!item.doneAt}).then(result=>{if(!result.ok)setError(result.error??"Enregistrement non confirmé.");requestAnimationFrame(()=>{if(document.activeElement!==document.body)return;const check=document.getElementById(`week-check-${item.id}`);(check?.getClientRects().length?check:document.getElementById("week-plan-title"))?.focus();});});}}>{item.doneAt?<Check size={18} aria-hidden/>:null}</button><div className="week-commitment-label"><span>{new Date(item.when).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"})} · {weekActions.find(action=>action.value===item.action)?.label.toLocaleLowerCase("fr")} · {item.label}</span></div></div></li>)}</ul>;}
+ function commitments(items:WeekCommitment[]){return <ul className="week-commitments">{items.map(item=><li key={item.id} className={item.doneAt?"is-done":""}><div className="week-commitment-main"><button id={`week-check-${item.id}`} type="button" role="checkbox" aria-checked={!!item.doneAt} aria-label={`Action réalisée : ${weekActionDescription(item)}`} className="week-check" disabled={!ready||planBusy} onClick={()=>{void write({version:state.version,id:item.id,done:!item.doneAt}).then(result=>{if(!result.ok)setError(result.error??"Enregistrement non confirmé.");requestAnimationFrame(()=>{if(document.activeElement!==document.body)return;const check=document.getElementById(`week-check-${item.id}`);(check?.getClientRects().length?check:document.getElementById("week-plan-title"))?.focus();});});}}>{item.doneAt?<Check size={18} aria-hidden/>:null}</button><div className="week-commitment-label"><span>{new Date(item.when).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"})} · {weekActionDescription(item)}</span></div></div></li>)}</ul>;}
  return <section className={`week-plan-card${planHeld(plan)?" is-held":""}`} aria-labelledby="week-plan-title" aria-busy={planBusy}>
   <div className="week-compact-heading"><h2 id="week-plan-title" tabIndex={-1}>Votre semaine</h2>{series.state?<strong className="week-series-badge">{series.state.streak} semaine{series.state.streak!==1?"s":""} tenue{series.state.streak!==1?"s":""}</strong>:null}</div>
   {ready&&plan?.commitments.length?<p className="week-compact-overview" role="status">{completed} action{completed!==1?"s réalisées":" réalisée"} sur {plan.commitments.length}{planHeld(plan)?" · semaine tenue":""}</p>:null}
   {!clock||!ready&&!error?<p role="status">Lecture du plan de la semaine…</p>:null}
   <WorkspaceFormError message={error}/>{error?<WorkspaceButton disabled={planBusy} onClick={()=>void load()}>Relire le plan</WorkspaceButton>:null}
   {plan?.commitments.length?<>{commitments(plan.commitments.filter(item=>!item.doneAt))}{completed?<details className="week-completed" open={!mobile}><summary>✓ {completed} action{completed!==1?"s réalisées":" réalisée"} <span aria-hidden>▸</span></summary>{commitments(plan.commitments.filter(item=>item.doneAt))}</details>:null}</>:clock&&ready?<div className="week-no-plan"><p>{plan?"Aucune action planifiée cette semaine":"Nouvelle semaine, page blanche"}</p><WorkspaceButton disabled={planBusy} onClick={edit}>Planifier mes actions · 3 min</WorkspaceButton></div>:null}
-  <details className="week-settings"><summary>Réglages de la semaine <span aria-hidden>▸</span></summary>{plan?.commitments.length?<WorkspaceButton disabled={!ready||planBusy} onClick={edit}>Modifier le plan</WorkspaceButton>:null}<WeekSeriesControls compact series={series} onOverlay={setPauseOpen}/>{plan?.commitments.length?<ul>{plan.commitments.filter(item=>!item.doneAt).map(item=><li key={item.id}><span>{item.label}{commitmentOverdue(item,localNow)?" · À replanifier":""}</span><div>{item.targetId&&targets.some(t=>t.id===item.targetId&&t.type===item.targetType)?<WorkspaceButton disabled={planBusy} onClick={()=>onTarget({id:item.targetId!,type:item.targetType!,label:item.label},item.action)}>Ouvrir</WorkspaceButton>:null}<WorkspaceButton disabled={!ready||planBusy} onClick={edit}>Déplacer</WorkspaceButton></div></li>)}</ul>:null}</details>
+  <details className="week-settings"><summary>Réglages de la semaine <span aria-hidden>▸</span></summary>{plan?.commitments.length?<WorkspaceButton disabled={!ready||planBusy} onClick={edit}>Modifier le plan</WorkspaceButton>:null}<WeekSeriesControls compact series={series} onOverlay={setPauseOpen}/>{plan?.commitments.length?<ul>{plan.commitments.filter(item=>!item.doneAt).map(item=><li key={item.id}><span>{weekActionDescription(item)}{commitmentOverdue(item,localNow)?" · À replanifier":""}</span><div>{item.targetId&&targets.some(t=>t.id===item.targetId&&t.type===item.targetType)?<WorkspaceButton disabled={planBusy} onClick={()=>onTarget({id:item.targetId!,type:item.targetType!,label:item.targetLabel??item.label},item.action)}>Ouvrir</WorkspaceButton>:null}<WorkspaceButton disabled={!ready||planBusy} onClick={edit}>Déplacer</WorkspaceButton></div></li>)}</ul>:null}</details>
   <SignalMoment open={!!moment&&!editor} onClose={closeMoment} title={moment==="held"?"Semaine tenue":series.state?.streak?"Nouvelle semaine":"Nouvelle semaine, page blanche"} description={moment==="held"?"Toutes les actions de votre plan sont cochées. Vous avez avancé à votre rythme.":"Choisissez un rythme qui vous convient. Vous pouvez aussi revenir plus tard."} actionLabel={moment==="held"?"Continuer":queue[0]?.label??"Revenir à Radar"} onAction={moment==="held"?closeMoment:()=>{if(queue[0]?.kind==="plan")edit();else{markWelcome();setMoment(null);if(queue[0])onNextAction(queue[0].action);}}}>{series.state?<SeriesSummary state={series.state}/>:null}{moment==="week"?<WorkspaceButton onClick={closeMoment}>Plus tard</WorkspaceButton>:null}</SignalMoment>
   {editor&&week?<WeekPlanEditor key={week} state={state} week={week} zone={zone} targets={targets} suggestions={suggestions} busy={planBusy} onSave={write} onClose={()=>setEditor(false)}/>:null}
  </section>;
@@ -102,18 +102,23 @@ function fillActionSlots(plan:DraftPlan):DraftPlan{
 }
 
 function WeekPlanEditor({state,week,zone,targets,suggestions,busy,onSave,onClose}:{state:WeekPlanState;week:string;zone:string;targets:WeekTarget[];suggestions:Array<{action:WeekCommitment["action"];target:WeekTarget}>;busy:boolean;onSave:(command:PlanCommand)=>Promise<{ok:boolean;state?:WeekPlanState;error?:string}>;onClose:()=>void}){
- const [initial]=useState(()=>({version:state.version,plan:fillActionSlots(state.plan?.week===week?state.plan:{week,timeZone:zone,rhythm:"regular",commitments:[]})}));
+ const [initial]=useState(()=>({version:state.version,plan:fillActionSlots(state.plan?.week===week?{...state.plan,commitments:state.plan.commitments.map(item=>({...item,edited:true}))}:{week,timeZone:zone,rhythm:"regular",commitments:[]})}));
  const draft=useSavedForm(`week-plan:${week}`,initial),[error,setError]=useState(""),[remote,setRemote]=useState<WeekPlanState|null>(null);
  const heading=useRef<HTMLHeadingElement>(null),opener=useRef<HTMLElement|null>(null);
  const actionId=useId();
- const plan=draft.value.plan;
+ function separateTarget(item:DraftAction):DraftAction{
+  if(!item.targetId||item.targetLabel!==undefined)return item;
+  const target=targets.find(candidate=>candidate.id===item.targetId&&candidate.type===item.targetType);
+  return target?{...item,targetLabel:target.label,label:item.label===target.label?"":item.label}:item;
+ }
+ const plan={...draft.value.plan,commitments:draft.value.plan.commitments.map(separateTarget)};
  const started=plan.commitments.filter(startedAction);
  const emptyIndex=plan.commitments.findIndex(item=>!startedAction(item));
  const availableSuggestions=emptyIndex<0?[]:suggestions.filter(({action,target})=>!started.some(item=>item.action===action&&item.targetType===target.type&&item.targetId===target.id));
- const canSave=draft.ready&&!busy&&(started.length>0||state.plan?.week===week&&!!state.plan.commitments.length)&&started.every(item=>item.label.trim()&&item.when);
+ const canSave=draft.ready&&!busy&&(started.length>0||state.plan?.week===week&&!!state.plan.commitments.length)&&started.every(item=>item.when);
 
  function focusAction(index:number){requestAnimationFrame(()=>document.getElementById(`${actionId}-${index}`)?.focus());}
- function update(id:string,change:Partial<WeekCommitment>){draft.setValue(value=>({...value,plan:{...value.plan,commitments:value.plan.commitments.map(item=>item.id===id?{...item,...change,edited:true}:item)}}));}
+ function update(id:string,change:Partial<WeekCommitment>){draft.setValue(value=>({...value,plan:{...value.plan,commitments:value.plan.commitments.map(item=>item.id===id?{...separateTarget(item),...change,edited:true}:item)}}));}
  function clear(id:string,index:number){
   draft.setValue(value=>({...value,plan:{...value.plan,commitments:value.plan.commitments.map(item=>item.id===id?emptyAction():item)}}));
   focusAction(index);
@@ -122,7 +127,7 @@ function WeekPlanEditor({state,week,zone,targets,suggestions,busy,onSave,onClose
   draft.setValue(old=>({...old,plan:fillActionSlots({...old.plan,rhythm:value,commitments:[...started,...old.plan.commitments.filter(item=>!startedAction(item))]})}));
  }
  function suggest(action:WeekCommitment["action"],target:WeekTarget){
-  update(plan.commitments[emptyIndex].id,{action,targetId:target.id,targetType:target.type,label:target.label});
+  update(plan.commitments[emptyIndex].id,{action,targetId:target.id,targetType:target.type,targetLabel:target.label});
   focusAction(emptyIndex);
  }
  async function save(version=draft.value.version){
@@ -134,7 +139,24 @@ function WeekPlanEditor({state,week,zone,targets,suggestions,busy,onSave,onClose
  return <Dialog open onOpenChange={open=>{if(!open&&!busy)onClose();}}><DialogContent className="week-plan-editor" showCloseButton={false} onOpenAutoFocus={event=>{event.preventDefault();opener.current=document.activeElement instanceof HTMLElement?document.activeElement:null;heading.current?.focus();}} onCloseAutoFocus={event=>{event.preventDefault();const target=opener.current?.isConnected&&opener.current!==document.body&&opener.current.getClientRects().length?opener.current:document.getElementById("week-plan-title");requestAnimationFrame(()=>target?.focus());}}><div className="week-plan-head"><DialogTitle ref={heading} tabIndex={-1}>Mon plan · {weekLabel(week)}</DialogTitle><WorkspaceButton className="week-plan-close" aria-label="Fermer" variant="quiet" disabled={busy} onClick={onClose}><X size={20} aria-hidden/></WorkspaceButton></div><DialogDescription className="week-plan-description">C’est parti pour planifier votre semaine !<br/>Quand ? Quelle action ? Pour quelle offre ? Écrivons cela ensemble !</DialogDescription>
  <form onSubmit={event=>{event.preventDefault();void save();}}><div className="week-plan-rhythm"><ChoiceSelect label="Mon rythme" disabled={busy||!draft.ready} value={plan.rhythm} options={weekRhythms} onChange={rhythm}/></div>
  {availableSuggestions.length?<div className="week-suggestions"><p>Suggestions du radar · choisissez-en une pour préremplir une action</p>{availableSuggestions.map(({action,target})=><WorkspaceButton key={`${action}:${target.type}:${target.id}`} disabled={busy||!draft.ready} onClick={()=>suggest(action,target)}>{weekActions.find(a=>a.value===action)?.label} · {target.label}</WorkspaceButton>)}</div>:null}
- {plan.commitments.map((item,index)=>{const available=targets.filter(t=>item.action==="visit"?t.type==="source":item.action==="write"?t.type==="story":t.type==="job");return <fieldset key={item.id} disabled={busy||!draft.ready}><legend>Action {index+1}</legend><DateTimePicker label="Quand" value={item.when} onChange={when=>update(item.id,{when})}/><ChoiceSelect label="Je" value={item.action} options={weekActions} onChange={action=>update(item.id,{action,targetId:undefined,targetType:undefined,label:""})}/><ChoiceSelect searchable label="Pour" value={item.targetId?`${item.targetType}:${item.targetId}`:"personal"} options={[{value:"personal",label:"Une action personnelle"},...available.map(target=>({value:`${target.type}:${target.id}`,label:target.label}))]} onChange={value=>{const target=available.find(t=>`${t.type}:${t.id}`===value);update(item.id,{targetId:target?.id,targetType:target?.type,label:target?.label??""});}}/><div className="week-action-entry"><label>Mon action<input id={`${actionId}-${index}`} required={startedAction(item)} maxLength={300} value={item.label} onChange={event=>update(item.id,{label:event.target.value})} placeholder="Une action concrète, à votre mesure"/></label>{startedAction(item)?<WorkspaceButton variant="quiet" aria-label={`Vider l’action ${index+1}`} onClick={()=>clear(item.id,index)}>Vider</WorkspaceButton>:null}</div></fieldset>;})}
- <AutosaveStatus save={draft.save} draft/><WorkspaceFormError message={error}/>{remote?<details><summary>Comparer au plan enregistré</summary>{remote.plan?.commitments.length?<ul>{remote.plan.commitments.map(item=><li key={item.id}>{item.when.replace("T"," à ")} · {item.label}{item.doneAt?" · réalisée":""}</li>)}</ul>:<p>Aucun plan enregistré.</p>}<p>Votre brouillon reste au-dessus. Modifier l’intitulé, le type ou la cible d’une action déjà réalisée retire sa coche.</p><WorkspaceButton disabled={!canSave} onClick={()=>void save(remote.version)}>Enregistrer mon plan après comparaison</WorkspaceButton></details>:null}<div className="signal-save-actions"><WorkspaceButton disabled={busy} onClick={onClose}>Reprendre plus tard</WorkspaceButton><WorkspaceButton type="submit" variant="primary" busy={busy} disabled={!canSave}>Enregistrer mon plan</WorkspaceButton></div></form>
+ {plan.commitments.map((item,index)=>{
+  const targetType=item.action==="visit"?"source":item.action==="write"?"story":"job";
+  const chosenTarget=targets.find(target=>target.id===item.targetId&&target.type===item.targetType);
+  const available=targets.filter(target=>target.type===targetType||target===chosenTarget);
+  return <fieldset key={item.id} disabled={busy||!draft.ready}>
+   <legend>Action {index+1}</legend>
+   <DateTimePicker label="Jour" value={item.when} onChange={when=>update(item.id,{when})}/>
+   <ChoiceSelect label="Action" value={item.action} options={weekActions} onChange={action=>update(item.id,{action,targetId:undefined,targetType:undefined,targetLabel:undefined})}/>
+   <ChoiceSelect searchable label="Offre" value={item.targetId?`${item.targetType}:${item.targetId}`:"personal"}
+    displayValue={chosenTarget?undefined:item.targetLabel}
+    options={[{value:"personal",label:"Une action personnelle"},...available.map(target=>({value:`${target.type}:${target.id}`,label:target.label}))]}
+    onChange={value=>{const target=available.find(candidate=>`${candidate.type}:${candidate.id}`===value);update(item.id,{targetId:target?.id,targetType:target?.type,targetLabel:target?.label});}}/>
+   <div className="week-action-entry">
+    <label><span className="form-control-label">Précision</span><input id={`${actionId}-${index}`} maxLength={300} value={item.label} onChange={event=>update(item.id,{label:event.target.value})} placeholder="Ex. : relancer Marie par mail"/></label>
+    {startedAction(item)?<WorkspaceButton variant="quiet" aria-label={`Vider l’action ${index+1}`} onClick={()=>clear(item.id,index)}>Vider</WorkspaceButton>:null}
+   </div>
+  </fieldset>;
+ })}
+ <AutosaveStatus save={draft.save} draft/><WorkspaceFormError message={error}/>{remote?<details><summary>Comparer au plan enregistré</summary>{remote.plan?.commitments.length?<ul>{remote.plan.commitments.map(item=><li key={item.id}>{item.when.replace("T"," à ")} · {weekActionDescription(item)}{item.doneAt?" · réalisée":""}</li>)}</ul>:<p>Aucun plan enregistré.</p>}<p>Votre brouillon reste au-dessus. Modifier la précision, le type ou la cible d’une action déjà réalisée retire sa coche.</p><WorkspaceButton disabled={!canSave} onClick={()=>void save(remote.version)}>Enregistrer mon plan après comparaison</WorkspaceButton></details>:null}<div className="signal-save-actions"><WorkspaceButton disabled={busy} onClick={onClose}>Reprendre plus tard</WorkspaceButton><WorkspaceButton type="submit" variant="primary" busy={busy} disabled={!canSave}>Enregistrer mon plan</WorkspaceButton></div></form>
  </DialogContent></Dialog>;
 }

@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Champs du plan de la semaine
+
+- Les champs Jour, Heure, Action, Offre et Précision sont alignés sur ordinateur. Les actions sont proposées à l’infinitif. La précision est facultative et reste vide quand on choisit une offre ou une suggestion.
+
 ## 9 novembre 2026 — Offres sur mobile
 
 - Sur téléphone, l’en-tête d’Offres (logo, compte, bouton +, recherche) ne colle plus aux bords de l’écran : il garde la marge de 16 px des autres pages.
