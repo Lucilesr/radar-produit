@@ -1,0 +1,27 @@
+/* Shared geometry in every space, including content rendered in portals. */
+.rounded-full{border-radius:var(--signal-radius-pill)}
+.radar-app .radar-page[data-space=radar]>.workspace-page-header h1{font:750 var(--signal-title-page)/1.12 var(--font-display);letter-spacing:-.01em}
+.radar-app .radar-page[data-space=offers]>.workspace-page-header h1{letter-spacing:-.01em}
+.radar-app :is(.nav-count,.avatar,.radar-account-trigger,.workspace-badge,.experience-status,.application-care-badge,.application-sent-date,.application-age,.quiet-tag,.status-pill,.offer-source-badge,.search-role-list li){border-radius:var(--signal-radius-pill)}
+.radar-app :is(.application-column,.reserve,.reserve-group,.offer-signal,.experience-reference,.experience-company-context,.search-criteria-details.search-criteria-edit-table,.source-research>.radar-collapsible-content){border-radius:var(--signal-radius-card)}
+.radar-app :is(.application-card h3 button,.radar-search,.library-section-toggle,.library-experience-pencil,.board-column-edit,.application-display-toggle button,.search-criteria-add-menu button,.search-place-toggle button,.search-pay-input,.search-contract-options>label,.search-location-entry [data-slot=input-group],.search-location-entry [data-slot=input-group-button],.role-suggestion button,.signal-selected-button){border-radius:var(--signal-radius-control)}
+.radar-app :is(.role-suggestion,.search-place-toggle,.search-place-remove,.workspace-brand>span){border-radius:var(--signal-radius-pill)}
+.radar-app :is(.radar-search,.search-pay-input){background:var(--signal-paper)}
+.radar-app .radar-search input{background:transparent}
+.radar-app .avatar{background:var(--signal-mist);color:var(--signal-petrol-ink);border-color:var(--signal-line)}
+:is(.radar-account-menu,.date-picker-popover,.choice-select-menu,.help-tooltip-content,.library-hint-content){border-radius:var(--signal-radius-card)}
+:is(.help-tooltip-content,.library-hint-content){background:var(--signal-paper);color:var(--signal-petrol-ink);border:1px solid var(--signal-line)}
+.help-tooltip-content [data-slot=tooltip-arrow]{fill:var(--signal-paper);background:var(--signal-paper)}
+:is(.workspace-dialog,.reach-story-dialog,.signal-library-dialog,.experience-consent-dialog,[data-slot=dialog-content]){border-radius:var(--signal-radius-panel)}
+[data-slot=drawer-content][data-vaul-drawer-direction=bottom]{border-radius:var(--signal-radius-panel) var(--signal-radius-panel) 0 0}
+[data-slot=drawer-content] :is(button,[role=option]),.radar-account-menu [role=menuitem]{min-height:44px;border-radius:var(--signal-radius-control)}
+.onboarding-tour{border-radius:var(--signal-radius-card)}
+.onboarding-tour-title{font-family:var(--font-display);letter-spacing:-.01em}
+.signal-moment .signal-stepper{color:var(--signal-mist)}
+.signal-moment .signal-stepper .is-current{color:var(--signal-paper)}
+@media(max-width:640px){
+ :is(.help-tooltip-trigger,.signal-dialog-close,.workspace-editor-close,.onboarding-tour-open,.onboarding-tour-reopen,.library-close,.search-place-remove,.board-column-edit){min-width:44px;min-height:44px}
+ .help-tooltip-trigger{width:44px;height:44px}
+ .radar-app :is(.search-place-toggle button,.search-criteria-add,.search-criteria-add-menu button,.signal-note-toolbar button){min-height:44px}
+ .radar-app .search-location-entry [data-slot=input-group-button],.signal-note-toolbar button{min-width:44px;min-height:44px}
+}

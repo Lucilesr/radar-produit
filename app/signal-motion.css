@@ -8,7 +8,7 @@
 .signal-number { color: inherit; }
 .signal-counter-value { display: block; font: 700 clamp(2rem, 5vw, 3.5rem)/1.05 var(--font-display); font-optical-sizing: auto; font-variant-numeric: tabular-nums; }
 .signal-counter-label { display: block; margin-top: .4rem; font-size: .875rem; }
-.signal-progress { height: 6px; overflow: hidden; border-radius: 99px; background: var(--signal-line); }
+.signal-progress { height: 6px; overflow: hidden; border-radius: var(--signal-radius-pill); background: var(--signal-line); }
 .signal-progress > span { display: block; height: 100%; border-radius: inherit; background: var(--signal-petrol-mid); }
 .daily-lot-bar.signal-progress { height: 8px; }
 .daily-lot.is-done .signal-progress > span { background: var(--signal-energy); }
@@ -17,16 +17,16 @@
 .signal-stepper { display: flex; flex-wrap: wrap; gap: 1rem; padding: 0; margin: 0; list-style: none; font-size: .875rem; color: var(--signal-muted); }
 .signal-stepper li { display: flex; align-items: center; gap: .5rem; min-width: 0; overflow-wrap: anywhere; }
 .signal-stepper .is-current { color: var(--signal-petrol-ink); font-weight: 700; }
-.signal-stepper-number { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--signal-input); }
+.signal-stepper-number { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: var(--signal-radius-pill); border: 1px solid var(--signal-input); }
 .signal-stepper .is-current .signal-stepper-number, .signal-stepper .is-done .signal-stepper-number { background: var(--signal-energy); border-color: var(--signal-petrol); color: var(--signal-petrol-ink); }
 .signal-moment-overlay { position: fixed; inset: 0; z-index: 1000; background: #193f5080; }
 .signal-moment { position: fixed; inset: 0; z-index: 1001; overflow-y: auto; overscroll-behavior: contain; background: var(--signal-petrol-ink); color: var(--signal-paper); padding: 72px 32px 40px; }
 .signal-moment-body { width: min(100%, 880px); min-height: 100%; margin: auto; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 24px; overflow-wrap: anywhere; }
-.signal-moment h2 { font: 700 clamp(2rem, 6vw, 4.5rem)/1.08 var(--font-display); font-optical-sizing: auto; margin: 0; letter-spacing: -.035em; }
+.signal-moment h2 { font: 700 var(--signal-title-page)/1.08 var(--font-display); font-optical-sizing: auto; margin: 0; letter-spacing: -.01em; }
 .signal-moment h2:focus { outline: none; }
 .signal-moment h2:focus-visible { outline: 3px solid var(--signal-energy); outline-offset: 6px; }
 .signal-moment p { color: inherit; margin: 0; }
-.signal-moment-close { position: absolute; top: 16px; right: 16px; display: grid; place-items: center; min-width: 44px; min-height: 44px; border: 1px solid currentColor; border-radius: 5px; color: inherit; background: transparent; }
+.signal-moment-close { position: absolute; top: 16px; right: 16px; display: grid; place-items: center; min-width: 44px; min-height: 44px; border: 1px solid currentColor; border-radius: var(--signal-radius-control); color: inherit; background: transparent; }
 .signal-moment .signal-moment-action { min-height: 44px; background: var(--signal-energy); color: var(--signal-petrol-ink); border-color: var(--signal-energy); }
 .signal-moment button:focus-visible { outline: 3px solid var(--signal-energy); outline-offset: 5px; }
 .signal-moment .signal-radar { color: var(--signal-energy); }
@@ -42,7 +42,7 @@ html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-
   animation-duration: 0s !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; scroll-behavior: auto !important;
 }
 
-.signal-progress.is-segmented{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;height:8px;background:transparent;border-radius:0;overflow:visible}.signal-progress.is-segmented>span{width:100%;background:var(--signal-line);border-radius:var(--radius);overflow:hidden}.signal-progress.is-segmented>span>span{display:block;height:100%;background:var(--signal-petrol-mid)}.signal-progress-finished.is-segmented>span{background:var(--signal-petrol-ink)}.signal-progress-finished.is-segmented>span>span{background:var(--signal-energy)}
+.signal-progress.is-segmented{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;height:8px;background:transparent;border-radius:0;overflow:visible}.signal-progress.is-segmented>span{width:100%;background:var(--signal-line);border-radius:var(--signal-radius-pill);overflow:hidden}.signal-progress.is-segmented>span>span{display:block;height:100%;background:var(--signal-petrol-mid)}.signal-progress-finished.is-segmented>span{background:var(--signal-petrol-ink)}.signal-progress-finished.is-segmented>span>span{background:var(--signal-energy)}
 
 /* New echoes pulse once and stay visible, including reduced motion. */
 @keyframes radar-echo-arrive{0%{opacity:.25;stroke-width:5px}60%{opacity:1;stroke-width:2px}100%{opacity:1;stroke-width:0}}

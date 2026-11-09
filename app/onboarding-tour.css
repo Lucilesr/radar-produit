@@ -8,9 +8,9 @@
 .onboarding-tour-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px}
 .onboarding-tour-later{flex-shrink:0;min-height:44px;white-space:nowrap;padding:7px 0;font-size:12px;font-weight:700;color:var(--signal-petrol-dark);text-decoration:underline;text-underline-offset:3px}
 .onboarding-tour-instruction{font-size:11px;font-weight:700;text-align:right;color:var(--signal-petrol-dark)}
-.onboarding-tour-open{min-height:36px;padding:7px 12px;border-radius:8px;background:var(--signal-petrol-dark);color:#fff;font-size:12px;font-weight:700}.onboarding-tour-open:disabled{opacity:.6}
+.onboarding-tour-open{min-height:36px;padding:7px 12px;border-radius:var(--signal-radius-control);background:var(--signal-petrol-dark);color:#fff;font-size:12px;font-weight:700}.onboarding-tour-open:disabled{opacity:.6}
 .onboarding-tour-detail-mobile{display:none}
-.radar-guide-launcher{display:flex;align-items:center;gap:8px;width:100%;padding:9px 11px;border-radius:6px;color:var(--signal-petrol-dark);font-size:12px;font-weight:700;text-align:left}.radar-guide-launcher:hover,.radar-guide-launcher:focus-visible{background:#dce6eb}
+.radar-guide-launcher{display:flex;align-items:center;gap:8px;width:100%;padding:9px 11px;border-radius:var(--signal-radius-control);color:var(--signal-petrol-dark);font-size:12px;font-weight:700;text-align:left}.radar-guide-launcher:hover,.radar-guide-launcher:focus-visible{background:#dce6eb}
 .onboarding-tour-reopen{display:none;position:fixed;right:14px;bottom:calc(86px + env(safe-area-inset-bottom));z-index:47;padding:10px 14px;border-radius:999px;background:var(--signal-petrol-dark);color:#fff;font-size:12px;font-weight:700;box-shadow:0 8px 24px #193f5040}
 @keyframes onboarding-arrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes radar-guide-glow{0%,100%{opacity:.16}50%{opacity:.82}}

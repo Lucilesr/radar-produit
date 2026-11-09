@@ -88,3 +88,7 @@ SignalRadar, SignalProgress, SignalCounter, WorkspaceButton et HelpTooltip réut
 En-tête horizontal et navigation de Balayage réutilisés sur Aujourd’hui ; date/compte réunis sur mobile. WorkspaceButton, RadarAccountMenu, Skeleton, contrôles et sauvegarde du plan existants. Surfaces 20/16, contrôles 10, puces 999 ; titres Bricolage 40/28 et 32/24. Les états annotés remplacent les blocs correspondants, sans bande d’annotations.
 
 Réglages de semaine contrôlés à 390 px : dialogues 20, champs et boutons 10, menus 16, cibles 44 px ; calendrier limité à la hauteur disponible et actions accessibles au clavier.
+
+### Référence actuelle — itération 2
+
+Les prescriptions visuelles des [maquettes de l’itération 2](../docs/maquettes/iteration-2/README.md#règles-visuelles) priment sur les valeurs historiques de cet audit. Rayons : 10 px pour les commandes, 16 px pour les cartes, 20 px pour les grands panneaux, 999 px pour les pastilles. Titres d’affichage en Bricolage Grotesque, jusqu’à 40 px sur ordinateur et 28 px sur mobile. Les [déclarations et mesures de cohérence](../docs/coherence-signal/README.md) distinguent la couche active des règles historiques encore écrasées.

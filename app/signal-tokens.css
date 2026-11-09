@@ -69,7 +69,12 @@
   --sidebar-accent-foreground: var(--foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
-  --radius: .375rem;
+  --signal-radius-control: 10px;
+  --signal-radius-card: 16px;
+  --signal-radius-panel: 20px;
+  --signal-radius-pill: 999px;
+  --signal-title-page: 40px;
+  --radius: var(--signal-radius-control);
   --signal-space-page: 24px;
   --signal-space-section: 24px;
   --signal-type-page: 28px;
@@ -77,3 +82,4 @@
   --signal-type-section: 14px;
   --signal-type-tabs: 15px;
 }
+@media(max-width:640px){:root{--signal-title-page:28px}}

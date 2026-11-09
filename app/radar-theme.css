@@ -151,7 +151,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input[type='checkb
 [data-slot='select-content'] { max-width: min(560px,calc(100vw - 32px)); }
 [data-slot='select-value'] { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 [data-slot='select-trigger'] { min-width: 0; max-width: 100%; }
-[role='dialog'] { color: #333; }
+[role='dialog'] { color: var(--signal-ink); }
 @media (min-width: 1200px) { .profile-layout { grid-template-columns: minmax(0,1fr) minmax(290px,340px); } }
 @media (max-width: 1240px) { .radar-shell { grid-template-columns: 210px minmax(0,1fr); } .radar-sidebar { padding-inline: 16px; } .radar-page { padding: 28px 24px; } }
 @media (max-width: 1023px) {

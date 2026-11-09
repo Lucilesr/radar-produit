@@ -8,7 +8,7 @@
 .radar-page[data-space=sources] :is(#source-panel-channels,.source-research.signal-source-research){padding:24px 28px;border:1px solid var(--signal-line);border-radius:16px;background:var(--signal-paper);box-shadow:none}
 .radar-page[data-space=sources] .source-summary{font:400 14px/1.5 var(--font-sans);margin:6px 0 14px;color:var(--signal-muted)}
 .radar-page[data-space=sources] :is(#source-settings-title,#source-empty-title,.signal-source-group-head h3){font:750 24px/1.2 var(--font-display);letter-spacing:-.01em;color:var(--signal-ink)}
-.radar-page[data-space=sources] .signal-source-group ul{gap:8px;border:0;background:none}
+.radar-page[data-space=sources] .signal-source-group ul{gap:8px;border:0;border-radius:0;background:none}
 .radar-page[data-space=sources] .signal-source-group li{min-width:0;border:1px solid var(--signal-line);border-radius:10px;background:var(--signal-canvas)}
 .radar-page[data-space=sources] .signal-source-row :is(.signal-source-row-name,.signal-source-row-meta){min-width:0;overflow-wrap:anywhere}
 .radar-page[data-space=sources] .signal-source-row-meta{flex-shrink:1}
