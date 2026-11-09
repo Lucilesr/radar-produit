@@ -1,10 +1,6 @@
 /* One navigation frame and one page-heading baseline for every workspace. */
 .radar-shell { max-width: 1800px; grid-template-columns: 232px minmax(0,1fr); background: var(--background); }
 .radar-sidebar { background: var(--sidebar); border-color: #c5d3da; padding: 28px 20px; }
-.workspace-brand { gap: 10px; }
-.workspace-brand > span { width: 36px; height: 36px; border-radius: var(--signal-radius-control); color: var(--primary); background: transparent; }
-.workspace-brand p { font-size: 22px; font-weight: 600; letter-spacing: -1px; color: var(--foreground); }
-.workspace-brand p > span { font-size: 12px; font-weight: 400; letter-spacing: -.2px; color: var(--muted-foreground); }
 .radar-sidebar .radar-add-button { margin-top: 27px; }
 .radar-search { min-height: 43px; margin-top: 23px; border-color: var(--input); border-radius: var(--signal-radius-control); background: var(--signal-paper); }
 .radar-search input:not([type=checkbox]):not([type=radio]):not([type=file]) {

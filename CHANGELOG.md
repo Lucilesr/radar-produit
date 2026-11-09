@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Logo Lueur
+
+- Le logo Lueur, dans les couleurs pétrole et citron de Signal, remplace l’ancien logo dans l’en-tête et sur l’écran de connexion. L’onglet utilise la nouvelle icône.
+
 ## 9 novembre 2026 — Mon radar : critères en pastilles
 
 - « Ce que je cherche » affiche les critères en pastilles, comme des filtres sélectionnés, au lieu d’une longue liste. Chaque pastille ouvre son réglage.

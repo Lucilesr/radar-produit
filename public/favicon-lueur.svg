@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title">
+  <title>Radar Produit — icône Lueur</title>
+  <rect x="2" y="2" width="156" height="156" rx="34" fill="#193f50"/>
+  <g transform="translate(-175 5) scale(.91)">
+    <path d="M250 133V51Q250 47 255 47H276C310 47 331 61 340 77" fill="none" stroke="#ffffff" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M341 113C330 126 308 133 276 133H250" fill="none" stroke="#ffffff" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="347" cy="98" r="12" fill="#e6ee53"/>
+  </g>
+</svg>

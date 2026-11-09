@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="16 24 558 145" role="img" aria-labelledby="title">
+  <title>Radar Produit — Lueur · point citron, fond clair</title>
+  <g transform="matrix(1 0 -.115 1 12 0)">
+    <path d="M150 98H251" fill="none" stroke="#24566b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M273 72C295 72 313 81 321 98H440" fill="none" stroke="#24566b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <g>
+      <path d="M37 133V51Q37 47 42 47H70C94 47 107 56 109 69" fill="none" stroke="#193f50" stroke-width="15" stroke-linecap="butt" stroke-linejoin="round"/>
+      <path d="M108 80C104 92 90 98 71 98H37" fill="none" stroke="#193f50" stroke-width="15" stroke-linecap="butt" stroke-linejoin="round"/>
+      <circle cx="37" cy="133" r="7.5" fill="#193f50"/>
+      <path d="M75 97C80 95 85 98 88 103C94 113 103 122 115 128C119 131 120 136 116 139C113 142 109 142 105 140C88 130 78 117 72 104C71 101 72 99 75 97Z" fill="#193f50"/>
+    </g>
+    <path d="M134 133L164 59Q172 43 178 43Q184 43 192 59L223 133" fill="none" stroke="#193f50" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M250 133V51Q250 47 255 47H276C310 47 331 61 340 77" fill="none" stroke="#193f50" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M341 113C330 126 308 133 276 133H250" fill="none" stroke="#193f50" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+    <g transform="translate(233 0)">
+      <path d="M134 133L164 59Q172 43 178 43Q184 43 192 59L223 133" fill="none" stroke="#193f50" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(445 0)">
+      <path d="M37 133V51Q37 47 42 47H70C94 47 107 56 109 69" fill="none" stroke="#193f50" stroke-width="15" stroke-linecap="butt" stroke-linejoin="round"/>
+      <path d="M108 80C104 92 90 98 71 98H37" fill="none" stroke="#193f50" stroke-width="15" stroke-linecap="butt" stroke-linejoin="round"/>
+      <circle cx="37" cy="133" r="7.5" fill="#193f50"/>
+      <path d="M75 97C80 95 85 98 88 103C94 113 103 122 115 128C119 131 120 136 116 139C113 142 109 142 105 140C88 130 78 117 72 104C71 101 72 99 75 97Z" fill="#193f50"/>
+    </g>
+    <circle cx="347" cy="98" r="8" fill="#e6ee53" stroke="#193f50" stroke-width="2.4"/>
+  </g>
+</svg>
