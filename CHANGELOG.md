@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Mon radar : portée en trois zones
+
+- La portée se lit en trois zones : la progression, le radar avec « Actualiser maintenant », et le prochain réglage dans un bandeau qui porte la seule action principale.
+
 ## 9 novembre 2026 — Kanban : « Déplacer vers » dans le menu de la carte
 
 - Le sélecteur « Déplacer vers » quitte les cartes et passe dans leur menu ⋯. Le glisser-déposer reste la voie principale.
