@@ -4,6 +4,10 @@
 - Les réalisations détaillées et validées du carnet comptent pour le palier « Précision » : plus besoin de réécrire des histoires déjà décrites.
 - Dans l’onglet Entretiens, la proposition renvoie vers le carnet. Une leçon après un refus propose l’histoire « Un échec », plus « Prioriser ».
 
+## 9 novembre 2026 — Kanban : « Terminées » à droite
+
+- Les candidatures terminées forment la dernière colonne du kanban, à droite, au lieu d’un bloc replié sous le tableau. La colonne « Closes » s’appelle désormais « Terminées » (un nom choisi par l’utilisatrice est conservé).
+
 ## 9 novembre 2026 — Disposition du plan de la semaine
 
 - Sur ordinateur, chaque action s’affiche sur deux lignes. Jour, Heure et Action sont au-dessus de la cible et de Précision, qui ont plus de place. Vider se place à droite.
