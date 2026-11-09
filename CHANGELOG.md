@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Relance : statut et actions alignés
+
+- Dans la fiche candidature, « Prévoir une autre relance » et les autres actions de relance s’alignent à droite du statut, sur la même ligne.
+
 ## 9 novembre 2026 — Plan de la semaine : modale alignée
 
 - La modale du plan prend la largeur et les marges de la fiche candidature ; le titre et la croix restent visibles au défilement. Le titre affiche « semaine du 9 novembre » au lieu du code de semaine.
