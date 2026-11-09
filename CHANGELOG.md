@@ -2,6 +2,43 @@
 
 - La portée se lit en trois zones : la progression, le radar avec « Actualiser maintenant », et le prochain réglage dans un bandeau qui porte la seule action principale.
 
+## 9 novembre 2026 — Kanban : « Déplacer vers » dans le menu de la carte
+
+- Le sélecteur « Déplacer vers » quitte les cartes et passe dans leur menu ⋯. Le glisser-déposer reste la voie principale.
+
+## 9 novembre 2026 — Kanban : colonnes à ajouter, déplacer et supprimer
+
+- Chaque colonne a un menu ⋯ : Renommer, Déplacer à gauche ou à droite, Supprimer pour les colonnes ajoutées. Son en-tête se glisse aussi pour changer de place, à la souris ou au clavier.
+- « Ajouter une colonne » est visible en fin de tableau. Les colonnes par défaut se renomment et se déplacent, sans suppression.
+
+## 9 novembre 2026 — Kanban : filtre par tag sur « À envoyer »
+
+- Le filtre par tag s’applique aussi à la colonne « À envoyer » sur ordinateur, comme sur mobile.
+
+## 9 novembre 2026 — Relance : statut et actions alignés
+
+- Dans la fiche candidature, « Prévoir une autre relance » et les autres actions de relance s’alignent à droite du statut, sur la même ligne.
+
+## 9 novembre 2026 — Plan de la semaine : modale alignée
+
+- La modale du plan prend la largeur et les marges de la fiche candidature ; le titre et la croix restent visibles au défilement. Le titre affiche « semaine du 9 novembre » au lieu du code de semaine.
+
+## 9 novembre 2026 — Candidatures : bascule Kanban / Entonnoir
+
+- Le bloc « Encore N candidatures pour voir votre entonnoir » et sa modale laissent place à une bascule Kanban / Entonnoir. L’entonnoir s’affiche à la place du suivi ; grisé, il indique au survol, au focus ou au toucher combien d’envois manquent.
+
+## 9 novembre 2026 — « Check-list d’envoi »
+
+- « Candidature soignée » devient « Check-list d’envoi » partout : fiche, badge, étape du jour, plan de la semaine, journal et récit du mois. L’aide de la section est retirée.
+
+## 9 novembre 2026 — Aides plus courtes
+
+- Les textes d’aide vont à l’essentiel : une ou deux phrases sur ce que fait l’élément, sans détail technique.
+
+## 9 novembre 2026 — Aides : ouverture prévisible
+
+- Une aide ouverte au survol ou au clavier reste ouverte quand on l’active. Une seconde activation la ferme, au clavier, à la souris comme au toucher.
+
 ## 9 novembre 2026 — Aides et pastilles de Mon radar sur mobile
 
 - L’aide du domaine suit son libellé, les bulles d’aide gardent une marge avec les bords de l’écran.
@@ -883,6 +920,7 @@ Les salaires et TJM connus inférieurs aux minimums du compte sont exclus sans t
 - Le carnet d’expériences et les sources utilisent un bouton discret à double chevron, avec un statut visible et des détails encadrés.
 - Espacements corrigés : retraits réguliers autour des cartes et statuts, contenus imbriqués alignés et historique des documents avec marges internes.
 - Le repli conserve les saisies en cours ; les liens vers l’historique et le prochain bloc à relire ouvrent les sections concernées.
+
 ## 20 octobre 2026 — Recherche PO/PM sans collecte de plateformes
 
 - Ajout de liens Google/Bing pour repérer des annonces PO/PM en français, tous pays. LinkedIn et Welcome to the Jungle restent consultés manuellement ; Radar ne récupère pas leurs contenus et n’utilise aucun compte LinkedIn.
