@@ -23,7 +23,7 @@ test("C4 : cinquante dossiers, colonnes personnelles, conservation et compteurs"
   const jobs = Array.from({ length: 50 }, (_, i) => ({ id: String(i), status: i < 45 ? "applied" : i < 48 ? "interview" : i === 48 ? "offer" : "rejected", boardColumnId: i === 46 ? "custom-rh" : null, candidateNote: "Note privée fictive", interviews: [] }));
   const before = structuredClone({ jobs, columns });
   const groups = applicationGroups(jobs, columns);
-  assert.deepEqual(groups.map(group => [group.column.label, group.jobs.length]), [["Envoyées",45],["Entretiens",2],["Échange RH",1],["Propositions",1],["Closes",1]]);
+  assert.deepEqual(groups.map(group => [group.column.label, group.jobs.length]), [["Envoyées",45],["Entretiens",2],["Échange RH",1],["Propositions",1],["Terminées",1]]);
   assert.equal(groups.flatMap(group => group.jobs).length, 50);
   assert.equal(groups.find(group => group.column.id === "custom-rh").jobs[0], jobs[46]);
   assert.deepEqual({ jobs, columns }, before);

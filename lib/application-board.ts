@@ -6,7 +6,7 @@ export const applicationColumns = [
   { id: "sent", label: "Envoyées" },
   { id: "interviews", label: "Entretiens" },
   { id: "offer", label: "Propositions" },
-  { id: "closed", label: "Closes" },
+  { id: "closed", label: "Terminées" },
   { id: "other", label: "À préciser" },
 ] as const;
 export type ApplicationColumn = typeof applicationColumns[number]["id"];

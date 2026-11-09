@@ -5,7 +5,10 @@ import { defaultBoard, editBoard, type PersonalBoard } from "./personal-board";
 
 export async function readBoard(userId: string): Promise<PersonalBoard> {
   const [row] = await getDb().select().from(applicationBoards).where(eq(applicationBoards.userId, userId)).limit(1);
-  return row ? { columns: JSON.parse(row.data), version: row.version } : defaultBoard();
+  if (!row) return defaultBoard();
+  // The closed lane used to be called "Closes"; a name the user chose is kept.
+  const columns = (JSON.parse(row.data) as PersonalBoard["columns"]).map(c => c.id === "closed" && c.label === "Closes" ? { ...c, label: "Terminées" } : c);
+  return { columns, version: row.version };
 }
 
 export async function changeBoard(userId: string, action: unknown, version: unknown) {
