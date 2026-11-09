@@ -36,7 +36,7 @@ test("P4 : entretien prioritaire dans les 48 h, limites et calendrier réel",()=
   assert.deepEqual(nextSteps({...base,jobs:[job("a",{status:"interview",interviews:[event]})]}),[]);
  assert.deepEqual(nextSteps({...base,jobs:[job("a",{status:"rejected",interviews:[interview()]})]}),[]);
 });
-test("P4 : relances confirmées et candidatures déjà soignées ne sont pas reproposées",()=>{
+test("P4 : relances confirmées et check-lists déjà remplies ne sont pas reproposées",()=>{
  const due=job("due",{status:"applied",appliedAt:iso(-8*86400000)});
  assert.equal(nextSteps({...base,jobs:[due]})[0].kind,"followups");
  assert.deepEqual(nextSteps({...base,jobs:[due],confirmedFollowups:["application:due"]}),[]);
