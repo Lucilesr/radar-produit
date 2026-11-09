@@ -1,3 +1,8 @@
+## 9 novembre 2026 — Disposition du plan de la semaine
+
+- Sur ordinateur, chaque action s’affiche sur deux lignes. Jour, Heure et Action sont au-dessus de la cible et de Précision, qui ont plus de place. Vider se place à droite.
+- Le champ cible s’appelle Offre, Source ou Histoire selon l’action choisie.
+
 ## 9 novembre 2026 — Champs du plan de la semaine
 
 - Les champs Jour, Heure, Action, Offre et Précision sont alignés sur ordinateur. Les actions sont proposées à l’infinitif. La précision est facultative et reste vide quand on choisit une offre ou une suggestion.

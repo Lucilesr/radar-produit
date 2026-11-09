@@ -140,17 +140,19 @@ function WeekPlanEditor({state,week,zone,targets,suggestions,busy,onSave,onClose
  <form onSubmit={event=>{event.preventDefault();void save();}}><div className="week-plan-rhythm"><ChoiceSelect label="Mon rythme" disabled={busy||!draft.ready} value={plan.rhythm} options={weekRhythms} onChange={rhythm}/></div>
  {availableSuggestions.length?<div className="week-suggestions"><p>Suggestions du radar · choisissez-en une pour préremplir une action</p>{availableSuggestions.map(({action,target})=><WorkspaceButton key={`${action}:${target.type}:${target.id}`} disabled={busy||!draft.ready} onClick={()=>suggest(action,target)}>{weekActions.find(a=>a.value===action)?.label} · {target.label}</WorkspaceButton>)}</div>:null}
  {plan.commitments.map((item,index)=>{
-  const targetType=item.action==="visit"?"source":item.action==="write"?"story":"job";
+  const targetField=item.action==="visit"?{type:"source",label:"Source"}:item.action==="write"?{type:"story",label:"Histoire"}:{type:"job",label:"Offre"};
   const chosenTarget=targets.find(target=>target.id===item.targetId&&target.type===item.targetType);
-  const available=targets.filter(target=>target.type===targetType||target===chosenTarget);
+  const available=targets.filter(target=>target.type===targetField.type||target===chosenTarget);
   return <fieldset key={item.id} disabled={busy||!draft.ready}>
    <legend>Action {index+1}</legend>
    <DateTimePicker label="Jour" value={item.when} onChange={when=>update(item.id,{when})}/>
    <ChoiceSelect label="Action" value={item.action} options={weekActions} onChange={action=>update(item.id,{action,targetId:undefined,targetType:undefined,targetLabel:undefined})}/>
-   <ChoiceSelect searchable label="Offre" value={item.targetId?`${item.targetType}:${item.targetId}`:"personal"}
-    displayValue={chosenTarget?undefined:item.targetLabel}
-    options={[{value:"personal",label:"Une action personnelle"},...available.map(target=>({value:`${target.type}:${target.id}`,label:target.label}))]}
-    onChange={value=>{const target=available.find(candidate=>`${candidate.type}:${candidate.id}`===value);update(item.id,{targetId:target?.id,targetType:target?.type,targetLabel:target?.label});}}/>
+   <div className="week-action-target">
+    <ChoiceSelect searchable label={targetField.label} value={item.targetId?`${item.targetType}:${item.targetId}`:"personal"}
+     displayValue={chosenTarget?undefined:item.targetLabel}
+     options={[{value:"personal",label:"Une action personnelle"},...available.map(target=>({value:`${target.type}:${target.id}`,label:target.label}))]}
+     onChange={value=>{const target=available.find(candidate=>`${candidate.type}:${candidate.id}`===value);update(item.id,{targetId:target?.id,targetType:target?.type,targetLabel:target?.label});}}/>
+   </div>
    <div className="week-action-entry">
     <label><span className="form-control-label">Précision</span><input id={`${actionId}-${index}`} maxLength={300} value={item.label} onChange={event=>update(item.id,{label:event.target.value})} placeholder="Ex. : relancer Marie par mail"/></label>
     {startedAction(item)?<WorkspaceButton variant="quiet" aria-label={`Vider l’action ${index+1}`} onClick={()=>clear(item.id,index)}>Vider</WorkspaceButton>:null}
