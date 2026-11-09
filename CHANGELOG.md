@@ -1,3 +1,8 @@
+## 9 novembre 2026 — Aides et pastilles de Mon radar sur mobile
+
+- L’aide du domaine suit son libellé, les bulles d’aide gardent une marge avec les bords de l’écran.
+- Sur mobile, la pastille de la section ouverte est mise en évidence.
+
 ## 9 novembre 2026 — Cohérence des styles et commandes Signal
 
 - Rayons communs pour les commandes, surfaces et pastilles ; titres et moments harmonisés aux deux formats.
