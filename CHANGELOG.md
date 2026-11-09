@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Offres sur mobile
+
+- Sur téléphone, l’en-tête d’Offres (logo, compte, bouton +, recherche) ne colle plus aux bords de l’écran : il garde la marge de 16 px des autres pages.
+
 ## 9 novembre 2026 — Plan de la semaine
 
 - La fenêtre de planification accueille avec une nouvelle introduction. Le menu « Mon rythme » est aligné avec son libellé et chaque rythme commence par un émoji.
