@@ -19,7 +19,7 @@ test("Aujourd’hui : décrire le lot réel sans compter une fiche incomplète c
  assert.equal(todayStepLabel(step,null),"Trier");assert.deepEqual(lot,before);assert.equal(step.minutes,3);
 });
 test("Aujourd’hui : un entretien proche se prépare sans imposer d’histoire",()=>{
- const step={kind:"interview",label:"Préparer votre entretien chez MT2M · mardi 21:30",action:{type:"interview",jobId:"job"}};
+ const step={kind:"interview",label:"Préparer votre entretien chez Entreprise fictive Boréal · jeudi 13:00",action:{type:"interview",jobId:"job"}};
  assert.equal(todayStepLabel(step),step.label);assert.doesNotMatch(todayStepLabel(step),/histoire/i);
 });
 test("Aujourd’hui : une démonstration de panne ou chargement ne modifie jamais un compte réel ni les données",()=>{

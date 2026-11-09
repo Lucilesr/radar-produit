@@ -1,3 +1,9 @@
+## 9 novembre 2026 — Candidatures : bilans et cartes après l’envoi
+
+- Après un entretien, la séance propose « Faire le bilan de votre entretien chez … », comme la carte « Bilan à faire » du kanban.
+- Une candidature envoyée n’affiche plus sa check-list d’envoi, devenue inutile. « Envoyée le date inconnue » devient « Date d’envoi inconnue », et « + 1 autres » devient « + 1 autre ».
+- L’heure d’un entretien s’affiche à votre heure, avec celle de l’entreprise quand elle diffère : « 13:00 (10:00 à Paris) ». Sur mobile, « Bilan à faire » apparaît comme sur ordinateur.
+
 ## 9 novembre 2026 — Entretiens : préparer sans réécrire d’histoire
 
 - Quand un entretien approche, la séance propose « Préparer votre entretien chez … · jour heure » et ouvre l’onglet Entretiens de la candidature, au lieu d’un formulaire d’histoire « Prioriser ».
