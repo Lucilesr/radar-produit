@@ -2,7 +2,7 @@ import {dueFollowups} from "./application-followup";
 import {careCount} from "./application-care";
 import {hasApplication,reviewState} from "./opportunity-views";
 import {upcomingInterviews} from "./workspace-agenda";
-import {interviewThemes,type InterviewTheme,type ReachAction,type ReachSource} from "./radar-reach";
+import {type InterviewTheme,type ReachAction,type ReachSource} from "./radar-reach";
 import {validTimeZone,weekKey,type WeekPlan} from "./week-plan";
 import type {JobRecord} from "./types";
 import {detectLevel} from "./seniority";
@@ -11,6 +11,7 @@ import {promptVisible,type PromptState} from "./contextual-prompts";
 export type NextStepKind="interview"|"followups"|"triage"|"plan"|"care"|"setting"|"sources";
 export type NextStepAction=
  |{type:"story";theme:InterviewTheme;jobId:string}
+ |{type:"interview";jobId:string}
  |{type:"followups";jobId:string;view:"application"|"interviews"}
  |{type:"triage"}
  |{type:"plan"}
@@ -28,7 +29,7 @@ export type NextStepInput={
 export function nextStepActionKey(action:NextStepAction){
  if(action.type==="source")return "source:"+action.source;
  if(action.type==="story")return "story:"+action.theme;
- if(action.type==="care"||action.type==="followups")return action.type+":"+action.jobId;
+ if(action.type==="care"||action.type==="followups"||action.type==="interview")return action.type+":"+action.jobId;
  if(action.type==="setting"){
   if(action.setting.kind==="visit"&&action.setting.target)return "source:"+action.setting.target;
   if(action.setting.kind==="story"&&action.setting.target)return "story:"+action.setting.target;
@@ -43,15 +44,16 @@ export function nextSteps(input:NextStepInput):NextStep[]{
  const out:NextStep[]=[],seen=new Set<string>();
  const add=(step:NextStep)=>{const key=nextStepActionKey(step.action);if(!seen.has(key)){seen.add(key);out.push(step);}};
  const imminent=upcomingInterviews(jobs,now).find(({event})=>Number.isFinite(Date.parse(event.startAt))&&Date.parse(event.startAt)<=now+48*3600000&&promptVisible(input.prompts,"interview:"+event.id,now));
+ const zone=validTimeZone(input.timeZone)?input.timeZone:"UTC";
+ // Preparing an interview means opening its notes, not writing a new story.
  if(imminent){
-  const theme=interviewThemes.find(item=>!reach?.doneThemes.includes(item.id))??interviewThemes[0];
-  add({id:"interview:"+imminent.event.id,kind:"interview",label:"Préparer une histoire pour votre entretien chez "+(imminent.job.company||imminent.job.title),minutes:5,action:{type:"story",theme:theme.id,jobId:imminent.job.id}});
+  const when=new Intl.DateTimeFormat("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit",timeZone:zone}).format(new Date(imminent.event.startAt));
+  add({id:"interview:"+imminent.event.id,kind:"interview",label:"Préparer votre entretien chez "+(imminent.job.company||imminent.job.title)+" · "+when,minutes:10,action:{type:"interview",jobId:imminent.job.id}});
  }
  const due=dueFollowups(jobs,now,input.confirmedFollowups??[]);
  if(due.length)add({id:"followups",kind:"followups",label:"Relancer "+(due[0].job.company||due[0].job.title)+(due.length>1?` et ${due.length-1} autre${due.length>2?"s":""}`:""),minutes:3*due.length,action:{type:"followups",jobId:due[0].job.id,view:due[0].kind==="interview"?"interviews":"application"}});
  const remaining=Math.max(0,Math.min(20,Math.floor(input.lotRemaining)));
  if(Number.isFinite(remaining)&&remaining)add({id:"daily-lot",kind:"triage",label:"Trier votre lot du jour",minutes:remaining,action:{type:"triage"}});
- const zone=validTimeZone(input.timeZone)?input.timeZone:"UTC";
  // Monday starts a new plan; a plan already confirmed for that week is done.
  if(!input.plan||input.plan.week!==weekKey(now,zone))add({id:"week-plan",kind:"plan",label:"Poser votre plan de la semaine",minutes:5,action:{type:"plan"}});
  const care=jobs.filter(job=>!job.deletedAt&&!hasApplication(job)&&!job.appliedAt&&reviewState(job)==="selected"&&careCount(job.applicationCare)<3&&!["rejected","withdrawn","closed","offer"].includes(job.status))
@@ -70,12 +72,11 @@ export function nextContextualStep(input:{context:"offers"|"interviews"|"lesson"
  const {now,prompts}=input;if(!Number.isFinite(now)||now<=0)return null;
  const visible=(step:ContextualStep)=>promptVisible(prompts,step.key,now)?step:null;
  if(input.context==="terms"&&input.objectId)return visible({key:"terms:"+input.objectId,kind:"terms",label:"Termes repérés dans votre carnet"});
- if(input.context==="lesson"&&input.objectId)return visible({key:"lesson:"+input.objectId,kind:"lesson",label:"En faire une histoire ?",action:{type:"story",theme:"prioriser",jobId:input.objectId}});
+ if(input.context==="lesson"&&input.objectId)return visible({key:"lesson:"+input.objectId,kind:"lesson",label:"En faire une histoire ?",action:{type:"story",theme:"echec",jobId:input.objectId}});
  if(input.context==="interviews"){
   const planned=upcomingInterviews([...(input.jobs??[])],now).find(({event})=>promptVisible(prompts,"interview:"+event.id,now));
   if(!planned)return null;
-  const theme=interviewThemes.find(item=>!input.doneThemes?.includes(item.id))??interviewThemes[0];
-  return {key:"interview:"+planned.event.id,kind:"interview",label:"Préparez l’histoire qui va avec · 5 min",action:{type:"story",theme:theme.id,jobId:planned.job.id}};
+  return {key:"interview:"+planned.event.id,kind:"interview",label:"Relire vos réalisations avant l’entretien · 5 min",action:{type:"setting",setting:{kind:"experiences",label:"Relire mon carnet",button:"Ouvrir mon carnet",minutes:5}}};
  }
  if(input.context==="offers"&&input.lot?.size){
   const senior=input.lot.remaining.some(job=>["senior","lead"].includes(detectLevel(job.title,job.description)?.level??""));

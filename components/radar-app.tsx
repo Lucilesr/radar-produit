@@ -333,7 +333,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
     if(action.type==="setting"){reachAction(action.setting);return;}
     if(action.type==="source"){openSource(action.source);return;}
     const job=allJobs.find(item=>item.id===action.jobId);
-    if(job)openJob(job,action.type==="followups"?action.view:"brief");
+    if(job)openJob(job,action.type==="followups"?action.view:action.type==="interview"?"interviews":"brief");
   }
   const reachContent=(active:boolean)=><ReachWorkspace active={active} owner={ownerId??""} reach={reach} ready={journey.ready} partial={reachPartial} onRetry={()=>{if(sourcesError){setSourcesLoaded(false);setSourcesAttempt(value=>value+1);}if(journey.factsError)void journey.retryFacts();}} onAction={reachAction} onStories={()=>openProfileSection("stories")}/>;
   const sourceJobs = offersFromSource(allJobs,tab==="offers"?route.source:undefined);

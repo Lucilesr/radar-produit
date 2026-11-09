@@ -45,6 +45,7 @@ export function WeekPlanCard({owner,profile,jobs,sources,allowMoment,onState,onO
    const action=step.action;
    let kind:WeekCommitment["action"]|null=null,type:WeekTarget["type"]|null=null,id:string|undefined;
    if(action.type==="story"){kind="prepare";type="story";id=action.theme;}
+   else if(action.type==="interview"){kind="prepare";type="job";id=action.jobId;}
    else if(action.type==="followups"){kind="followup";type="job";id=action.jobId;}
    else if(action.type==="care"){kind="care";type="job";id=action.jobId;}
    else if(action.type==="source"){kind="visit";type="source";id=action.source;}

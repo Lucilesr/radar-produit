@@ -1,3 +1,9 @@
+## 9 novembre 2026 — Entretiens : préparer sans réécrire d’histoire
+
+- Quand un entretien approche, la séance propose « Préparer votre entretien chez … · jour heure » et ouvre l’onglet Entretiens de la candidature, au lieu d’un formulaire d’histoire « Prioriser ».
+- Les réalisations détaillées et validées du carnet comptent pour le palier « Précision » : plus besoin de réécrire des histoires déjà décrites.
+- Dans l’onglet Entretiens, la proposition renvoie vers le carnet. Une leçon après un refus propose l’histoire « Un échec », plus « Prioriser ».
+
 ## 9 novembre 2026 — Kanban : « Terminées » à droite
 
 - Les candidatures terminées forment la dernière colonne du kanban, à droite, au lieu d’un bloc replié sous le tableau. La colonne « Closes » s’appelle désormais « Terminées » (un nom choisi par l’utilisatrice est conservé).

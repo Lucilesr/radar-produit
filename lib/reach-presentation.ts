@@ -8,6 +8,6 @@ export function reachSettings(reach:Reach){return [
  {kind:'sources',group:1,label:'Trois sources',effect:'Plus d’offres, sans doublons',done:reach.activeSources>=3},
  {kind:'visit',group:1,label:'Une source manuelle visitée',effect:'Les offres que les agrégateurs ratent',done:reach.visited},
  {kind:'experiences',group:2,label:'Deux expériences validées',effect:'Le score lit vos domaines',done:reach.experiences>=2},
- {kind:'story',group:2,label:'Quatre histoires',effect:'Vos entretiens se préparent',done:reach.stories>=4},
+ {kind:'story',group:2,label:'Quatre exemples pour vos entretiens',effect:'Vos histoires et réalisations validées comptent',done:reach.interviewMaterial>=4},
  ] satisfies {kind:ReachAction['kind'];group:number;label:string;effect:string;done:boolean}[];}
 export function reachTitle(points:number,partial=false){return partial?`Votre radar · ${points} sur 10 connus`:`Votre radar est réglé à ${points} sur 10`;}

@@ -21,7 +21,9 @@ const interview=(offset=3600000)=>({id:"meeting",state:"planned",startAt:iso(off
 test("P4 : une file unique dans les sept priorités du guide",()=>{
  const input={...base,plan:null,lotRemaining:3,jobs:[job("meeting-job",{status:"interview",interviews:[interview()]}),job("due",{status:"applied",appliedAt:iso(-8*86400000)}),job("chosen",{reviewState:"selected"})],reach:{next:{kind:"level",label:"Choisir le niveau",button:"Choisir",minutes:1},doneThemes:[]},sources:[{source:"manual",lastVisitedAt:iso(-8*86400000)}]};
  assert.deepEqual(nextSteps(input).map(x=>x.kind),["interview","followups","triage","plan","care","setting","sources"]);
- assert.deepEqual(nextSteps(input).map(x=>x.minutes),[5,3,3,5,5,1,3]);
+ assert.deepEqual(nextSteps(input).map(x=>x.minutes),[10,3,3,5,5,1,3]);
+ assert.deepEqual(nextSteps(input)[0].action,{type:"interview",jobId:"meeting-job"});
+ assert.match(nextSteps(input)[0].label,/^Préparer votre entretien chez .+ · /);
  assert.equal(nextSteps(input)[0].action.jobId,"meeting-job");
 });
 test("P4 : aucune étape inventée lorsque tout est fait",()=>{
@@ -57,7 +59,9 @@ test("P4 : pas de doublon entre entretien, réglage et visite de source ; entré
  assert.equal(new Set(result.map(x=>nextStepActionKey(x.action))).size,result.length);
  assert.equal(JSON.stringify(input),before);
  const stories={...base,jobs:[job("m",{status:"interview",interviews:[interview()]})],reach:{next:{kind:"story",label:"Écrire",button:"Écrire",minutes:5,target:"prioriser"},doneThemes:[]}};
- assert.deepEqual(nextSteps(stories).map(x=>x.kind),["interview"]);
+ // Preparing the interview opens it; writing a story stays a separate, later radar setting.
+ assert.deepEqual(nextSteps(stories).map(x=>x.kind),["interview","setting"]);
+ assert.equal(nextSteps(stories)[0].action.type,"interview");
 });
 test("P4 : le lundi ouvre une nouvelle semaine, un plan déjà confirmé ne se répète pas",()=>{
  const monday=Date.parse("2026-11-09T01:30:00Z"),plan={week:weekKey(monday,"America/New_York")};
