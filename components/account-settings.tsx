@@ -32,7 +32,7 @@ export function AccountSettings({ ownerId, userName, email, demo, signOutPath, p
   return <div className="account-settings">
     <RadarPreferencesSettings initial={preferences} onSaved={onPreferences}/>
     <ActivityJournal/>
-    <WorkspaceFormSection headingLevel={2} title="Connexion" description={demo ? "Vous utilisez la démo : les données sont fictives et isolées dans ce navigateur." : "Radar vous identifie avec votre compte ChatGPT. Vos données ne sont visibles que par vous."}>
+    <WorkspaceFormSection headingLevel={2} title="Connexion" description={demo ? "Démo : données fictives, gardées dans ce navigateur." : "Connexion par votre compte ChatGPT. Vos données ne sont visibles que par vous."}>
       <div className="account-identity">
         <span className="avatar" aria-hidden>{userName.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase() || "RP"}</span>
         <div><strong>{userName}</strong>{email && email !== userName ? <span>{email}</span> : null}</div>
@@ -44,7 +44,7 @@ export function AccountSettings({ ownerId, userName, email, demo, signOutPath, p
       </div>
     </WorkspaceFormSection>
     {demo ? null : <>
-      <WorkspaceFormSection headingLevel={2} title="Vos données" description="Téléchargez l’intégralité de votre compte : offres, candidatures, notes, carnet d’expériences, journal d’activité et fichiers originaux.">
+      <WorkspaceFormSection headingLevel={2} title="Vos données" description="Téléchargez tout votre compte, fichiers originaux compris.">
         <div className="account-actions"><a className="secondary-button signal-form-button" href="/sauvegarde"><Download size={15} aria-hidden />Exporter mes données</a></div>
       </WorkspaceFormSection>
       <WorkspaceFormSection headingLevel={2} className="account-danger" descriptionInline title="Supprimer mon compte" description="Efface définitivement vos critères, sources, offres, candidatures, entretiens, notes, réponses, carnet d’expériences, journal d’activité et documents (CV compris). Votre compte ChatGPT n’est pas concerné.">
