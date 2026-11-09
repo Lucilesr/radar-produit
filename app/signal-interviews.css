@@ -20,9 +20,9 @@
 .signal-follow-up { padding-top: 18px; border-top: 1px solid var(--border); }
 .signal-follow-up > * + * { margin-top: 14px; }
 .signal-follow-up h4 { font: 600 13px/1.5 var(--font-sans); }
-.agenda-event-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; min-width: 0; width: 100%; }
-.agenda-event-heading > .workspace-caption { flex: 1; min-width: 0; }
-.agenda-event-heading > .workspace-badge { flex: none; margin: 0; }
+
+
+
 @media(max-width:640px) {
   .signal-interview-card { padding: 16px; }
   .signal-card-actions .signal-cancel-interview { margin-left: 0; }

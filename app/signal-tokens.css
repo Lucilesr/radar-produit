@@ -26,6 +26,7 @@
   --signal-celebration: #ff8a65;
   --signal-success-ink: #176947;
   --signal-mist: #eaf0f3;
+  --signal-mist-strong: #dce6eb;
   /* Decorative borders on white; not body text (insufficient contrast). */
   --signal-ash: #7b8e99;
   --font-display: "Bricolage Grotesque", var(--font-sans);
@@ -34,6 +35,7 @@
   --signal-warning: #80551a;
   --signal-warning-bg: #fff4df;
   --signal-danger: #be263d;
+  --signal-danger-strong: #a21e33;
   --signal-danger-bg: #fff0f2;
   --font-sans: "Avenir Next", "Segoe UI", Arial, sans-serif;
   --font-poppins: var(--font-sans);

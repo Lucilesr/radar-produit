@@ -48,3 +48,4 @@
 .signal-section-title-help h3{overflow-wrap:anywhere}
 .signal-section-title-help .help-tooltip-trigger,.criteria-help-line .help-tooltip-trigger,.week-series>.help-tooltip-trigger{min-width:44px;width:44px;min-height:44px;height:44px}
 .criteria-help-line p{margin:0}
+@media(max-width:640px){.radar-app .signal-note-toolbar button{min-width:44px;min-height:44px}}

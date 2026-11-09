@@ -8,23 +8,22 @@ button, input, textarea, select { font-family: inherit; }
   outline: 3px solid var(--ring); outline-offset: 3px;
 }
 ::selection { background: var(--signal-citron); color: var(--foreground); }
-.radar-add-button, .secondary-button, .refresh-button,
-.offer-open-button, .offer-source-button, .offer-apply-button {
+.radar-add-button,.secondary-button{
   min-height: 42px; padding: 10px 14px; gap: 8px;
   border-radius: var(--signal-radius-control); font: 500 13px/1.45 var(--font-sans);
   box-shadow: none; text-decoration: none;
 }
-.radar-add-button, .offer-open-button {
+.radar-add-button{
   background: var(--primary); border: 1px solid var(--primary); color: #fff;
 }
-.radar-add-button:hover, .offer-open-button:hover {
+.radar-add-button:hover{
   background: var(--signal-petrol-dark); border-color: var(--signal-petrol-dark);
   transform: none; box-shadow: none;
 }
-.secondary-button, .refresh-button, .offer-source-button {
+.secondary-button{
   background: var(--card); border: 1px solid var(--border); color: var(--foreground);
 }
-.secondary-button:hover, .refresh-button:hover, .offer-source-button:hover {
+.secondary-button:hover{
   background: var(--muted); border-color: var(--input); color: var(--foreground);
 }
 .signal-quiet-button {
@@ -38,7 +37,7 @@ button, input, textarea, select { font-family: inherit; }
   min-height: 42px; padding: 10px 14px; border: 1px solid var(--danger);
   border-radius: var(--signal-radius-control); background: var(--danger); color: #fff; font: 500 13px/1.45 var(--font-sans);
 }
-.signal-danger-button:hover { background: #a21e33; border-color: #a21e33; }
+.signal-danger-button:hover { background: var(--signal-danger-strong); border-color: var(--signal-danger-strong); }
 button:disabled { opacity: .5; cursor: not-allowed; }
 input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea {
   border-color: var(--input); color: var(--foreground); background: var(--card);
@@ -70,8 +69,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--primary); }
   background: var(--accent); color: var(--foreground);
 }
 [data-slot=select-label] { font: 700 12px/1.5 var(--font-sans); color: var(--foreground); }
-.workspace-badge, .experience-status, .application-sent-date,
-.quiet-tag, .status-pill {
+.workspace-badge,.experience-status,.quiet-tag{
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 26px; height: auto; gap: 5px; padding: 4px 8px;
   border: 1px solid transparent; border-radius: var(--signal-radius-pill);
@@ -82,10 +80,10 @@ input[type=checkbox], input[type=radio] { accent-color: var(--primary); }
 .workspace-badge.is-success, .experience-status.is-approved {
   color: var(--success); background: var(--success-surface); border-color: #b4cfbf;
 }
-.workspace-badge.is-warning, .application-sent-date.is-warning {
+.workspace-badge.is-warning{
   color: var(--warning); background: var(--warning-surface); border-color: #dcad60;
 }
-.workspace-badge.is-danger, .application-sent-date.is-danger {
+.workspace-badge.is-danger{
   color: var(--danger); background: var(--danger-surface); border-color: #d78c96;
 }
 .workspace-dialog { border: 1px solid var(--border); border-radius: var(--signal-radius-panel); background: var(--card); }
@@ -94,7 +92,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--primary); }
 .help-tooltip-trigger { color: var(--muted-foreground); border-radius: var(--signal-radius-pill); }
 .help-tooltip-content {
   width: max-content; max-width: min(360px,calc(100vw - 32px));
-  padding: 12px 14px; border-radius: var(--signal-radius-control); background: var(--signal-paper); color: var(--signal-petrol-ink);
+  padding: 12px 14px; border-radius: var(--signal-radius-card); background: var(--signal-paper); color: var(--signal-petrol-ink);
   border: 1px solid var(--signal-line); box-shadow: 0 8px 24px #193f501f;
   font: 400 13px/1.6 var(--font-sans); white-space: normal; word-break: normal; overflow-wrap: break-word; text-wrap: pretty;
 }
@@ -116,7 +114,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--primary); }
 .signal-toast :is(.signal-toast-close,.signal-toast-link):focus-visible { outline-color: var(--ring); }
 .signal-toast-close:hover { background: var(--muted); }
 @media(max-width:640px) {
-  .radar-add-button, .secondary-button, .refresh-button, .signal-quiet-button, .signal-danger-button { min-height: 44px; }
+  .radar-add-button,.secondary-button,.signal-quiet-button,.signal-danger-button{ min-height: 44px; }
   .signal-toast .signal-toast-close { min-width: 24px; background: transparent; width: 44px; height: 44px; min-width:44px; min-height:44px; }
   .workspace-toast.signal-toast { top: max(12px,env(safe-area-inset-top)); right: 16px; }
 }
@@ -129,3 +127,14 @@ input[type=checkbox], input[type=radio] { accent-color: var(--primary); }
 @media(max-width:640px){.signal-toast .signal-toast-link{min-height:44px}}
 /* Shared date picker: seven 44 px targets fit a 390 px viewport. */
 @media(max-width:700px){.date-picker-popover .rdp-root{--cell-size:44px}}
+/* Bulles, menus, dialogues et tiroirs : géométrie Signal, y compris dans les portails. */
+:is(.radar-account-menu,.date-picker-popover,.choice-select-menu,.help-tooltip-content,.library-hint-content){border-radius:var(--signal-radius-card)}
+:is(.help-tooltip-content,.library-hint-content){background:var(--signal-paper);color:var(--signal-petrol-ink);border:1px solid var(--signal-line)}
+.help-tooltip-content [data-slot=tooltip-arrow]{fill:var(--signal-paper);background:var(--signal-paper)}
+:is(.workspace-dialog,.reach-story-dialog,.signal-library-dialog,.experience-consent-dialog,[data-slot=dialog-content]){border-radius:var(--signal-radius-panel)}
+[data-slot=drawer-content][data-vaul-drawer-direction=bottom]{border-radius:var(--signal-radius-panel) var(--signal-radius-panel) 0 0}
+[data-slot=drawer-content] :is(button,[role=option]){min-height:44px;border-radius:var(--signal-radius-control)}
+@media(max-width:640px){
+ :is(.help-tooltip-trigger,.signal-dialog-close){min-width:44px;min-height:44px}
+ .help-tooltip-trigger{width:44px;height:44px}
+}

@@ -5,5 +5,5 @@
 .contextual-level-choices{display:flex;flex-wrap:wrap;gap:6px}
 .contextual-prompt-actions button{min-height:44px}
 .contextual-prompt .help-tooltip-trigger{width:44px;min-width:44px;height:44px;min-height:44px}
-.contextual-prompt .workspace-form-error{margin-block:4px 0}
+
 @media(max-width:640px){.radar-app .contextual-prompt{padding:12px}.contextual-prompt-heading{align-items:flex-start}.contextual-prompt-heading>strong{flex:1;min-width:0}}
