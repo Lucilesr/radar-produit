@@ -26,6 +26,6 @@ export function monthStoryCards(story:MonthStory){return [
  {title:"Offres triées",value:story.sorted,detail:story.sorted?"Des décisions prises pour faire de la place à ce qui vous convient.":"Aucun tri enregistré sur cette période. Vous avancez à votre rythme."},
  {title:"Check-lists d’envoi",value:story.cared,detail:"Candidatures avec au moins 3 points cochés sur 4, envoyées ou non. Une offre compte une fois."},
  {title:"Entretiens",value:story.interviews,detail:"Échanges dont vous avez noté le bilan pendant ce mois. Plusieurs notes du même entretien comptent une fois."},
- {title:"Semaines tenues",value:story.weeks,detail:"Plans dont tous les engagements ont été cochés sur cette période. Vous choisissez votre rythme."},
+ {title:"Semaines tenues",value:story.weeks,detail:"Plans dont toutes les actions ont été cochées sur cette période. Vous choisissez votre rythme."},
  {title:"Votre pépite du mois",value:null,detail:story.gem?"Une offre sélectionnée ce mois-ci, toujours accessible dans votre Radar.":"Pas de pépite sélectionnée pour ce mois. La prochaine peut encore arriver."},
  ];}
