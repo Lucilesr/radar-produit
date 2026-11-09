@@ -14,7 +14,7 @@ export function WebDiscoveryPanel({ roles, settings, onSaved }: { roles: string[
   const queries=groupedDiscoveryQueries(roles).filter(query=>settings.find(setting=>setting.source===query.source)?.selected!==false);
   return <section className="signal-source-panel signal-web-discovery" aria-labelledby="web-discovery-title">
     <WorkspacePanelHeader id="web-discovery-title" title="Recherches web pour vos postes"/>
-    <div className="inline-help"><span>Ouvre d’abord la recherche sur le site. Google reste une piste complémentaire.</span><HelpTooltip label="À propos de la recherche">Prépare tes filtres sur le site, puis colle son URL dans « Modifier les liens ». Google peut aider à repérer des pages publiques, mais ses résultats ne remplacent pas la vérification de l’annonce sur le site.</HelpTooltip></div>
+    <div className="inline-help"><span>Ouvre d’abord la recherche sur le site. Google reste une piste complémentaire.</span><HelpTooltip label="À propos de la recherche">Filtrez sur le site, puis collez l’URL dans « Modifier les liens ».</HelpTooltip></div>
     <ul className="signal-source-web-grid">{queries.map(query => <SearchCard key={query.source} query={query} roles={roles} setting={settings.find(setting => setting.source === query.source)} onSaved={onSaved}/>)}</ul>
     {!queries.length?<p className="signal-help">Ajoutez LinkedIn Jobs ou Welcome to the Jungle via « Ajouter des sources » pour retrouver leurs liens de recherche.</p>:null}
     <p className="signal-help">Les liens « Sur le site » ouvrent la page d’offres générale tant que tu n’as pas enregistré l’URL de ta recherche filtrée. Une connexion peut être demandée.</p>

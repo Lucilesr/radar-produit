@@ -149,7 +149,7 @@ export function SearchCriteriaPanel({ overview=false,profile, jobs, onSave, onOp
     <header className="search-criteria-panel-header">
       <div>
         <div className="search-criteria-title-line"><h2 id="search-criteria-title" className="source-heading">{overview?"Vos critères":"Critères"}</h2><span className="signal-help" role="status">{justSaved?"Enregistré à l’instant":"Enregistrés automatiquement"}</span></div>
-        <div className="criteria-help-line"><p>Vos critères trient les offres.</p><HelpTooltip label="Critères">Les offres hors critères sont masquées dans À examiner. Les alertes des sites externes gardent leurs propres réglages.</HelpTooltip></div>
+        <div className="criteria-help-line"><p>Vos critères trient les offres.</p><HelpTooltip label="Critères">Les offres hors critères sont masquées dans « À examiner ».</HelpTooltip></div>
       </div>
       <div className="search-criteria-panel-actions">
         {view === "edit"
