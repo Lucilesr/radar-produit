@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Kanban : filtre par tag sur « À envoyer »
+
+- Le filtre par tag s’applique aussi à la colonne « À envoyer » sur ordinateur, comme sur mobile.
+
 ## 9 novembre 2026 — Relance : statut et actions alignés
 
 - Dans la fiche candidature, « Prévoir une autre relance » et les autres actions de relance s’alignent à droite du statut, sur la même ligne.
