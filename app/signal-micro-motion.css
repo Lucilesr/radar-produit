@@ -14,8 +14,7 @@
 .radar-sidebar .radar-nav button.is-active { box-shadow: inset 3px 0 0 var(--signal-citron); }
 .workspace-page-header h1 { letter-spacing: -.01em; }
 
-.opportunities-toolbar,
-.applications-toolbar { animation: signal-enter .42s cubic-bezier(.2,.8,.2,1) both; }
+.opportunities-toolbar{ animation: signal-enter .42s cubic-bezier(.2,.8,.2,1) both; }
 .review-radar-filter,
 .signal-selected-button { border-radius: var(--signal-surface-radius); }
 .review-radar-filter { border-color: var(--signal-input); }
@@ -27,22 +26,16 @@
 }
 .opportunity-open > strong,
 .opportunity-detail-header h2 { letter-spacing: -.01em; }
-.offer-signal { border-radius: var(--signal-surface-radius); }
+.offer-signal { border-radius: var(--signal-radius-card); }
 
-.applications-workspace .applications-list {
-  border-radius: var(--signal-surface-radius);
-  box-shadow: var(--signal-soft-shadow);
-  animation: signal-enter .48s cubic-bezier(.2,.8,.2,1) both;
-}
-.applications-workspace .application-row { transition: background-color .22s ease; }
-.applications-workspace .application-identity h2 { letter-spacing: -.01em; }
+
+
+
 .application-display-toggle { border-radius: var(--signal-surface-radius); }
 .application-display-toggle button { border-radius: var(--signal-radius-control); transition: background-color .22s ease, color .22s ease; }
-.application-display-toggle,
-.applications-workspace .application-status .choice-select-trigger,
-.application-card .choice-select-trigger { border-color: var(--signal-input); }
+.application-display-toggle,.application-card .choice-select-trigger{ border-color: var(--signal-input); }
 .application-column,
-.application-card { border-radius: var(--signal-surface-radius); }
+.application-card { border-radius: var(--signal-radius-card); }
 .application-column { box-shadow: var(--signal-soft-shadow); }
 .application-card {
   transition: box-shadow .22s ease, border-color .22s ease;
@@ -63,15 +56,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .radar-sidebar .radar-nav button,
-  .opportunities-toolbar,
-  .applications-toolbar,
-  .opportunity-list-row,
-  .opportunity-open,
-  .applications-workspace .applications-list,
-  .applications-workspace .application-row,
-  .application-display-toggle button,
-  .application-card { animation: none !important; transition: none !important; }
+  .radar-sidebar .radar-nav button,.opportunities-toolbar,.opportunity-list-row,.opportunity-open,.application-display-toggle button,.application-card{ animation: none !important; transition: none !important; }
   .radar-sidebar .radar-nav button:hover:not(.is-active) { transform: none; }
 }
 
@@ -79,3 +64,4 @@
 @media(max-width:1023px) {
  .radar-sidebar .radar-nav button.is-active { box-shadow:none; }
 }
+.signal-selected-button{border-radius:var(--signal-radius-control)}

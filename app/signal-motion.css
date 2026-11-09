@@ -49,3 +49,5 @@ html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-
 .signal-radar-echo.is-new{stroke:currentColor;animation:radar-echo-arrive 900ms ease-out 1}
 @media(prefers-reduced-motion:reduce){.signal-radar-echo.is-new{animation:none}}
 html[data-motion=reduced] .signal-radar-echo.is-new{animation:none}
+.signal-moment .signal-stepper{color:var(--signal-mist)}
+.signal-moment .signal-stepper .is-current{color:var(--signal-paper)}
