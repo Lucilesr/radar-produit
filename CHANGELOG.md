@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Plan de la semaine : modale alignée
+
+- La modale du plan prend la largeur et les marges de la fiche candidature ; le titre et la croix restent visibles au défilement. Le titre affiche « semaine du 9 novembre » au lieu du code de semaine.
+
 ## 9 novembre 2026 — Candidatures : bascule Kanban / Entonnoir
 
 - Le bloc « Encore N candidatures pour voir votre entonnoir » et sa modale laissent place à une bascule Kanban / Entonnoir. L’entonnoir s’affiche à la place du suivi ; grisé, il indique au survol, au focus ou au toucher combien d’envois manquent.
