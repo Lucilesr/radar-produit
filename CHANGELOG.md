@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Aides : ouverture prévisible
+
+- Une aide ouverte au survol ou au clavier reste ouverte quand on l’active. Une seconde activation la ferme, au clavier, à la souris comme au toucher.
+
 ## 9 novembre 2026 — Aides et pastilles de Mon radar sur mobile
 
 - L’aide du domaine suit son libellé, les bulles d’aide gardent une marge avec les bords de l’écran.
