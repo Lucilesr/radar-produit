@@ -50,7 +50,7 @@ Dans **Entretiens**, planifiez un rendez-vous ou renseignez sa date passée, pui
 
 Dans **Mon radar**, **Voir mes réglages** présente six réglages en trois groupes. La barre montre quatre paliers. Les réglages faits se replient ; un prochain réglage reste ouvert. La portée ne bloque aucune fonction.
 
-Dans **Mon radar → Ce que je sais faire → Carnet**, importez un CV ou ajoutez une expérience à la main. Relisez les faits et choisissez séparément leurs droits d’usage. **Mes histoires** réunit huit thèmes : le brouillon se conserve, **Valider cette histoire** confirme les faits. N’inventez pas un chiffre inconnu. Une modification suspend la réutilisation jusqu’à un nouveau choix des droits.
+Dans **Mon radar → Ce que je sais faire → Carnet**, retrouvez les expériences. Ouvrez **Documents** pour importer un CV, ou ajoutez une expérience à la main. Le lien **← Mon radar** revient aux réglages. Relisez les faits et choisissez séparément leurs droits d’usage. **Mes histoires** réunit huit thèmes : le brouillon se conserve, **Valider cette histoire** confirme les faits. N’inventez pas un chiffre inconnu. Une modification suspend la réutilisation jusqu’à un nouveau choix des droits.
 
 ## Retrouver ses progrès et ses données
 
