@@ -1,3 +1,7 @@
+## 9 novembre 2026 — « Check-list d’envoi »
+
+- « Candidature soignée » devient « Check-list d’envoi » partout : fiche, badge, étape du jour, plan de la semaine, journal et récit du mois. L’aide de la section est retirée.
+
 ## 9 novembre 2026 — Aides plus courtes
 
 - Les textes d’aide vont à l’essentiel : une ou deux phrases sur ce que fait l’élément, sans détail technique.
