@@ -133,7 +133,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
       <section className="review-offer-dates" aria-label="Dates de l’offre">
         <h3 className="review-dates-heading">Dates de l’offre</h3>
         <dl className="review-dates"><ConditionRow label="Publication" value={formatDate(job.publishedAt)}/><ConditionRow label="Ajout au Radar" value={formatDate(job.createdAt)}/>{job.notificationAt?<ConditionRow label="Notification source" value={formatDate(job.notificationAt)}/>:null}</dl>
-      {!job.publishedAt ? <div className="inline-help"><span>Date de publication non précisée</span><HelpTooltip label="Date de publication">Date de mise en ligne de l’annonce, pas celle de son import.</HelpTooltip></div> : null}
+      {!job.publishedAt ? <div className="inline-help"><span>Date de publication non précisée</span><HelpTooltip label="Date de publication">Date de mise en ligne de l’annonce.</HelpTooltip></div> : null}
       </section>
     </> : null}
     {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); if (mystery && !isMysteryOffer(updated)) { if(context==="opportunity"&&isGoodFind(updated))setRevealed(updated); else notify({ message: revealMessage(updated) }); } }} onCancel={finishEditing} /> : null}
@@ -204,7 +204,7 @@ function PrivateBrief({ jobId }: { jobId: string }) {
   }, [jobId, language, refresh]);
   async function copyPrompt(){try{await navigator.clipboard.writeText(brief);setCopied(true);notify({message:"Prompt copié. Collez-le dans ChatGPT."});}catch{setError("Copie impossible : sélectionnez le texte.");notify({message:"Copie impossible : sélectionnez le texte.",tone:"error"});}}
   return <div className="signal-brief">
-    <section className="signal-prompt-section" aria-label="Prompt ChatGPT"><div className="signal-prompt-heading"><div><div className="inline-help"><h3>Prompt ChatGPT</h3><HelpTooltip label="Contenu du prompt">Notes privées, entretiens et sources brutes ne sont pas inclus.</HelpTooltip></div><p className="signal-help">Annonce, parcours validé et questions. Copiez dans ChatGPT, puis collez la réponse ci-dessous.</p></div><div className="signal-prompt-actions"><div className="signal-brief-language"><ChoiceSelect label="Langue des réponses" value={language} onChange={value=>setLanguage(value as "fr"|"en")} options={[{value:"fr",label:"Français"},{value:"en",label:"Anglais professionnel simple"}]}/></div><WorkspaceButton variant="primary" disabled={loading||!brief} onClick={()=>void copyPrompt()}><Copy size={14} aria-hidden/>{copied?"Prompt copié":"Copier le prompt"}</WorkspaceButton></div></div>
+    <section className="signal-prompt-section" aria-label="Prompt ChatGPT"><div className="signal-prompt-heading"><div><div className="inline-help"><h3>Prompt ChatGPT</h3></div><p className="signal-help">Annonce, parcours validé et questions. Copiez dans ChatGPT, puis collez la réponse ci-dessous.</p></div><div className="signal-prompt-actions"><div className="signal-brief-language"><ChoiceSelect label="Langue des réponses" value={language} onChange={value=>setLanguage(value as "fr"|"en")} options={[{value:"fr",label:"Français"},{value:"en",label:"Anglais professionnel simple"}]}/></div><WorkspaceButton variant="primary" disabled={loading||!brief} onClick={()=>void copyPrompt()}><Copy size={14} aria-hidden/>{copied?"Prompt copié":"Copier le prompt"}</WorkspaceButton></div></div>
       {loading?<p className="signal-help" role="status">Chargement du prompt…</p>:null}<WorkspaceFormError message={error}/>{error?<WorkspaceButton onClick={()=>setRefresh(value=>value+1)}>Réessayer</WorkspaceButton>:null}
       {!loading&&brief?<details className="signal-prompt-preview"><summary>Voir le contenu du prompt</summary><pre>{brief}</pre></details>:null}
       {!loading&&!brief&&!error?<p className="signal-help">Aucun prompt disponible pour cette offre.</p>:null}
@@ -282,7 +282,7 @@ function InterviewEditor({ jobId, interview, onSaved, onCancel }: { jobId: strin
       <Field label="Durée estimée (minutes)"><input disabled={busy||!draft.ready} type="number" min={1} max={480} value={duration} onChange={event => setDuration(Number(event.target.value))} /></Field>
       <ChoiceSelect disabled={busy||!draft.ready} label="Format" value={format} onChange={setFormat} options={[{value:"video",label:"Visio"},{value:"phone",label:"Téléphone"},{value:"onsite",label:"Sur site"},{value:"other",label:"Autre"}]} />
     </div>
-    <div className="inline-help"><span>Rappel après l’entretien</span><HelpTooltip label="Rappel d’entretien">Après l’heure de fin prévue. Rien n’est ajouté à votre agenda.</HelpTooltip></div>
+    <div className="inline-help"><span>Rappel après l’entretien</span></div>
     <WorkspaceFormError message={error}/>
     <WorkspaceSaveActions cancelLabel="Retour" label="Enregistrer l’entretien" busy={busy} disabled={!draft.ready||!start||!label.trim()||!Number.isFinite(duration)||duration<1||duration>480} hint="Aucun événement créé dans un calendrier externe." onSave={()=>void save()} onCancel={onCancel} sticky/>
   </div>;
