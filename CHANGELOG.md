@@ -1,3 +1,9 @@
+## 9 novembre 2026 — Entretiens : préparer sans réécrire d’histoire
+
+- Quand un entretien approche, la séance propose « Préparer votre entretien chez … · jour heure » et ouvre l’onglet Entretiens de la candidature, au lieu d’un formulaire d’histoire « Prioriser ».
+- Les réalisations détaillées et validées du carnet comptent pour le palier « Précision » : plus besoin de réécrire des histoires déjà décrites.
+- Dans l’onglet Entretiens, la proposition renvoie vers le carnet. Une leçon après un refus propose l’histoire « Un échec », plus « Prioriser ».
+
 ## 9 novembre 2026 — Disposition du plan de la semaine
 
 - Sur ordinateur, chaque action s’affiche sur deux lignes. Jour, Heure et Action sont au-dessus de la cible et de Précision, qui ont plus de place. Vider se place à droite.
