@@ -17,6 +17,14 @@ export function applicationAge(appliedAt?: string, now = Date.now()) {
 export function reviewDue(interview: InterviewRecord, now = Date.now()) {
   return interview.state === "planned" && Date.parse(interview.endAt) <= now;
 }
+/** An interview shows in the viewer's time; its own zone is added when it differs (18:30 in Paris is 21:30 in Mauritius). */
+export function formatMeeting(value: string, eventZone: string | undefined, viewerZone: string) {
+  const local = formatDate(value, viewerZone, true);
+  if (!eventZone || eventZone === viewerZone) return local;
+  const there = new Intl.DateTimeFormat("fr-FR", { timeZone: eventZone, hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+  const here = new Intl.DateTimeFormat("fr-FR", { timeZone: viewerZone, hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+  return here === there ? local : `${local} (${there} à ${eventZone.split("/").pop()!.replace(/_/g, " ")})`;
+}
 export function formatDate(value?: string, timeZone = "Europe/Paris", withTime = false) {
   if (!value) return "Non communiquée";
   const parsed = new Date(value.includes("T") ? value : value.includes(" ") ? value.replace(" ", "T") + "Z" : value + "T12:00:00Z");

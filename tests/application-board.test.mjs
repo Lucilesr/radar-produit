@@ -126,3 +126,12 @@ test("colonnes personnelles : déplacer une colonne garde les autres et refuse d
   if (closed) assert.throws(() => personal.editBoard(board, {action:"move", id:closed.id, targetId:ids[0]}), /terminée/);
   assert.throws(() => personal.editBoard(board, {action:"move", id:"inconnue", targetId:ids[0]}), /introuvable/);
 });
+
+test("cartes : un entretien s’affiche à l’heure de l’utilisatrice, avec l’heure locale de l’entreprise si elle diffère", async () => {
+  const { formatMeeting } = await import(moduleUrl("lib/application-workflow.ts"));
+  const at = "2026-11-10T17:30:00.000Z";
+  assert.equal(formatMeeting(at, "Europe/Paris", "Indian/Mauritius"), "10 nov. 2026, 21:30 (18:30 à Paris)");
+  assert.equal(formatMeeting(at, "Indian/Mauritius", "Indian/Mauritius"), "10 nov. 2026, 21:30");
+  assert.equal(formatMeeting(at, undefined, "Europe/Paris"), "10 nov. 2026, 18:30");
+  assert.equal(formatMeeting(at, "America/New_York", "America/Toronto"), "10 nov. 2026, 12:30");
+});

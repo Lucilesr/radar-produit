@@ -1,6 +1,8 @@
 ## 9 novembre 2026 — Kanban : « Terminées » à droite
 
 - Les candidatures terminées forment la dernière colonne du kanban, à droite, au lieu d’un bloc replié sous le tableau. La colonne « Closes » s’appelle désormais « Terminées » (un nom choisi par l’utilisatrice est conservé).
+- Une candidature envoyée n’affiche plus sa check-list d’envoi, devenue inutile. « Envoyée le date inconnue » devient « Date d’envoi inconnue », et « + 1 autres » devient « + 1 autre ».
+- L’heure d’un entretien s’affiche à votre heure, avec celle de l’entreprise quand elle diffère : « 21:30 (18:30 à Paris) ». Sur mobile, « Bilan à faire » apparaît comme sur ordinateur.
 
 ## 9 novembre 2026 — Disposition du plan de la semaine
 
