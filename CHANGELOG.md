@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Mon radar : portée en trois zones
+
+- La portée se lit en trois zones : la progression, le radar avec « Actualiser maintenant », et le prochain réglage dans un bandeau qui porte la seule action principale.
+
 ## 9 novembre 2026 — Aides et pastilles de Mon radar sur mobile
 
 - L’aide du domaine suit son libellé, les bulles d’aide gardent une marge avec les bords de l’écran.
