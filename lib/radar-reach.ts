@@ -44,5 +44,5 @@ export function radarReach({roles,targetLevel,targetLevelAny=false,sources,facts
     :experiences<2?{kind:"experiences",label:experiences?"Validez une deuxième expérience":"Validez deux expériences de votre carnet",button:"Ouvrir mon carnet",minutes:3}
     :material.length<4?{kind:"story",label:`Préparez ${4-material.length} histoire${4-material.length>1?"s":""} pour vos entretiens`,button:"Écrire maintenant",minutes:5,target:nextTheme?.id}
     :null;
-  return {points,stage,label:points===0?"Votre radar s’allume":points===10?"Précision atteinte":reachStages[stage].label,criteria,level,activeSources:active.length,visited,experiences,stories:stories.length,doneThemes:[...doneThemes],next};
+  return {points,stage,label:points===0?"Votre radar s’allume":points===10?"Précision atteinte":reachStages[stage].label,criteria,level,activeSources:active.length,visited,experiences,stories:stories.length,interviewMaterial:material.length,doneThemes:[...doneThemes],next};
 }

@@ -42,13 +42,14 @@ test("P2 : six réglages concrets dans trois groupes, sans modifier le calcul de
 test("P2 : libellés explicites, quatre paliers et complétude gardée à dix",()=>{
  assert.equal(presentation.reachTitle(0),"Votre radar est réglé à 0 sur 10");assert.equal(presentation.reachTitle(10),"Votre radar est réglé à 10 sur 10");assert.match(presentation.reachTitle(4,true),/connus/);
  assert.deepEqual(presentation.reachSegmentStops,[2,6,9,10]);assert.equal(presentation.reachSegmentStops.length,4);
- const full={...radarReach(base),criteria:true,level:true,activeSources:3,visited:true,experiences:2,stories:4};assert(presentation.reachSettings(full).every(setting=>setting.done));
+ const full={...radarReach(base),criteria:true,level:true,activeSources:3,visited:true,experiences:2,interviewMaterial:4};assert(presentation.reachSettings(full).every(setting=>setting.done));
 });
 test("Précision : les réalisations détaillées et validées du carnet comptent sans réécrire d’histoire",()=>{
  const long="Contexte, choix et résultat détaillés dans le carnet. ".repeat(9);
  const job=fact("capsens"),example=n=>fact("ex"+n,"fact",{parentId:"capsens",data:{title:"Exemple "+n,context:long,contribution:"",result:"",claimKey:""}});
  const input={...base,roles:["Product Owner"],targetLevel:"senior",sources:[{source:"a",lastVisitedAt:"2026-11-07"},{source:"b"},{source:"feed"}],facts:[job,fact("steamulo"),...[1,2,3,4].map(example)]};
  const reach=radarReach(input);assert.equal(reach.points,10);assert.equal(reach.next,null);assert.equal(reach.doneThemes.length,0);
+ assert.equal(reach.stories,0);assert.equal(presentation.reachSettings(reach).find(setting=>setting.kind==="story").done,true);
  // Short notes, unvalidated blocks or blocks under a hidden experience are not interview material.
  const short=example(5);short.data={...short.data,context:"Raison du départ"};
  const weak={...input,facts:[job,fact("steamulo"),short,{...example(6),validation:"proposed"},{...example(7),parentId:"ghost"},example(8)]};
