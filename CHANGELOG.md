@@ -1,3 +1,7 @@
+## 9 novembre 2026 — Mon radar : critères en pastilles
+
+- « Ce que je cherche » affiche les critères en pastilles, comme des filtres sélectionnés, au lieu d’une longue liste. Chaque pastille ouvre son réglage.
+
 ## 9 novembre 2026 — Aides et pastilles de Mon radar sur mobile
 
 - L’aide du domaine suit son libellé, les bulles d’aide gardent une marge avec les bords de l’écran.

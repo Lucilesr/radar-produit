@@ -21,3 +21,7 @@
 .mon-radar-scope h2:focus-visible{outline:3px solid var(--signal-energy);outline-offset:4px;border-radius:10px}
 /* Mobile : une seule section ouverte, la pastille correspondante le signale. */
 @media(max-width:640px){.mon-radar-section-chips button[aria-current=true]{border-color:var(--signal-petrol-ink);background:var(--signal-petrol-ink);color:var(--signal-paper)}}
+/* « Ce que je cherche » en pastilles : même hauteur pour les critères et « + Critère », sans cadre en double dans la carte. */
+.mon-radar-overview-section .search-criteria-tokens{align-items:center;padding:0;border:0;background:transparent}
+.mon-radar-overview-section :is(.search-criteria-token,.search-criteria-add){min-height:40px;border-radius:var(--signal-radius-control)}
+@media(max-width:640px){.mon-radar-overview-section :is(.search-criteria-token,.search-criteria-add){min-height:44px}}
