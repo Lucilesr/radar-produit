@@ -3,9 +3,9 @@
 import { createContext, useContext, useId, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode, type TouchEvent as ReactTouchEvent } from "react";
 import { DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, pointerWithin, rectIntersection, useDndContext, useDraggable, useDroppable, useSensor, useSensors, type Announcements, type KeyboardCoordinateGetter } from "@dnd-kit/core";
 import { Dialog } from "radix-ui";
-import { GripVertical } from "lucide-react";
+import { GripVertical, MoreHorizontal } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {HelpTooltip} from "@/components/help-tooltip";
-import {ChoiceSelect} from "@/components/choice-select";
 import { WorkspaceButton, WorkspaceFormError } from "@/components/workspace-form";
 import { applicationColumn, applicationMove } from "@/lib/application-board";
 import { defaultBoard, personalColumn, type PersonalColumn } from "@/lib/personal-board";
@@ -30,7 +30,8 @@ const keyboardCoordinates = (destinations: string[]): KeyboardCoordinateGetter =
 };
 
 const ApplicationMoveContext=createContext<((id:string,target:string)=>Promise<void>)|null>(null);
-export function ApplicationMoveSelect({job,columns,busy}:{job:JobRecord;columns:PersonalColumn[];busy:boolean}){const move=useContext(ApplicationMoveContext);return <ChoiceSelect label={`Déplacer vers · ${job.company||job.title}`} value={personalColumn(job,columns)} displayValue="Déplacer vers…" disabled={busy} options={columns.filter(column=>column.stage!=="other"||column.id===personalColumn(job,columns)).map(column=>({value:column.id,label:column.label}))} onChange={target=>void move?.(job.id,target)}/>;}
+/** Keyboard and screen-reader alternative to dragging a card, kept out of sight in the card's ⋯ menu. */
+export function ApplicationMoveMenu({job,columns,busy}:{job:JobRecord;columns:PersonalColumn[];busy:boolean}){const move=useContext(ApplicationMoveContext),current=personalColumn(job,columns);return <DropdownMenu><DropdownMenuTrigger asChild><button type="button" data-no-drag className="application-card-menu" disabled={busy} aria-label={`Actions de la candidature : ${job.title} · ${job.company||"Entreprise à confirmer"}`}><MoreHorizontal size={17} aria-hidden/></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="application-card-menu-content"><DropdownMenuLabel>Déplacer vers</DropdownMenuLabel>{columns.filter(column=>column.stage!=="other"||column.id===current).map(column=><DropdownMenuItem key={column.id} disabled={column.id===current} onSelect={()=>void move?.(job.id,column.id)}>{column.label}{column.id===current?<span className="application-card-menu-current"> · actuelle</span>:null}</DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu>;}
 
 function focusCard(id:string|null,attempt=0){
  requestAnimationFrame(()=>{
@@ -93,7 +94,7 @@ export function ApplicationDrag({ jobs, busy, onStatus, children, columns = defa
     onDragStart={({ active }) => { const column = columnDrag(active.data.current); if (column) setActiveColumn(column); else setActiveId(String(active.id)); setMessage(""); }}
     onDragCancel={({ active }) => { const column = columnDrag(active.data.current); setActiveId(null); setActiveColumn(null); if (column) { setMessage("Colonne laissée à sa place."); document.getElementById(`application-column-drag-${column}`)?.focus(); return; } setMessage("Déplacement annulé. Étape conservée."); focusCard(String(active.id)); }}
     onDragEnd={({ active, over }) => { const column = columnDrag(active.data.current); setActiveId(null); setActiveColumn(null); if (column) { if (over && String(over.id) !== column) onColumnMove?.(column, String(over.id)); else setMessage("Colonne laissée à sa place."); requestAnimationFrame(() => document.getElementById(`application-column-drag-${column}`)?.focus({ preventScroll: true })); return; } if (over) void move(String(active.id), String(over.id)); else { setMessage("Déplacement annulé. Étape conservée."); focusCard(String(active.id)); } }}>
-    <ApplicationMoveContext.Provider value={move}><div className="application-board-area"><div className="application-drag-guide"><p>Déplacez une carte pour changer d’étape.</p><HelpTooltip label="Déplacer une candidature">Utilisez le choix « Déplacer vers » de chaque carte, ou sa poignée avec Entrée puis les flèches gauche et droite. Échap annule. Clore demande un motif ; notes et entretiens restent conservés.</HelpTooltip></div>
+    <ApplicationMoveContext.Provider value={move}><div className="application-board-area"><div className="application-drag-guide"><p>Déplacez une carte pour changer d’étape.</p><HelpTooltip label="Déplacer une candidature">Menu ⋯ de la carte (« Déplacer vers »), ou sa poignée : Entrée puis flèches. Clore demande un motif.</HelpTooltip></div>
     <p className={message ? "application-drag-help" : "sr-only"} role="status">{message}</p>
     {error&&!closing?<div className="application-move-error"><WorkspaceFormError message={error}/><WorkspaceButton disabled={!!busy} onClick={()=>{const last=lastMove.current;if(last)void move(last.jobId,last.target,last.reason);}}>Réessayer le déplacement</WorkspaceButton></div>:null}
     {children}
@@ -115,12 +116,12 @@ export function ApplicationDropColumn({ column, stage = column, busy, children }
   return <section ref={setNodeRef} className={`application-column is-${stage}${isOver ? " is-drop-over" : ""}${active && !busy && stage !== "other" ? " is-drop-ready" : ""}`} aria-labelledby={`application-column-${column}`}>{children}</section>;
 }
 
-export function DraggableApplicationCard({ job, busy, title, children, column }: { job: JobRecord; busy: boolean; title: ReactNode; children: ReactNode; column?: string }) {
+export function DraggableApplicationCard({ job, busy, title, children, column, menu }: { job: JobRecord; busy: boolean; title: ReactNode; children: ReactNode; column?: string; menu?: ReactNode }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useDraggable({ id: job.id, disabled: busy, data: { column: column ?? applicationColumn(job) } });
   return <article ref={setNodeRef} className={`application-card${isDragging ? " is-dragging" : ""}`} aria-busy={busy}
     onMouseDown={event => { if (!(event.target as Element).closest("input,textarea,select,[contenteditable=true],[role=combobox],[data-no-drag]")) listeners?.onMouseDown?.(event); }}
     onTouchStart={event => { if (!(event.target as Element).closest("input,textarea,select,[contenteditable=true],[role=combobox],[data-no-drag]")) listeners?.onTouchStart?.(event); }}>
-    <div className="application-card-heading">{title}<button ref={setActivatorNodeRef} {...attributes} onKeyDown={event => listeners?.onKeyDown?.(event)} id={`application-drag-${job.id}`} type="button" className="application-drag-handle" disabled={busy} aria-label={`Déplacer la candidature : ${job.title} · ${job.company || "Entreprise à confirmer"}`} aria-roledescription="carte déplaçable" title="Glisser vers une autre étape · Entrée puis flèches au clavier"><GripVertical size={17} aria-hidden/></button></div>
+    <div className="application-card-heading">{title}{menu}<button ref={setActivatorNodeRef} {...attributes} onKeyDown={event => listeners?.onKeyDown?.(event)} id={`application-drag-${job.id}`} type="button" className="application-drag-handle" disabled={busy} aria-label={`Déplacer la candidature : ${job.title} · ${job.company || "Entreprise à confirmer"}`} aria-roledescription="carte déplaçable" title="Glisser vers une autre étape · Entrée puis flèches au clavier"><GripVertical size={17} aria-hidden/></button></div>
     {children}
   </article>;
 }
