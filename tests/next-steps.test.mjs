@@ -34,8 +34,13 @@ test("P4 : aucune étape inventée lorsque tout est fait",()=>{
 });
 test("P4 : entretien prioritaire dans les 48 h, limites et calendrier réel",()=>{
  assert.equal(nextSteps({...base,jobs:[job("a",{status:"interview",interviews:[interview(48*3600000)]})]})[0].kind,"interview");
- for(const event of [interview(48*3600000+1),{...interview(),state:"cancelled"},interview(-3*3600000),{...interview(),startAt:"invalid"}])
+ for(const event of [interview(48*3600000+1),{...interview(),state:"cancelled"},{...interview(),startAt:"invalid"}])
   assert.deepEqual(nextSteps({...base,jobs:[job("a",{status:"interview",interviews:[event]})]}),[]);
+ // A past interview no longer needs preparing: it asks for its debrief.
+ const past=nextSteps({...base,jobs:[job("a",{company:"Atelier fictif Orion",status:"interview",interviews:[interview(-3*3600000)]})]});
+ assert.deepEqual(past.map(x=>[x.kind,x.label,x.action.type]),[["interview","Faire le bilan de votre entretien chez Atelier fictif Orion","interview"]]);
+ assert.deepEqual(nextSteps({...base,jobs:[job("a",{status:"interview",interviews:[{...interview(-3*3600000),state:"reviewed"}]})]}),[]);
+ assert.deepEqual(nextSteps({...base,jobs:[job("a",{status:"rejected",interviews:[interview(-3*3600000)]})]}),[]);
  assert.deepEqual(nextSteps({...base,jobs:[job("a",{status:"rejected",interviews:[interview()]})]}),[]);
 });
 test("P4 : relances confirmées et check-lists déjà remplies ne sont pas reproposées",()=>{

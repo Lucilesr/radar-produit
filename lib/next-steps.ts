@@ -2,6 +2,7 @@ import {dueFollowups} from "./application-followup";
 import {careCount} from "./application-care";
 import {hasApplication,reviewState} from "./opportunity-views";
 import {upcomingInterviews} from "./workspace-agenda";
+import {reviewDue,terminalStatuses} from "./application-workflow";
 import {type InterviewTheme,type ReachAction,type ReachSource} from "./radar-reach";
 import {validTimeZone,weekKey,type WeekPlan} from "./week-plan";
 import type {JobRecord} from "./types";
@@ -50,6 +51,10 @@ export function nextSteps(input:NextStepInput):NextStep[]{
   const when=new Intl.DateTimeFormat("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit",timeZone:zone}).format(new Date(imminent.event.startAt));
   add({id:"interview:"+imminent.event.id,kind:"interview",label:"Préparer votre entretien chez "+(imminent.job.company||imminent.job.title)+" · "+when,minutes:10,action:{type:"interview",jobId:imminent.job.id}});
  }
+ // An interview that has taken place asks for its debrief, like the card shows.
+ const review=jobs.filter(job=>!job.deletedAt&&!terminalStatuses.includes(job.status)).flatMap(job=>(job.interviews??[]).filter(event=>reviewDue(event,now)).map(event=>({job,event})))
+  .sort((a,b)=>b.event.endAt.localeCompare(a.event.endAt))[0];
+ if(review&&promptVisible(input.prompts,"review:"+review.event.id,now))add({id:"review:"+review.event.id,kind:"interview",label:"Faire le bilan de votre entretien chez "+(review.job.company||review.job.title),minutes:5,action:{type:"interview",jobId:review.job.id}});
  const due=dueFollowups(jobs,now,input.confirmedFollowups??[]);
  if(due.length)add({id:"followups",kind:"followups",label:"Relancer "+(due[0].job.company||due[0].job.title)+(due.length>1?` et ${due.length-1} autre${due.length>2?"s":""}`:""),minutes:3*due.length,action:{type:"followups",jobId:due[0].job.id,view:due[0].kind==="interview"?"interviews":"application"}});
  const remaining=Math.max(0,Math.min(20,Math.floor(input.lotRemaining)));

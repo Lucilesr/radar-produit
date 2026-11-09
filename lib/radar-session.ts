@@ -3,7 +3,7 @@ import type { JobRecord } from "./types";
 import type {NextStepKind} from "./next-steps";
 
 export type SessionStep = NextStepKind | "validation";
-export const sessionLabels: Record<SessionStep,string> = {interview:"Préparer l’entretien",triage:"Trier le lot",followups:"Relancer",plan:"Poser le plan",care:"Remplir une check-list d’envoi",setting:"Régler le radar",sources:"Visiter une source",validation:"Valider un bloc"};
+export const sessionLabels: Record<SessionStep,string> = {interview:"Entretiens",triage:"Trier le lot",followups:"Relancer",plan:"Poser le plan",care:"Remplir une check-list d’envoi",setting:"Régler le radar",sources:"Visiter une source",validation:"Valider un bloc"};
 export type SessionSource = {source:string;selected?:boolean;state?:string;lastVisitedAt?:string};
 export type SessionFact = {id:string;validation:string;parentId?:string|null};
 export type SessionSnapshot = {decisions:Record<string,string>;visits:Record<string,string>;approved:string[];care?:Record<string,number>};
