@@ -5,9 +5,6 @@
  .radar-app .radar-shell>.radar-sidebar{display:none!important}
  .radar-app .radar-shell>.radar-global-header{display:flex;align-items:center;gap:24px;min-height:74px;padding:14px 32px;background:var(--signal-paper);border-bottom:1px solid var(--signal-line);min-width:0}
  .radar-app .radar-shell .radar-global-header .radar-home-link{flex:none;padding:0;margin:0}
- .radar-global-header .workspace-brand>span{width:34px;height:34px}
- .radar-global-header .workspace-brand p{font:800 22px/1.2 var(--font-display);letter-spacing:-.01em;white-space:nowrap}
- .radar-global-header .workspace-brand p>span{display:none}
  .radar-app .radar-shell .radar-global-header .radar-nav{display:flex;position:static;flex:none;flex-direction:row;flex-wrap:nowrap;gap:4px;margin:0;padding:0;border:0;background:transparent;overflow:visible;box-shadow:none}
  .radar-app .radar-shell .radar-global-header .radar-nav button{min-height:44px;flex:none;display:flex;align-items:center;gap:8px;border-radius:999px;padding:10px 14px;font:500 14px/1.4 var(--font-sans);color:var(--signal-ink);white-space:nowrap;border:0;box-shadow:none}
  .radar-app .radar-shell .radar-global-header .radar-nav button>svg,.radar-app .radar-shell .radar-global-header .radar-nav button:before,.radar-global-header .radar-mobile-label{display:none}
@@ -32,7 +29,8 @@
 }
 @media(min-width:641px) and (max-width:760px){
  .radar-app .radar-shell>.radar-global-header{gap:6px;padding:10px 8px}
- .radar-global-header .workspace-brand>span{width:28px;height:28px}.radar-global-header .workspace-brand>div{display:none}.radar-global-header .nav-count{display:none}
+ .radar-global-header .workspace-brand{width:89px}
+ .radar-global-header .nav-count{display:none}
  .radar-app .radar-shell .radar-global-header .radar-nav{gap:0}.radar-app .radar-shell .radar-global-header .radar-nav button{font-size:12px;padding:8px 6px;gap:4px}
  .radar-app .radar-shell .radar-global-header .radar-search{width:92px;padding-inline:8px}.radar-global-header .radar-global-tools{gap:6px}
  .radar-app:has(.radar-page[data-offer-open=true]) .radar-shell>.radar-global-header{display:none}

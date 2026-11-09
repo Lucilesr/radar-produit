@@ -5,7 +5,7 @@
 .radar-app :is(.nav-count,.avatar,.radar-account-trigger,.workspace-badge,.experience-status,.application-care-badge,.application-sent-date,.application-age,.quiet-tag,.status-pill,.offer-source-badge,.search-role-list li){border-radius:var(--signal-radius-pill)}
 .radar-app :is(.application-column,.reserve,.reserve-group,.offer-signal,.experience-reference,.experience-company-context,.search-criteria-details.search-criteria-edit-table,.source-research>.radar-collapsible-content){border-radius:var(--signal-radius-card)}
 .radar-app :is(.application-card h3 button,.radar-search,.library-section-toggle,.library-experience-pencil,.board-column-edit,.application-display-toggle button,.search-criteria-add-menu button,.search-place-toggle button,.search-pay-input,.search-contract-options>label,.search-location-entry [data-slot=input-group],.search-location-entry [data-slot=input-group-button],.role-suggestion button,.signal-selected-button){border-radius:var(--signal-radius-control)}
-.radar-app :is(.role-suggestion,.search-place-toggle,.search-place-remove,.workspace-brand>span){border-radius:var(--signal-radius-pill)}
+.radar-app :is(.role-suggestion,.search-place-toggle,.search-place-remove){border-radius:var(--signal-radius-pill)}
 .radar-app :is(.radar-search,.search-pay-input){background:var(--signal-paper)}
 .radar-app .radar-search input{background:transparent}
 .radar-app .avatar{background:var(--signal-mist);color:var(--signal-petrol-ink);border-color:var(--signal-line)}

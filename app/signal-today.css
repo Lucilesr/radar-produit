@@ -1,4 +1,4 @@
-/* Today — approved compact petrol priority, with the shared Orbite mark. */
+/* Today — approved compact petrol priority. */
 .today-layout { gap:28px; }
 .radar-app .today-next { margin-top:28px; padding:24px; border:1px solid var(--border); border-radius:5px; background:var(--card); }
 .today-next>.signal-panel-header { margin-bottom:4px; }
