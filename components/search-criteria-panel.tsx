@@ -164,9 +164,8 @@ export function SearchCriteriaPanel({ overview=false,profile, jobs, onSave, onOp
     </header>
 
     {view === "summary"&&overview&&!preferences.roles.length?<p className="signal-help">Choisissez votre poste pour commencer.</p>:null}
-    {view === "summary"&&overview&&preferences.roles.length?<dl className="mon-radar-criteria-lines">{criteriaGroups(preferences).flatMap(group=>group.rows).filter(row=>!['searchTracks','matchScore'].includes(row.id)).map(row=><div key={row.key??row.id}><dt>{row.label}</dt><dd>{row.id==='roles'?row.values.map(value=><span className="quiet-tag" key={value}>{value}</span>):row.values.join(' · ')}</dd></div>)}</dl>:null}
     {view === "summary" ? <ul className="search-criteria-tokens" aria-label="Critères enregistrés">
-      {criteriaTokens(preferences).filter(()=>!overview).filter(token=>!["searchTracks","matchScore"].includes(token.id)).map(token => {
+      {criteriaTokens(preferences).filter(()=>!overview||preferences.roles.length>0).filter(token=>!["searchTracks","matchScore"].includes(token.id)).map(token => {
         const label = `${token.label} : ${token.fullValue}. Modifier${modified.has(token.id)?". Modifié lors de cette visite":""}`;
         const content = <><span>{token.label}</span><strong>{token.value}</strong>{modified.has(token.id)?<span className="search-criteria-changed-dot" aria-hidden="true"/>:null}</>;
         if (token.target === "jobgether") return <li key={token.key}><button type="button" className="search-criteria-token" data-tone={token.tone} title={token.fullValue} aria-label={label} onClick={onOpenJobgether}>{content}</button></li>;
