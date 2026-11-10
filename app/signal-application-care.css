@@ -1,1 +1,4 @@
 .application-care{min-width:0}.application-care fieldset{border:0;padding:0;margin:20px 0;display:grid;gap:16px;min-width:0}.application-care-check{display:flex;align-items:flex-start;gap:14px;cursor:pointer;min-width:0}.application-care-check>span{min-width:0;overflow-wrap:anywhere}.application-care-check strong{display:block;font-size:14px;font-weight:600}.application-care-check small{display:block;color:var(--signal-muted);font-size:13px;line-height:1.6;margin-top:4px}.application-care fieldset:disabled label{cursor:default;opacity:.65}.application-care-summary{font-weight:600;margin:14px 0}
+.signal-progress.is-segmented.application-card-care{height:6px}
+.signal-progress.is-segmented.application-card-care>span{background:var(--signal-mist)}
+.signal-progress.is-segmented.application-card-care>span>span{background:var(--signal-success)}
