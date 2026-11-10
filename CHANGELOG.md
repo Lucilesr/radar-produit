@@ -1,3 +1,9 @@
+## 10 novembre 2026 — Lecture des offres
+
+- Les onglets « L’offre » et « Préparer / brief » se trouvent sous les quatre informations clés. Le crayon de modification est à côté de « L’annonce ».
+- Les actions restent dans une bande fixe pendant la lecture. Dans la corbeille, les actions de tri et de déclaration sont visibles et s’activent après restauration.
+- Le titre et le conseil d’une fiche mystère sont réunis sur une ligne lorsque la largeur le permet.
+
 ## 10 novembre 2026 — Accès à Mes leçons
 
 - Le lien « Mes leçons » figure dans l’en-tête de Candidatures, à côté de l’ajout sur ordinateur et mobile.

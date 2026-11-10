@@ -18,6 +18,7 @@ import { useWorkspaceFeedback } from "@/components/workspace-feedback";
 import { NoteEditor, NoteText } from "@/components/note-editor";
 import { WorkspaceButton, WorkspaceFormError, WorkspaceFormSection, WorkspaceSaveActions, useWorkspaceEditorFocus } from "@/components/workspace-form";
 import { useEffect, useRef, useState } from "react";
+import { Tabs } from "radix-ui";
 import { CalendarDays, CalendarPlus, CheckCircle2, CircleHelp, Copy, ExternalLink, LoaderCircle, Pencil, Undo2 } from "lucide-react";
 import { ChoiceSelect, type ChoiceOption } from "@/components/choice-select";
 import { SourceLogo } from "@/components/source-logo";
@@ -61,14 +62,13 @@ export function OfferSourceBadge({ job }: { job: JobRecord }) {
 }
 function ConditionRow({label,value}:{label:string;value:string}){return <div className="review-condition-row"><dt>{label}</dt><dd>{value}</dd></div>;}
 
-export function ApplicationTrackingAction({job,onStatus,onOpenApplication}:{job:JobRecord;onStatus:(id:string,status:JobStatus)=>Promise<boolean>;onOpenApplication:()=>void}){
+export function ApplicationTrackingAction({job,onStatus,onOpenApplication,disabled=false}:{job:JobRecord;disabled?:boolean;onStatus:(id:string,status:JobStatus)=>Promise<boolean>;onOpenApplication:()=>void}){
   const [starting,setStarting]=useState(false);
-  return <button type="button" className="secondary-button reading-application-action" disabled={starting} aria-busy={starting} onClick={async()=>{if(hasApplication(job)){onOpenApplication();return;}setStarting(true);try{await onStatus(job.id,"applied");}finally{setStarting(false);}}}>{starting?<LoaderCircle size={14} className="animate-spin" aria-hidden/>:null}{hasApplication(job)?"Voir dans Candidatures":"J’ai postulé"}</button>;
+  return <button type="button" className="secondary-button reading-application-action" disabled={starting||disabled} aria-busy={starting} onClick={async()=>{if(hasApplication(job)){onOpenApplication();return;}setStarting(true);try{await onStatus(job.id,"applied");}finally{setStarting(false);}}}>{starting?<LoaderCircle size={14} className="animate-spin" aria-hidden/>:null}{hasApplication(job)?"Voir dans Candidatures":"J’ai postulé"}</button>;
 }
 
-export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onCancelApplication, onViewChange, showApplicationAction = true, showAnnouncement = true, pasteRequest, onEditingChange,compactApplication=false,startFollowupEdit=false }: {
+export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onCancelApplication, onViewChange, showApplicationAction = true, showAnnouncement = true, onEditingChange,compactApplication=false,startFollowupEdit=false }: {
   compactApplication?:boolean;startFollowupEdit?:boolean;
-  pasteRequest?: {jobId:string;revision:number};
   onEditingChange?: (editing:boolean)=>void;
   showApplicationAction?: boolean;
   showAnnouncement?: boolean;
@@ -86,7 +86,6 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   const setView = (next: WorkspaceView) => { updateView(next); onViewChange?.(next); };
   useEffect(()=>updateView(initialView),[initialView]); const [editing, setEditing] = useState(false);
   const [revealed,setRevealed]=useState<JobRecord|null>(null);
-  useEffect(()=>{if(pasteRequest?.jobId===job.id)setEditing(true);},[pasteRequest,job.id]);
   useEffect(()=>{onEditingChange?.(editing);},[editing,onEditingChange]);
   const noteSave=useAutosave(`note:${job.id}`,job.candidateNote??"",2000);
   const note=noteSave.value,setNote=noteSave.setValue;
@@ -99,16 +98,26 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   const tabs = workspaceSections(context);
   const activeView = context === "opportunity" && (view === "application" || view === "interviews") ? "offer" : view;
   useEffect(() => { if (activeView !== "application" || job.status !== "offer") return; const frame = requestAnimationFrame(() => { noteEditorRef.current?.focus({preventScroll:true}); noteEditorRef.current?.scrollIntoView({block:"center"}); }); return () => cancelAnimationFrame(frame); }, [activeView,job.id,job.status]);
-  const navigation = <div className={context === "opportunity" ? "signal-offer-nav" : "signal-application-nav"}>
-      <nav aria-label={context === "opportunity" ? "Sections de l’offre" : "Sections de la candidature"} className="signal-workspace-tabs">{tabs.map(id => <button type="button" key={id} onClick={() => setView(id)} aria-current={activeView === id ? "page" : undefined}>{labels[id]}</button>)}</nav>
-      {context === "opportunity" && !job.deletedAt && showApplicationAction ? <ApplicationTrackingAction job={job} onStatus={onStatus} onOpenApplication={onOpenApplication} /> : null}
-    </div>;
-  return <div className={"signal-offer-workspace space-y-5"+(context==="opportunity"?" aligned-offer-workspace":"")}>
-    {showAnnouncement ? <div className="signal-external-link">{sourceUrl || applyUrl ? <a href={sourceUrl || applyUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : <span className="offer-link-missing">Lien de l’annonce à renseigner</span>}</div> : null}
-    {context === "application" ? navigation : null}
-    {context === "application" ? <ApplicationTagBadges jobId={job.id}/> : null}
-    {context==="opportunity"&&activeView==="offer"&&!editing?<AlignedOfferRead job={job} onEdit={()=>setEditing(true)} editRef={editTrigger}/>:null}
-    {activeView === "offer" && !editing && context!=="opportunity" ? <>
+  const announcement = showAnnouncement ? <div className="signal-external-link">{sourceUrl || applyUrl ? <a href={sourceUrl || applyUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : <span className="offer-link-missing">Lien de l’annonce à renseigner</span>}</div> : null;
+  const editor = <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); if (mystery && !isMysteryOffer(updated)) { if(context==="opportunity"&&isGoodFind(updated))setRevealed(updated); else notify({ message: revealMessage(updated) }); } }} onCancel={finishEditing} />;
+  if(context==="opportunity")return <div className="signal-offer-workspace aligned-offer-workspace">
+    {announcement}
+    <AlignedOfferFacts job={job}/>
+    <Tabs.Root className="aligned-offer-tabs" value={activeView} onValueChange={id=>setView(id as WorkspaceView)} activationMode="manual">
+      <div className="signal-offer-nav">
+        <Tabs.List aria-label="Sections de l’offre" className="signal-workspace-tabs">{tabs.map(id=><Tabs.Trigger value={id} key={id} disabled={editing&&id!=="offer"}>{labels[id]}</Tabs.Trigger>)}</Tabs.List>
+        {!job.deletedAt&&showApplicationAction?<ApplicationTrackingAction job={job} onStatus={onStatus} onOpenApplication={onOpenApplication}/>:null}
+      </div>
+      <Tabs.Content value="offer">{editing?editor:<AlignedOfferRead job={job} onEdit={()=>setEditing(true)} editRef={editTrigger}/>}</Tabs.Content>
+      <Tabs.Content value="brief" className="space-y-5"><ApplicationCare key={`care:${job.id}`} job={job}/><PrivateBrief key={job.id} jobId={job.id}/></Tabs.Content>
+    </Tabs.Root>
+    <SignalMoment className="aligned-offer-moment" open={!!revealed} onClose={()=>setRevealed(null)} title="Bonne pioche" description={revealed?`Cette offre colle à vos critères · ${revealed.fit} sur 100`:undefined} actionLabel="Voir la fiche"/>
+  </div>;
+  return <div className="signal-offer-workspace space-y-5">
+    {announcement}
+    <div className="signal-application-nav"><nav aria-label="Sections de la candidature" className="signal-workspace-tabs">{tabs.map(id=><button type="button" key={id} onClick={()=>setView(id)} aria-current={activeView===id?"page":undefined}>{labels[id]}</button>)}</nav></div>
+    <ApplicationTagBadges jobId={job.id}/>
+    {activeView==="offer"&&!editing?<>
       <section aria-label="Informations clés de l’offre" className="review-conditions">
         <h3>Conditions de l’offre</h3>
         <dl className="review-criteria-grid">
@@ -136,11 +145,11 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
       {!job.publishedAt ? <div className="inline-help"><span>Date de publication non précisée</span><HelpTooltip label="Date de publication">Date de mise en ligne de l’annonce.</HelpTooltip></div> : null}
       </section>
     </> : null}
-    {activeView === "offer" && editing ? <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); if (mystery && !isMysteryOffer(updated)) { if(context==="opportunity"&&isGoodFind(updated))setRevealed(updated); else notify({ message: revealMessage(updated) }); } }} onCancel={finishEditing} /> : null}
+    {activeView==="offer"&&editing?editor:null}
     {compactApplication&&(activeView==="application"||activeView==="brief")?<section className="application-mobile-dossier-next" aria-label="Prochaine action"><h3>Prochaine action</h3><p>{job.applicationFollowup?.eligible&&job.applicationFollowup.dueAt&&!job.applicationFollowup.doneAt&&Date.parse(job.applicationFollowup.dueAt)<=dossierNow?`Relancer ${job.company||job.title}`:job.status==="interview"?`Préparer le prochain échange avec ${job.company||job.title}`:job.status==="rejected"?"Un bilan, si cela vous aide":"Préparer la suite de cette candidature"}</p><WorkspaceButton variant="quiet" onClick={()=>{const followup=document.getElementById(`application-followup-${job.id}`);const check=document.querySelector<HTMLButtonElement>('.application-care button[role=checkbox][data-state=unchecked]');(job.applicationFollowup?.eligible?followup:check??document.querySelector<HTMLElement>('.application-care'))?.focus();}}>Voir la prochaine action</WorkspaceButton></section>:null}
-    {activeView==="brief"||context==="application"&&activeView==="application"?<ApplicationCare key={`care:${job.id}`} job={job}/>:null}
+    {activeView==="brief"||activeView==="application"?<ApplicationCare key={`care:${job.id}`} job={job}/>:null}
     {compactApplication&&activeView==="application"?<WorkspaceFormSection className="application-mobile-dossier-dates" title="Dates"><p>{job.appliedAt?`Envoyée le ${formatDate(job.appliedAt)}`:"Envoi non déclaré"}</p>{(job.interviews??[]).filter(event=>event.state==="planned"&&Date.parse(event.startAt)>=dossierNow).toSorted((a,b)=>Date.parse(a.startAt)-Date.parse(b.startAt)).slice(0,1).map(event=><p key={event.id}>Prochain entretien : {formatDate(event.startAt,event.timeZone,true)}</p>)}</WorkspaceFormSection>:null}
-    {context === "application" && activeView === "application" ? <div className="signal-application-form">
+    {activeView === "application" ? <div className="signal-application-form">
       <ApplicationLessonCard key={`lesson:${job.id}`} job={job}/>
       <ApplicationFollowupCard key={`followup:${job.id}:${job.appliedAt??"unknown"}`} job={job} onInterviews={()=>setView("interviews")} initialEditor={followupIntent} onEditorClosed={()=>setFollowupIntent(false)}/>
       <WorkspaceFormSection title="Suivi de candidature" actions={<WorkspaceButton disabled={statusBusy} onClick={() => setView("interviews")}><CalendarDays size={15} aria-hidden />Voir les entretiens</WorkspaceButton>}>
@@ -151,29 +160,37 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
         <AutosaveStatus save={noteSave}/><NoteHistory jobId={job.id}/>
       </WorkspaceFormSection>
     </div> : null}
-    {context==="application"&&activeView==="interviews"&&job.status==="rejected"?<ApplicationLessonCard key={`lesson-interviews:${job.id}`} job={job}/>:null}
-    {context === "application" && activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
+    {activeView==="interviews"&&job.status==="rejected"?<ApplicationLessonCard key={`lesson-interviews:${job.id}`} job={job}/>:null}
+    {activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
     {activeView === "brief" ? <PrivateBrief key={job.id} jobId={job.id} /> : null}
-    {context === "opportunity" ? navigation : null}
-    <SignalMoment className="aligned-offer-moment" open={!!revealed} onClose={()=>setRevealed(null)} title="Bonne pioche" description={revealed?`Cette offre colle à vos critères · ${revealed.fit} sur 100`:undefined} actionLabel="Voir la fiche"/>
   </div>;
 }
-function AlignedOfferRead({job,onEdit,editRef}:{job:JobRecord;onEdit:()=>void;editRef:React.RefObject<HTMLButtonElement|null>}) {
-  const mystery=isMysteryOffer(job),level=detectLevel(job.title,job.description??"");
+function AlignedOfferFacts({job}:{job:JobRecord}) {
+  const level=detectLevel(job.title,job.description??"");
   const pay=job.dailyRate!=null||job.dailyRateMin!=null||job.dailyRateMax!=null
     ?formatPayRangeShort(job.dailyRateMin??job.dailyRate,job.dailyRateMax??job.dailyRate,"daily")
     :formatPayRangeShort(job.salaryMin??job.annualSalary,job.salaryMax??job.annualSalary,"annual");
-  const url=job.sourceUrl||job.applicationUrl;
-  return <div className="aligned-offer-read">
-    {mystery?<section className="offer-mystery" aria-labelledby={`mystery-${job.id}`}><h3 id={`mystery-${job.id}`}>Fiche mystère</h3><p>Complétez-la pour révéler son adéquation.</p></section>:null}
-    <dl className="aligned-offer-facts" aria-label="Informations clés de l’offre">
+  return <dl className="aligned-offer-facts" aria-label="Informations clés de l’offre">
       <ConditionRow label="Rémunération" value={pay??(job.dailyRate!=null||job.dailyRateMin!=null||job.dailyRateMax!=null?formatPay(job.dailyRateMin,job.dailyRateMax,job.dailyRate,"HT/jour"):formatPay(job.salaryMin,job.salaryMax,job.annualSalary,"brut/an"))??"Non communiquée"}/>
       <ConditionRow label="Présence" value={{full_remote:"Full remote",exceptional:"Présence ponctuelle",hybrid:"Hybride",onsite:"Sur site",unknown:"À confirmer"}[job.remoteMode]}/>
       <ConditionRow label="Contrat" value={{cdi:"CDI",cdd:"CDD",freelance:"Freelance",portage:"Portage salarial",part_time:"Temps partagé",other:"À confirmer",unknown:"À confirmer"}[job.contractType]??"À confirmer"}/>
       <ConditionRow label="Niveau" value={level?levelLabels[level.level]:"À confirmer"}/>
-    </dl>
+    </dl>;
+}
+function AlignedOfferRead({job,onEdit,editRef}:{job:JobRecord;onEdit:()=>void;editRef:React.RefObject<HTMLButtonElement|null>}) {
+  const mystery=isMysteryOffer(job),url=job.sourceUrl||job.applicationUrl;
+  return <div className="aligned-offer-read">
+    {mystery?<p className="offer-mystery aligned-offer-mystery"><strong>Fiche mystère</strong> · Complétez-la pour révéler son adéquation.</p>:null}
     {!mystery?<section className="aligned-offer-reasons"><h3>Pourquoi elle remonte</h3><ul>{job.reasons.slice(0,4).map((reason,i)=><li key={i}><CheckCircle2 size={16} aria-hidden/>{reason}</li>)}</ul>{job.flags.length?<ul className="aligned-offer-warnings" aria-label="Points à vérifier">{job.flags.map((flag,i)=><li key={i}><CircleHelp size={16} aria-hidden/>{flag}</li>)}</ul>:null}</section>:null}
-    <section className="aligned-offer-description"><h3>L’annonce</h3><p className="aligned-offer-preview">{announcementPreview(job.description)}</p>{job.description?<details><summary>Lire toute l’annonce</summary><p className="offer-description-read">{job.description}</p></details>:null}<div className="aligned-offer-links">{url?<a className="signal-quiet-button" href={url} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden/>Ouvrir l’annonce</a>:null}{!job.deletedAt?<button ref={editRef} type="button" className="signal-quiet-button" onClick={onEdit}><Pencil size={14} aria-hidden/>{mystery?"Compléter la fiche":"Compléter / corriger"}</button>:null}</div></section>
+    <section className="aligned-offer-description">
+      <div className="aligned-offer-description-heading">
+        <h3>L’annonce</h3>
+        {!job.deletedAt?<button ref={editRef} type="button" className="signal-quiet-button" onClick={onEdit}><Pencil size={14} aria-hidden/>{mystery||!job.description?.trim()?"Compléter l’annonce":"Modifier l’annonce"}</button>:null}
+      </div>
+      <p className="aligned-offer-preview">{announcementPreview(job.description)}</p>
+      {job.description?<details><summary>Lire toute l’annonce</summary><p className="offer-description-read">{job.description}</p></details>:null}
+      {url?<div className="aligned-offer-links"><a className="signal-quiet-button" href={url} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden/>Ouvrir l’annonce</a></div>:null}
+    </section>
     <details className="aligned-offer-extra"><summary>Autres conditions et dates</summary><dl className="review-criteria-grid"><ConditionRow label="Lieu annoncé" value={job.announcedLocation||"À confirmer"}/><ConditionRow label="Présence sur site" value={[job.onsiteDaysPerWeek!=null?`${job.onsiteDaysPerWeek} j/semaine`:"",job.onsiteDaysPerMonth!=null?`${job.onsiteDaysPerMonth} j/mois`:"",job.onsiteCadence].filter(Boolean).join(" · ")||"À confirmer"}/><ConditionRow label="Pays autorisé" value={countryLabel(job.remoteCountry)}/><ConditionRow label="Langue" value={{fr:"Français",en:"Anglais",professional_en:"Anglais professionnel",advanced_en:"Anglais avancé",unknown:"À confirmer"}[job.language]}/><ConditionRow label="Publication" value={formatDate(job.publishedAt)}/><ConditionRow label="Ajout au Radar" value={formatDate(job.createdAt)}/>{job.notificationAt?<ConditionRow label="Notification source" value={formatDate(job.notificationAt)}/>:null}</dl></details>
   </div>;
 }
