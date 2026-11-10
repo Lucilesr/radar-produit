@@ -493,7 +493,7 @@ test("Score v2 S3 : le tri classe par adéquation, la fraîcheur ne fait que dé
   assert.deepEqual(ranked, ["fraiche-forte", "ancienne-forte", "fraiche-moyenne"]);
 });
 
-const { isMysteryOffer, pinMysteryOffers, revealMessage, isGoodFind } = await import(moduleUrl("fit", { "./seniority": moduleUrl("seniority"), "./search-preferences": preferences }));
+const { isMysteryOffer, pinMysteryOffers, putMysteryOffersLast, revealMessage, isGoodFind } = await import(moduleUrl("fit", { "./seniority": moduleUrl("seniority"), "./search-preferences": preferences }));
 
 test("Score v2 S4 : une fiche mystère vise le poste mais reste trop courte pour être jugée", () => {
   const summary = v2({ title: "Product Owner", remoteMode: "unknown", language: "unknown", description: "Remote role, apply on the site.", contentCoverage: "summary" });
@@ -510,6 +510,9 @@ test("Score v2 S4 : cinq fiches mystère au plus passent en tête, le reste gard
   const list = [plain("a"), mystery("m1"), plain("b"), mystery("m2"), mystery("m3"), mystery("m4"), mystery("m5"), mystery("m6")];
   assert.deepEqual(pinMysteryOffers(list).map(job => job.id), ["m1", "m2", "m3", "m4", "m5", "a", "b", "m6"]);
   assert.deepEqual(pinMysteryOffers([plain("a"), plain("b")]).map(job => job.id), ["a", "b"]);
+  assert.deepEqual(putMysteryOffersLast(list).map(job => job.id), ["a", "b", "m1", "m2", "m3", "m4", "m5", "m6"]);
+  assert.deepEqual(putMysteryOffersLast([...list].reverse()).map(job => job.id), ["b", "a", "m6", "m5", "m4", "m3", "m2", "m1"]);
+  assert.equal(list[1].id, "m1");
 });
 
 test("Score v2 S4 : message de révélation", () => {

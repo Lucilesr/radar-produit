@@ -12,7 +12,7 @@ import { groupReserve, neighboringRole, type ReserveGroupId } from "@/lib/reserv
 import { formatDate } from "@/lib/application-workflow";
 import { formatEuro } from "@/lib/matching";
 import { formatPayRangeShort } from "@/lib/pay-range";
-import { isMysteryOffer, pinMysteryOffers } from "@/lib/fit";
+import { isMysteryOffer, pinMysteryOffers, putMysteryOffersLast } from "@/lib/fit";
 import { lotHeadline, type DailyLot } from "@/lib/daily-lot";
 import { SignalProgress } from "@/components/signal/signal-progress";
 import { FridayRescue } from "@/components/friday-rescue";
@@ -47,7 +47,8 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
   const groups=inReserve?groupReserve(reserveJobs,groupsNow):[];
   const shownGroup=groups.find(group=>group.id===reserveGroupId);
   const listed=inReserve?(shownGroup?.jobs??reserveJobs):jobs;
-  const orderedJobs=inLot?pinMysteryOffers(lot!.remaining):filter==="to_review"?pinMysteryOffers(sortOpportunitiesByDate(listed,filter,dateOrder)):sortOpportunitiesByDate(listed,filter,dateOrder);
+  const sortedJobs=inLot?lot!.remaining:sortOpportunitiesByDate(listed,filter,dateOrder);
+  const orderedJobs=filter==="selected"?putMysteryOffersLast(sortedJobs):filter==="to_review"?pinMysteryOffers(sortedJobs):sortedJobs;
   const [retained,setRetained]=useState<{job:JobRecord;filter:OpportunityView;query:string;index:number}|null>(null);
   const kept=retained?.filter===filter&&retained.query===query?retained:null;
   const retainedJob=kept?(orderedJobs.find(job=>job.id===kept.job.id)??(currentJob?.id===kept.job.id?currentJob:kept.job)):undefined;

@@ -1,3 +1,7 @@
+## 10 novembre 2026 — Offres mystères dans Ma sélection
+
+- Les fiches mystères passent en fin de liste dans « Ma sélection ». Les offres gardent le tri par date dans chaque groupe.
+
 ## 10 novembre 2026 — Candidatures en largeur réduite
 
 - La vue Liste garde des cartes et menus correctement espacés à toutes les largeurs où elle s’affiche. Les cartes « À envoyer » affichent le poste et l’entreprise sur deux lignes, avec un seul indicateur de préparation.
