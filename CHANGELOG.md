@@ -1,3 +1,7 @@
+## 10 novembre 2026 — Accès à Mes leçons
+
+- Le lien « Mes leçons » figure dans l’en-tête de Candidatures, à côté de l’ajout sur ordinateur et mobile.
+
 ## 10 novembre 2026 — Candidatures après l’envoi
 
 - La préparation se fait depuis Ma sélection. « J’ai postulé » fait entrer la candidature dans la colonne Envoyées ; Candidatures se concentre sur le suivi après envoi.
