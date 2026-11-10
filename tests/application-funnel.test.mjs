@@ -78,6 +78,32 @@ test("L4 démo : dix envois, quatre entretiens, une offre, jamais de réinjectio
  }finally{f.sqlite.close();}
 });
 
+test("L’Entonnoir compte les envois datés déjà en entretien et évite les doublons du journal",async()=>{
+ const f=fixture(),store=await import(moduleUrl("lib/application-funnel-store.ts"));
+ try{
+  const saveJob=f.sqlite.prepare("INSERT INTO jobs(id,user_id,fingerprint,title,status,applied_at) VALUES(?,?,?,?,?,?)");
+  const saveEvent=f.sqlite.prepare("INSERT INTO activity_events(id,user_id,action,object_type,object_id,created_at,data) VALUES(?,?,?,?,?,?,?)");
+  const record=event=>saveEvent.run(event.id,"alice",event.action,event.objectType,event.objectId,event.createdAt,JSON.stringify(event.data));
+  for(let i=0;i<4;i++){
+   const event=send("sent-"+i,10+i);
+   saveJob.run(event.objectId,"alice",event.objectId,"Candidature fictive","applied",event.createdAt);
+   record(event);
+  }
+  saveJob.run("legacy","alice","legacy","Entretien fictif","interview","2026-10-10 12:00:00");
+  saveJob.run("undated","alice","undated","Envoi non daté","applied",null);
+  saveJob.run("old","alice","old","Envoi hors période","applied","2026-06-01T12:00:00Z");
+  saveJob.run("foreign","bob","foreign","Autre compte","applied","2026-11-01T12:00:00Z");
+  const value=await store.readApplicationFunnel("alice",new Date(now));
+  assert.equal(value.applications,5);
+  assert.equal(value.interviews,1);
+  assert.equal(value.visible,true);
+  assert.equal(value.missing,0);
+  record(interview("legacy-meeting","legacy",2));
+  assert.equal((await store.readApplicationFunnel("alice",new Date(now))).interviews,1);
+  assert.equal((await store.readApplicationFunnel("bob",new Date(now))).applications,1);
+ }finally{f.sqlite.close();}
+});
+
 
 test("L4 : une offre suivie d’un premier entretien n’invente pas une conversion dans le passé",()=>{
  const value=rules.applicationFunnel([send("job"),e("application_stage_changed","job",15,{to:"offer"}),interview("meeting","job",10)],now);assert.equal(value.interviews,1);assert.equal(value.offers,1);assert.equal(value.offersWithoutInterview,1);assert.equal(value.interviewOfferRate,0);

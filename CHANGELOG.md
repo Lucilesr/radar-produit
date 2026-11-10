@@ -2,6 +2,11 @@
 
 - Le lien « Mes leçons » figure dans l’en-tête de Candidatures, à côté de l’ajout sur ordinateur et mobile.
 
+## 10 novembre 2026 — Candidatures après l’envoi
+
+- La préparation se fait depuis Ma sélection. « J’ai postulé » fait entrer la candidature dans la colonne Envoyées ; Candidatures se concentre sur le suivi après envoi.
+- L’Entonnoir compte aussi les envois datés sans entrée dans le journal, y compris si la candidature est déjà passée en entretien.
+
 ## 10 novembre 2026 — Accès aux archives et à la corbeille
 
 - Un même onglet donne accès à deux listes distinctes, Archives et Corbeille. Le lot du jour perd la mention « Classées par adéquation » et le lien Archives isolé.
