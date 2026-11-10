@@ -1,3 +1,4 @@
+import { FUNNEL_DAYS } from "./application-funnel";
 import {demoScanSources,demoScanPaused} from "./demo-scan-plan";
 import {demoMonthPlans,seedMonthStoryFacts} from "./demo-month-story";
 import {demoWeekSeries} from "./demo-week-series";
@@ -63,13 +64,14 @@ export async function ensureRecruiterDemo(userId: string, options: DemoOptions|b
   const rows = examples.map((example, index) => {
     const input = normalizeJobInput({ ...example, language: "fr", contentCoverage: "summary" });
     const assessment = assessJob(input, emptyProfile ? undefined : demoSearchPreferences);
+    const sentDaysAgo = (index === 5 ? 5 : index === 6 ? 9 : 12) + (funnelDemo ? FUNNEL_DAYS : 0);
     return {
       id: crypto.randomUUID(), userId, fingerprint: createFingerprint(input), ...input,
       status: example.status as JobStatus, reviewState: sessionEmpty?"selected":example.reviewState,
-      appliedAt: index >= 5 ? daysAgo(index === 5 ? 5 : index === 6 ? 9 : 12) : null,
+      appliedAt: index >= 5 ? daysAgo(sentDaysAgo) : null,
       matchScore: assessment.score, matchTier: assessment.tier,
       reasons: JSON.stringify(assessment.reasons), flags: JSON.stringify(assessment.flags),
-      createdAt: daysAgo(9 - index), updatedAt: nowIso,
+      createdAt: daysAgo(funnelDemo && index >= 5 ? sentDaysAgo : 9 - index), updatedAt: nowIso,
     };
   });
   if (!emptyProfile) await db.insert(profiles).values({ userId, data: JSON.stringify(demoProfile), updatedAt: nowIso }).onConflictDoNothing();

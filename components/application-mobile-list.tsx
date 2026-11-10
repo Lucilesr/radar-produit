@@ -10,19 +10,18 @@ import {useDisplayTimeZone} from "@/components/use-display-time-zone";
 import {mobileApplicationGroups,mobileCardWindow} from "@/lib/application-mobile-presentation";
 import {applicationInterviewStep,applicationMove} from "@/lib/application-board";
 import {formatDate,statusLabels,terminalStatuses} from "@/lib/application-workflow";
-import {careChecks,careCount} from "@/lib/application-care";
 import {personalColumn,type PersonalBoard,type PersonalColumn} from "@/lib/personal-board";
 import type {WorkspaceView} from "@/components/offer-workspace";
 import type {JobRecord,JobStatus} from "@/lib/types";
 
 type Move={job:JobRecord;target:string;reason?:JobStatus};
-export function ApplicationMobileList({jobs,preparedJobs=[],board,busy,now,onStatus,onOpen,onReport,onColumn}:{jobs:JobRecord[];preparedJobs?:JobRecord[];board:PersonalBoard;busy:string|null;now:number;onStatus:(job:JobRecord,status:JobStatus,columnId?:string)=>Promise<boolean>;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onReport?:(job:JobRecord)=>void;onColumn:(column?:PersonalColumn)=>void}){
+export function ApplicationMobileList({jobs,board,busy,now,onStatus,onOpen,onReport,onColumn}:{jobs:JobRecord[];board:PersonalBoard;busy:string|null;now:number;onStatus:(job:JobRecord,status:JobStatus,columnId?:string)=>Promise<boolean>;onOpen:(job:JobRecord,view?:WorkspaceView)=>void;onReport?:(job:JobRecord)=>void;onColumn:(column?:PersonalColumn)=>void}){
  const zone=useDisplayTimeZone(),id=useId(),tags=useApplicationTags();
  const [closing,setClosing]=useState<{job:JobRecord;target:string}|null>(null),[reason,setReason]=useState<"rejected"|"withdrawn"|"">("");
  const [message,setMessage]=useState(""),[error,setError]=useState(""),[filter,setFilter]=useState(""),[expanded,setExpanded]=useState<Record<string,boolean>>({}),[tools,setTools]=useState(false);
  const lock=useRef(false),lastMove=useRef<Move|null>(null),lastJob=useRef<string|null>(null),pendingFocus=useRef(false),errorFocus=useRef(false),errorRegion=useRef<HTMLDivElement>(null),toolsTrigger=useRef<HTMLElement|null>(null);
  const selectedTag=tags.tags.find(tag=>tag.id===filter),matches=(job:JobRecord)=>!selectedTag||selectedTag.jobIds.includes(job.id);
- const visible=jobs.filter(matches),prepared=preparedJobs.filter(matches),groups=mobileApplicationGroups(visible,board.columns,now),columns=board.columns;
+ const visible=jobs.filter(matches),groups=mobileApplicationGroups(visible,board.columns,now),columns=board.columns;
  function returnFocus(attempt=0){requestAnimationFrame(()=>{const trigger=lastJob.current?document.getElementById(`application-mobile-${lastJob.current}`):null;if((!trigger?.getClientRects().length||trigger.hasAttribute("disabled"))&&attempt<3){returnFocus(attempt+1);return;}const key=groups.due.some(job=>job.id===lastJob.current)?'due':[...groups.active,...groups.closed].find(item=>item.jobs.some(job=>job.id===lastJob.current))?.column.id;const group=trigger?.closest('.application-mobile-group')?.querySelector<HTMLButtonElement>('h2 button')??(key?document.getElementById(`application-mobile-group-${key}`):null);(trigger?.getClientRects().length&&!trigger.hasAttribute('disabled')?trigger:group??document.getElementById('application-closed-summary')??document.getElementById('workspace-title'))?.focus();});}
  useLayoutEffect(()=>{if(!busy&&pendingFocus.current){pendingFocus.current=false;if(errorFocus.current){errorFocus.current=false;errorRegion.current?.focus();}else returnFocus();}},[busy,jobs,error]);
  async function move(job:JobRecord,target:string,closure?:JobStatus){
@@ -36,10 +35,9 @@ export function ApplicationMobileList({jobs,preparedJobs=[],board,busy,now,onSta
   finally{lock.current=false;}
  }
  function more(key:string,total:number){return total>2?<WorkspaceButton className="application-mobile-more" variant="quiet" aria-expanded={!!expanded[key]} onClick={()=>setExpanded(current=>({...current,[key]:!current[key]}))}>{expanded[key]?'Réduire':`+ ${total-2} autres`}</WorkspaceButton>:null;}
- function card(job:JobRecord,due=false){const step=applicationInterviewStep(job,now),closed=terminalStatuses.includes(job.status),count=careCount(job.applicationCare);return <article key={job.id} className={`application-mobile-card${step.next?' has-interview':''}${due?' has-followup':''}`} aria-busy={busy===job.id} onClick={event=>{if(!(event.target as Element).closest('button,a,input,select,summary,[role=combobox]'))onOpen(job,'application');}}>
+ function card(job:JobRecord,due=false){const step=applicationInterviewStep(job,now),closed=terminalStatuses.includes(job.status);return <article key={job.id} className={`application-mobile-card${step.next?' has-interview':''}${due?' has-followup':''}`} aria-busy={busy===job.id} onClick={event=>{if(!(event.target as Element).closest('button,a,input,select,summary,[role=combobox]'))onOpen(job,'application');}}>
   <div className="application-mobile-card-heading"><h3><button id={`application-mobile-${job.id}`} type="button" aria-label={`Ouvrir la candidature : ${job.title} · ${job.company||"Entreprise à confirmer"}`} disabled={!!busy} onClick={()=>onOpen(job,'application')}>{job.title}</button></h3><details className="application-mobile-card-actions"><summary aria-label={`Actions · ${job.company||job.title}`}><MoreHorizontal size={18} aria-hidden/></summary><div><ChoiceSelect label={`Changer d’étape · ${job.company||job.title}`} value={personalColumn(job,columns)} disabled={!!busy} options={columns.filter(column=>column.stage!=='other'||column.id===personalColumn(job,columns)).map(column=>({value:column.id,label:column.label}))} onChange={target=>void move(job,target)}/></div></details></div>
   <p className="application-card-company">{job.company||'Entreprise à confirmer'}{job.appliedAt?` · envoyée le ${formatDate(job.appliedAt,zone)}`:''}</p>
-  {count>=3?<p className="application-mobile-care-label">{count===4?"Check-list complète":`Check-list ${count} sur 4`}</p>:null}
   {job.deletedAt?<p className="signal-help">Offre en corbeille · suivi conservé</p>:null}
   {step.next?<p className="application-mobile-meeting">{formatDate(step.next.startAt,step.next.timeZone,true)}</p>:closed?<p>{statusLabels[job.status]}</p>:job.status==='offer'?<p>Proposition reçue</p>:null}
   {due?<div className="application-mobile-followup-actions"><WorkspaceButton variant="primary" disabled={!!busy} onClick={()=>onOpen(job,'application')}>Relancer</WorkspaceButton><WorkspaceButton disabled={!!busy} onClick={()=>onReport?.(job)}>Reporter</WorkspaceButton></div>:null}
@@ -48,24 +46,9 @@ export function ApplicationMobileList({jobs,preparedJobs=[],board,busy,now,onSta
  return <div className="application-mobile-list">
   <div className="application-mobile-tools">{selectedTag?<WorkspaceButton className="application-mobile-active-tag" variant="quiet" aria-label={`Retirer le filtre ${selectedTag.name}`} onClick={()=>setFilter('')}>{selectedTag.name} ×</WorkspaceButton>:null}<details open={tools} onToggle={event=>setTools(event.currentTarget.open)}><summary id="application-board-tools" ref={element=>{toolsTrigger.current=element;}} aria-label="Autres actions des candidatures"><MoreHorizontal size={20} aria-hidden/></summary><div className="application-mobile-tools-panel"><ChoiceSelect label="Filtrer par tag" value={filter} onChange={setFilter} disabled={!tags.ready} options={[{value:'',label:'Tous les tags'},...tags.tags.map(tag=>({value:tag.id,label:tag.name}))]}/><WorkspaceButton variant="quiet" disabled={!!busy} onClick={()=>{setTools(false);onColumn();}}>Ajouter une colonne</WorkspaceButton>{filter?<WorkspaceButton variant="quiet" onClick={()=>setFilter('')}>Effacer le filtre</WorkspaceButton>:null}{tags.loadError?<><WorkspaceFormError message={tags.loadError}/><WorkspaceButton onClick={()=>void tags.load()}>Réessayer</WorkspaceButton></>:null}<WorkspaceButton onClick={()=>{setTools(false);toolsTrigger.current?.focus();}}>Terminé</WorkspaceButton></div></details></div>
   <p className="sr-only" role="status">{message}</p>{error&&!closing?<div ref={errorRegion} tabIndex={-1} className="application-mobile-move-error"><WorkspaceFormError message={error}/><WorkspaceButton disabled={!!busy} onClick={()=>{const last=lastMove.current;if(last)void move(last.job,last.target,last.reason);}}>Réessayer le déplacement</WorkspaceButton></div>:null}
-  {prepared.length?<Collapsible defaultOpen className="application-mobile-group is-prepared">
-   <div className="application-mobile-group-heading"><h2><CollapsibleTrigger className="signal-quiet-button"><span>À envoyer · {prepared.length}</span><ChevronDown size={16} aria-hidden/></CollapsibleTrigger></h2></div>
-   <CollapsibleContent className="application-mobile-cards">
-    {mobileCardWindow(prepared,!!expanded.prepared).items.map(job=>{
-     const count=careCount(job.applicationCare);
-     return <article className="application-mobile-card is-prepared" key={job.id}>
-      <a href={`?tab=pipeline&offer=${encodeURIComponent(job.id)}&view=application`} className="application-mobile-prepared-open" onClick={event=>{event.preventDefault();onOpen(job,'application');}}>
-       <span><strong>{job.title}</strong><small><span className="sr-only">Préparation : </span>{count===careChecks.length?'Prête':`${count}/${careChecks.length}`}</small></span>
-       <span className="application-card-company">{job.company||'Entreprise à confirmer'}</span>
-      </a>
-     </article>;
-    })}
-    {more('prepared',prepared.length)}
-   </CollapsibleContent>
-  </Collapsible>:null}
   {groups.due.length?group('due','Relance due',groups.due,undefined,true):null}
   {groups.active.map(item=>group(item.column.id,item.column.id==='sent'&&item.column.label==='Envoyées'?'En attente':item.column.label,item.jobs,item.column))}
-  {!prepared.length&&!groups.due.length&&!groups.active.length&&filter?<p>Aucune candidature pour ce tag.</p>:null}
+  {!groups.due.length&&!groups.active.length&&filter?<p>Aucune candidature pour ce tag.</p>:null}
   <details className="application-closed"><summary id="application-closed-summary">Terminées ({groups.closed.reduce((n,group)=>n+group.jobs.length,0)}) <span aria-hidden>▸</span></summary>{groups.closed.map(item=>group(item.column.id,item.column.label,item.jobs,item.column))}</details>
   <Dialog.Root open={!!closing} onOpenChange={open=>{if(!open&&!busy&&!lock.current)setClosing(null);}}><Dialog.Portal><Dialog.Overlay className="application-move-overlay"/><Dialog.Content className="application-move-dialog" onEscapeKeyDown={event=>{if(busy)event.preventDefault();}} onPointerDownOutside={event=>{if(busy)event.preventDefault();}} onCloseAutoFocus={event=>{event.preventDefault();returnFocus();}}><Dialog.Title>Clore cette candidature ?</Dialog.Title><Dialog.Description>Choisissez un motif ; notes et entretiens restent conservés.</Dialog.Description><p className="application-move-company">{closing?.job.title} · {closing?.job.company}</p><fieldset disabled={!!busy}><legend>Motif de clôture</legend>{([['rejected','Refus reçu'],['withdrawn','J’arrête le processus']] as const).map(([value,label])=><label key={value}><input type="radio" name={`closure-${id}`} checked={reason===value} onChange={()=>{setReason(value);setError('');}}/>{label}</label>)}</fieldset><div ref={errorRegion} tabIndex={-1}><WorkspaceFormError message={error}/></div><div className="application-move-actions"><WorkspaceButton disabled={!!busy} onClick={()=>setClosing(null)}>Annuler</WorkspaceButton><WorkspaceButton variant="danger" busy={!!busy} disabled={!reason} onClick={()=>{if(closing&&reason)void move(closing.job,closing.target,reason);}}>Clore la candidature</WorkspaceButton></div></Dialog.Content></Dialog.Portal></Dialog.Root>
  </div>;

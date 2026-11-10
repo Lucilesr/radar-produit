@@ -7,8 +7,6 @@ import {SignalProgress} from "@/components/signal/signal-progress";
 import {careChecks,careCount,careSummary,emptyCare,type ApplicationCare as Care,type CareField} from "@/lib/application-care";
 import {sessionWrite} from "@/lib/session-write";
 import type {JobRecord} from "@/lib/types";
-export function ApplicationCareBadge({job}:{job:Pick<JobRecord,'applicationCare'>}){const count=careCount(job.applicationCare);return <span className={`application-care-badge${count>=3?" is-careful":""}`}>{careSummary(job.applicationCare)}</span>;}
-export function ApplicationCarePreview({job}:{job:JobRecord}){const count=careCount(job.applicationCare);return <div className="application-card-care"><div aria-hidden>{careChecks.map((item,index)=><span key={item.id} data-done={index<count||undefined}/>)}</div><ApplicationCareBadge job={job}/></div>;}
 export function ApplicationCare({job}:{job:JobRecord}){
  const {queue,activeKind}=useRadarNextSteps(),suggested=queue.find(step=>step.kind==="care"&&step.action.type==="care"&&step.action.jobId===job.id);
  const currentStep=!!suggested&&(queue[0]?.id===suggested.id||activeKind==="care");
