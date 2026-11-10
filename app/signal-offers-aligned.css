@@ -46,7 +46,7 @@
  .aligned-offer-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:0}.opportunities-workspace .aligned-offer-facts dd{margin-top:6px}.aligned-offer-read{gap:24px}.aligned-offer-read h3{font-size:20px}
  .opportunities-workspace .opportunity-decision{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px;padding:12px 12px max(12px,env(safe-area-inset-bottom));margin:0;border-top:1px solid var(--signal-line);box-shadow:0 -8px 20px #173d4b08}
  .opportunities-workspace .opportunity-decision>:is(button,a){min-height:52px;padding:10px 8px;gap:5px;font-size:13px}.opportunity-decision kbd{display:none}.opportunities-workspace .opportunity-decision.is-mystery{grid-template-columns:1.5fr 1fr}.opportunities-workspace .opportunity-decision.is-restorable{grid-template-columns:1fr}.opportunities-workspace .opportunity-decision button:only-child{grid-column:1/-1}
- .opportunities-workspace .daily-lot-headline strong{font-size:20px}.opportunities-workspace .review-toolbar-actions>button,.opportunities-workspace .help-tooltip-trigger,.opportunities-workspace .reserve-archives,.opportunities-workspace [data-slot=select-trigger]{min-height:44px}.opportunities-workspace .help-tooltip-trigger{min-width:44px}.opportunities-workspace .workspace-tabs button{min-height:44px}
+ .opportunities-workspace .daily-lot-headline strong{font-size:20px}.opportunities-workspace .review-toolbar-actions>button,.opportunities-workspace .help-tooltip-trigger,.opportunities-workspace [data-slot=select-trigger]{min-height:44px}.opportunities-workspace .help-tooltip-trigger{min-width:44px}.opportunities-workspace .workspace-tabs button{min-height:44px}
 }
 
 @media(min-width:761px){
@@ -70,7 +70,7 @@ body:has(.radar-page[data-space=offers]) [data-slot=dialog-content]{border-radiu
 .radar-page[data-space=offers]{--signal-surface-radius:var(--signal-radius-card)}
 .radar-page[data-space=offers] .page-refresh-action{border-radius:var(--signal-radius-control);min-height:44px}
 .aligned-offer-tools .radar-search{border-radius:var(--signal-radius-control)}
-.opportunities-workspace :is(.offer-mystery,.workspace-state,.opportunities-batch,.reserve-archive-head,.scan-source-filter){border-radius:var(--signal-radius-card)}
+.opportunities-workspace :is(.offer-mystery,.workspace-state,.opportunities-batch,.scan-source-filter){border-radius:var(--signal-radius-card)}
 .opportunity-detail :is(input:not([type=checkbox]):not([type=radio]),textarea,[data-slot=select-trigger],.signal-form-button){border-radius:var(--signal-radius-control);min-height:44px}
 body:has(.radar-page[data-space=offers]) :is(.opportunity-date-order-menu,.help-tooltip-content,.radar-account-menu){border-radius:var(--signal-radius-card)}
 body:has(.radar-page[data-space=offers]) :is(.opportunity-date-order-menu [data-slot=select-item],.radar-account-menu [role=menuitem]){border-radius:var(--signal-radius-control);min-height:44px}
