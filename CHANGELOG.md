@@ -1,3 +1,7 @@
+## 10 novembre 2026 — Accès aux archives et à la corbeille
+
+- Un même onglet donne accès à deux listes distinctes, Archives et Corbeille. Le lot du jour perd la mention « Classées par adéquation » et le lien Archives isolé.
+
 ## 10 novembre 2026 — Accès au suivi depuis une offre
 
 - Le bouton « J’ai postulé » est visible sous le titre de l’offre. Après enregistrement, le lien vers Candidatures reste à cet emplacement.

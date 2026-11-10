@@ -19,7 +19,8 @@ import { FridayRescue } from "@/components/friday-rescue";
 import { triageShortcut } from "@/lib/triage-learning";
 import type { CandidateProfile, JobRecord, JobStatus } from "@/lib/types";
 
-const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"],["trash","Corbeille"]];
+const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"]];
+const retiredViews = [["archived","Archives"],["trash","Corbeille"]] as const;
 const remote={full_remote:"Full remote",exceptional:"Présence ponctuelle",hybrid:"Hybride",onsite:"Sur site",unknown:"Remote à confirmer"};
 export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,tools,enabled=true,onReload,onReserveChanged,lot,jobs,rescueOffers=[],counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
   source?:string;onClearSource?:()=>void;enabled?:boolean;onReload?:()=>Promise<boolean>;onReserveChanged:(roleChanged:boolean)=>Promise<boolean>;rescueOffers?:JobRecord[];
@@ -57,7 +58,8 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
   const selected=selectionInView(orderedJobs,selection);
   const active=displayJobs.find(job=>job.id===activeId)??retainedJob??displayJobs[0];
   const heldOutside=!!kept&&!jobs.some(job=>job.id===kept.job.id);
-  const viewHelp=filter==="archived"?`Publiées il y a ${ARCHIVE_AFTER_DAYS} jours ou plus. Remises à examiner, elles repartent pour ${ARCHIVE_AFTER_DAYS} jours.`:inReserve?"Le reste de vos offres, consultable à tout moment.":inLot?"Les 20 offres les mieux classées pour vous (dont 5 offres mystère au maximum).":filter==="selected"?"Votre sélection à traiter.":filter==="good_matches"?"Offres proches de vos critères, selon Radar.":filter==="trash"?"L’offre sera restaurable pendant 10 jours.":"Les offres qu’il vous reste à examiner.";
+  const retiredView=filter==="archived"||filter==="trash";
+  const viewHelp=inReserve?"Le reste de vos offres, consultable à tout moment.":filter==="selected"?"Votre sélection à traiter.":filter==="good_matches"?"Offres proches de vos critères, selon Radar.":"Les offres qu’il vous reste à examiner.";
   const currentScope=useRef({filter,query,activeId});
   useEffect(()=>{currentScope.current={filter,query,activeId};},[filter,query,activeId]);
   const viewIsCurrent=()=>currentScope.current.filter===filter&&currentScope.current.query===query&&currentScope.current.activeId===activeId;
@@ -129,18 +131,25 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
     <div className="opportunities-controls">
     {tools}
     {source?<div className="scan-source-filter"><span>Source : <strong>{source}</strong></span><button type="button" className="secondary-button" onClick={onClearSource}>Effacer le filtre de source</button></div>:null}
-    <nav className="workspace-tabs" aria-label="Vues des offres">{views.map(([id,label])=><span className="opportunity-tab" key={id}><button type="button" aria-pressed={filter===id} onClick={()=>changeView(id)}>{label}<span>{counts[id]}</span></button>{id==="trash"?<HelpTooltip label="Corbeille">L’offre sera restaurable pendant 10 jours.</HelpTooltip>:null}</span>)}</nav>
+    <nav className="workspace-tabs" aria-label="Vues des offres">
+      {views.map(([id,label])=><span className="opportunity-tab" key={id}><button type="button" aria-pressed={filter===id} onClick={()=>changeView(id)}>{label}<span>{counts[id]}</span></button></span>)}
+      <span className="opportunity-tab"><button type="button" aria-pressed={retiredView} onClick={()=>{if(!retiredView)changeView("archived");}}>Archives et corbeille<span>{counts.archived+counts.trash}</span></button></span>
+    </nav>
+    {retiredView?<div>
+      <nav className="signal-workspace-tabs" aria-label="Archives et corbeille">
+        {retiredViews.map(([id,label])=><button type="button" key={id} aria-current={filter===id?"page":undefined} onClick={()=>changeView(id)}>{label} · {counts[id]}</button>)}
+      </nav>
+      <p className="signal-help">{filter==="archived"?`Les offres sorties du tri après ${ARCHIVE_AFTER_DAYS} jours peuvent être remises à examiner.`:"Les offres que vous avez écartées peuvent être restaurées pendant 10 jours."}</p>
+    </div>:null}
     {lotShown&&lot!.size>0?<DailyLotBanner lot={lot!} hasRescue={rescueOffers.length>0} inLot={inLot} onToggle={()=>{setRetained(null);setSelection([]);setReserveGroupId(null);setAllOffers(inLot);onClose();requestAnimationFrame(()=>document.getElementById(inLot?"reserve-title":"workspace-title")?.focus());}}/>:null}
     {filter==="to_review"&&!query&&!activeId?contextualPrompt:null}
-    {filter==="to_review"&&!inReserve&&counts.archived>0?<button type="button" className="reserve-archives" onClick={()=>changeView("archived")}><Archive size={15} aria-hidden/>Archives ({counts.archived})</button>:null}
     {inReserve&&rescueOffers.length>0?<FridayRescue offers={rescueOffers} busy={trashBusy} onRestore={onRestore}/>:null}
-    {inReserve?<ReserveGroups groups={groups} shown={reserveGroupId} total={reserveJobs.length} archived={counts.archived??0} busy={trashBusy} onShow={id=>{setRetained(null);setSelection([]);setReserveGroupId(id);onClose();requestAnimationFrame(()=>document.getElementById("reserve-title")?.focus());}} roles={profile.searchPreferences?.roles??[]} onChanged={async roleChanged=>{setRetained(null);setSelection([]);return onReserveChanged(roleChanged);}} onArchives={()=>changeView("archived")}/>:null}
-    {filter==="archived"?<div className="reserve-archive-head"><p><Archive size={16} aria-hidden/>Annonces de plus de {ARCHIVE_AFTER_DAYS} jours, restaurables.</p><button type="button" className="secondary-button" onClick={()=>changeView("to_review")}><ArrowLeft size={15} aria-hidden/>Retour à « À examiner »</button></div>:null}
+    {inReserve?<ReserveGroups groups={groups} shown={reserveGroupId} total={reserveJobs.length} busy={trashBusy} onShow={id=>{setRetained(null);setSelection([]);setReserveGroupId(id);onClose();requestAnimationFrame(()=>document.getElementById("reserve-title")?.focus());}} roles={profile.searchPreferences?.roles??[]} onChanged={async roleChanged=>{setRetained(null);setSelection([]);return onReserveChanged(roleChanged);}}/>:null}
     <div className="opportunities-toolbar">
-      <div className="review-view-summary">
-        {inLot?<span className="daily-lot-order">Classées par adéquation</span>:<Select value={dateOrder} onValueChange={value=>{setDateOrder(value as "newest"|"oldest");setRetained(null);}}><SelectTrigger className="opportunity-date-order" aria-label={filter==="trash"?"Trier par date d’écartement":"Trier par date de mapping"}><span className="opportunity-date-order-label">Trier :</span><SelectValue /></SelectTrigger><SelectContent position="popper" side="bottom" sideOffset={6} align="start" className="opportunity-date-order-menu"><SelectItem value="newest">Du plus récent au plus ancien</SelectItem><SelectItem value="oldest">Du plus ancien au plus récent</SelectItem></SelectContent></Select>}
-        {filter!=="trash"?<HelpTooltip label="Vue des offres">{viewHelp}</HelpTooltip>:null}
-      </div>
+      {!inLot?<div className="review-view-summary">
+        <Select value={dateOrder} onValueChange={value=>{setDateOrder(value as "newest"|"oldest");setRetained(null);}}><SelectTrigger className="opportunity-date-order" aria-label={filter==="trash"?"Trier par date d’écartement":"Trier par date de mapping"}><span className="opportunity-date-order-label">Trier :</span><SelectValue /></SelectTrigger><SelectContent position="popper" side="bottom" sideOffset={6} align="start" className="opportunity-date-order-menu"><SelectItem value="newest">Du plus récent au plus ancien</SelectItem><SelectItem value="oldest">Du plus ancien au plus récent</SelectItem></SelectContent></Select>
+        {!retiredView?<HelpTooltip label="Vue des offres">{viewHelp}</HelpTooltip>:null}
+      </div>:null}
       <div className="review-toolbar-actions"><button type="button" className="review-radar-filter" aria-pressed={filter==="good_matches"} onClick={()=>changeView(filter==="good_matches"?"to_review":"good_matches")}>Correspondances Radar <span>{counts.good_matches}</span></button>{orderedJobs.length>0&&filter!=="trash"?<button type="button" className="secondary-button" aria-pressed={selecting} onClick={()=>{setRetained(null);setSelecting(!selecting);setSelection([]);}}>{selecting?"Terminer les actions groupées":"Actions groupées"}</button>:null}</div>
     </div>
     {selecting&&orderedJobs.length?<div className="opportunities-batch" role="group" aria-label="Actions sur les offres cochées"><span role="status">{selected.length} offre{selected.length>1?"s":""} cochée{selected.length>1?"s":""}</span><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>setSelection(orderedJobs.slice(0,50).map(job=>job.id))}>Cocher {jobs.length>50?"les 50 premières":"tout"}</button>{selected.length?<><button type="button" className="secondary-button" onClick={()=>setSelection([])}>Tout décocher</button><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>onDeleteMany(selected)}><Trash2 size={15} aria-hidden />Mettre à la corbeille</button></>:null}</div>:null}
@@ -176,7 +185,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
 }
 
 type ReserveReceipt={id:string;action:string;count:number;removed:number;undone:boolean};
-function ReserveGroups({groups,shown,total,archived,busy,roles,onShow,onChanged,onArchives}:{groups:ReturnType<typeof groupReserve>;shown:ReserveGroupId|null;total:number;archived:number;busy:boolean;roles:string[];onShow:(id:ReserveGroupId|null)=>void;onChanged:(roleChanged:boolean)=>Promise<boolean>;onArchives:()=>void}){
+function ReserveGroups({groups,shown,total,busy,roles,onShow,onChanged}:{groups:ReturnType<typeof groupReserve>;shown:ReserveGroupId|null;total:number;busy:boolean;roles:string[];onShow:(id:ReserveGroupId|null)=>void;onChanged:(roleChanged:boolean)=>Promise<boolean>}){
   const [confirming,setConfirming]=useState<{id:ReserveGroupId;action:"discard"|"archive"}|null>(null),[working,setWorking]=useState(false),[error,setError]=useState("");
   const [initialGroups]=useState(groups.length),[done,setDone]=useState<ReserveGroupId[]>([]),[removed,setRemoved]=useState(0),[recent,setRecent]=useState<{receipt:ReserveReceipt;group:ReserveGroupId;alreadyDone:boolean}|null>(null);
   const lock=useRef(false),pending=useRef<{signature:string;id:string}|null>(null);
@@ -212,7 +221,6 @@ function ReserveGroups({groups,shown,total,archived,busy,roles,onShow,onChanged,
         {group.id==="old"?<button type="button" className="secondary-button" disabled={disabled} onClick={()=>setConfirming({id:group.id,action:"archive"})}>{batch>1?`Archiver les ${batch}`:"Archiver l’offre"}</button>:group.id==="pay"?<button type="button" className="secondary-button" disabled={disabled} onClick={()=>void decide("keep",group)}>Garder en réserve</button>:role?<button type="button" className="secondary-button" disabled={disabled} onClick={()=>void decide("role",group,role)}>+ Viser {role}</button>:null}
         <button type="button" className="signal-quiet-button" disabled={disabled} onClick={()=>setConfirming({id:group.id,action:"discard"})}><Trash2 size={14} aria-hidden/>Écarter le groupe</button></div>}
     </li>;})}</ul>
-    {archived?<button type="button" className="reserve-archives" disabled={disabled} onClick={onArchives}><Archive size={15} aria-hidden/>Archives ({archived})</button>:null}
   </section>;
 }
 
