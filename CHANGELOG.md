@@ -1,3 +1,7 @@
+## 10 novembre 2026 — Actions de Mon compte
+
+- Les boutons de déconnexion, d’export et de suppression sont alignés à droite de leur carte sur ordinateur et mobile.
+
 ## 10 novembre 2026 — Offres mystères dans Ma sélection
 
 - Les fiches mystères passent en fin de liste dans « Ma sélection ». Les offres gardent le tri par date dans chaque groupe.
