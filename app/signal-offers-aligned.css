@@ -13,7 +13,7 @@
 .aligned-offer-fit{flex:none;display:grid;gap:4px;max-width:190px;padding:14px 16px;border-radius:var(--signal-radius-card);background:var(--signal-mist);font-size:12px;line-height:1.4}
 .aligned-offer-fit>strong{font:750 28px/1 var(--font-display);color:var(--signal-petrol-ink)}.aligned-offer-fit small{font:500 13px/1 var(--font-sans)}.aligned-offer-fit .workspace-badge{border:0;padding:0;background:transparent}
 .aligned-offer-fit>span:last-child{color:var(--signal-petrol-ink)}
-.aligned-offer-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 26px}
+.aligned-offer-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0}
 .opportunities-workspace .aligned-offer-facts>.review-condition-row{display:block;border:0;border-radius:var(--signal-radius-control);padding:12px;background:var(--signal-mist)}
 .aligned-offer-facts dt{font-size:12px;color:var(--muted-foreground)}.opportunities-workspace .aligned-offer-facts dd{margin:5px 0 0;font:600 14px/1.4 var(--font-sans);overflow-wrap:anywhere}
 .aligned-offer-read{display:grid;gap:24px}.aligned-offer-read h3{font:700 18px/1.3 var(--font-display);letter-spacing:-.01em;margin:0 0 12px}
@@ -22,10 +22,15 @@
 .aligned-offer-preview{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:14px;line-height:1.7;color:var(--muted-foreground);white-space:pre-line}
 .aligned-offer-read summary,.aligned-offer-tools>summary{cursor:pointer;min-height:44px;align-content:center;font-size:14px;font-weight:600;color:var(--signal-petrol-ink)}
 .aligned-offer-description details[open]+.aligned-offer-links{margin-top:12px}.aligned-offer-links{display:flex;flex-wrap:wrap;gap:8px}.aligned-offer-links>a,.aligned-offer-links>button{min-height:44px}
+.aligned-offer-description-heading{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;margin-bottom:8px}
+.aligned-offer-description-heading h3{margin:0}
+.aligned-offer-description-heading>button{min-height:44px}
+.aligned-offer-read .aligned-offer-mystery{display:block;margin:0;padding:10px 12px;font-size:13px;line-height:1.5}
+.aligned-offer-mystery strong{color:var(--signal-petrol-ink)}
 .aligned-offer-extra{border-top:1px solid var(--signal-line)}
-.opportunity-detail-header .reading-application-action{margin-block-start:12px}
-.aligned-offer-workspace{display:flex;flex-direction:column;gap:14px}.aligned-offer-workspace>.signal-offer-nav{order:2;border:0;margin-top:4px}.aligned-offer-workspace .signal-workspace-tabs{border:0}.aligned-offer-workspace .signal-workspace-tabs>button{border-radius:var(--signal-radius-control);min-height:44px;padding:9px 14px;border:1px solid var(--signal-line);font-size:13px}.aligned-offer-workspace .signal-workspace-tabs>button[aria-current]{background:var(--signal-mist);border-color:var(--signal-petrol)}
-.aligned-offer-mobile-header{display:none}.aligned-offer-archive{display:flex;align-items:center;gap:8px;padding:12px 16px;border-radius:var(--signal-radius-control);background:var(--signal-mist);font-size:14px;margin-bottom:20px}
+.aligned-offer-workspace{display:flex;flex-direction:column;gap:14px}.aligned-offer-tabs{display:grid;gap:16px;min-width:0}.aligned-offer-workspace .signal-offer-nav{border:0;margin:0}.aligned-offer-workspace .signal-workspace-tabs{border:0}.aligned-offer-workspace .signal-workspace-tabs>button{border-radius:var(--signal-radius-control);min-height:44px;padding:9px 14px;border:1px solid var(--signal-line);font-size:13px}.aligned-offer-workspace .signal-workspace-tabs>button[aria-selected=true]{background:var(--signal-mist);border-color:var(--signal-petrol)}
+.aligned-offer-mobile-header{display:none}.aligned-offer-archive{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:12px 16px;border-radius:var(--signal-radius-control);background:var(--signal-mist);font-size:14px;margin-bottom:20px}
+.aligned-offer-archive>span{display:flex;align-items:center;gap:8px}.aligned-offer-archive>button{min-height:44px}
 .opportunities-workspace .opportunity-decision{position:sticky;bottom:0;z-index:5;display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:10px;padding:16px 0;margin:20px 0 0;border:0;border-top:1px solid var(--signal-line);background:var(--signal-paper)}
 .opportunities-workspace .opportunity-decision>:is(button,a){min-height:48px;flex:none;border-radius:var(--signal-radius-control);display:inline-flex;justify-content:center;align-items:center;gap:8px;padding:10px 14px;white-space:nowrap;font-size:14px}
 .opportunity-decision kbd{font:500 11px/1 var(--font-sans);border:1px solid currentColor;border-radius:var(--signal-radius-control);opacity:.65;padding:3px}
@@ -44,13 +49,14 @@
  .aligned-offer-mobile-header .opportunity-back{display:flex;min-height:44px;margin:0;padding:0;white-space:nowrap}.aligned-offer-mobile-header>div{min-width:0;max-width:200px;font-size:12px;text-align:right}.aligned-offer-mobile-header .signal-progress{margin-top:7px}
  .opportunities-workspace .reading-detail-heading{display:block;margin-bottom:24px}.opportunities-workspace .opportunity-detail-header h2{font-size:28px;line-height:1.12;margin-top:10px}.aligned-offer-fit{margin-top:20px;width:100%;max-width:none;grid-template-columns:auto 1fr;gap:6px 14px;align-items:center}.aligned-offer-fit>strong{grid-row:1/span 3}.aligned-offer-fit>span{grid-column:2}
  .aligned-offer-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:0}.opportunities-workspace .aligned-offer-facts dd{margin-top:6px}.aligned-offer-read{gap:24px}.aligned-offer-read h3{font-size:20px}
- .opportunities-workspace .opportunity-decision{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px;padding:12px 12px max(12px,env(safe-area-inset-bottom));margin:0;border-top:1px solid var(--signal-line);box-shadow:0 -8px 20px #173d4b08}
- .opportunities-workspace .opportunity-decision>:is(button,a){min-height:52px;padding:10px 8px;gap:5px;font-size:13px}.opportunity-decision kbd{display:none}.opportunities-workspace .opportunity-decision.is-mystery{grid-template-columns:1.5fr 1fr}.opportunities-workspace .opportunity-decision.is-restorable{grid-template-columns:1fr}.opportunities-workspace .opportunity-decision button:only-child{grid-column:1/-1}
+ .aligned-offer-read .aligned-offer-mystery{font-size:12px;padding-inline:8px}
+ .opportunities-workspace .opportunity-decision{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 12px max(12px,env(safe-area-inset-bottom));margin:0;border-top:1px solid var(--signal-line);box-shadow:0 -8px 20px #173d4b08}
+ .opportunities-workspace .opportunity-decision>button{min-height:52px;min-width:0;padding:8px 4px;gap:5px;font-size:13px;line-height:1.2;white-space:normal}.opportunity-decision kbd{display:none}
  .opportunities-workspace .daily-lot-headline strong{font-size:20px}.opportunities-workspace .review-toolbar-actions>button,.opportunities-workspace .help-tooltip-trigger,.opportunities-workspace [data-slot=select-trigger]{min-height:44px}.opportunities-workspace .help-tooltip-trigger{min-width:44px}.opportunities-workspace .workspace-tabs button{min-height:44px}
 }
 
 @media(min-width:761px){
- .opportunities-workspace .opportunity-detail{display:flex;flex-direction:column;overflow:hidden!important}
+ .opportunities-workspace .opportunity-detail{display:flex;flex-direction:column;align-self:start;height:clamp(180px,calc(100% - var(--opportunity-reading-offset,0px)),100%);overflow:hidden!important}
  .aligned-offer-reading-content{flex:1;min-height:0;overflow:hidden}
  .opportunities-split[data-reading-pinned=true] .aligned-offer-reading-content{overflow-y:auto;overscroll-behavior-y:auto}
  .opportunities-workspace .opportunity-decision{position:static;flex:none;margin-top:12px}
