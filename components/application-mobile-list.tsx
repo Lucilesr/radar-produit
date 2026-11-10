@@ -2,7 +2,6 @@
 import {useId,useLayoutEffect,useRef,useState} from "react";
 import {Dialog} from "radix-ui";
 import {ChevronDown,MoreHorizontal,Pencil} from "lucide-react";
-import {ApplicationCarePreview} from "@/components/application-care";
 import {ChoiceSelect} from "@/components/choice-select";
 import {Collapsible,CollapsibleContent,CollapsibleTrigger} from "@/components/ui/collapsible";
 import {WorkspaceButton,WorkspaceFormError} from "@/components/workspace-form";
@@ -11,7 +10,7 @@ import {useDisplayTimeZone} from "@/components/use-display-time-zone";
 import {mobileApplicationGroups,mobileCardWindow} from "@/lib/application-mobile-presentation";
 import {applicationInterviewStep,applicationMove} from "@/lib/application-board";
 import {formatDate,statusLabels,terminalStatuses} from "@/lib/application-workflow";
-import {careCount} from "@/lib/application-care";
+import {careChecks,careCount} from "@/lib/application-care";
 import {personalColumn,type PersonalBoard,type PersonalColumn} from "@/lib/personal-board";
 import type {WorkspaceView} from "@/components/offer-workspace";
 import type {JobRecord,JobStatus} from "@/lib/types";
@@ -49,7 +48,21 @@ export function ApplicationMobileList({jobs,preparedJobs=[],board,busy,now,onSta
  return <div className="application-mobile-list">
   <div className="application-mobile-tools">{selectedTag?<WorkspaceButton className="application-mobile-active-tag" variant="quiet" aria-label={`Retirer le filtre ${selectedTag.name}`} onClick={()=>setFilter('')}>{selectedTag.name} ×</WorkspaceButton>:null}<details open={tools} onToggle={event=>setTools(event.currentTarget.open)}><summary id="application-board-tools" ref={element=>{toolsTrigger.current=element;}} aria-label="Autres actions des candidatures"><MoreHorizontal size={20} aria-hidden/></summary><div className="application-mobile-tools-panel"><ChoiceSelect label="Filtrer par tag" value={filter} onChange={setFilter} disabled={!tags.ready} options={[{value:'',label:'Tous les tags'},...tags.tags.map(tag=>({value:tag.id,label:tag.name}))]}/><WorkspaceButton variant="quiet" disabled={!!busy} onClick={()=>{setTools(false);onColumn();}}>Ajouter une colonne</WorkspaceButton>{filter?<WorkspaceButton variant="quiet" onClick={()=>setFilter('')}>Effacer le filtre</WorkspaceButton>:null}{tags.loadError?<><WorkspaceFormError message={tags.loadError}/><WorkspaceButton onClick={()=>void tags.load()}>Réessayer</WorkspaceButton></>:null}<WorkspaceButton onClick={()=>{setTools(false);toolsTrigger.current?.focus();}}>Terminé</WorkspaceButton></div></details></div>
   <p className="sr-only" role="status">{message}</p>{error&&!closing?<div ref={errorRegion} tabIndex={-1} className="application-mobile-move-error"><WorkspaceFormError message={error}/><WorkspaceButton disabled={!!busy} onClick={()=>{const last=lastMove.current;if(last)void move(last.job,last.target,last.reason);}}>Réessayer le déplacement</WorkspaceButton></div>:null}
-  {prepared.length?<Collapsible defaultOpen className="application-mobile-group is-prepared"><div className="application-mobile-group-heading"><h2><CollapsibleTrigger className="signal-quiet-button"><span>À envoyer · {prepared.length}</span><ChevronDown size={16} aria-hidden/></CollapsibleTrigger></h2></div><CollapsibleContent className="application-mobile-cards">{mobileCardWindow(prepared,!!expanded.prepared).items.map(job=><article className="application-mobile-card is-prepared" key={job.id}><a href={`?tab=pipeline&offer=${encodeURIComponent(job.id)}&view=application`} className="application-mobile-prepared-open" onClick={event=>{event.preventDefault();onOpen(job,'application');}}><span><strong>{job.title}</strong><small>{careCount(job.applicationCare)===4?'Prête':`${careCount(job.applicationCare)}/4`}</small></span><span className="application-card-company">{job.company||'Entreprise à confirmer'}</span><ApplicationCarePreview job={job}/></a></article>)}{more('prepared',prepared.length)}</CollapsibleContent></Collapsible>:null}
+  {prepared.length?<Collapsible defaultOpen className="application-mobile-group is-prepared">
+   <div className="application-mobile-group-heading"><h2><CollapsibleTrigger className="signal-quiet-button"><span>À envoyer · {prepared.length}</span><ChevronDown size={16} aria-hidden/></CollapsibleTrigger></h2></div>
+   <CollapsibleContent className="application-mobile-cards">
+    {mobileCardWindow(prepared,!!expanded.prepared).items.map(job=>{
+     const count=careCount(job.applicationCare);
+     return <article className="application-mobile-card is-prepared" key={job.id}>
+      <a href={`?tab=pipeline&offer=${encodeURIComponent(job.id)}&view=application`} className="application-mobile-prepared-open" onClick={event=>{event.preventDefault();onOpen(job,'application');}}>
+       <span><strong>{job.title}</strong><small><span className="sr-only">Préparation : </span>{count===careChecks.length?'Prête':`${count}/${careChecks.length}`}</small></span>
+       <span className="application-card-company">{job.company||'Entreprise à confirmer'}</span>
+      </a>
+     </article>;
+    })}
+    {more('prepared',prepared.length)}
+   </CollapsibleContent>
+  </Collapsible>:null}
   {groups.due.length?group('due','Relance due',groups.due,undefined,true):null}
   {groups.active.map(item=>group(item.column.id,item.column.id==='sent'&&item.column.label==='Envoyées'?'En attente':item.column.label,item.jobs,item.column))}
   {!prepared.length&&!groups.due.length&&!groups.active.length&&filter?<p>Aucune candidature pour ce tag.</p>:null}

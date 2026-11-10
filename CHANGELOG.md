@@ -1,3 +1,7 @@
+## 10 novembre 2026 — Candidatures en largeur réduite
+
+- La vue Liste garde des cartes et menus correctement espacés à toutes les largeurs où elle s’affiche. Les cartes « À envoyer » affichent le poste et l’entreprise sur deux lignes, avec un seul indicateur de préparation.
+
 ## 9 novembre 2026 — Entretiens : préparer sans réécrire d’histoire
 
 - Quand un entretien approche, la séance propose « Préparer votre entretien chez … · jour heure » et ouvre l’onglet Entretiens de la candidature, au lieu d’un formulaire d’histoire « Prioriser ».
