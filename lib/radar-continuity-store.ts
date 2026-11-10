@@ -21,7 +21,7 @@ export async function writeContinuity(userId:string,raw:unknown,now=new Date()){
   let finish:{id:string;startedAt:number;minutes:number}|null=null;
   if(command.kind==="lot"){
    if(state.lot&&state.lot.day>lot!.day)throw new ContinuityConflict(state);
-   if(state.lot?.day===lot!.day&&state.lot.locked)return state;
+   if(state.lot?.day===lot!.day&&state.lot.locked&&state.lot.ids.length)return state;
    if(JSON.stringify(state.lot)===JSON.stringify(lot))return state;
    next.lot=lot;next.lotVersion++;
   }else{

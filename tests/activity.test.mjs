@@ -120,6 +120,15 @@ test("L1 continuité : lot partagé verrouillé, isolation et autres réglages c
   const profile=JSON.parse(f.sqlite.prepare("SELECT data FROM profiles WHERE user_id='alice'").get().data);assert.equal(profile.headline,"SECRET_PROFILE_alice");assert.equal(profile.preferences.reducedMotion,true);
  }finally{f.sqlite.close();}
 });
+test("Un ancien lot vide verrouillé accepte les premières offres du jour",async()=>{
+ const f=fixture(),jobs=await import(moduleUrl("lib/job-store.ts"));try{
+  const write=lot=>continuity.writeContinuity("alice",{kind:"lot",owner:"alice",lot},fixed);
+  await write({day:lotDay,ids:[],locked:true});
+  const a=(await jobs.saveOffer("alice",offer)).job;
+  const next=await write({day:lotDay,ids:[a.id],locked:false});
+  assert.deepEqual(next.lot,{day:lotDay,ids:[a.id],locked:false});
+ }finally{f.sqlite.close();}
+});
 test("L1 continuité : reprise versionnée, fin atomique, réessai et aucune résurrection",async()=>{
  const f=fixture();try{
   const value=sessionFixture(),write=(session,version,extra={})=>continuity.writeContinuity("alice",{kind:"session",owner:"alice",session,version,...extra},fixed);

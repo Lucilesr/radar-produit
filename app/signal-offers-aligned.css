@@ -56,9 +56,8 @@
 }
 
 @media(min-width:761px){
- .opportunities-workspace .opportunity-detail{display:flex;flex-direction:column;align-self:start;height:clamp(180px,calc(100% - var(--opportunity-reading-offset,0px)),100%);overflow:hidden!important}
- .aligned-offer-reading-content{flex:1;min-height:0;overflow:hidden}
- .opportunities-split[data-reading-pinned=true] .aligned-offer-reading-content{overflow-y:auto;overscroll-behavior-y:auto}
+ .opportunities-workspace .opportunity-detail{display:flex;flex-direction:column;overflow:hidden}
+ .aligned-offer-reading-content{flex:1;min-height:0;overflow-y:auto}
  .opportunities-workspace .opportunity-decision{position:static;flex:none;margin-top:12px}
  .aligned-offer-reading-content:focus-visible{outline-offset:-3px}
 }
