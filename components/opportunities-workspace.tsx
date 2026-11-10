@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowLeft, Check, Bookmark, LoaderCircle, Trash2, Undo2, ShieldCheck, Archive } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ApplicationTrackingAction, OfferFitCard, FitBadge, OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/components/offer-workspace";
@@ -56,7 +56,8 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
   const displayJobs=[...orderedJobs];
   if(kept&&!displayJobs.some(job=>job.id===kept.job.id))displayJobs.splice(Math.min(kept.index,displayJobs.length),0,retainedJob!);
   const selected=selectionInView(orderedJobs,selection);
-  const active=displayJobs.find(job=>job.id===activeId)??retainedJob??displayJobs[0];
+  const openedJob=activeId?(displayJobs.find(job=>job.id===activeId)??(currentJob?.id===activeId?currentJob:undefined)):undefined;
+  const active=openedJob??retainedJob??displayJobs[0];
   const heldOutside=!!kept&&!jobs.some(job=>job.id===kept.job.id);
   const retiredView=filter==="archived"||filter==="trash";
   const viewHelp=inReserve?"Le reste de vos offres, consultable à tout moment.":filter==="selected"?"Votre sélection à traiter.":filter==="good_matches"?"Offres proches de vos critères, selon Radar.":"Les offres qu’il vous reste à examiner.";
@@ -69,32 +70,30 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
   function openListed(job:JobRecord){if(kept&&job.id!==kept.job.id)setRetained(null);onOpen(job);}
 
   const readingPane=useRef<HTMLDivElement>(null);
-  const hasReadingPane=displayJobs.length>0;
-  useEffect(()=>{
+  const offerList=useRef<HTMLDivElement>(null);
+  const hasReadingPane=!!active;
+  useLayoutEffect(()=>{
     const pane=readingPane.current, viewport=pane?.closest<HTMLElement>(".radar-app");
     if(!pane||!viewport)return;
     const columns=window.matchMedia("(min-width:761px)");
-    let frame=0;
     const update=()=>{
-      if(frame)return;
-      frame=requestAnimationFrame(()=>{
-        frame=0;
-        const height=columns.matches?`${viewport.clientHeight}px`:"";
-        const offset=pane.getBoundingClientRect().top-viewport.getBoundingClientRect().top;
-        const pinned=String(columns.matches&&offset<=1);
-        if(pane.style.getPropertyValue("--opportunity-reading-height")!==height){if(height)pane.style.setProperty("--opportunity-reading-height",height);else pane.style.removeProperty("--opportunity-reading-height");}
-        if(columns.matches)pane.style.setProperty("--opportunity-reading-offset",`${Math.max(0,offset)}px`);
-        else pane.style.removeProperty("--opportunity-reading-offset");
-        if(pane.dataset.readingPinned!==pinned)pane.dataset.readingPinned=pinned;
-      });
+      if(!columns.matches)return;
+      const height=`${viewport.clientHeight}px`;
+      const offset=Math.max(0,pane.getBoundingClientRect().top-viewport.getBoundingClientRect().top);
+      if(pane.style.getPropertyValue("--opportunity-reading-height")!==height)pane.style.setProperty("--opportunity-reading-height",height);
+      pane.style.setProperty("--opportunity-reading-offset",`${offset}px`);
     };
     const resize=new ResizeObserver(update);
-    resize.observe(viewport);resize.observe(pane.parentElement!);
+    resize.observe(viewport);
+    if(pane.previousElementSibling)resize.observe(pane.previousElementSibling);
     viewport.addEventListener("scroll",update,{passive:true});
     window.addEventListener("resize",update);
     update();
-    return()=>{resize.disconnect();cancelAnimationFrame(frame);viewport.removeEventListener("scroll",update);window.removeEventListener("resize",update);};
+    return()=>{resize.disconnect();viewport.removeEventListener("scroll",update);window.removeEventListener("resize",update);};
   },[hasReadingPane]);
+  useLayoutEffect(()=>{
+    if(offerList.current)offerList.current.scrollTop=0;
+  },[filter,query,dateOrder,inLot,reserveGroupId]);
 
   const title=useRef<HTMLHeadingElement>(null);
   const opener=useRef<HTMLButtonElement|null>(null);
@@ -105,11 +104,11 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
   const selectedOffer=!!active&&reviewState(active)==="selected";
   const actionsBusy=reviewing||trashBusy||applyingId===active?.id;
   useEffect(()=>{
-    if(!activeId||document.activeElement?.closest(".aligned-offer-tabs [role=tablist]"))return;
+    if(!activeId||active?.id!==activeId||document.activeElement?.closest(".aligned-offer-tabs [role=tablist]"))return;
     title.current?.focus({preventScroll:true});
     if(window.matchMedia("(max-width:760px)").matches)title.current?.closest(".opportunity-detail")?.scrollIntoView({block:"start"});
-    else readingPane.current?.scrollIntoView({block:"start"});
-  },[activeId]);
+    else if(readingPane.current&&readingPane.current.getBoundingClientRect().top>0)readingPane.current.scrollIntoView({block:"start",behavior:"instant"});
+  },[activeId,active?.id]);
   function close(){onClose();requestAnimationFrame(()=>{const button=opener.current;(button?.isConnected && button.getClientRects().length?button:document.getElementById("workspace-title"))?.focus({preventScroll:true});});}
   async function review(decision?:"to_review"|"selected"|"later"){
     if(!active||actionsBusy||pendingReviews.current.has(active.id))return;
@@ -138,7 +137,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
     return()=>window.removeEventListener("keydown",handle);
   },[editing,enabled,activeId,active,profile.preferences?.triageShortcuts,actionsBusy,archived,displayJobs,onDelete,review]);
   const emptyAction: ReactNode=query?<button className="secondary-button" onClick={onClearSearch}>Effacer la recherche</button>:filter!=="to_review"?<button className="secondary-button" onClick={()=>{changeView("to_review");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Voir les offres à examiner</button>:null;
-  return <div className={"opportunities-workspace "+(activeId?"has-open-offer":"")}>
+  return <div className={"opportunities-workspace "+(openedJob?"has-open-offer":"")}>
     <div className="opportunities-controls">
     {tools}
     {source?<div className="scan-source-filter"><span>Source : <strong>{source}</strong></span><button type="button" className="secondary-button" onClick={onClearSource}>Effacer le filtre de source</button></div>:null}
@@ -158,15 +157,15 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
     {inReserve?<ReserveGroups groups={groups} shown={reserveGroupId} total={reserveJobs.length} busy={trashBusy} onShow={id=>{setRetained(null);setSelection([]);setReserveGroupId(id);onClose();requestAnimationFrame(()=>document.getElementById("reserve-title")?.focus());}} roles={profile.searchPreferences?.roles??[]} onChanged={async roleChanged=>{setRetained(null);setSelection([]);return onReserveChanged(roleChanged);}}/>:null}
     <div className="opportunities-toolbar">
       {!inLot?<div className="review-view-summary">
-        <Select value={dateOrder} onValueChange={value=>{setDateOrder(value as "newest"|"oldest");setRetained(null);}}><SelectTrigger className="opportunity-date-order" aria-label={filter==="trash"?"Trier par date d’écartement":"Trier par date de mapping"}><span className="opportunity-date-order-label">Trier :</span><SelectValue /></SelectTrigger><SelectContent position="popper" side="bottom" sideOffset={6} align="start" className="opportunity-date-order-menu"><SelectItem value="newest">Du plus récent au plus ancien</SelectItem><SelectItem value="oldest">Du plus ancien au plus récent</SelectItem></SelectContent></Select>
+        <Select value={dateOrder} onValueChange={value=>{setDateOrder(value as "newest"|"oldest");}}><SelectTrigger className="opportunity-date-order" aria-label={filter==="trash"?"Trier par date d’écartement":"Trier par date de mapping"}><span className="opportunity-date-order-label">Trier :</span><SelectValue /></SelectTrigger><SelectContent position="popper" side="bottom" sideOffset={6} align="start" className="opportunity-date-order-menu"><SelectItem value="newest">Du plus récent au plus ancien</SelectItem><SelectItem value="oldest">Du plus ancien au plus récent</SelectItem></SelectContent></Select>
         {!retiredView?<HelpTooltip label="Vue des offres">{viewHelp}</HelpTooltip>:null}
       </div>:null}
-      <div className="review-toolbar-actions"><button type="button" className="review-radar-filter" aria-pressed={filter==="good_matches"} onClick={()=>changeView(filter==="good_matches"?"to_review":"good_matches")}>Correspondances Radar <span>{counts.good_matches}</span></button>{orderedJobs.length>0&&filter!=="trash"?<button type="button" className="secondary-button" aria-pressed={selecting} onClick={()=>{setRetained(null);setSelecting(!selecting);setSelection([]);}}>{selecting?"Terminer les actions groupées":"Actions groupées"}</button>:null}</div>
+      <div className="review-toolbar-actions"><button type="button" className="review-radar-filter" aria-pressed={filter==="good_matches"} onClick={()=>changeView(filter==="good_matches"?"to_review":"good_matches")}>Correspondances Radar <span>{counts.good_matches}</span></button>{orderedJobs.length>0&&filter!=="trash"?<button type="button" className="secondary-button" aria-pressed={selecting} onClick={()=>{setSelecting(!selecting);setSelection([]);}}>{selecting?"Terminer les actions groupées":"Actions groupées"}</button>:null}</div>
     </div>
-    {selecting&&orderedJobs.length?<div className="opportunities-batch" role="group" aria-label="Actions sur les offres cochées"><span role="status">{selected.length} offre{selected.length>1?"s":""} cochée{selected.length>1?"s":""}</span><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>setSelection(orderedJobs.slice(0,50).map(job=>job.id))}>Cocher {jobs.length>50?"les 50 premières":"tout"}</button>{selected.length?<><button type="button" className="secondary-button" onClick={()=>setSelection([])}>Tout décocher</button><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>onDeleteMany(selected)}><Trash2 size={15} aria-hidden />Mettre à la corbeille</button></>:null}</div>:null}
+    {selecting&&orderedJobs.length?<div className="opportunities-batch" role="group" aria-label="Actions sur les offres cochées"><span role="status">{selected.length} offre{selected.length>1?"s":""} cochée{selected.length>1?"s":""}</span><button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>setSelection(orderedJobs.slice(0,50).map(job=>job.id))}>Cocher {jobs.length>50?"les 50 premières":"tout"}</button><button type="button" className="secondary-button" disabled={!selected.length} onClick={()=>setSelection([])}>Tout décocher</button><button type="button" className="secondary-button" disabled={trashBusy||!selected.length} onClick={()=>onDeleteMany(selected)}><Trash2 size={15} aria-hidden />Mettre à la corbeille</button></div>:null}
     </div>
-    {!displayJobs.length&&inLot?null:!displayJobs.length?<WorkspaceState title={query?"Aucune offre ne correspond à cette recherche":filter==="archived"?"Aucune offre archivée":filter==="trash"?"La corbeille est vide":inReserve?"Aucune offre dans la réserve":filter==="to_review"?"Tout est examiné pour l’instant":filter==="selected"?"Votre sélection est encore vide":"Aucune offre dans cette vue"} action={emptyAction}>{query?"Effacez la recherche pour retrouver les offres de cette vue.":inReserve?"Votre lot du jour reste accessible au-dessus. Les offres gardées pour plus tard apparaîtront ici.":filter==="to_review"?"Retrouvez les offres sélectionnées dans Ma sélection.":filter==="archived"?`Les annonces de plus de ${ARCHIVE_AFTER_DAYS} jours arriveront ici.`:filter==="trash"?"Les offres écartées pourront être restaurées ici.":"Ajoutez une annonce ou consultez une autre vue."}</WorkspaceState>:<div className="opportunities-split" ref={readingPane}>
-      <div className="opportunity-list" tabIndex={0} role="region" aria-label="Liste des offres">{displayJobs.map(job=><article key={job.id} className={"opportunity-list-row "+(active?.id===job.id?"is-current":"")}>
+    {!hasReadingPane?<WorkspaceState title={inLot?"Aucune offre restante dans ce lot":query?"Aucune offre ne correspond à cette recherche":filter==="archived"?"Aucune offre archivée":filter==="trash"?"La corbeille est vide":inReserve?"Aucune offre dans la réserve":filter==="to_review"?"Tout est examiné pour l’instant":filter==="selected"?"Votre sélection est encore vide":"Aucune offre dans cette vue"} action={emptyAction}>{query?"Effacez la recherche pour retrouver les offres de cette vue.":inReserve?"Votre lot du jour reste accessible au-dessus. Les offres gardées pour plus tard apparaîtront ici.":filter==="to_review"?"Retrouvez les offres sélectionnées dans Ma sélection.":filter==="archived"?`Les annonces de plus de ${ARCHIVE_AFTER_DAYS} jours arriveront ici.`:filter==="trash"?"Les offres écartées pourront être restaurées ici.":"Ajoutez une annonce ou consultez une autre vue."}</WorkspaceState>:<div className="opportunities-split" ref={readingPane}>
+      <div className="opportunity-list" ref={offerList} tabIndex={0} role="region" aria-label="Liste des offres">{displayJobs.length===0?<WorkspaceState title="Aucune autre offre dans cette vue"/>:null}{displayJobs.map(job=><article key={job.id} className={"opportunity-list-row "+(active?.id===job.id?"is-current":"")}>
         {selecting?<label className="opportunity-check"><input type="checkbox" aria-label={"Cocher "+job.title+" · "+job.company} checked={selected.some(item=>item.id===job.id)} disabled={trashBusy||(selected.length>=50&&!selection.includes(job.id))} onChange={()=>setSelection(ids=>ids.includes(job.id)?ids.filter(id=>id!==job.id):[...selected.map(item=>item.id),job.id])}/><span className="sr-only">Cocher cette offre</span></label>:null}
         <button type="button" className="opportunity-open" aria-pressed={active?.id===job.id} onClick={event=>{opener.current=event.currentTarget;openListed(job);}}><strong>{job.title}</strong><span>{job.company||"Entreprise à confirmer"} · {job.contractType==="cdi"?"CDI":job.contractType==="cdd"?"CDD":job.contractType==="freelance"?"Freelance":job.contractType==="portage"?"Portage salarial":job.contractType==="part_time"?"Temps partagé":"Contrat à confirmer"}</span><span className="opportunity-conditions"><b>{job.dailyRate?formatPayRangeShort(job.dailyRateMin,job.dailyRateMax,"daily")??`${formatEuro(job.dailyRate)} / jour`:job.annualSalary?formatPayRangeShort(job.salaryMin,job.salaryMax,"annual")??`${formatEuro(job.annualSalary)} / an`:"Rémunération non communiquée"}</b><span>{remote[job.remoteMode]}</span></span><span className="opportunity-evidence">{!job.deletedAt?<FitBadge job={job}/>:null}<span className={"workspace-badge "+(job.flags.length?"is-warning":"")}>{job.deletedAt?"En corbeille":job.flags.length?`${job.flags.length} point${job.flags.length>1?"s":""} à vérifier`:"Critères renseignés"}</span>{!job.deletedAt&&job.flags.some(flag=>flag.startsWith("Sous votre minimum"))?<span className="workspace-badge is-warning">Sous votre minimum</span>:null}<small className="review-list-origin"><span>{job.source}</span>{!job.deletedAt&&reviewState(job)==="selected"?<span className="review-kept-label"><Check size={12}/>Sélectionnée</span>:null}</small></span></button>
       </article>)}</div>
@@ -210,7 +209,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
         </div>
       </section>:null}
     </div>}
-    {!displayJobs.length?<OpportunityReadingNotes/>:null}
+    {!hasReadingPane?<OpportunityReadingNotes/>:null}
   </div>;
 }
 

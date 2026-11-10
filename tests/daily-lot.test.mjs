@@ -76,6 +76,20 @@ test("Tri Q1 : nouveau jour, autre compte ou offres disparues : le lot est chois
   assert.equal(buildDailyLot(jobs, { day, ids: ["autre-compte-1", "autre-compte-2"] }, now).size, 20);
 });
 
+test("Un lot verrouillé reste lisible après la purge d’une ou de toutes ses offres", () => {
+  const [a, b, reserve] = many(3);
+  const saved = { day, ids: [a.id, b.id], locked: true };
+  const partial = buildDailyLot([b, reserve], saved, now);
+  assert.deepEqual(partial.ids, saved.ids);
+  assert.deepEqual(partial.remaining, [b]);
+  assert.equal(partial.triaged, 1);
+  const done = buildDailyLot([reserve], saved, now);
+  assert.deepEqual(done.ids, saved.ids);
+  assert.equal(done.triaged, 2);
+  assert.equal(done.waiting, 1);
+  assert.equal(lotHeadline(done), "Lot du jour bouclé");
+});
+
 test("Tri Q1 : lot bouclé et libellés", () => {
   const jobs = many(2);
   const first = buildDailyLot(jobs, null, now);

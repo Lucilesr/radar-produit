@@ -55,13 +55,16 @@ export function buildDailyLot(jobs: readonly JobRecord[], stored: StoredLot | nu
   const toReview = jobs.filter(job => awaitingDecision(job, now));
   const pending = (job: JobRecord | undefined) => !!job && awaitingDecision(job, now);
   const examined = jobs.filter(job => inOpportunityView(job, "to_review", now)).length;
-  // Ids of another day, another account or a deleted offer are simply dropped.
-  const kept = stored?.day === day ? [...new Set(stored.ids)].filter(id => byId.has(id)).slice(0, size) : [];
+  const savedIds = stored?.day === day ? [...new Set(stored.ids)].slice(0, size) : [];
+  // A locked lot keeps its saved IDs. Offers purged since then count as finished.
+  const kept = savedIds.filter(id => byId.has(id));
   const started = kept.some(id => !pending(byId.get(id)));
   let ids: string[];
-  const locked = kept.length > 0 && (stored?.locked === true || started);
-  if (!locked) ids = pickLot(toReview, now, size).map(job => job.id);
-  else ids = kept;
+  const savedLock = stored?.locked === true && savedIds.length > 0;
+  const locked = savedLock || started;
+  if (savedLock) ids = savedIds;
+  else if (started) ids = kept;
+  else ids = pickLot(toReview, now, size).map(job => job.id);
   const remaining = ids.map(id => byId.get(id)).filter(pending) as JobRecord[];
   remaining.sort((a, b) => triageScore(b, now) - triageScore(a, now) || a.id.localeCompare(b.id));
   return { day, ids, locked, remaining, triaged: ids.length - remaining.length, size: ids.length, waiting: examined - remaining.length };

@@ -1,3 +1,8 @@
+## 10 novembre 2026 — Stabilité du tri des offres
+
+- Le menu de tri conserve la colonne des offres et la barre d’actions en place. Les cases cochées restent sélectionnées quand l’ordre change.
+- Les offres restent accessibles pendant la confirmation du lot du jour. Un lot verrouillé reste utilisable si une offre a été purgée, et un ancien lot vide peut accueillir de nouvelles offres.
+
 ## 10 novembre 2026 — Progression sur les cartes de candidature
 
 - Les quatre segments de la check-list d’envoi sont de nouveau visibles sur les cartes du Kanban et de la liste mobile. Les segments verts indiquent l’avancement et les segments gris ce qu’il reste à cocher.

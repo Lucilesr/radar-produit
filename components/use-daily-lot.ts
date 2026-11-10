@@ -16,10 +16,13 @@ function readRaw(key: string) {
   return raw;
 }
 
-function parse(raw: string | null): StoredLot | null {
+function parse(raw: string | null, jobs: readonly JobRecord[]): StoredLot | null {
   try {
     const value = JSON.parse(raw ?? "null") as StoredLot | null;
-    return value && typeof value.day === "string" && Array.isArray(value.ids) ? { day: value.day, ids: value.ids.filter(id => typeof id === "string"), locked: value.locked === true } : null;
+    if (!value || typeof value.day !== "string" || !Array.isArray(value.ids)) return null;
+    const available = new Set(jobs.map(job => job.id));
+    // An old browser-only lot must contain only existing offers before its first save.
+    return { day: value.day, ids: value.ids.filter(id => available.has(id)), locked: value.locked === true };
   } catch { return null; }
 }
 
@@ -48,7 +51,7 @@ export function useDailyLot(jobs:JobRecord[],ready:boolean,owner=""){
  const read=useCallback(()=>readRaw(storageKey),[storageKey]);
  const raw=useSyncExternalStore(subscribe,read,()=>undefined),now=useSyncExternalStore(subscribeClock,readClock,()=>0);
  const canonical=remote.state?.lot??null;
- const lot=useMemo(()=>!ready||raw===undefined||!now?null:buildDailyLot(jobs,canonical??parse(raw),now),[jobs,canonical,raw,now,ready]);
+ const lot=useMemo(()=>!ready||raw===undefined||!now?null:buildDailyLot(jobs,canonical??parse(raw,jobs),now),[jobs,canonical,raw,now,ready]);
  const matches=!!lot&&canonical?.day===lot.day&&canonical.ids.join()===lot.ids.join()&&canonical.locked===lot.locked;
  useEffect(()=>{
   if(!ready||!owner||!lot||!remote.ready||remote.reading||remote.busy||remote.error||matches)return;
@@ -56,6 +59,11 @@ export function useDailyLot(jobs:JobRecord[],ready:boolean,owner=""){
   const frame=requestAnimationFrame(()=>{pending.current=signature;void saveAccountLot(owner,value).finally(()=>{pending.current=null;});});return()=>cancelAnimationFrame(frame);
  },[ready,owner,lot,remote.ready,remote.reading,remote.busy,remote.error,matches]);
  useEffect(()=>{if(canonical&&raw!==undefined&&JSON.stringify(canonical)!==raw)write(storageKey,canonical);},[canonical,raw,storageKey]);
- const lock=async()=>{if(!lot||!matches||!remote.ready)return false;const saved=await saveAccountLot(owner,{day:lot.day,ids:lot.ids,locked:true});return !!saved?.lot&&saved.lot.day===lot.day&&saved.lot.ids.join()===lot.ids.join();};
- return {lot:matches?lot:null,lock,ready:matches,error:remote.error,reload:remote.reload};
+ const lock=async()=>{
+  if(!lot||!matches||!remote.ready)return false;
+  if(!lot.ids.length||lot.locked)return true;
+  const saved=await saveAccountLot(owner,{day:lot.day,ids:lot.ids,locked:true});
+  return !!saved?.lot?.locked&&saved.lot.day===lot.day&&saved.lot.ids.join()===lot.ids.join();
+ };
+ return {lot,lock,ready:matches,error:remote.error,reload:remote.reload};
 }
