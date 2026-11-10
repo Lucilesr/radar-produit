@@ -106,6 +106,12 @@ export function pinMysteryOffers<T extends MysteryCandidate>(jobs: readonly T[],
   return [...pinned, ...jobs.filter(job => !pinned.includes(job))];
 }
 
+export function putMysteryOffersLast<T extends MysteryCandidate>(jobs: readonly T[]): T[] {
+  const ordinary: T[] = [], mystery: T[] = [];
+  for (const job of jobs) (isMysteryOffer(job) ? mystery : ordinary).push(job);
+  return [...ordinary, ...mystery];
+}
+
 /** Message when a completed offer reveals its fit; "Bonne pioche" for a very close one. */
 export function revealMessage(job: { fit?: number | null; fitLabel?: FitLabel }) {
   if (!job.fitLabel || job.fit == null) return "Fiche complétée. Il manque encore le niveau ou les missions pour la juger.";
