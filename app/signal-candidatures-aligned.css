@@ -1,5 +1,8 @@
 .radar-page[data-space=pipeline]{max-width:1200px;margin-inline:auto;padding:28px 32px 56px;min-width:0}
 .applications-aligned{min-width:0}.applications-aligned>.workspace-page-header{margin-bottom:6px;align-items:center}.applications-aligned>.workspace-page-header h1{font:750 40px/1.1 var(--font-display);letter-spacing:-.01em;color:var(--signal-petrol-ink)}
+.applications-aligned>.workspace-page-header:has(.application-lessons-link){flex-wrap:wrap}
+.applications-aligned>.workspace-page-header:has(.application-lessons-link)>div{display:flex;align-items:center;gap:10px;margin-inline-start:auto}
+.application-lessons-link{font-size:14px;white-space:nowrap}
 .application-overview{margin:0 0 20px;color:var(--signal-muted);font-size:15px}.applications-aligned .applications-workspace{display:grid;gap:20px}
 .application-next-step{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 24px;border-radius:var(--signal-radius-card);background:var(--signal-petrol-ink);color:var(--signal-paper)}
 .application-next-step>div{min-width:0}.application-next-step p{margin:0 0 6px;color:var(--signal-energy);font-size:12px;text-transform:uppercase;font-weight:700;letter-spacing:.06em}.application-next-step h2{font:700 24px/1.25 var(--font-display);letter-spacing:-.01em;margin:0;overflow-wrap:anywhere}.application-next-step span{font-size:14px}.application-next-step .signal-form-button{flex:none;background:var(--signal-energy);color:var(--signal-petrol-ink);min-height:48px;border-radius:var(--signal-radius-control)}

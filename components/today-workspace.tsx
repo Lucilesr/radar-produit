@@ -66,9 +66,15 @@ export function ApplicationsWorkspace({lessonsActive=false,onLessons,onMainView,
   function chooseView(next:ApplicationView){setView(next);try{sessionStorage.setItem("radar:applications-view",next);}catch{}}
   const showFunnel=view==="funnel"&&!!funnel?.value?.visible;
   async function changeStatus(job:JobRecord,status:JobStatus,columnId?:string){if(statusLock.current)return false;statusLock.current=true;setBusy(job.id);setErrorJob(job.id);setError("");try{const saved=await onStatus(job.id,status,columnId);if(!saved)setError("Le déplacement n’est pas confirmé. Le dernier statut confirmé reste affiché.");return saved;}catch{setError("Statut non confirmé. Actualisez pour vérifier avant de réessayer.");return false;}finally{statusLock.current=false;setBusy(null);requestAnimationFrame(()=>{if(document.activeElement!==document.body)return;document.getElementById("workspace-title")?.focus({preventScroll:true});});}}
-  const lessonLink=<a href="?tab=pipeline&section=lessons" className="application-lessons-link" onClick={event=>{event.preventDefault();onLessons?.();}}>Mes leçons</a>;
   if(lessonsActive)return <div className="applications-aligned"><a href="?tab=pipeline" className="application-return" onClick={event=>{event.preventDefault();onMainView?.();}}>← Candidatures</a><PageHeader title="Mes leçons"/>{lessons}</div>;
-  return <div className="applications-aligned"><PageHeader title="Candidatures"><WorkspaceButton className="application-add-candidate" aria-label="Ajouter depuis une offre" onClick={()=>onOffers?.(true)}><span className="application-add-label">Ajouter depuis une offre</span><span className="application-add-icon" aria-hidden>+</span></WorkspaceButton></PageHeader>
+  return <div className="applications-aligned"><PageHeader title="Candidatures">
+    <a href="?tab=pipeline&section=lessons" className="application-lessons-link" onClick={event=>{
+      if(!onLessons||event.button||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+      event.preventDefault();
+      onLessons();
+    }}>Mes leçons</a>
+    <WorkspaceButton className="application-add-candidate" aria-label="Ajouter depuis une offre" onClick={()=>onOffers?.(true)}><span className="application-add-label">Ajouter depuis une offre</span><span className="application-add-icon" aria-hidden>+</span></WorkspaceButton>
+  </PageHeader>
     {!placeholder?<p className="application-overview">{active.length} en cours · {followups} relance{followups!==1?"s":""} à faire · {interviews} entretien{interviews!==1?"s":""} cette semaine</p>:null}
     {placeholder??<div className="applications-workspace">{notice}
       {refusal??(ready&&next?<section className="application-next-step" aria-labelledby="application-next-title"><div><p>Prochaine étape</p><h2 id="application-next-title">{next.label}</h2><span className="application-next-help">{next.minutes} minutes, à votre rythme.</span></div><WorkspaceButton variant="primary" onClick={()=>onAction(next.action)}>{next.kind==="interview"?"Préparer":next.kind==="followups"?"Relancer":"Préparer la candidature"}<span className="application-next-mobile-duration"> · {next.minutes} min</span></WorkspaceButton></section>:null)}
@@ -77,7 +83,7 @@ export function ApplicationsWorkspace({lessonsActive=false,onLessons,onMainView,
       {error&&preparedJobs.some(job=>job.id===errorJob)?<WorkspaceState error title="Déplacement non enregistré">{error}</WorkspaceState>:null}
       {!personal.ready?<WorkspaceState error={!!personal.error} title={personal.error?"Colonnes indisponibles":"Chargement des colonnes…"}>{personal.error}{personal.error?<WorkspaceButton onClick={()=>void personal.load()}>Réessayer</WorkspaceButton>:null}</WorkspaceState>:!jobs.length&&!preparedJobs.length?<WorkspaceState title="Votre suivi commence ici">Sélectionnez une offre pour préparer votre candidature.<WorkspaceButton variant="primary" onClick={()=>onOffers?.()}>Voir mon lot du jour</WorkspaceButton></WorkspaceState>:mobile?<ApplicationMobileList jobs={jobs} preparedJobs={preparedJobs} board={personal.board} now={now} busy={busy} onStatus={changeStatus} onOpen={onOpen} onReport={onReport} onColumn={personal.open}/>:<ApplicationKanban board={personal.board} onColumn={personal.open} onColumnMove={(id,target)=>void personal.move(id,target)} onColumnDelete={personal.openDelete} columnNotice={personal.notice} jobs={jobs} preparedJobs={preparedJobs} now={now} busy={busy} onStatus={changeStatus} onOpen={onOpen}/>}
       </>}
-      {lessonLink}{personal.dialog}
+      {personal.dialog}
     </div>}
   </div>;
 }

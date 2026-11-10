@@ -1,3 +1,7 @@
+## 10 novembre 2026 — Accès à Mes leçons
+
+- Le lien « Mes leçons » figure dans l’en-tête de Candidatures, à côté de l’ajout sur ordinateur et mobile.
+
 ## 10 novembre 2026 — Accès aux archives et à la corbeille
 
 - Un même onglet donne accès à deux listes distinctes, Archives et Corbeille. Le lot du jour perd la mention « Classées par adéquation » et le lien Archives isolé.
