@@ -1,3 +1,7 @@
+## 10 novembre 2026 — Accès au suivi depuis une offre
+
+- Le bouton « J’ai postulé » est visible sous le titre de l’offre. Après enregistrement, le lien vers Candidatures reste à cet emplacement.
+
 ## 10 novembre 2026 — Actions de Mon compte
 
 - Les boutons de déconnexion, d’export et de suppression sont alignés à droite de leur carte sur ordinateur et mobile.
