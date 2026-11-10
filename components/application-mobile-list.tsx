@@ -2,6 +2,7 @@
 import {useId,useLayoutEffect,useRef,useState} from "react";
 import {Dialog} from "radix-ui";
 import {ChevronDown,MoreHorizontal,Pencil} from "lucide-react";
+import {ApplicationCarePreview} from "@/components/application-care";
 import {ChoiceSelect} from "@/components/choice-select";
 import {Collapsible,CollapsibleContent,CollapsibleTrigger} from "@/components/ui/collapsible";
 import {WorkspaceButton,WorkspaceFormError} from "@/components/workspace-form";
@@ -38,6 +39,7 @@ export function ApplicationMobileList({jobs,board,busy,now,onStatus,onOpen,onRep
  function card(job:JobRecord,due=false){const step=applicationInterviewStep(job,now),closed=terminalStatuses.includes(job.status);return <article key={job.id} className={`application-mobile-card${step.next?' has-interview':''}${due?' has-followup':''}`} aria-busy={busy===job.id} onClick={event=>{if(!(event.target as Element).closest('button,a,input,select,summary,[role=combobox]'))onOpen(job,'application');}}>
   <div className="application-mobile-card-heading"><h3><button id={`application-mobile-${job.id}`} type="button" aria-label={`Ouvrir la candidature : ${job.title} · ${job.company||"Entreprise à confirmer"}`} disabled={!!busy} onClick={()=>onOpen(job,'application')}>{job.title}</button></h3><details className="application-mobile-card-actions"><summary aria-label={`Actions · ${job.company||job.title}`}><MoreHorizontal size={18} aria-hidden/></summary><div><ChoiceSelect label={`Changer d’étape · ${job.company||job.title}`} value={personalColumn(job,columns)} disabled={!!busy} options={columns.filter(column=>column.stage!=='other'||column.id===personalColumn(job,columns)).map(column=>({value:column.id,label:column.label}))} onChange={target=>void move(job,target)}/></div></details></div>
   <p className="application-card-company">{job.company||'Entreprise à confirmer'}{job.appliedAt?` · envoyée le ${formatDate(job.appliedAt,zone)}`:''}</p>
+  <ApplicationCarePreview care={job.applicationCare}/>
   {job.deletedAt?<p className="signal-help">Offre en corbeille · suivi conservé</p>:null}
   {step.next?<p className="application-mobile-meeting">{formatDate(step.next.startAt,step.next.timeZone,true)}</p>:closed?<p>{statusLabels[job.status]}</p>:job.status==='offer'?<p>Proposition reçue</p>:null}
   {due?<div className="application-mobile-followup-actions"><WorkspaceButton variant="primary" disabled={!!busy} onClick={()=>onOpen(job,'application')}>Relancer</WorkspaceButton><WorkspaceButton disabled={!!busy} onClick={()=>onReport?.(job)}>Reporter</WorkspaceButton></div>:null}

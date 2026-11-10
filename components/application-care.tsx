@@ -7,6 +7,13 @@ import {SignalProgress} from "@/components/signal/signal-progress";
 import {careChecks,careCount,careSummary,emptyCare,type ApplicationCare as Care,type CareField} from "@/lib/application-care";
 import {sessionWrite} from "@/lib/session-write";
 import type {JobRecord} from "@/lib/types";
+
+const careSegments=careChecks.map((_,index)=>index+1);
+
+export function ApplicationCarePreview({care}:{care?:Care}){
+ return <SignalProgress value={careCount(care)} max={careChecks.length} segments={careSegments} label="Check-list d’envoi" className="application-card-care"/>;
+}
+
 export function ApplicationCare({job}:{job:JobRecord}){
  const {queue,activeKind}=useRadarNextSteps(),suggested=queue.find(step=>step.kind==="care"&&step.action.type==="care"&&step.action.jobId===job.id);
  const currentStep=!!suggested&&(queue[0]?.id===suggested.id||activeKind==="care");

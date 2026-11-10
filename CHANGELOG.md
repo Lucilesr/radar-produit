@@ -1,3 +1,7 @@
+## 10 novembre 2026 — Progression sur les cartes de candidature
+
+- Les quatre segments de la check-list d’envoi sont de nouveau visibles sur les cartes du Kanban et de la liste mobile. Les segments verts indiquent l’avancement et les segments gris ce qu’il reste à cocher.
+
 ## 10 novembre 2026 — Lecture des offres
 
 - Les onglets « L’offre » et « Préparer / brief » se trouvent sous les quatre informations clés. Le crayon de modification est à côté de « L’annonce ».
