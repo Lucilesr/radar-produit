@@ -4,7 +4,7 @@ Toute nouvelle proposition est consignée ici avant une éventuelle décision ; 
 
 ## Retours de recette du 9 novembre 2026
 
-Les quatre premiers points sont validés comme lots R1 à R4, détaillés dans [plan-retours-9-novembre.md](plan-retours-9-novembre.md) ; la dette CSS (R5) est traitée dans #288. Le lot R1bis (fluidité du Kanban, de la séance et du plan de la semaine), ajouté le 11 novembre, est détaillé dans le même plan.
+Les quatre premiers points sont validés comme lots R1 à R4, détaillés dans [plan-retours-9-novembre.md](plan-retours-9-novembre.md) ; la dette CSS (R5) est traitée dans #288. Les lots de fluidité R1bis à R1quinquies (Kanban, séance, plan de la semaine, tri des offres, retour sur l’onglet, finitions), ajoutés le 11 novembre, sont détaillés dans le même plan.
 
 - **Enregistrements qui bloquent l’interface.** Quand un choix s’enregistre (par exemple une case de la check-list dans « Préparer / brief »), le reste du formulaire est désactivé jusqu’à la réponse, ce qui gêne les modifications rapprochées. Piste : enregistrer en arrière-plan, garder les autres contrôles actifs et n’afficher l’attente que sur l’élément concerné.
 - **Résumé du prompt ChatGPT.** Le contenu du prompt est affiché tel quel et se lit mal. Piste : un résumé en tête — ce que le prompt va produire et sur quelles expériences, histoires et documents il s’appuie — avec le texte complet repliable en dessous.

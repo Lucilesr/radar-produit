@@ -17,7 +17,10 @@ Une fois le lot livré, retirer son idée de `docs/idees.md`.
 | Lot | Sujet | Taille |
 | --- | --- | --- |
 | R1 | Enregistrer sans bloquer : check-list d’envoi | M |
-| R1bis | Fluidité : Kanban, séance, plan de la semaine | L |
+| R1bis | Fluidité : Kanban (ordinateur et mobile), séance, plan de la semaine | L |
+| R1ter | Fluidité : tri des offres | M |
+| R1quater | Fluidité : retour sur l’onglet sans griser les blocs | M |
+| R1quinquies | Fluidité : finitions (tags, relance, réserve, sources, confort, termes) | M |
 | R2 | Résumé du prompt ChatGPT | M |
 | R3 | Score chiffré et coloré dans Offres | S |
 | R4 | ✓ verts dans « Pourquoi elle remonte » | XS |
@@ -69,7 +72,7 @@ Les lister dans la PR comme suites possibles, sans les modifier.
 
 ---
 
-## R1bis — Fluidité : Kanban, séance, plan de la semaine
+## R1bis — Fluidité : Kanban (ordinateur et mobile), séance, plan de la semaine
 
 **Problème constaté par Lucile (11 novembre).** L’application rame à l’usage :
 
@@ -82,7 +85,7 @@ Les lister dans la PR comme suites possibles, sans les modifier.
 
 | Geste | Où | Ce qui bloque |
 | --- | --- | --- |
-| Déplacer une carte | `components/radar-app.tsx`, `updateJob()` / `changeStatus()` ; `components/application-drag.tsx` | `setJobs` n’est appelé qu’après le `PATCH /api/jobs/:id`. Pendant l’attente, `busy` désactive toutes les commandes du tableau (`disabled={!!busy}`). |
+| Déplacer une carte | `components/radar-app.tsx`, `updateJob()` / `changeStatus()` ; `components/application-drag.tsx` (ordinateur) ; `components/application-mobile-list.tsx`, `move()` (« Déplacer vers » sur mobile) | `setJobs` n’est appelé qu’après le `PATCH /api/jobs/:id`. Pendant l’attente, `busy` désactive toutes les commandes du tableau (`disabled={!!busy}`). |
 | Lancer / reprendre la séance | `components/use-session-journey.ts`, `start()` puis `checkpoint()` | `start()` refuse tant que le carnet (`/api/experiences`) et le point de reprise (`/api/radar-continuity`) ne sont pas relus. Puis `checkpoint()` attend l’écriture du point de reprise **avant** d’ouvrir l’étape (`after()` n’est appelé qu’après `save()`). |
 | Étape suivante | `use-session-journey.ts`, `next()` | Même attente via `checkpoint()`. En plus, `next()` **ignore le clic sans rien dire** si une autre écriture est en cours ailleurs (`pending.current.size`, alimenté par `sessionWrite`). C’est le « clic qui ne fait rien ». |
 | Cocher une action de la semaine | `components/week-plan.tsx`, bouton `week-check` | La case ne change qu’après le `PUT /api/week-plan`. `planBusy` désactive toutes les cases pendant l’envoi. |
@@ -98,8 +101,8 @@ Reporter les chiffres dans la PR (tableau avant / après). Ajouter un en-tête `
 
 **Comportement attendu.** Règle générale : **l’écran réagit tout de suite, le serveur confirme ensuite.** Moins de 100 ms entre le clic et le changement visible.
 
-1. **Kanban.**
-   - La carte part dans sa nouvelle colonne dès le dépôt (ou dès « Déplacer vers »). Mise à jour optimiste de `jobs`.
+1. **Kanban, sur ordinateur et dans la liste mobile.**
+   - La carte part dans sa nouvelle colonne dès le dépôt (ou dès « Déplacer vers », y compris sur mobile). Mise à jour optimiste de `jobs`.
    - Seule la carte en cours d’envoi porte un état discret (`aria-busy`, opacité légère). Les autres cartes restent déplaçables.
    - Les envois sur une **même** carte partent dans l’ordre ; les envois sur des cartes différentes peuvent partir en parallèle.
    - En cas d’échec, la carte revient à sa colonne d’origine, avec le message existant et « Réessayer ». Les autres cartes ne bougent pas.
@@ -128,7 +131,7 @@ Reporter les chiffres dans la PR (tableau avant / après). Ajouter un en-tête `
 **Critères d’acceptation.**
 
 - [ ] Tableau avant / après des quatre délais dans la PR, mesurés sur le staging.
-- [ ] Déplacer 3 cartes à la suite en moins de 3 secondes : les 3 sont à leur place immédiatement, 3 requêtes confirmées, aucun 409.
+- [ ] Déplacer 3 cartes à la suite en moins de 3 secondes, sur ordinateur puis dans la liste mobile à 390 px : les 3 sont à leur place immédiatement, 3 requêtes confirmées, aucun 409.
 - [ ] « Lancer ma séance » ouvre la première étape en moins de 100 ms une fois Aujourd’hui affiché.
 - [ ] « Étape suivante » cliqué 2 fois vite : on avance de 2 étapes, le point de reprise final est le bon après rechargement.
 - [ ] Cocher 3 actions de la semaine à la suite : les 3 restent cochées, état identique après rechargement.
@@ -136,7 +139,90 @@ Reporter les chiffres dans la PR (tableau avant / après). Ajouter un en-tête `
 - [ ] Clavier et lecteurs d’écran : le focus ne saute pas, la zone `role="status"` annonce l’enregistrement.
 - [ ] Tests unitaires de la file sur ces nouveaux usages ; tests et types verts, console vide.
 
-**Hors périmètre.** « Votre confort », la relance et les termes du domaine (listés sous R1) restent pour un lot suivant, avec la même file.
+**Hors périmètre.** Le tri des offres (R1ter), les relectures au retour sur l’onglet (R1quater) et les petits gestes (R1quinquies) ont leurs propres lots.
+
+---
+
+## R1ter — Fluidité : tri des offres
+
+**Problème.** Le tri est le geste le plus répété de Radar, et chaque décision fait attendre.
+
+| Geste | Où | Ce qui bloque |
+| --- | --- | --- |
+| Sélectionner, Plus tard, Remettre à examiner (boutons et raccourcis S, L) | `components/opportunities-workspace.tsx`, `review()` ; `components/radar-app.tsx`, `updateJob()` | L’offre suivante ne s’ouvre qu’après la réponse du serveur. Pendant ce temps, `actionsBusy` désactive les boutons **et** les raccourcis (option `disabled` de `triageShortcut`). |
+| Première décision du jour | `updateJob()` puis `lockDailyLot()` (`components/use-daily-lot.ts`) | Deux allers-retours à la suite : verrouiller le lot (écriture du point de reprise dans `profiles.data`), puis enregistrer le choix. |
+| Écarter (bouton et raccourci X) | `radar-app.tsx`, `requestDelete()` / `changeTrash()` | L’offre ne disparaît qu’après la réponse. Pendant l’envoi, `trashLock` **ignore sans message** un autre « Écarter », l’actualisation des offres (`refreshOffers`) et bloque la barre de séance (`busy={!!trashBusy…}`). |
+
+**Comportement attendu.**
+
+1. Au clic ou à la touche, l’offre quitte la liste et l’offre suivante s’ouvre **immédiatement**, focus sur son titre. Le compteur « Plus que N » suit tout de suite.
+2. Les décisions partent dans une file : les envois d’une même offre partent dans l’ordre, plusieurs offres peuvent être en cours en même temps. On peut enchaîner S, L, X sans attendre.
+3. Le verrouillage du lot du jour passe **en tête de file** à la première décision, sans retarder l’affichage. Si le verrouillage échoue, les décisions en attente ne partent pas, et un bandeau propose « Réessayer ».
+4. En cas d’échec d’une décision, l’offre revient à sa place dans la liste, avec le message existant (« Votre choix n’a pas été enregistré. L’offre reste à sa place. ») et « Réessayer ». Le focus ne saute pas si l’utilisatrice est déjà sur une autre offre : seul le message s’affiche.
+5. « Écarter » ne bloque plus les autres écarts, l’actualisation ni la séance. Une actualisation pendant un envoi attend la fin de la file, puis s’exécute, au lieu d’être ignorée.
+6. Les toasts (« Offre ajoutée à ma sélection », « Restauration possible dans Corbeille ») n’apparaissent qu’après confirmation, et se regroupent si plusieurs décisions sont confirmées à la suite.
+
+**Mise en œuvre.** Réutiliser la file de R1. Ne pas changer les API.
+
+**Critères d’acceptation.**
+
+- [ ] Mesure avant / après sur le staging : délai entre la touche S et l’ouverture de l’offre suivante.
+- [ ] Trier 5 offres au clavier en moins de 5 secondes (S, L, X, S, X) : les 5 décisions sont visibles tout de suite et confirmées après rechargement.
+- [ ] Première décision du jour : l’offre suivante s’ouvre aussi vite que pour les décisions suivantes.
+- [ ] Réseau coupé pendant un tri : l’offre revient, message et « Réessayer », les autres offres restent triables.
+- [ ] « Actualiser » cliqué pendant un « Écarter » : l’actualisation a bien lieu après.
+
+---
+
+## R1quater — Fluidité : retour sur l’onglet sans griser les blocs
+
+**Problème.** À chaque retour sur l’onglet Radar (événement `focus` de la fenêtre), six relectures partent en même temps. C’est ce qui arrive après avoir consulté un job board dans un autre onglet, pendant l’étape « visites » de la séance. Pendant ces relectures, plusieurs blocs passent en « non prêt » et se grisent quelques secondes.
+
+| Bloc | Où | Ce qui grise |
+| --- | --- | --- |
+| Séance (lancer, reprendre, étape suivante) | `components/use-radar-continuity.ts` (relecture au `focus`) ; `components/use-radar-session.ts` | `ready` vaut `false` tant que `remote.reading` est vrai. |
+| Ma semaine (cases) | `components/week-plan.tsx`, `load()` | `setReady(false)` au début de chaque relecture. |
+| Rythme de la semaine | `components/week-series.tsx`, `load()` | `ready` vaut `false` pendant `reading`. |
+| Check-list d’envoi | `components/application-care.tsx`, `load()` | `setReady(false)` au début de chaque relecture. |
+| Relance | `components/application-followup.tsx`, `load()` | Même schéma. |
+| Propositions du radar | `components/contextual-prompts.tsx` | Relecture au `focus`. |
+
+**Comportement attendu.**
+
+1. Une relecture **ne grise jamais** un bloc déjà affiché. `ready` ne passe à `false` qu’au tout premier chargement. Les relectures suivantes se font en arrière-plan, et l’état reçu remplace l’affichage seulement s’il est plus récent (version plus haute).
+2. Si une écriture est en file pour ce bloc, la relecture ne doit pas écraser le changement local en attente : appliquer l’état serveur, puis rejouer les changements en attente (même règle que R1, point 6).
+3. Limiter les relectures au retour : pas plus d’une toutes les 30 secondes par bloc, et seulement si l’onglet est resté caché plus de quelques secondes (`visibilitychange` plutôt que `focus`, qui se déclenche aussi en sortant d’une fenêtre de dialogue ou des DevTools).
+4. Si une relecture échoue, garder l’affichage et ne montrer l’erreur que si l’utilisatrice tente une action qui en dépend.
+
+**Mise en œuvre.** Un petit utilitaire partagé (« relecture silencieuse ») dans `lib/` ou `components/`, avec tests, utilisé par les six blocs. Ne pas changer les API.
+
+**Critères d’acceptation.**
+
+- [ ] Changer d’onglet 10 secondes puis revenir : aucun bloc ne se grise, aucun bouton ne devient indisponible.
+- [ ] Revenir pendant qu’une case de « Ma semaine » est en cours d’envoi : la case reste cochée, l’état final est le bon après rechargement.
+- [ ] Modifier le plan dans un autre onglet, revenir : la nouvelle version s’affiche sans clignotement.
+- [ ] Nombre de requêtes au retour sur l’onglet compté avant / après dans la PR.
+
+---
+
+## R1quinquies — Fluidité : finitions
+
+Même schéma, gestes moins fréquents. Réutiliser la file de R1 et appliquer les mêmes règles : réaction immédiate, confirmation en arrière-plan, repli ciblé et « Réessayer » en cas d’échec, aucun clic ignoré sans message.
+
+| Geste | Où | Ce qui bloque aujourd’hui |
+| --- | --- | --- |
+| Ajouter ou retirer un tag sur une carte | `components/application-tags.tsx`, `act()` | La fenêtre des tags est verrouillée (fermeture et retour impossibles) pendant l’envoi ; un 2e clic est ignoré. |
+| « Relance faite » | `components/application-followup.tsx`, `done()` | Tout le bloc est désactivé ; l’écriture bloque aussi « Étape suivante » de la séance. |
+| « Plus tard » ou fermeture d’une proposition du radar | `components/contextual-prompts.tsx`, `write()` | Clic ignoré pendant un autre envoi ; bloque aussi la séance (`sessionWrite`). |
+| Actions groupées de la réserve (écarter, archiver, garder) | `components/opportunities-workspace.tsx`, `ReserveGroups.decide()` | Tout le bloc est désactivé, puis la liste entière est relue avant de rendre la main. |
+| Mettre une source en pause ou la reprendre | `components/source-card.tsx`, `toggleCollection()` | Toute la carte est désactivée pendant l’envoi. |
+| Marquer une source consultée | `components/source-panel.tsx`, `visitSource()` | Pas de blocage visible, mais l’écriture bloque « Étape suivante » tant qu’elle n’est pas finie (réglé par R1bis, point 3 : vérifier). |
+| Cases de « Votre confort » | `components/radar-preferences.tsx`, `save()` | Toutes les cases désactivées pendant l’envoi. |
+| Confirmer ou ignorer un terme du domaine | `components/use-domain-terms.ts`, `write()` ; `components/domain-terms.tsx` | Tous les termes désactivés pendant l’envoi. |
+
+**Hors périmètre, attendre reste normal :** enregistrer un long formulaire (offre, expérience, histoire), supprimer le compte, télécharger une sauvegarde, lancer un balayage.
+
+**Critères d’acceptation.** Pour chaque geste : deux actions à la suite en moins d’une seconde sont toutes deux visibles tout de suite et confirmées après rechargement ; réseau coupé, seul l’élément concerné revient, avec « Réessayer ».
 
 ---
 
