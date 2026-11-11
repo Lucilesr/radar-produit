@@ -1,3 +1,7 @@
+## 11 novembre 2026 — Fluidité des candidatures, de la séance et du plan
+
+- Le déplacement des cartes, l’ouverture des étapes et les cases du plan réagissent au clic. Radar confirme les changements en arrière-plan et propose un réessai en cas d’échec.
+
 ## 11 novembre 2026 — Check-list d’envoi
 
 - Les cases et la progression réagissent dès le clic. Les choix s’enregistrent dans l’ordre et chaque échec peut être relancé depuis la check-list.
