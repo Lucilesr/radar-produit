@@ -1,3 +1,7 @@
+## 11 novembre 2026 — Revenir sur l’onglet Radar
+
+- La séance, les actions de la semaine, la check-list, les relances et les propositions restent utilisables pendant leur relecture au retour sur l’onglet.
+
 ## 11 novembre 2026 — Tri des offres
 
 - La sélection, la réserve et les écarts passent à l’offre suivante dès la décision. Les choix s’enregistrent en arrière-plan et peuvent être relancés depuis la liste.
