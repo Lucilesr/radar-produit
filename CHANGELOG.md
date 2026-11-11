@@ -1,3 +1,7 @@
+## 11 novembre 2026 — Check-list d’envoi
+
+- Les cases et la progression réagissent dès le clic. Les choix s’enregistrent dans l’ordre et chaque échec peut être relancé depuis la check-list.
+
 ## 11 novembre 2026 — Suggestions de critères dans Offres
 
 - Offres n’affiche plus le bandeau qui proposait d’ajuster les critères à partir des offres écartées. Les critères restent modifiables dans Mon radar.
