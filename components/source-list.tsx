@@ -1,5 +1,6 @@
 "use client";
 
+import { SourceWriteError } from "@/components/source-actions";
 import { useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { type SourceSetting } from "@/components/source-card";
@@ -28,7 +29,6 @@ export function SourceList({ sources, settings, jobs, profile, onOpen, onVisit }
 }) {
   const preferences = searchPreferences(profile.searchPreferences);
   const [filter, setFilter] = useState<SourceFilter>("all");
-  const [visiting, setVisiting] = useState<string | null>(null);
   const settingFor = (name: string) => settings.find(item => item.source === name);
   const statusFor = (source: Source) => sourceStatus(settingFor(source.name), source.mode);
   // A saved search looking for a title the account dropped also needs attention.
@@ -69,13 +69,14 @@ export function SourceList({ sources, settings, jobs, profile, onOpen, onVisit }
                   ? <a className="secondary-button" href={setting?.linkUrl || source.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden />Ouvrir</a>
                   : null}
                 {kind === "manual"
-                  ? <WorkspaceButton variant="quiet" busy={visiting === source.name} disabled={visiting !== null} onClick={async () => { setVisiting(source.name); try { await onVisit(source); } finally { setVisiting(null); } }}>J’ai fait le tour</WorkspaceButton>
+                  ? <WorkspaceButton variant="quiet" onClick={() => void onVisit(source)}>J’ai fait le tour</WorkspaceButton>
                   : null}
                 <WorkspaceButton variant={kind === "manual" ? "quiet" : "secondary"} aria-haspopup="dialog" onClick={() => onOpen(source)}>
                   {statusActions[status] === "Ouvrir" ? "Réglages" : statusActions[status]}
                 </WorkspaceButton>
               </span>
             </div>
+            {kind === "manual" ? <SourceWriteError source={source.name} kind="visit"/> : null}
           </li>;
         })}</ul>
       </div>;

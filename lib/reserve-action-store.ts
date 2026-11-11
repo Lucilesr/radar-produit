@@ -13,7 +13,13 @@ function matches(){return Object.entries(fields).map(([key,column])=>`j.${column
 const jobGate=`(SELECT count(*) FROM json_each(?) s JOIN jobs j ON j.id=json_extract(s.value,'$.id') WHERE j.user_id=? AND ${matches()})=?`;
 const roleGate="EXISTS(SELECT 1 FROM profiles WHERE user_id=? AND coalesce(json_extract(data,'$.searchPreferences.roles'),'[]')=json(?))";
 const receiptKey=(id:string)=>`reserve-action:${id}`;
-function summary(id:string,r:Receipt,undone=false){return {id,action:r.action,count:r.before.length,removed:r.removed,role:r.role,undone};}
+function summary(id:string,r:Receipt,undone=false){
+ const previous=new Map((undone?r.after:r.before).map(row=>[row.id,row.updatedAt]));
+ const changes=r.action==="role"?[]:(undone?r.before:r.after).map(({id,reviewState,updatedAt,deletedAt,dismissalReason,dismissalNote})=>({
+  id,reviewState,updatedAt,deletedAt,dismissalReason,dismissalNote,previousUpdatedAt:previous.get(id),
+ }));
+ return {id,action:r.action,count:r.before.length,removed:r.removed,role:r.role,undone,changes};
+}
 export async function reserveAction(userId:string,raw:unknown,now=new Date()){
  if(!raw||typeof raw!=="object"||Array.isArray(raw))throw new Error("Choix de groupe invalide.");
  const command=raw as {id:string;action:ReserveAction;ids?:string[];role?:string};

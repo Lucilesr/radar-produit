@@ -1,8 +1,6 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
-import {confirmActivity} from "@/lib/activity-client";
 import {sessionWrite} from "@/lib/session-write";
-import {confirmedProgress} from "@/lib/progress-event";
 import {useRadarSession} from "@/components/use-radar-session";
 import {refreshRadarClock} from "@/components/use-radar-clock";
 import {sessionDay,sessionSnapshot,sessionFollowups,sessionProgress,pauseSession,type RadarSession,type SessionStep,type SessionProgress,type SessionSource} from "@/lib/radar-session";
@@ -21,7 +19,7 @@ function measureDemoStep(owner:string){
   }));
 }
 
-export function useSessionJourney({owner,jobs,sources,initialLibrary,now,onNavigate,onAction,getNextSteps,ready,onFollowupSaved}:{getNextSteps:(facts:ExperienceItem[],confirmed:readonly string[],complete:boolean)=>NextStep[];onAction:(action:NextStepAction)=>void;onFollowupSaved:(id:string,at:string,doneAt:string,followup?:import("@/lib/application-followup").ApplicationFollowup)=>void;owner:string;jobs:JobRecord[];lot:DailyLot|null;sources:SessionSource[];initialLibrary?:Library;now:number;ready:boolean;onNavigate:(step:SessionStep,target?:string)=>void}){
+export function useSessionJourney({owner,jobs,sources,initialLibrary,now,onNavigate,onAction,getNextSteps,ready}:{getNextSteps:(facts:ExperienceItem[],confirmed:readonly string[],complete:boolean)=>NextStep[];onAction:(action:NextStepAction)=>void;owner:string;jobs:JobRecord[];lot:DailyLot|null;sources:SessionSource[];initialLibrary?:Library;now:number;ready:boolean;onNavigate:(step:SessionStep,target?:string)=>void}){
   const {session,save,checkpoint,getCurrent,hasCheckpoint,checkpointPending,checkpointFailed,retryCheckpoint,ready:continuityReady,busy:continuityBusy,error:continuityError,reload}=useRadarSession(owner,now);
   const [facts,setFacts]=useState<ExperienceItem[]>(initialLibrary?.items??[]),[factsError,setFactsError]=useState("");
   const [factsLoaded,setFactsLoaded]=useState(!!initialLibrary);
@@ -99,12 +97,7 @@ export function useSessionJourney({owner,jobs,sources,initialLibrary,now,onNavig
       requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());
     }
   }
-  async function confirmFollowup(id:string){const entry=due.find(entry=>entry.id===id);if(!session||!entry||session.sent.includes(id)||actionLock.current||pending.current.size||hasCheckpoint())return;actionLock.current=true;const key=crypto.randomUUID();sessionWrite(key,true);setError("");
-    try{const saved=await confirmActivity({action:"followup_done",objectId:id,stamp:entry.at,...(entry.appliedFor?{appliedFor:entry.appliedFor}:{})});onFollowupSaved(id,entry.at,saved.doneAt??new Date().toISOString(),saved.followup);confirmedProgress({kind:"followup_done",objectId:id,stamp:entry.at});if(!await save({...session,sent:[...session.sent,id]}))setError("La relance est enregistrée. Relisez le point de reprise avant de poursuivre la séance.");}
-    catch{setError("La relance n’est pas confirmée. Réessayez J’ai fait cette relance pour relire son résultat ; aucun message n’est envoyé par Radar.");}
-    finally{actionLock.current=false;sessionWrite(key,false);requestAnimationFrame(()=>{if(document.activeElement===document.body)document.getElementById("session-followups-title")?.focus();});}
-  }
   function closeFinish(){setFinished(null);requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}
   const tomorrow=sessionFollowups(jobs,now+86400000,sent).filter(entry=>Date.parse(entry.at)>now).length;
-  return {error:error||continuityError,reload:async()=>{setError("");await reload();},writing:writing||continuityBusy||checkpointPending||checkpointFailed,checkpointPending,checkpointFailed,retryCheckpoint,finishing,hasNext:!!session&&nextIndex(session,session.current+1)>=0,ready:ready&&continuityReady&&factsLoaded&&!!now,session,steps,queue,stopped:!session&&stoppedOn===owner+":"+sessionDay(now),resumeActions,minutes,due,visits,facts,factsError,retryFacts:readFacts,start,next,finish,pause,open:()=>{if(session){if(available(session.steps[session.current]))open(session);else void next();}},openStep:(step:NextStep)=>onAction(step.action),finished,closeFinish,confirmFollowup,tomorrow};
+  return {error:error||continuityError,reload:async()=>{setError("");await reload();},writing:writing||continuityBusy||checkpointPending||checkpointFailed,checkpointPending,checkpointFailed,retryCheckpoint,finishing,hasNext:!!session&&nextIndex(session,session.current+1)>=0,ready:ready&&continuityReady&&factsLoaded&&!!now,session,steps,queue,stopped:!session&&stoppedOn===owner+":"+sessionDay(now),resumeActions,minutes,due,visits,facts,factsError,retryFacts:readFacts,start,next,finish,pause,open:()=>{if(session){if(available(session.steps[session.current]))open(session);else void next();}},openStep:(step:NextStep)=>onAction(step.action),finished,closeFinish,tomorrow};
 }

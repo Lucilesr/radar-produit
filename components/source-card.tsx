@@ -1,4 +1,5 @@
 "use client";
+import { SourceWriteError, useSourceWrites } from "@/components/source-actions";
 import { requestError } from "@/lib/request-error";
 
 import { useId, useRef, useState, type ReactNode } from "react";
@@ -19,6 +20,7 @@ export type SourceSetting = { source: string; lastCount?:number; state?: string;
 
 export function SourceCard({ source, setting, count, hidden, profile, onSaveSearch, onSaved, onRemove, embedded = false, settingsExtra }: { embedded?: boolean; settingsExtra?: ReactNode; source: typeof sourceCatalog[number]; setting?: SourceSetting; count: number; hidden?: boolean; profile: CandidateProfile; onSaveSearch: (profile: CandidateProfile) => Promise<boolean>; onSaved: (setting: SourceSetting) => void; onRemove?: () => void }) {
   const title=useId();
+  const sourceWrites=useSourceWrites();
   const notify=useWorkspaceFeedback();
   const [draft,setDraft]=useState<{notes:string;linkUrl:string}|null>(null);
   const current=draft??{notes:setting?.notes??"",linkUrl:setting?.linkUrl??""};
@@ -38,17 +40,13 @@ export function SourceCard({ source, setting, count, hidden, profile, onSaveSear
     }catch(problem){setError(requestError(problem, "Configuration non enregistrée."));}
     finally{locked.current=false;setBusy(false);}
   }
-  async function toggleCollection(){
-    if(locked.current)return;
-    locked.current=true;setBusy(true);setError("");
-    try{
-      const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,paused:savedState!=="paused"})});
-      const data=await response.json() as {error?:string;source?:SourceSetting};
-      if(!response.ok||!data.source)throw new Error(data.error??"État non enregistré.");
-      onSaved(data.source);notify({message:`${source.name} ${savedState==="paused"?"repris":"mis en pause"}.`});
-    }catch(problem){setError(requestError(problem, "État non enregistré."));}
-    finally{locked.current=false;setBusy(false);}
+  function toggleCollection() {
+    void sourceWrites.pause(source.name, savedState !== "paused");
   }
+  const collectionControl = <div className="signal-source-api-actions">
+    <WorkspaceButton onClick={toggleCollection}>{savedState === "paused" ? "Reprendre la collecte" : "Mettre en pause"}</WorkspaceButton>
+    <SourceWriteError source={source.name} kind="pause"/>
+  </div>;
   if(source.mode==="api")return <section hidden={hidden} className={`signal-source-card signal-source-api-card${embedded ? " source-detail-settings" : ""}`} aria-label={embedded ? "Configurer cette source" : undefined} aria-labelledby={embedded ? undefined : title}>
     {!embedded ? <div className="signal-source-heading"><div className="signal-source-identity"><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><div className="signal-source-tools"><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span>{onRemove?<WorkspaceButton variant="quiet" disabled={busy} aria-label={`Supprimer ${source.name}`} title={`Supprimer ${source.name}`} onClick={onRemove}><Trash2 size={16} aria-hidden/></WorkspaceButton>:null}</div></div> : null}
     {!embedded ? <span className="signal-source-status" data-state={setting?.health==="degraded"?"action_needed":savedState}>{savedState==="paused"?"En pause":setting?.health==="degraded"?"Collecte interrompue":setting?.health==="retrying"?"Nouvel essai prévu":setting?.lastSyncedAt?"Collecte active":"Première collecte en attente"}</span> : null}
@@ -59,7 +57,7 @@ export function SourceCard({ source, setting, count, hidden, profile, onSaveSear
     {setting?.lastSyncedAt?<p className="signal-help">Dernière collecte réussie le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
     {setting?.health==="degraded"&&setting.lastAttemptAt?<p className="signal-help">Dernière tentative le {formatDate(setting.lastAttemptAt,"Indian/Mauritius",true)}</p>:null}
     <WorkspaceFormError message={setting?.error??""}/><WorkspaceFormError message={error}/>
-    <div className="signal-source-api-actions"><WorkspaceButton disabled={busy} busy={busy} onClick={()=>void toggleCollection()}>{savedState==="paused"?"Reprendre la collecte":"Mettre en pause"}</WorkspaceButton></div>
+    {collectionControl}
   </section>;
   return <section hidden={hidden} className={`signal-source-card${embedded ? " source-detail-settings" : ""}`} aria-label={embedded ? "Configurer cette source" : undefined} aria-labelledby={embedded ? undefined : title}>
     {!embedded ? <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><div className="signal-source-tools"><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span>{onRemove?<WorkspaceButton variant="quiet" disabled={busy} aria-label={`Supprimer ${source.name}`} title={`Supprimer ${source.name}`} onClick={onRemove}><Trash2 size={16} aria-hidden/></WorkspaceButton>:null}</div></div> : null}
@@ -78,7 +76,7 @@ export function SourceCard({ source, setting, count, hidden, profile, onSaveSear
         <div className="signal-source-actions"><WorkspaceButton type="submit" variant="primary" busy={busy}>{!busy?<Save size={14} aria-hidden/>:null}Enregistrer mon suivi</WorkspaceButton></div>
       </form>
       {settingsExtra}
-      {source.mode==="rss"?<div><WorkspaceButton disabled={busy} busy={busy} onClick={()=>void toggleCollection()}>{savedState==="paused"?"Reprendre la collecte":"Mettre en pause"}</WorkspaceButton></div>:null}
+      {source.mode==="rss"?collectionControl:null}
     </ExpandableSection>
   </section>;
 }

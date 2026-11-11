@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { sourceSettings } from "@/db/schema";
@@ -15,12 +15,20 @@ import { showJobgetherOffer } from "./jobgether-match";
 import { automaticSources, scanMatches, SourceReadingError, summarizeScan, type AutomaticSource, type SourceReading } from "./source-sync";
 
 export async function listSourceSettings(userId: string) { const rows = await getDb().select().from(sourceSettings).where(eq(sourceSettings.userId, userId)); return rows.map(row => ({ source: row.source, ...JSON.parse(row.data), updatedAt: row.updatedAt })); }
-export async function saveSourceSetting(userId: string, source: string, data: Record<string, unknown>) {
-  const db = getDb(); const [existing] = await db.select().from(sourceSettings).where(and(eq(sourceSettings.userId, userId), eq(sourceSettings.source, source))).limit(1);
-  const merged = { ...(existing ? JSON.parse(existing.data) : {}), ...data };
-  const record = { id: existing?.id ?? crypto.randomUUID(), userId, source, data: JSON.stringify(merged), updatedAt: new Date().toISOString() };
-  await db.insert(sourceSettings).values(record).onConflictDoUpdate({ target: [sourceSettings.userId, sourceSettings.source], set: { data: record.data, updatedAt: record.updatedAt } });
-  return { source, ...merged, updatedAt: record.updatedAt };
+export async function saveSourceSetting(userId: string, source: string, data: Record<string, unknown>, preservePause = true) {
+  const record = { id: crypto.randomUUID(), userId, source, data: JSON.stringify(data), updatedAt: new Date().toISOString() };
+  const fields = Object.entries(data).map(([key, value]) => {
+    const path = `$.${key}`;
+    const next = sql`json(${JSON.stringify(value ?? null)})`;
+    return key === "state" && preservePause
+      ? sql`${path}, CASE WHEN json_extract(${sourceSettings.data}, '$.state') = 'paused' THEN 'paused' ELSE ${next} END`
+      : sql`${path}, ${next}`;
+  });
+  const [saved] = await getDb().insert(sourceSettings).values(record).onConflictDoUpdate({
+    target: [sourceSettings.userId, sourceSettings.source],
+    set: { data: sql`json_set(${sourceSettings.data}, ${sql.join(fields, sql`, `)})`, updatedAt: record.updatedAt },
+  }).returning();
+  return { source, ...JSON.parse(saved.data), updatedAt: saved.updatedAt };
 }
 /** Marks a source the person went through, so its visit rhythm restarts. */
 export async function recordSourceVisit(userId: string, value: unknown) {
@@ -55,9 +63,9 @@ export async function userSourceSetting(userId: string, value: unknown) {
   const previous = (await listSourceSettings(userId)).find(setting => setting.source === input.source);
   const fields = { ...(input.notes !== undefined ? { notes: input.notes } : {}), ...(input.linkUrl !== undefined ? { linkUrl: input.linkUrl } : {}), ...(input.selected !== undefined ? { selected: input.selected } : {}) };
   const canPause = source.mode === "api" || source.mode === "rss";
-  const paused = canPause && (input.paused ?? (input.state === "paused" || (input.state === undefined && previous?.state === "paused")));
+  const paused = canPause && (input.paused ?? input.state === "paused");
   const state = paused ? "paused" : hasSourceConfiguration({ ...previous, ...fields }, source.mode) ? "configured" : "not_configured";
-  return saveSourceSetting(userId, input.source, { ...fields, state });
+  return saveSourceSetting(userId, input.source, { ...fields, state }, input.paused === undefined && input.state === undefined);
 }
 /** Retire la carte du suivi sans effacer ses réglages ni les offres associées. */
 export async function removeUserSource(userId: string, value: unknown) {

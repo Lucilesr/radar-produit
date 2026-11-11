@@ -1,13 +1,69 @@
 "use client";
 import { requestError } from "@/lib/request-error";
 
-import { useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { Dialog } from "radix-ui";
-import { ArrowLeft, Check, Pencil, Plus, Tags, X } from "lucide-react";
+import { ArrowLeft, Check, Pencil, Plus, X } from "lucide-react";
 import { WorkspaceButton, WorkspaceFormError } from "@/components/workspace-form";
 import { tagColor, tagColors, tagsForJob, type ApplicationTag, type ApplicationTags } from "@/lib/application-tags";
 
-const changedEvent = "radar-application-tags-changed";
+import { createSaveQueue } from "@/lib/save-queue";
+
+type Assignment = { id: string; jobId: string; assigned: boolean };
+const assignmentKey = ({ id, jobId }: Pick<Assignment, "id" | "jobId">) => JSON.stringify([id, jobId]);
+
+async function writeTag(input: Record<string, unknown>, version: number) {
+  const response = await fetch("/api/application-tags", {
+    method: "PATCH", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...input, version }), signal: AbortSignal.timeout(15000),
+  });
+  const result = await response.json() as ApplicationTags & { error?: string };
+  if (response.status === 409 && Array.isArray(result.tags)) return { kind: "conflict" as const, state: result };
+  if (!response.ok) throw new Error(result.error ?? "Tag non enregistré.");
+  return { kind: "saved" as const, state: result };
+}
+
+function tagQueue() {
+  return createSaveQueue<ApplicationTags, Assignment>({
+    initial: { version: 0, tags: [] },
+    key: assignmentKey,
+    version: state => state.version,
+    apply: (state, { id, jobId, assigned }) => ({
+      ...state, tags: state.tags.map(tag => tag.id !== id || tag.jobIds.includes(jobId) === assigned
+        ? tag : { ...tag, jobIds: assigned ? [...tag.jobIds, jobId] : tag.jobIds.filter(job => job !== jobId) }),
+    }),
+    send(change, confirmed) {
+      const tag = confirmed.tags.find(tag => tag.id === change.id);
+      if (tag?.jobIds.includes(change.jobId) === change.assigned) return Promise.resolve({ kind: "saved", state: confirmed });
+      return writeTag({ action: "toggle", id: change.id, jobId: change.jobId }, confirmed.version);
+    },
+  });
+}
+
+const TagsContext = createContext<{
+  queue: ReturnType<typeof tagQueue>; ready: boolean; loadError: string; load: () => Promise<void>;
+} | null>(null);
+
+export function ApplicationTagsProvider({ children }: { children: ReactNode }) {
+  const [queue] = useState(tagQueue);
+  const [ready, setReady] = useState(false), [loadError, setLoadError] = useState("");
+  const reading = useRef<Promise<void> | null>(null);
+  const load = useCallback(() => {
+    if (reading.current) return reading.current;
+    const request = fetch("/api/application-tags", { cache: "no-store", signal: AbortSignal.timeout(15000) })
+      .then(async response => {
+        if (!response.ok) throw new Error();
+        queue.accept(await response.json() as ApplicationTags);
+        setReady(true);
+        setLoadError("");
+      })
+      .catch(() => setLoadError("Tags indisponibles. Réessayez."))
+      .finally(() => { reading.current = null; });
+    reading.current = request;
+    return request;
+  }, [queue]);
+  return <TagsContext.Provider value={{ queue, ready, loadError, load }}>{children}</TagsContext.Provider>;
+}
 
 export function TagBadge({ tag, onClick, selected = false }: { tag: ApplicationTag; onClick?: () => void; selected?: boolean }) {
   const color = tagColor(tag.color);
@@ -17,35 +73,18 @@ export function TagBadge({ tag, onClick, selected = false }: { tag: ApplicationT
 }
 
 export function useApplicationTags() {
-  const [state, setState] = useState<ApplicationTags>({ version: 0, tags: [] });
-  const [ready, setReady] = useState(false);
-  const [loadError, setLoadError] = useState("");
-  async function load() {
-    try {
-      const response = await fetch("/api/application-tags", { cache: "no-store", signal: AbortSignal.timeout(15000) });
-      if (!response.ok) throw new Error();
-      setState(await response.json() as ApplicationTags); setReady(true); setLoadError("");
-    } catch { setLoadError("Tags indisponibles. Réessayez."); }
-  }
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch("/api/application-tags", { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) })
-      .then(async response => { if (!response.ok) throw new Error(); return await response.json() as ApplicationTags; })
-      .then(result => { if (!controller.signal.aborted) { setState(result); setReady(true); setLoadError(""); } })
-      .catch(() => { if (!controller.signal.aborted) setLoadError("Tags indisponibles. Réessayez."); });
-    window.addEventListener(changedEvent, load);
-    return () => { controller.abort(); window.removeEventListener(changedEvent, load); };
-  }, []);
+  const store = useContext(TagsContext);
+  if (!store) throw new Error("ApplicationTagsProvider is required.");
+  const { queue, ready, load, loadError } = store;
+  const { visible, failed } = useSyncExternalStore(queue.subscribe, queue.getSnapshot, queue.getSnapshot);
+  useEffect(() => { void load(); }, [load]);
   async function change(input: Record<string, unknown>) {
-    const response = await fetch("/api/application-tags", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...input, version: state.version }), signal: AbortSignal.timeout(15000) });
-    const result = await response.json() as ApplicationTags & { error?: string };
-    if (response.status === 409) setState({ version: result.version, tags: result.tags });
-    if (!response.ok) throw new Error(result.error ?? "Tag non enregistré.");
-    setState(result);
-    window.dispatchEvent(new Event(changedEvent));
-    return result;
+    const receipt = await writeTag(input, queue.getSnapshot().confirmed.version);
+    queue.accept(receipt.state);
+    if (receipt.kind === "conflict") throw new Error("Les tags ont changé dans un autre onglet. Réessayez.");
+    return receipt.state;
   }
-  return { ...state, ready, loadError, load, change };
+  return { ...visible, ready, loadError, load, change, queue, failed };
 }
 
 export function ApplicationTagBadges({ jobId }: { jobId: string }) {
@@ -80,7 +119,7 @@ export function ApplicationTagEditor({ jobId }: { jobId: string }) {
       <div className="application-tags-dialog-heading">{screen !== "list" ? <WorkspaceButton variant="quiet" aria-label="Retour aux tags" onClick={() => { setScreen("list"); setError(""); }} disabled={busy}><ArrowLeft size={18} aria-hidden/></WorkspaceButton> : <span/>}<Dialog.Title>{screen === "list" ? "Tags" : screen === "delete" ? "Supprimer le tag" : editing ? "Modifier le tag" : "Créer un tag"}</Dialog.Title><Dialog.Close asChild><WorkspaceButton variant="quiet" aria-label="Fermer" disabled={busy}><X size={18} aria-hidden/></WorkspaceButton></Dialog.Close></div>
       {screen === "list" ? <><Dialog.Description className="sr-only">Choisissez les tags de cette carte ou gérez vos tags. Saisissez un nom puis appuyez sur Entrée pour créer un tag.</Dialog.Description><label className="application-tags-search"><span className="sr-only">Rechercher un tag ou saisir son nom</span><input autoFocus maxLength={40} value={search} onChange={event => setSearch(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing && search.trim() && store.ready && !busy) { event.preventDefault(); edit(null); } }} placeholder="Rechercher ou créer un tag…" /></label>
         {store.loadError ? <><WorkspaceFormError message={store.loadError}/><WorkspaceButton onClick={() => void store.load()}>Réessayer</WorkspaceButton></> : null}
-        {store.ready ? <div className="application-tags-list">{store.tags.filter(tag => tag.name.toLocaleLowerCase("fr").includes(search.trim().toLocaleLowerCase("fr"))).map(tag => <div className="application-tags-row" key={tag.id}><label><input type="checkbox" checked={tag.jobIds.includes(jobId)} disabled={busy} onChange={() => void act({ action: "toggle", id: tag.id, jobId })}/><TagBadge tag={tag}/></label><WorkspaceButton variant="quiet" disabled={busy} aria-label={`Modifier le tag ${tag.name}`} onClick={() => edit(tag)}><Pencil size={16} aria-hidden/></WorkspaceButton></div>)}{!store.tags.length ? <p className="signal-help">Aucun tag créé pour le moment.</p> : null}{store.tags.length && !store.tags.some(tag => tag.name.toLocaleLowerCase("fr").includes(search.trim().toLocaleLowerCase("fr"))) ? <p className="signal-help">Aucun tag trouvé.</p> : null}</div> : null}
+        {store.ready ? <div className="application-tags-list">{store.tags.filter(tag => tag.name.toLocaleLowerCase("fr").includes(search.trim().toLocaleLowerCase("fr"))).map(tag => <div className="application-tags-row" key={tag.id}><label><input type="checkbox" checked={tag.jobIds.includes(jobId)} disabled={busy} onChange={event => void store.queue.enqueue({ id: tag.id, jobId, assigned: event.target.checked })}/><TagBadge tag={tag}/></label><WorkspaceButton variant="quiet" disabled={busy} aria-label={`Modifier le tag ${tag.name}`} onClick={() => edit(tag)}><Pencil size={16} aria-hidden/></WorkspaceButton>{store.failed.some(change => change.id === tag.id && change.jobId === jobId) ? <div><WorkspaceFormError message={`Tag « ${tag.name} » non enregistré.`}/><WorkspaceButton onClick={() => void store.queue.retry(assignmentKey({ id: tag.id, jobId }))}>Réessayer</WorkspaceButton></div> : null}</div>)}{!store.tags.length ? <p className="signal-help">Aucun tag créé pour le moment.</p> : null}{store.tags.length && !store.tags.some(tag => tag.name.toLocaleLowerCase("fr").includes(search.trim().toLocaleLowerCase("fr"))) ? <p className="signal-help">Aucun tag trouvé.</p> : null}</div> : null}
         <WorkspaceFormError message={error}/><WorkspaceButton className="application-tags-create" disabled={!store.ready || busy} onClick={() => edit(null)}><Plus size={16} aria-hidden/>Créer un tag</WorkspaceButton></>
       : screen === "edit" ? <><Dialog.Description className="sr-only">Choisissez le nom et la couleur du tag.</Dialog.Description><div className="application-tags-preview"><TagBadge tag={{ id: editing?.id ?? "preview", name: name.trim() || "Aperçu du tag", color, jobIds: [] }}/></div><label className="application-tags-name">Nom du tag<input autoFocus maxLength={40} value={name} disabled={busy} onChange={event => setName(event.target.value)} placeholder="Nom du tag" /></label><fieldset className="application-tags-colors"><legend>Couleur du tag</legend><div>{tagColors.map(option => <button type="button" key={option.value} disabled={busy} className="application-tag-color" style={{ backgroundColor: option.value, color: option.text }} aria-label={option.name} aria-pressed={color === option.value} onClick={() => setColor(option.value)}>{color === option.value ? <Check size={20} aria-hidden/> : null}</button>)}</div></fieldset><WorkspaceFormError message={error}/><div className="application-tags-actions">{editing ? <WorkspaceButton variant="danger" disabled={busy} onClick={() => { setScreen("delete"); setError(""); }}>Supprimer…</WorkspaceButton> : null}<WorkspaceButton variant="primary" busy={busy} disabled={!name.trim()} onClick={() => void act({ action: editing ? "update" : "create", id: editing?.id, name, color, jobId: editing ? undefined : jobId }, () => { setScreen("list"); setSearch(""); })}>Enregistrer</WorkspaceButton></div></>
       : <><Dialog.Description>Le tag « {editing?.name} » sera supprimé de toutes les cartes. Cette action ne peut pas être annulée.</Dialog.Description><WorkspaceFormError message={error}/><WorkspaceButton className="application-tags-delete" variant="danger" busy={busy} onClick={() => void act({ action: "delete", id: editing?.id }, () => setScreen("list"))}>Supprimer le tag</WorkspaceButton></>}

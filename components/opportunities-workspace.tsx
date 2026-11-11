@@ -4,12 +4,13 @@ import { ArrowLeft, Check, Bookmark, Trash2, Undo2, ShieldCheck, Archive } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ApplicationTrackingAction, OfferFitCard, FitBadge, OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/components/offer-workspace";
 import {WorkspaceButton,WorkspaceFormError} from "@/components/workspace-form";
+import type {useReserveActions} from "@/components/use-reserve-actions";
 import type {useOfferDecisions} from "@/components/use-offer-decisions";
 import { WorkspaceState } from "@/components/workspace-ui";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { selectionInView } from "@/lib/offer-trash-ui";
 import { ARCHIVE_AFTER_DAYS, archiveReferenceTime, hasApplication, isArchived, reviewState, sortOpportunitiesByDate, type OpportunityView } from "@/lib/opportunity-views";
-import { groupReserve, neighboringRole, type ReserveGroupId } from "@/lib/reserve";
+import { groupReserve, neighboringRole, reserveGroups, type ReserveGroupId } from "@/lib/reserve";
 import { formatDate } from "@/lib/application-workflow";
 import { formatEuro } from "@/lib/matching";
 import { formatPayRangeShort } from "@/lib/pay-range";
@@ -23,8 +24,8 @@ import type { CandidateProfile, JobRecord, JobStatus } from "@/lib/types";
 const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"]];
 const retiredViews = [["archived","Archives"],["trash","Corbeille"]] as const;
 const remote={full_remote:"Full remote",exceptional:"Présence ponctuelle",hybrid:"Hybride",onsite:"Sur site",unknown:"Remote à confirmer"};
-export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,tools,sessionAdvance,enabled=true,onReload,onReserveChanged,lot,jobs,rescueOffers=[],counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,decisions,onRetryLot,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
-  source?:string;onClearSource?:()=>void;enabled?:boolean;onReload?:()=>Promise<boolean>;onReserveChanged:(roleChanged:boolean)=>Promise<boolean>;rescueOffers?:JobRecord[];
+export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,tools,sessionAdvance,enabled=true,onReload,onReserveChanged,reserveActions,lot,jobs,rescueOffers=[],counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,decisions,onRetryLot,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
+  source?:string;onClearSource?:()=>void;enabled?:boolean;onReload?:()=>Promise<boolean>;onReserveChanged:(roleChanged:boolean)=>Promise<boolean>;reserveActions:ReturnType<typeof useReserveActions>;rescueOffers?:JobRecord[];
   tools?:ReactNode;contextualPrompt?:ReactNode;sessionAdvance?:ReactNode;lot?:DailyLot|null; currentJob?:JobRecord|null; jobs:JobRecord[];counts:Record<OpportunityView,number>;filter:OpportunityView;onFilter:(view:OpportunityView)=>void;query:string;onClearSearch:()=>void;
   activeId?:string;view:WorkspaceView;onOpen:(job:JobRecord)=>void;onClose:()=>void;profile:CandidateProfile;
   decisions:Pick<ReturnType<typeof useOfferDecisions>,"pending"|"failed"|"retry"|"lockErrors">;onRetryLot:(key:string)=>void;
@@ -39,7 +40,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
   // Score v2 S4: up to five mystery offers lead « À examiner », whatever the chosen order.
   // Tri Q1: « À examiner » opens on the lot of the day; « Toutes les offres » keeps the full list.
   const [allOffers,setAllOffers]=useState(false);
-  const lotShown=filter==="to_review"&&!query&&!!lot&&(allOffers||lot.size>0||counts.to_review>0||counts.archived>0||rescueOffers.length>0);
+  const lotShown=filter==="to_review"&&!query&&!!lot&&(allOffers||lot.size>0||counts.to_review>0||counts.archived>0||rescueOffers.length>0||reserveActions.history.length>0||reserveActions.failed.length>0);
   const inLot=lotShown&&lot!.size>0&&!allOffers;
   // Tri Q1b: outside the lot, « À examiner » is the reserve, sorted into groups decided in one go.
   const inReserve=lotShown&&!inLot;
@@ -164,7 +165,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
     {lotShown&&lot!.size>0?<DailyLotBanner lot={lot!} hasRescue={rescueOffers.length>0} inLot={inLot} onToggle={()=>{setRetained(null);setSelection([]);setReserveGroupId(null);setAllOffers(inLot);onClose();requestAnimationFrame(()=>document.getElementById(inLot?"reserve-title":"workspace-title")?.focus());}}/>:null}
     {filter==="to_review"&&!query&&!activeId?contextualPrompt:null}
     {inReserve&&rescueOffers.length>0?<FridayRescue offers={rescueOffers} busy={trashBusy} onRestore={onRestore}/>:null}
-    {inReserve?<ReserveGroups groups={groups} shown={reserveGroupId} total={reserveJobs.length} busy={trashBusy} onShow={id=>{setRetained(null);setSelection([]);setReserveGroupId(id);onClose();requestAnimationFrame(()=>document.getElementById("reserve-title")?.focus());}} roles={profile.searchPreferences?.roles??[]} onChanged={async roleChanged=>{setRetained(null);setSelection([]);return onReserveChanged(roleChanged);}}/>:null}
+    {inReserve?<ReserveGroups groups={groups} shown={reserveGroupId} total={reserveJobs.length} busy={trashBusy} actions={reserveActions} onDecision={()=>{setRetained(null);setSelection([]);}} onShow={id=>{setRetained(null);setSelection([]);setReserveGroupId(id);onClose();requestAnimationFrame(()=>document.getElementById("reserve-title")?.focus());}} roles={profile.searchPreferences?.roles??[]} onChanged={async roleChanged=>{setRetained(null);setSelection([]);return onReserveChanged(roleChanged);}}/>:null}
     <div className="opportunities-toolbar">
       {!inLot?<div className="review-view-summary">
         <Select value={dateOrder} onValueChange={value=>{setDateOrder(value as "newest"|"oldest");}}><SelectTrigger className="opportunity-date-order" aria-label={filter==="trash"?"Trier par date d’écartement":"Trier par date de mapping"}><span className="opportunity-date-order-label">Trier :</span><SelectValue /></SelectTrigger><SelectContent position="popper" side="bottom" sideOffset={6} align="start" className="opportunity-date-order-menu"><SelectItem value="newest">Du plus récent au plus ancien</SelectItem><SelectItem value="oldest">Du plus ancien au plus récent</SelectItem></SelectContent></Select>
@@ -226,42 +227,51 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
   </div>;
 }
 
-type ReserveReceipt={id:string;action:string;count:number;removed:number;undone:boolean};
-function ReserveGroups({groups,shown,total,busy,roles,onShow,onChanged}:{groups:ReturnType<typeof groupReserve>;shown:ReserveGroupId|null;total:number;busy:boolean;roles:string[];onShow:(id:ReserveGroupId|null)=>void;onChanged:(roleChanged:boolean)=>Promise<boolean>}){
-  const [confirming,setConfirming]=useState<{id:ReserveGroupId;action:"discard"|"archive"}|null>(null),[working,setWorking]=useState(false),[error,setError]=useState("");
-  const [initialGroups]=useState(groups.length),[done,setDone]=useState<ReserveGroupId[]>([]),[removed,setRemoved]=useState(0),[recent,setRecent]=useState<{receipt:ReserveReceipt;group:ReserveGroupId;alreadyDone:boolean}|null>(null);
-  const lock=useRef(false),pending=useRef<{signature:string;id:string}|null>(null);
-  const disabled=busy||working;
-  async function decide(action:"discard"|"archive"|"keep"|"role"|"undo",group?:typeof groups[number],role?:string){
-    if(lock.current||busy)return;lock.current=true;setWorking(true);setError("");
-    const ids=group?.jobs.slice(0,50).map(job=>job.id),signature=JSON.stringify({action,ids,role});
-    const id=action==="undo"?recent?.receipt.id:pending.current?.signature===signature?pending.current.id:crypto.randomUUID();
-    if(!id){lock.current=false;setWorking(false);return;}pending.current={signature,id};
-    try{
-      const response=await fetch("/api/reserve-actions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,action,ids,role}),signal:AbortSignal.timeout(20000)});
-      const result=await response.json() as ReserveReceipt&{error?:string};if(!response.ok)throw new Error(result.error??"Choix non confirmé. Actualisez la réserve avant de réessayer.");
-      pending.current=null;setConfirming(null);
-      if(action==="undo"&&recent){setRemoved(value=>Math.max(0,value-recent.receipt.removed));if(!recent.alreadyDone)setDone(value=>value.filter(id=>id!==recent.group));setRecent(null);}
-      else if(group&&!result.undone){setRecent({receipt:result,group:group.id,alreadyDone:done.includes(group.id)});setDone(value=>value.includes(group.id)?value:[...value,group.id]);setRemoved(value=>value+result.removed);}
-      if(!await onChanged(result.action==="role"))setError("Votre choix est enregistré, mais la liste n’a pas pu être relue. Actualisez avant une autre décision.");
-    }catch(problem){setError(problem instanceof Error&&!['TimeoutError','AbortError','TypeError'].includes(problem.name)?problem.message:"Réponse non reçue. Réessayez le même choix ou actualisez pour vérifier ; aucun contenu n’est effacé définitivement.");}
-    finally{lock.current=false;setWorking(false);requestAnimationFrame(()=>{if(document.activeElement===document.body||!document.activeElement?.isConnected)document.getElementById("reserve-title")?.focus();});}
+function ReserveGroups({groups,shown,total,busy,roles,actions,onShow,onDecision,onChanged}:{
+  groups:ReturnType<typeof groupReserve>;shown:ReserveGroupId|null;total:number;busy:boolean;roles:string[];
+  actions:ReturnType<typeof useReserveActions>;onShow:(id:ReserveGroupId|null)=>void;onDecision:()=>void;onChanged:(roleChanged:boolean)=>Promise<boolean>;
+}){
+  const [confirming,setConfirming]=useState<{id:ReserveGroupId;action:"discard"|"archive"}|null>(null);
+  const [initialGroups]=useState(groups.length),[error,setError]=useState("");
+  const {history,recent,failed}=actions;
+  const done=new Set(history.map(entry=>entry.group)).size,removed=history.reduce((count,entry)=>count+entry.removed,0);
+  function moveFocus(){
+    requestAnimationFrame(()=>{if(document.activeElement===document.body||!document.activeElement?.isConnected)document.getElementById("reserve-title")?.focus({preventScroll:true});});
   }
-  return <section className="reserve" aria-labelledby="reserve-title" aria-busy={working}>
+  async function refreshRole(saved:boolean|undefined,roleChanged:boolean){
+    if(saved&&roleChanged&&!await onChanged(true))setError("Votre choix est enregistré. Réessayez pour relire les critères.");
+  }
+  function decide(action:"discard"|"archive"|"keep"|"role",group:typeof groups[number],role?:string){
+    setConfirming(null);setError("");onDecision();
+    const ids=group.jobs.slice(0,50).map(job=>job.id);
+    void actions.decide(action,group.id,ids,role).then(saved=>refreshRole(saved,action==="role"));
+    moveFocus();
+  }
+  function undo(){
+    if(!recent||actions.busy)return;
+    void actions.undo(recent).then(saved=>refreshRole(saved,recent.action==="role"));
+    moveFocus();
+  }
+  function retry(command:typeof failed[number]){
+    void actions.retry(command.id)?.then(saved=>refreshRole(saved,command.action==="role"||command.action==="undo"&&!!command.role));
+    moveFocus();
+  }
+  return <section className="reserve" aria-labelledby="reserve-title">
     <div className="reserve-head"><h3 id="reserve-title" tabIndex={-1}>La réserve <span>{total} offre{total>1?"s":""}</span></h3>
       <details className="reserve-help"><summary>Comment fonctionne la réserve ?</summary><p>Rangée par groupes : choisissez une action pour un groupe. Les annonces publiées il y a au moins {ARCHIVE_AFTER_DAYS} jours partent aux archives. Une remise à examiner ou « Plus tard » vous redonne {ARCHIVE_AFTER_DAYS} jours.</p></details></div>
-    <p className="reserve-progress" role="status">{done.length} groupe{done.length>1?"s":""} rangé{done.length>1?"s":""} sur {Math.max(initialGroups,done.length)} · {removed} offre{removed>1?"s":""} en moins dans la réserve</p>
-    {recent?<div className="reserve-undo"><span>{recent.receipt.action==="keep"?`${recent.receipt.count} offre${recent.receipt.count>1?"s":""} gardée${recent.receipt.count>1?"s":""} pour plus tard.`:recent.receipt.action==="role"?"Poste ajouté à vos critères.":`${recent.receipt.count} offre${recent.receipt.count>1?"s":""} ${recent.receipt.action==="archive"?"archivée":"écartée"}${recent.receipt.count>1?"s":""}.`}</span><button type="button" className="secondary-button" disabled={disabled} onClick={()=>void decide("undo")}>Annuler le dernier rangement</button></div>:null}
-    {error?<div><WorkspaceFormError message={error}/><button type="button" className="secondary-button" disabled={disabled} onClick={()=>void onChanged(recent?.receipt.action==="role").then(ok=>{if(ok){setError("");pending.current=null;setRecent(null);setDone([]);setRemoved(0);}})}>Actualiser la réserve</button></div>:null}
+    <p className="reserve-progress" role="status">{done} groupe{done>1?"s":""} rangé{done>1?"s":""} sur {Math.max(initialGroups,done)} · {removed} offre{removed>1?"s":""} en moins dans la réserve</p>
+    {recent?<div className="reserve-undo"><span>{recent.action==="keep"?`${recent.count} offre${recent.count>1?"s":""} gardée${recent.count>1?"s":""} pour plus tard.`:recent.action==="role"?"Poste ajouté à vos critères.":`${recent.count} offre${recent.count>1?"s":""} ${recent.action==="archive"?"archivée":"écartée"}${recent.count>1?"s":""}.`}</span><button type="button" className="secondary-button" disabled={busy||actions.busy} onClick={undo}>Annuler le dernier rangement</button></div>:null}
+    {failed.map(command=><div key={command.id}><WorkspaceFormError message={`Choix non confirmé pour « ${reserveGroups.find(group=>group.id===command.group)?.label} ».`}/><WorkspaceButton disabled={busy} onClick={()=>retry(command)}>Réessayer</WorkspaceButton></div>)}
+    {error||failed.length?<div><WorkspaceFormError message={error}/><WorkspaceButton disabled={busy||actions.busy} onClick={()=>void onChanged(!!error).then(ok=>{if(ok)setError("");})}>Actualiser la réserve</WorkspaceButton></div>:null}
     <ul className="reserve-groups">{groups.map(group=>{const count=group.jobs.length,batch=Math.min(count,50),role=roles.length<12&&["far","other"].includes(group.id)?neighboringRole(group.jobs,roles):null;return <li key={group.id} className={"reserve-group"+(shown===group.id?" is-shown":"")}>
       <div className="reserve-group-text"><strong>{group.label}</strong><span className="reserve-group-count">{count}</span><small>{group.help}{count>50?" Une décision porte sur les 50 premières offres.":""}</small></div>
       {confirming?.id===group.id?<div className="reserve-group-actions" role="group" aria-label={`Confirmer : ${group.label}`}>
-        <button type="button" className={confirming.action==="discard"?"signal-danger-button":"secondary-button"} disabled={disabled} onClick={()=>void decide(confirming.action,group)}>{confirming.action==="discard"?<Trash2 size={14} aria-hidden/>:<Archive size={14} aria-hidden/>}{confirming.action==="archive"?(batch>1?`Archiver ces ${batch} offres`:"Archiver cette offre"):count>50?"Écarter les 50 premières":batch>1?`Écarter ces ${batch} offres`:"Écarter cette offre"}</button>
-        <button type="button" className="signal-quiet-button" disabled={disabled} onClick={()=>setConfirming(null)}>Annuler</button></div>
+        <button type="button" className={confirming.action==="discard"?"signal-danger-button":"secondary-button"} disabled={busy} onClick={()=>void decide(confirming.action,group)}>{confirming.action==="discard"?<Trash2 size={14} aria-hidden/>:<Archive size={14} aria-hidden/>}{confirming.action==="archive"?(batch>1?`Archiver ces ${batch} offres`:"Archiver cette offre"):count>50?"Écarter les 50 premières":batch>1?`Écarter ces ${batch} offres`:"Écarter cette offre"}</button>
+        <button type="button" className="signal-quiet-button" disabled={busy} onClick={()=>setConfirming(null)}>Annuler</button></div>
       :<div className="reserve-group-actions">
-        <button type="button" className="secondary-button" disabled={disabled} aria-pressed={shown===group.id} onClick={()=>onShow(shown===group.id?null:group.id)}>{shown===group.id?"Voir toute la réserve":"Voir le groupe"}</button>
-        {group.id==="old"?<button type="button" className="secondary-button" disabled={disabled} onClick={()=>setConfirming({id:group.id,action:"archive"})}>{batch>1?`Archiver les ${batch}`:"Archiver l’offre"}</button>:group.id==="pay"?<button type="button" className="secondary-button" disabled={disabled} onClick={()=>void decide("keep",group)}>Garder en réserve</button>:role?<button type="button" className="secondary-button" disabled={disabled} onClick={()=>void decide("role",group,role)}>+ Viser {role}</button>:null}
-        <button type="button" className="signal-quiet-button" disabled={disabled} onClick={()=>setConfirming({id:group.id,action:"discard"})}><Trash2 size={14} aria-hidden/>Écarter le groupe</button></div>}
+        <button type="button" className="secondary-button" disabled={busy} aria-pressed={shown===group.id} onClick={()=>onShow(shown===group.id?null:group.id)}>{shown===group.id?"Voir toute la réserve":"Voir le groupe"}</button>
+        {group.id==="old"?<button type="button" className="secondary-button" disabled={busy} onClick={()=>setConfirming({id:group.id,action:"archive"})}>{batch>1?`Archiver les ${batch}`:"Archiver l’offre"}</button>:group.id==="pay"?<button type="button" className="secondary-button" disabled={busy} onClick={()=>void decide("keep",group)}>Garder en réserve</button>:role?<button type="button" className="secondary-button" disabled={busy||actions.busy} onClick={()=>void decide("role",group,role)}>+ Viser {role}</button>:null}
+        <button type="button" className="signal-quiet-button" disabled={busy} onClick={()=>setConfirming({id:group.id,action:"discard"})}><Trash2 size={14} aria-hidden/>Écarter le groupe</button></div>}
     </li>;})}</ul>
   </section>;
 }

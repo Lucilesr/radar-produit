@@ -4,7 +4,7 @@ Toute nouvelle proposition est consignée ici avant une éventuelle décision ; 
 
 ## Retours de recette du 9 novembre 2026
 
-Les trois points ci-dessous sont validés comme lots R2 à R4, détaillés dans [plan-retours-9-novembre.md](plan-retours-9-novembre.md) ; la dette CSS (R5) est traitée dans #288. Le lot de fluidité R1quinquies (finitions), ajouté le 11 novembre, est détaillé dans le même plan.
+Les trois points ci-dessous sont validés comme lots R2 à R4, détaillés dans [plan-retours-9-novembre.md](plan-retours-9-novembre.md) ; la dette CSS (R5) est traitée dans #288.
 
 - **Résumé du prompt ChatGPT.** Le contenu du prompt est affiché tel quel et se lit mal. Piste : un résumé en tête — ce que le prompt va produire et sur quelles expériences, histoires et documents il s’appuie — avec le texte complet repliable en dessous.
 - **Couleur du score dans Offres.** Le style est apprécié mais manque de couleur. Piste : teinter le score selon l’adéquation, du rouge (loin) au vert (très proche), avec un libellé ou une forme en plus de la couleur.
