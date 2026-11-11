@@ -13,6 +13,14 @@ import type {JobRecord} from "@/lib/types";
 import type {ExperienceItem} from "@/lib/experience-domain";
 import type {Library} from "@/components/experience-library";
 
+function measureDemoStep(owner:string){
+  if(!owner.startsWith("demo:")||new URLSearchParams(window.location.search).get("mesure-seance")!=="1")return;
+  const start=performance.now();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.querySelector(".session-detail-advance, .radar-session-strip")?.setAttribute("data-demo-step-ms",String(Math.round(performance.now()-start)));
+  }));
+}
+
 export function useSessionJourney({owner,jobs,sources,initialLibrary,now,onNavigate,onAction,getNextSteps,ready,onFollowupSaved}:{getNextSteps:(facts:ExperienceItem[],confirmed:readonly string[],complete:boolean)=>NextStep[];onAction:(action:NextStepAction)=>void;onFollowupSaved:(id:string,at:string,doneAt:string,followup?:import("@/lib/application-followup").ApplicationFollowup)=>void;owner:string;jobs:JobRecord[];lot:DailyLot|null;sources:SessionSource[];initialLibrary?:Library;now:number;ready:boolean;onNavigate:(step:SessionStep,target?:string)=>void}){
   const {session,save,checkpoint,getCurrent,hasCheckpoint,checkpointPending,checkpointFailed,retryCheckpoint,ready:continuityReady,busy:continuityBusy,error:continuityError,reload}=useRadarSession(owner,now);
   const [facts,setFacts]=useState<ExperienceItem[]>(initialLibrary?.items??[]),[factsError,setFactsError]=useState("");
@@ -55,6 +63,7 @@ export function useSessionJourney({owner,jobs,sources,initialLibrary,now,onNavig
   }
   async function start(){
     if(!ready||!continuityReady||!factsLoaded||!now||actionLock.current)return;
+    measureDemoStep(owner);
     const startedAt=refreshRadarClock();
     const previous=getCurrent();
     if(previous){const index=nextIndex(previous,previous.current);if(index<0){await finish();return;}const resumed={...previous,current:index,paused:false,resumedAt:previous.paused?startedAt:previous.resumedAt};showCheckpoint(resumed);return;}
@@ -69,6 +78,7 @@ export function useSessionJourney({owner,jobs,sources,initialLibrary,now,onNavig
   async function next(){
     const current=getCurrent();
     if(!current||finishing)return;
+    measureDemoStep(owner);
     refreshRadarClock();
     const index=nextIndex(current,current.current+1);
     if(index<0){await finish();return;}
