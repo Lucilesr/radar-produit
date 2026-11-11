@@ -17,6 +17,7 @@ Une fois le lot livré, retirer son idée de `docs/idees.md`.
 | Lot | Sujet | Taille |
 | --- | --- | --- |
 | R1 | Enregistrer sans bloquer : check-list d’envoi | M |
+| R1bis | Fluidité : Kanban, séance, plan de la semaine | L |
 | R2 | Résumé du prompt ChatGPT | M |
 | R3 | Score chiffré et coloré dans Offres | S |
 | R4 | ✓ verts dans « Pourquoi elle remonte » | XS |
@@ -65,6 +66,77 @@ Une fois le lot livré, retirer son idée de `docs/idees.md`.
 - `components/domain-terms.tsx` (confirmer ou ignorer un terme).
 
 Les lister dans la PR comme suites possibles, sans les modifier.
+
+---
+
+## R1bis — Fluidité : Kanban, séance, plan de la semaine
+
+**Problème constaté par Lucile (11 novembre).** L’application rame à l’usage :
+
+1. déplacer une carte dans Candidatures : la carte ne bouge qu’après un délai, et le tableau est bloqué pendant ce temps ;
+2. « Lancer ma séance » ou « Reprendre ma séance » : très long avant que quoi que ce soit ne s’ouvre ;
+3. cocher une action du bloc « Ma semaine » : lent à s’enregistrer ;
+4. « Étape suivante » dans la séance : lent, et parfois le clic ne fait rien.
+
+**Cause commune.** Chaque geste attend la réponse du serveur avant de changer l’écran, et désactive tout le bloc pendant ce temps. Le même schéma que R1, appliqué à quatre endroits.
+
+| Geste | Où | Ce qui bloque |
+| --- | --- | --- |
+| Déplacer une carte | `components/radar-app.tsx`, `updateJob()` / `changeStatus()` ; `components/application-drag.tsx` | `setJobs` n’est appelé qu’après le `PATCH /api/jobs/:id`. Pendant l’attente, `busy` désactive toutes les commandes du tableau (`disabled={!!busy}`). |
+| Lancer / reprendre la séance | `components/use-session-journey.ts`, `start()` puis `checkpoint()` | `start()` refuse tant que le carnet (`/api/experiences`) et le point de reprise (`/api/radar-continuity`) ne sont pas relus. Puis `checkpoint()` attend l’écriture du point de reprise **avant** d’ouvrir l’étape (`after()` n’est appelé qu’après `save()`). |
+| Étape suivante | `use-session-journey.ts`, `next()` | Même attente via `checkpoint()`. En plus, `next()` **ignore le clic sans rien dire** si une autre écriture est en cours ailleurs (`pending.current.size`, alimenté par `sessionWrite`). C’est le « clic qui ne fait rien ». |
+| Cocher une action de la semaine | `components/week-plan.tsx`, bouton `week-check` | La case ne change qu’après le `PUT /api/week-plan`. `planBusy` désactive toutes les cases pendant l’envoi. |
+
+Côté serveur, le point de reprise est écrit dans le JSON complet de `profiles.data` (`lib/radar-continuity-store.ts`) : lecture du profil entier, puis `UPDATE … WHERE data=?` qui compare tout le JSON. Plus le profil grossit, plus chaque étape coûte.
+
+**Étape 0 — Mesurer avant de corriger.** Sur le staging, avec un compte de démo bien rempli, mesurer pour chacun des quatre gestes :
+
+- le délai entre le clic et le premier changement visible ;
+- la durée de chaque requête réseau, et la taille de `profiles.data` pour ce compte.
+
+Reporter les chiffres dans la PR (tableau avant / après). Ajouter un en-tête `Server-Timing` sur les routes concernées si c’est utile au diagnostic.
+
+**Comportement attendu.** Règle générale : **l’écran réagit tout de suite, le serveur confirme ensuite.** Moins de 100 ms entre le clic et le changement visible.
+
+1. **Kanban.**
+   - La carte part dans sa nouvelle colonne dès le dépôt (ou dès « Déplacer vers »). Mise à jour optimiste de `jobs`.
+   - Seule la carte en cours d’envoi porte un état discret (`aria-busy`, opacité légère). Les autres cartes restent déplaçables.
+   - Les envois sur une **même** carte partent dans l’ordre ; les envois sur des cartes différentes peuvent partir en parallèle.
+   - En cas d’échec, la carte revient à sa colonne d’origine, avec le message existant et « Réessayer ». Les autres cartes ne bougent pas.
+   - Le toast « Statut enregistré » reste, mais n’apparaît qu’après confirmation.
+   - Cas particulier inchangé : le passage à « Envoyées » d’une offre qui n’était pas encore une candidature garde son verrouillage du lot du jour (`lockDailyLot`) avant l’envoi.
+2. **Lancer / reprendre la séance.**
+   - Le carnet et le point de reprise sont relus **à l’arrivée sur Aujourd’hui**, pas au clic. Le bouton est donc prêt au moment où l’on clique.
+   - Au clic, l’étape s’ouvre tout de suite. Le point de reprise s’enregistre en arrière-plan.
+   - Si l’enregistrement échoue, on reste sur l’étape et un bandeau discret propose « Réessayer ». Pas de retour en arrière.
+   - Conflit 409 (autre onglet ou appareil) : garder le comportement actuel, c’est-à-dire relire l’état du compte et prévenir.
+3. **Étape suivante.**
+   - Même principe : l’étape suivante s’ouvre tout de suite, le point de reprise suit.
+   - Ne plus ignorer le clic quand une autre écriture est en cours. Mettre le changement d’étape en file derrière elle, et l’afficher immédiatement.
+   - Si l’on clique plusieurs fois vite, chaque clic avance d’une étape ; les écritures partent dans l’ordre avec la version renvoyée par la précédente.
+4. **Cocher une action de la semaine.**
+   - La case se coche dès le clic, l’action passe dans « réalisées » tout de suite.
+   - Les autres cases restent utilisables. Mêmes règles que R1 : file ordonnée, version chaînée, dernier état voulu gardé si l’on reclique, repli de la seule case en échec.
+   - La célébration « semaine tenue » ne se déclenche qu’après confirmation du serveur.
+
+**Mise en œuvre.**
+
+- R1 crée une file d’enregistrement côté client (dans `lib/`, avec tests). R1bis la **réutilise** pour les quatre gestes au lieu d’en écrire une par composant. Si R1 n’est pas encore fusionné, faire R1 d’abord.
+- Ne pas changer les API ni le schéma de la base dans ce lot. Si la mesure montre que le serveur reste lent (par exemple `profiles.data` très lourd), le noter dans la PR comme suite possible, sans le traiter ici.
+- Garder les garde-fous existants : versions, détection de conflit, `sessionWrite` pour la fin de séance et les relances.
+
+**Critères d’acceptation.**
+
+- [ ] Tableau avant / après des quatre délais dans la PR, mesurés sur le staging.
+- [ ] Déplacer 3 cartes à la suite en moins de 3 secondes : les 3 sont à leur place immédiatement, 3 requêtes confirmées, aucun 409.
+- [ ] « Lancer ma séance » ouvre la première étape en moins de 100 ms une fois Aujourd’hui affiché.
+- [ ] « Étape suivante » cliqué 2 fois vite : on avance de 2 étapes, le point de reprise final est le bon après rechargement.
+- [ ] Cocher 3 actions de la semaine à la suite : les 3 restent cochées, état identique après rechargement.
+- [ ] Réseau coupé : chaque geste revient proprement en arrière (ou reste sur l’étape pour la séance), avec un message et « Réessayer ».
+- [ ] Clavier et lecteurs d’écran : le focus ne saute pas, la zone `role="status"` annonce l’enregistrement.
+- [ ] Tests unitaires de la file sur ces nouveaux usages ; tests et types verts, console vide.
+
+**Hors périmètre.** « Votre confort », la relance et les termes du domaine (listés sous R1) restent pour un lot suivant, avec la même file.
 
 ---
 
