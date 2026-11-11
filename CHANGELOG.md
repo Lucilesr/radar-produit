@@ -1,3 +1,7 @@
+## 11 novembre 2026 — Tri des offres
+
+- La sélection, la réserve et les écarts passent à l’offre suivante dès la décision. Les choix s’enregistrent en arrière-plan et peuvent être relancés depuis la liste.
+
 ## 11 novembre 2026 — Fluidité des candidatures, de la séance et du plan
 
 - Le déplacement des cartes, l’ouverture des étapes et les cases du plan réagissent au clic. Radar confirme les changements en arrière-plan et propose un réessai en cas d’échec.

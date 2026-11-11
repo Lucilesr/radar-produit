@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowLeft, Check, Bookmark, LoaderCircle, Trash2, Undo2, ShieldCheck, Archive } from "lucide-react";
+import { ArrowLeft, Check, Bookmark, Trash2, Undo2, ShieldCheck, Archive } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ApplicationTrackingAction, OfferFitCard, FitBadge, OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/components/offer-workspace";
-import {WorkspaceFormError} from "@/components/workspace-form";
+import {WorkspaceButton,WorkspaceFormError} from "@/components/workspace-form";
+import type {useOfferDecisions} from "@/components/use-offer-decisions";
 import { WorkspaceState } from "@/components/workspace-ui";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { selectionInView } from "@/lib/offer-trash-ui";
@@ -12,7 +13,7 @@ import { groupReserve, neighboringRole, type ReserveGroupId } from "@/lib/reserv
 import { formatDate } from "@/lib/application-workflow";
 import { formatEuro } from "@/lib/matching";
 import { formatPayRangeShort } from "@/lib/pay-range";
-import { isMysteryOffer, pinMysteryOffers, putMysteryOffersLast } from "@/lib/fit";
+import { pinMysteryOffers, putMysteryOffersLast } from "@/lib/fit";
 import { lotHeadline, type DailyLot } from "@/lib/daily-lot";
 import { SignalProgress } from "@/components/signal/signal-progress";
 import { FridayRescue } from "@/components/friday-rescue";
@@ -22,16 +23,16 @@ import type { CandidateProfile, JobRecord, JobStatus } from "@/lib/types";
 const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"]];
 const retiredViews = [["archived","Archives"],["trash","Corbeille"]] as const;
 const remote={full_remote:"Full remote",exceptional:"Présence ponctuelle",hybrid:"Hybride",onsite:"Sur site",unknown:"Remote à confirmer"};
-export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,tools,sessionAdvance,enabled=true,onReload,onReserveChanged,lot,jobs,rescueOffers=[],counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
+export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,tools,sessionAdvance,enabled=true,onReload,onReserveChanged,lot,jobs,rescueOffers=[],counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,decisions,onRetryLot,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
   source?:string;onClearSource?:()=>void;enabled?:boolean;onReload?:()=>Promise<boolean>;onReserveChanged:(roleChanged:boolean)=>Promise<boolean>;rescueOffers?:JobRecord[];
   tools?:ReactNode;contextualPrompt?:ReactNode;sessionAdvance?:ReactNode;lot?:DailyLot|null; currentJob?:JobRecord|null; jobs:JobRecord[];counts:Record<OpportunityView,number>;filter:OpportunityView;onFilter:(view:OpportunityView)=>void;query:string;onClearSearch:()=>void;
   activeId?:string;view:WorkspaceView;onOpen:(job:JobRecord)=>void;onClose:()=>void;profile:CandidateProfile;
-  onReview:(id:string,state:"to_review"|"selected"|"later")=>Promise<boolean>;onDelete:(job:JobRecord,next?:JobRecord)=>void;onDeleteMany:(jobs:JobRecord[])=>void;onRestore:(job:JobRecord)=>Promise<boolean>;
+  decisions:Pick<ReturnType<typeof useOfferDecisions>,"pending"|"failed"|"retry"|"lockErrors">;onRetryLot:(key:string)=>void;
+  onReview:(job:JobRecord,state:"to_review"|"selected"|"later")=>Promise<boolean>;onDelete:(job:JobRecord)=>Promise<boolean>;onDeleteMany:(jobs:JobRecord[])=>void;onRestore:(job:JobRecord)=>Promise<boolean>;
   onStatus:(id:string,status:JobStatus)=>Promise<boolean>;onNote:(id:string,note:string)=>Promise<boolean>;onChange:(job:JobRecord)=>void;onApplication:(job:JobRecord)=>void;
   onViewChange:(job:JobRecord,view:WorkspaceView)=>void;trashBusy:boolean;
 }) {
-  const [selection,setSelection]=useState<string[]>([]),[selecting,setSelecting]=useState(false),[reviewingIds,setReviewingIds]=useState<string[]>([]),[error,setError]=useState<{jobId:string;message:string}|null>(null);
-  const selectionAction=useRef<HTMLButtonElement>(null);
+  const [selection,setSelection]=useState<string[]>([]),[selecting,setSelecting]=useState(false),[error,setError]=useState<{jobId:string;message:string}|null>(null);
   const [editing,setEditing]=useState(false);
   const [applyingId,setApplyingId]=useState<string|null>(null);
   const [dateOrder,setDateOrder]=useState<"newest"|"oldest">("newest");
@@ -97,12 +98,10 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
 
   const title=useRef<HTMLHeadingElement>(null);
   const opener=useRef<HTMLButtonElement|null>(null);
-  const pendingReviews=useRef(new Set<string>());
-  const reviewing=!!active&&reviewingIds.includes(active.id);
   const archived=!!active&&isArchived(active);
   const applied=!!active&&hasApplication(active);
   const selectedOffer=!!active&&reviewState(active)==="selected";
-  const actionsBusy=reviewing||trashBusy||applyingId===active?.id;
+  const actionsBusy=trashBusy||applyingId===active?.id;
   useEffect(()=>{
     if(!activeId||active?.id!==activeId||document.activeElement?.closest(".aligned-offer-tabs [role=tablist]"))return;
     title.current?.focus({preventScroll:true});
@@ -110,19 +109,24 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
     else if(readingPane.current&&readingPane.current.getBoundingClientRect().top>0)readingPane.current.scrollIntoView({block:"start",behavior:"instant"});
   },[activeId,active?.id]);
   function close(){onClose();requestAnimationFrame(()=>{const button=opener.current;(button?.isConnected && button.getClientRects().length?button:document.getElementById("workspace-title"))?.focus({preventScroll:true});});}
-  async function review(decision?:"to_review"|"selected"|"later"){
-    if(!active||actionsBusy||pendingReviews.current.has(active.id))return;
-    const current=active,next=decision??(reviewState(current)==="selected"?"to_review":"selected");
-    pendingReviews.current.add(current.id);setReviewingIds(ids=>[...ids,current.id]);setError(null);
-    const index=displayJobs.findIndex(job=>job.id===current.id),following=displayJobs[index+1]??displayJobs[index-1];
-    try{
-      const saved=await onReview(current.id,next);
-      if(viewIsCurrent()){
-        if(!saved){requestAnimationFrame(()=>selectionAction.current?.focus());setError({jobId:current.id,message:"Votre choix n’a pas été enregistré. L’offre reste à sa place."});}
-        else {setRetained(null);if(following)onOpen(following);else close();}
-      }
-    }catch{if(viewIsCurrent()){setError({jobId:current.id,message:"Votre choix n’a pas été enregistré. L’offre reste à sa place."});requestAnimationFrame(()=>selectionAction.current?.focus());}}
-    finally{pendingReviews.current.delete(current.id);setReviewingIds(ids=>ids.filter(id=>id!==current.id));}
+  function advance(job:JobRecord){
+    const index=displayJobs.findIndex(item=>item.id===job.id);
+    const following=displayJobs[index+1]??displayJobs[index-1];
+    setRetained(null);
+    if(following&&following.id!==job.id)onOpen(following);
+    else close();
+  }
+  function review(decision?:"to_review"|"selected"|"later"){
+    if(!active||actionsBusy||editing)return;
+    const next=decision??(reviewState(active)==="selected"?"to_review":"selected");
+    setError(null);
+    void onReview(active,next);
+    advance(active);
+  }
+  function discard(){
+    if(!active||actionsBusy||editing)return;
+    void onDelete(active);
+    advance(active);
   }
   useEffect(()=>{
     const handle=(event:KeyboardEvent)=>{
@@ -130,16 +134,22 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
       const action=triageShortcut(event.key,{open:enabled&&!!activeId&&!!active&&!active.deletedAt&&!hasApplication(active),editing:editing||!!target?.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="combobox"],[role="textbox"],[role="dialog"],[role="alertdialog"],[role="listbox"],[role="menu"]'),disabled:profile.preferences?.triageShortcuts===false||actionsBusy,modifier:event.altKey||event.metaKey||event.ctrlKey,repeat:event.repeat});
       if(!action||event.defaultPrevented||!active||(action==="later"&&archived))return;
       event.preventDefault();
-      if(action==="discard"){const index=displayJobs.findIndex(job=>job.id===active.id);onDelete(active,displayJobs[index+1]??displayJobs[index-1]);}
-      else void review(action==="selected"?undefined:action);
+      if(action==="discard")discard();
+      else review(action==="selected"?undefined:action);
     };
     window.addEventListener("keydown",handle);
     return()=>window.removeEventListener("keydown",handle);
-  },[editing,enabled,activeId,active,profile.preferences?.triageShortcuts,actionsBusy,archived,displayJobs,onDelete,review]);
+  },[editing,enabled,activeId,active,profile.preferences?.triageShortcuts,actionsBusy,archived,discard,review]);
+  const decisionFeedback=<>
+    <p className="sr-only" role="status">{decisions.pending&&!decisions.lockErrors.length?"Enregistrement des décisions en cours…":""}</p>
+    {decisions.lockErrors.map(key=><WorkspaceState key={key} error title="Le lot du jour n’a pas pu être verrouillé" action={<WorkspaceButton onClick={()=>onRetryLot(key)}>Réessayer</WorkspaceButton>}>Les décisions restent en attente de confirmation.</WorkspaceState>)}
+    {decisions.failed.map(job=><WorkspaceState key={job.id} error title={job.title} action={<WorkspaceButton onClick={()=>void decisions.retry(job)}>Réessayer</WorkspaceButton>}>Votre choix n’a pas été enregistré. L’offre reste à sa place.</WorkspaceState>)}
+  </>;
   const emptyAction: ReactNode=query?<button className="secondary-button" onClick={onClearSearch}>Effacer la recherche</button>:filter!=="to_review"?<button className="secondary-button" onClick={()=>{changeView("to_review");requestAnimationFrame(()=>document.getElementById("workspace-title")?.focus());}}>Voir les offres à examiner</button>:null;
   return <div className={"opportunities-workspace "+(openedJob?"has-open-offer":"")}>
     <div className="opportunities-controls">
     {tools}
+    {!openedJob?decisionFeedback:null}
     {source?<div className="scan-source-filter"><span>Source : <strong>{source}</strong></span><button type="button" className="secondary-button" onClick={onClearSource}>Effacer le filtre de source</button></div>:null}
     <nav className="workspace-tabs" aria-label="Vues des offres">
       {views.map(([id,label])=><span className="opportunity-tab" key={id}><button type="button" aria-pressed={filter===id} onClick={()=>changeView(id)}>{label}<span>{counts[id]}</span></button></span>)}
@@ -178,21 +188,23 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
         </div>:null}
         {active.deletedAt?<div className="aligned-offer-archive">
           <span>Écartée le {formatDate(active.deletedAt)}. Restaurez l’offre pour agir.</span>
-          <button type="button" className="secondary-button" disabled={actionsBusy||editing} onClick={async()=>{if(await onRestore(active))close();}}><Undo2 size={16} aria-hidden/>Restaurer l’offre</button>
+          <button type="button" className="secondary-button" disabled={actionsBusy||editing} onClick={()=>{void onRestore(active);advance(active);}}><Undo2 size={16} aria-hidden/>Restaurer l’offre</button>
         </div>:null}
         <header className="opportunity-detail-header reading-detail-heading"><div className="reading-heading-text"><div className="reading-company-line"><span>{active.company||"Entreprise à confirmer"}</span><OfferSourceBadge job={active}/>{active.publishedAt?<span>Publiée le {formatDate(active.publishedAt)}</span>:null}</div><h2 id="opportunity-detail-title" ref={title} tabIndex={-1}>{active.title}</h2></div><OfferFitCard job={active}/></header>
+        {openedJob?decisionFeedback:null}
         {error&&error.jobId===active.id?<WorkspaceState error title="Choix non enregistré" action={onReload?<button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>void onReload()}>Relire les offres pour vérifier</button>:undefined}>{error.message}</WorkspaceState>:null}
         {heldOutside?<p className="sr-only" role="status">{hasApplication(active)?"Candidature enregistrée. L’offre reste ouverte pendant votre lecture.":reviewState(active)==="selected"?"Offre sélectionnée. Elle reste ouverte pendant votre lecture.":reviewState(active)==="later"?"Offre gardée pour plus tard, dans la réserve.":"Offre remise à examiner. Elle reste ouverte pendant votre lecture."}</p>:null}
         {active.deletedAt&&active.dismissalNote?<p className="workspace-caption">{active.dismissalNote}</p>:null}
+        {!archived&&!active.deletedAt&&!applied&&reviewState(active)!=="later"?<WorkspaceButton variant="quiet" disabled={actionsBusy||editing} onClick={()=>review("later")} aria-keyshortcuts={profile.preferences?.triageShortcuts!==false?"L":undefined}>Plus tard</WorkspaceButton>:null}
         {sessionAdvance?<div className="reading-session-advance">{sessionAdvance}</div>:null}
         <OfferWorkspace key={active.id} onEditingChange={setEditing} showApplicationAction={false} showAnnouncement={false} job={active} profile={profile} initialView={view} onViewChange={next=>onViewChange(active,next)} context="opportunity" onStatus={onStatus} onNote={onNote} onChange={updated=>{if(kept?.job.id===updated.id)setRetained({...kept,job:updated});onChange(updated);}} onOpenApplication={()=>onApplication(active)}/>
         <OpportunityReadingNotes/>
         </div>
         <div role="group" aria-label="Actions sur cette offre" className="opportunity-decision signal-opportunity-actions">
-          <button ref={selectionAction} type="button" className={selectedOffer?"signal-selected-button":"radar-add-button"} aria-pressed={selectedOffer} disabled={!!active.deletedAt||applied||actionsBusy||editing} onClick={()=>void review()}>
-            {reviewing?<LoaderCircle size={16} className="animate-spin" aria-hidden/>:<Bookmark size={16} aria-hidden/>}{selectedOffer?"Sélectionnée":"Sélectionner"}{profile.preferences?.triageShortcuts!==false&&!active.deletedAt&&!applied?<kbd>S</kbd>:null}
+          <button type="button" className={selectedOffer?"signal-selected-button":"radar-add-button"} aria-pressed={selectedOffer} disabled={!!active.deletedAt||applied||actionsBusy||editing} onClick={()=>void review()}>
+            <Bookmark size={16} aria-hidden/>{selectedOffer?"Sélectionnée":"Sélectionner"}{profile.preferences?.triageShortcuts!==false&&!active.deletedAt&&!applied?<kbd>S</kbd>:null}
           </button>
-          <button type="button" className="secondary-button" disabled={!!active.deletedAt||applied||actionsBusy||editing} onClick={()=>{const index=displayJobs.findIndex(job=>job.id===active.id);setRetained(null);onDelete(active,displayJobs[index+1]??displayJobs[index-1]);}}>
+          <button type="button" className="secondary-button" disabled={!!active.deletedAt||applied||actionsBusy||editing} onClick={discard}>
             <Trash2 size={16} aria-hidden/>{active.deletedAt?"Écartée":"Écarter"}{profile.preferences?.triageShortcuts!==false&&!active.deletedAt&&!applied?<kbd>X</kbd>:null}
           </button>
           <ApplicationTrackingAction job={active} disabled={actionsBusy||editing||!!active.deletedAt&&!applied} onStatus={async(id,status)=>{

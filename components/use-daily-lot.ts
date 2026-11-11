@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
-import {useRadarContinuity,saveAccountLot} from "@/components/use-radar-continuity";
-import { buildDailyLot, type DailyLot, type StoredLot } from "@/lib/daily-lot";
+import {useRadarContinuity,continuityView,saveAccountLot} from "@/components/use-radar-continuity";
+import { buildDailyLot, type StoredLot } from "@/lib/daily-lot";
 import type { JobRecord } from "@/lib/types";
 
 const listeners = new Set<() => void>();
@@ -48,6 +48,7 @@ const readClock = () => Math.floor(Date.now() / clockStep) * clockStep;
 /** Canonical lot in the account; the old browser snapshot is migrated once and kept as a reading fallback. */
 export function useDailyLot(jobs:JobRecord[],ready:boolean,owner=""){
  const storageKey="radar:lot-du-jour:"+owner,remote=useRadarContinuity(owner,ready),pending=useRef<string|null>(null);
+ const locks=useRef(new Map<string,Promise<boolean>>());
  const read=useCallback(()=>readRaw(storageKey),[storageKey]);
  const raw=useSyncExternalStore(subscribe,read,()=>undefined),now=useSyncExternalStore(subscribeClock,readClock,()=>0);
  const canonical=remote.state?.lot??null;
@@ -60,10 +61,17 @@ export function useDailyLot(jobs:JobRecord[],ready:boolean,owner=""){
  },[ready,owner,lot,remote.ready,remote.reading,remote.busy,remote.error,matches]);
  useEffect(()=>{if(canonical&&raw!==undefined&&JSON.stringify(canonical)!==raw)write(storageKey,canonical);},[canonical,raw,storageKey]);
  const lock=async()=>{
-  if(!lot||!matches||!remote.ready)return false;
-  if(!lot.ids.length||lot.locked)return true;
-  const saved=await saveAccountLot(owner,{day:lot.day,ids:lot.ids,locked:true});
-  return !!saved?.lot?.locked&&saved.lot.day===lot.day&&saved.lot.ids.join()===lot.ids.join();
+  const current=continuityView(owner).state?.lot;
+  if(!lot||!current||current.day!==lot.day||current.ids.join()!==lot.ids.join())return false;
+  if(!lot.ids.length||current.locked)return true;
+  const key=lot.day+":"+lot.ids.join();
+  const running=locks.current.get(key);
+  if(running)return running;
+  const saving=saveAccountLot(owner,{day:lot.day,ids:lot.ids,locked:true})
+   .then(saved=>!!saved?.lot?.locked&&saved.lot.day===lot.day&&saved.lot.ids.join()===lot.ids.join())
+   .finally(()=>locks.current.delete(key));
+  locks.current.set(key,saving);
+  return saving;
  };
  return {lot,lock,ready:matches,error:remote.error,reload:remote.reload};
 }
