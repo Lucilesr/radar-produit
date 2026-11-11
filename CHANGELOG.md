@@ -1,3 +1,7 @@
+## 11 novembre 2026 — Fluidité des actions courantes
+
+- Les actions sur les tags, les relances, les propositions, la réserve, les sources, le confort et les termes apparaissent immédiatement. Chaque enregistrement se confirme en arrière-plan avec une reprise ciblée en cas d’échec.
+
 ## 11 novembre 2026 — Revenir sur l’onglet Radar
 
 - La séance, les actions de la semaine, la check-list, les relances et les propositions restent utilisables pendant leur relecture au retour sur l’onglet.
