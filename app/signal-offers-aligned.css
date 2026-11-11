@@ -43,7 +43,7 @@
 @media(max-width:760px){
  .radar-page[data-space=offers][data-aligned=true]{padding:20px 16px 96px}.opportunities-workspace .opportunities-split{display:block}.opportunities-workspace .opportunity-list-row{margin-bottom:12px}.opportunities-workspace .opportunity-open{padding:18px}
  .opportunities-workspace .opportunity-detail{padding:0;border:0;border-radius:0}.radar-page[data-offer-open=true]{padding:0 20px 104px!important;background:var(--signal-paper)}
- .radar-page[data-offer-open=true]>.workspace-page-header,.radar-page[data-offer-open=true] .triage-learning,.radar-app:has(.radar-page[data-offer-open=true]) .radar-sidebar{display:none!important}
+ .radar-page[data-offer-open=true]>.workspace-page-header,.radar-app:has(.radar-page[data-offer-open=true]) .radar-sidebar{display:none!important}
  .radar-app:has(.radar-page[data-offer-open=true]) .radar-nav{display:none!important}.radar-page[data-offer-open=true]>.radar-session-strip{display:none}
  .aligned-offer-mobile-header{display:flex;position:sticky;top:0;z-index:6;justify-content:space-between;align-items:center;gap:12px;min-height:72px;margin:0 -20px 24px;padding:10px 20px;border-bottom:1px solid var(--signal-line);background:var(--signal-paper)}
  .aligned-offer-mobile-header .opportunity-back{display:flex;min-height:44px;margin:0;padding:0;white-space:nowrap}.aligned-offer-mobile-header>div{min-width:0;max-width:200px;font-size:12px;text-align:right}.aligned-offer-mobile-header .signal-progress{margin-top:7px}
