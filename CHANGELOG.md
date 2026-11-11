@@ -2,9 +2,6 @@
 
 - La sélection, la réserve et les écarts passent à l’offre suivante dès la décision. Les choix s’enregistrent en arrière-plan et peuvent être relancés depuis la liste.
 
-Warning: truncated output (original token count: 23106)
-Total output lines: 1071
-
 ## 11 novembre 2026 — Fluidité des candidatures, de la séance et du plan
 
 - Le déplacement des cartes, l’ouverture des étapes et les cases du plan réagissent au clic. Radar confirme les changements en arrière-plan et propose un réessai en cas d’échec.
@@ -456,7 +453,253 @@ Une offre qui vise bien le poste mais dont la source ne donne qu’un aperçu de
 
 ## 7 novembre 2026 — Adéquation visible dès la création
 
-Une nouvelle offre affiche immédiatement son libellé d’adéquation, la fiabilité de sa fiche et les informations manquantes. La réponse d’enregistrement et celle d’un import répété contiennent les mêmes mesures que la…6106 tokens truncated…er de candidature permet de créer des tags sans nom prérempli, de choisir une couleur, de les appliquer ou retirer de la carte, puis de les renommer ou supprimer après confirmation.
+Une nouvelle offre affiche immédiatement son libellé d’adéquation, la fiabilité de sa fiche et les informations manquantes. La réponse d’enregistrement et celle d’un import répété contiennent les mêmes mesures que la lecture suivante, sans recharger la page.
+
+## 7 novembre 2026 — Fourchettes conservées au préremplissage
+
+Les propositions de salaire et de TJM affichent et transmettent leurs bornes avec le montant coché. La fourchette reste dans le brouillon, à l’enregistrement et lors d’une correction sans changement de rémunération. Un montant modifié à la main remplace la fourchette.
+
+## 7 novembre 2026 — Score v2, lot S3 : adéquation et fiabilité de la fiche
+
+Chaque offre reçoit une adéquation sur 100 (poste, niveau, rémunération lue comme signal de niveau, domaine des missions), calculée uniquement sur ce qui est connu : une information absente ne compte jamais comme zéro. La fiabilité de la fiche dit ce qu’on sait vraiment (description, rémunération, présence, niveau, langue). Les cartes et la fiche affichent un libellé (Très proche, Proche, À jauger, Loin) ou « Fiche incomplète » quand ni le niveau ni les missions ne sont connus ; le chiffre reste au survol. Une rémunération très au-dessus du minimum devient un point à vérifier. « Correspondances Radar » et le classement du tri utilisent l’adéquation ; la fraîcheur ne fait plus que départager. L’ancien score reste calculé pour le filtre Jobgether.
+
+## 7 novembre 2026 — Score v2, lot S2 : niveau visé et niveau détecté
+
+Nouveau critère « Niveau visé » (Junior, Confirmé, Senior, Lead, Head of), proposé dans « + Critère » puis affiché dans le groupe *Le poste*, avec la case « J’accepte un cran au-dessus ». Radar lit le niveau d’une offre dans l’intitulé, les années d’expérience demandées et l’encadrement, et ajoute un point à vérifier quand l’offre est un cran au-dessus, nettement plus senior ou plus junior que la cible. Le classement ne change pas dans ce lot. Sans niveau visé, rien ne change.
+
+## 7 novembre 2026 — Score v2, lot S1 : fourchettes de rémunération et intitulés
+
+Les fourchettes de salaire et de TJM sont lues de la même façon par toutes les sources (« 62–70 k€ », « 60 000 – 70 000 € », « €60,000–70,000 », « 500–600 €/jour », « jusqu’à 70 k€ »). Le bas et le haut sont conservés ; le milieu reste la valeur comparable. Une offre n’est exclue que si le haut de la fourchette est sous le plancher ; si seul le bas est sous le minimum, elle passe avec un point à vérifier. Les fiches et la liste affichent la fourchette, et un montant saisi à la main la remplace. « Chef de produit » et « Responsable produit » sont reconnus ; « PM » ne l’est plus quand l’annonce parle de gestion de projet. Migration additive : quatre colonnes nullables sur `jobs`.
+
+## 7 novembre 2026 — Alignement des actions des critères
+
+« Tout modifier » reste aligné à droite lorsque l’en-tête passe sur plusieurs lignes, ainsi que dans les vues détaillée et édition. Les boutons et le focus Signal existants sont conservés.
+
+## 7 novembre 2026 — Statut automatique des sources
+
+Le sélecteur d’état du suivi disparaît : la configuration se déduit des liens et recherches enregistrés ou d’une alerte reçue. Une note seule ne configure pas une source. Les collecteurs intégrés sont prêts sans réglage manuel ; la pause reste une action explicite. Le tag rejoint la croix en haut à droite du panneau. Replier la configuration libère immédiatement la place pour les offres trouvées.
+
+## 7 novembre 2026 — Panneau des sources simplifié
+
+Le tag « À configurer » suffit dans la liste. Le panneau affiche une seule identité, des recherches sans doublons pour les sources à consulter et une configuration qui regroupe suivi, lien, notes et rythme de visite. Le chevron reste aligné avec le titre. L’aide détaillée est repliable ; la suppression et la fermeture restent accessibles pendant le défilement, avec confirmation et retour du focus.
+
+## 7 novembre 2026 — Derniers logos des sources
+
+Les logos Mindquest, FreelanceRepublik, HelloWork et Indeed utilisent les quatre nouveaux fichiers fournis. Ils reprennent le composant commun SourceLogo et ses dimensions existantes dans les listes, fiches et le catalogue, sans recadrage ni dépendance ajoutée.
+
+## 6 novembre 2026 — Aide de la tolérance raccourcie
+
+La phrase de tolérance conserve les seuils calculés et le masquage sous le seuil, sans la mention de badge ni la phrase sur le montant manquant.
+
+## 6 novembre 2026 — Ma recherche : un seul titre pour les sources
+
+- Les titres « Sources » et « Sources suivies » sont fusionnés en « Sources suivies », avec « Ajouter une source » sur la même ligne et le résumé « 8 sources · 2 demandent une action ».
+- La phrase « Radar collecte les flux automatiques… » est retirée : les sous-titres « Automatiques » et « À consulter » disent déjà la même chose. « Radar ne lit pas vos comptes » rejoint le sous-titre « À consulter ».
+
+## 6 novembre 2026 — Ma recherche : une seule phrase sur le rôle des critères
+
+- Le bandeau « Les lieux annoncés servent au classement » est retiré : il était inexact (un lieu exclu masque l’offre) et ses réserves sur la langue et les pays autorisés sont déjà signalées offre par offre.
+- La phrase d’aide sous « Critères » dit désormais : « Radar classe vos offres selon ces critères ; celles qui en sortent sont masquées dans « À examiner ». »
+
+## 6 novembre 2026 — Ma recherche : curseur de tolérance plus fluide
+
+- Tant que le curseur de tolérance est maintenu, seuls la valeur et les seuils affichés (salaire, TJM) bougent ; l’enregistrement se fait au relâchement. Au clavier, chaque pas reste enregistré.
+
+## 6 novembre 2026 — Logos des sources
+
+Les douze logos fournis remplacent les illustrations des sources correspondantes, dont Jobgether qui utilisait une icône générique. Les listes, fiches, offres et le panneau d’ajout réutilisent le composant commun SourceLogo et les cadres Signal, sans recadrage ni dépendance externe.
+
+## 6 novembre 2026 — Supprimer son compte
+
+« Mon compte », dans Mon profil, propose « Exporter mes données » (la sauvegarde intégrale existante) et « Supprimer mon compte ». La suppression demande de saisir « SUPPRIMER », puis efface définitivement les fichiers du compte (CV et documents) et toutes ses lignes dans les tables du compte, en une seule transaction, avant de vérifier qu’il ne reste rien. Radar se déconnecte ensuite et revient à la page de connexion. Comme l’export, la suppression refuse de s’exécuter si une table inconnue apparaît, et une relance termine une suppression interrompue. Elle est désactivée dans la démo. Aucune migration SQL ni dépendance ajoutée.
+
+## 6 novembre 2026 — Page de connexion et déconnexion
+
+Un visiteur non connecté arrive sur une page Radar (`/connexion`) au lieu d’être envoyé directement chez ChatGPT : présentation du service, « Se connecter avec ChatGPT », « Voir la démo » et rappel de confidentialité. La page d’origine est retrouvée après la connexion. « Se déconnecter » apparaît dans la barre latérale et dans la nouvelle section « Mon compte » de Mon profil, accessible aussi sur mobile ; dans la démo, le même bouton devient « Quitter la démo ». La déconnexion ramène sur la page de connexion. Aucune migration SQL ni dépendance ajoutée.
+
+## 6 novembre 2026 — Un nouveau compte choisit son poste
+
+Un nouveau compte ne reçoit plus les critères PO/PM d’origine : aucun poste, tous les contrats, toute présence et aucun minimum de rémunération. Tant qu’aucun poste n’est choisi, « Opportunités » invite à l’indiquer dans Ma recherche, le guide de prise en main attend un poste pour passer à l’étape suivante, et une offre reçoit « Aucun poste choisi » au lieu d’une pénalité d’intitulé. Sans minimum, une rémunération absente n’est plus signalée. Les critères affichent « Aucun poste choisi » et « Aucun minimum ». Les deux offres d’exemple n’évoquent plus de métier. La démo fictive de Camille garde explicitement sa recherche PO/PM. Un compte qui a déjà enregistré ses critères les conserve. Aucune migration SQL ni dépendance ajoutée.
+
+## 6 novembre 2026 — Classement sans préférence cachée pour le produit
+
+Un intitulé contenant « product », « produit », « PO » ou « PM » ne gagne plus de points quand le compte cherche un autre métier : seule la correspondance avec les postes visés compte. Le bonus fixe de 7 points pour la fintech, le paiement, le SaaS, l’IA ou le secteur public disparaît aussi ; chaque compte valorise ses secteurs avec ses « mots-clés à mettre en avant ». Les anciennes requêtes PO/PM constantes de `web-discovery.ts`, inutilisées, sont supprimées. Aucune migration SQL ni dépendance ajoutée.
+
+## 6 novembre 2026 — Postes suggérés depuis vos offres (lot 16b)
+
+Sous « Postes visés », le tableau et le popover proposent jusqu’à trois intitulés vus dans au moins trois offres non supprimées des trente derniers jours. Les suggestions excluent les postes déjà visés et les termes des pistes du compte. Un clic ajoute explicitement le poste avec la confirmation d’impact existante ; « Ne plus proposer » conserve le refus dans le compte, y compris après rechargement. Sans suggestion, la ligne disparaît. Aucune dépendance ni migration SQL ajoutée.
+
+## 6 novembre 2026 — Finitions de Ma recherche (lot 16a)
+
+La section « Critères » indique l’enregistrement automatique et signale les critères modifiés pendant la visite. Les confirmations d’impact proposent « Annuler » et « Voir les offres », vers « À examiner ». Le titre « Sources » rassemble les statuts suivis ; jusqu’à quatre sources non suivies sont suggérées selon les critères et s’ajoutent directement. La vue dépliée rappelle que les offres sans salaire affiché sont gardées, à vérifier. Aucune règle de classement ni suggestion de poste modifiée.
+
+## 6 novembre 2026 — Tout modifier en tableau éditable (lot 15)
+
+« Tout modifier » ouvre les groupes du tableau de critères avec leurs contrôles directement accessibles : postes et pistes, contrats, présence par contrat, minimums et tolérance, zones et mots-clés. Les boutons segmentés remplacent les menus de présence. L’en-tête rassemble l’état de sauvegarde, la reprise en cas d’erreur et le nombre d’offres à examiner. « Ajouter un critère » ouvre une ligne optionnelle ; le premier usage garde l’édition ouverte sans bouton « Terminé ». Les sauvegardes de champs distincts préservent les dernières valeurs des autres contrôles.
+
+## 6 novembre 2026 — Ma recherche sur une seule page (lot 14)
+
+Critères, sources et autres pistes se lisent à la suite, sans les trois onglets de section. L’actualisation des flux et son réglage rejoignent l’en-tête ; les alertes Collective se consultent et s’ajoutent dans le détail de la source. Les anciens liens de section sont conservés et ouvrent « Autres pistes » si nécessaire. Les recherches web redondantes et « Recherches couvertes » quittent la page. Aucune règle de classement ni dépendance modifiée.
+
+## 6 novembre 2026 — Guide : trois lots pour rejoindre les maquettes
+
+Le guide de « Ma recherche » décrit trois lots de plus : une seule page sans onglets (lot 14), « Tout modifier » en tableau éditable (lot 15), puis les finitions et les postes suggérés (lot 16). Les offres sans salaire affiché restent gardées, à vérifier à la main.
+
+## 6 novembre 2026 — Configuration des sources
+
+Suppression du bouton redondant « Modifier mon suivi ». Le chevron Signal reste disponible dans les cartes héritées ; la liste actuelle utilise le panneau de détail.
+
+## 6 novembre 2026 — « Aujourd'hui » rappelle les sources à consulter
+
+- Quand une source à consulter arrive à échéance, elle apparaît dans « Aujourd'hui » : « Welcome to the Jungle à visiter · vue il y a 3 jours ». Un clic ouvre son panneau dans « Ma recherche ».
+- Le rappel suit le rythme choisi pour chaque source et disparaît si vous l'avez coupé.
+- Dans le panneau d'une source, « Collez l'URL d'une offre vue sur ce site » ouvre le formulaire d'ajout avec le lien déjà rempli.
+
+## 5 novembre 2026 — « + Critère »
+
+- À la suite de vos étiquettes, « + Critère » propose ce que vous n'avez pas encore réglé : mots-clés à mettre en avant, mots-clés à écarter, tolérance sous le minimum, pistes de recherche.
+- Choisir un critère ouvre directement son contrôle, sans passer par le formulaire complet. Une fois réglé, il quitte la liste et rejoint vos étiquettes.
+
+## 5 novembre 2026 — Radar s'actualise tout seul à l'ouverture
+
+- Si la dernière collecte date de plus de 12 heures, Radar actualise vos flux en arrière-plan quand vous ouvrez « Ma recherche », sans bloquer l'affichage et sans contourner les caches des sources.
+- L'en-tête de la collecte indique « Actualisé il y a 2 h », et le bouton devient « Actualiser maintenant ».
+- Un réglage « Actualisation » laisse choisir entre « Actualiser automatiquement à l'ouverture » et « Seulement quand je le demande ».
+
+## 5 novembre 2026 — Choisir où Radar cherche
+
+- « Ajouter une source » ouvre un panneau : une recherche, trois filtres, et le catalogue trié selon vos critères — les sources proches de vos contrats, de votre présence et de vos pays d'abord.
+- Chaque entrée affiche son logo, son nom et deux ou trois étiquettes ; celles déjà suivies sont marquées « Ajoutée ».
+- « Votre site n'est pas dans la liste ? » : collez l'URL de votre recherche, elle devient une source à consulter, avec son rythme de visite.
+- Quand aucune source n'est suivie, la page demande « Où Radar doit-il chercher ? » et propose les deux familles, automatiques ou à consulter.
+
+## 5 novembre 2026 — Le détail d'une source, et le rythme auquel la revisiter
+
+- Cliquer sur le nom d'une source ouvre un panneau latéral : ce qu'il faut ouvrir, les recherches préparées depuis vos critères, ce que la source a rapporté, ses réglages et ses notes.
+- « Rythme de visite » : chaque jour, tous les 2 jours ou chaque semaine, avec un rappel dans « Aujourd'hui » que vous pouvez couper. L'état « À visiter » suit le rythme choisi.
+- Les écarts d'une recherche (« X n'est pas dans vos critères ») s'affichent désormais dans ce panneau, à côté des recherches concernées.
+- La liste des sources garde ses lignes compactes : les réglages ne s'ouvrent plus dessous, mais dans le panneau.
+
+## 5 novembre 2026 — Pistes de recherche propres à chaque compte, et alertes d'écart
+
+- Les trois pistes de recherche (« Cœur de cible », « Filet large », « Alternatives pertinentes ») ne sont plus les mêmes pour tout le monde : chaque compte a les siennes, modifiables sous « Postes visés ».
+- Un compte sans piste enregistrée cherche ses propres postes. Un compte qui cherchait les anciens postes par défaut garde les trois pistes d'avant.
+- « Recherches couvertes » affiche les pistes du compte, et non plus un texte figé.
+- Quand une recherche enregistrée sur une source cherche encore un intitulé absent de vos critères, la source l'indique : « X n'est pas dans vos critères », avec « L'ajouter à mes pistes » ou « Retirer de cette recherche ». Ces sources rejoignent le filtre « Action requise ».
+- Les conseils propres à un profil disparaissent des notes de sources.
+
+## 5 novembre 2026 — Ma recherche : une seule liste de sources, avec leur état
+
+- Les sous-onglets « Jobboards » et « Alertes & flux » laissent place à une liste unique, groupée en « Automatiques » et « À consulter ».
+- Chaque source affiche son état : OK, Erreur, À configurer, En pause, Nouvelle, À visiter ou À jour, avec l'action correspondante et sa dernière activité.
+- Des filtres montrent toutes les sources, un seul type, ou celles qui demandent une action.
+- « J'ai fait le tour » marque une source à consulter comme visitée ; son état repasse à « À jour » puis à « À visiter » après le délai.
+- Les réglages d'une source s'ouvrent sous sa ligne, sans quitter la liste.
+
+## 5 novembre 2026 — Ma recherche : mots-clés de l'annonce
+
+- Une section « L'annonce » permet de mettre en avant les offres qui parlent de certains sujets (fintech, paiement…) et d'écarter celles qui contiennent d'autres mots (stage, alternance…).
+- Les mots écartés masquent l'offre dans « À examiner » avec un point à vérifier ; les mots mis en avant la font remonter.
+- La casse et les accents sont ignorés ; 12 mots-clés au plus par liste, de 2 à 40 caractères.
+
+## 5 novembre 2026 — Ma recherche : présence acceptable par contrat
+
+- Avec plusieurs contrats recherchés, la présence se règle contrat par contrat : full remote en CDI et hybride en freelance, par exemple.
+- Les offres sont classées avec le niveau du contrat annoncé ; une offre au contrat non précisé suit le niveau le plus ouvert parmi les contrats recherchés.
+- La barre de critères garde une seule étiquette « Présence », qui résume les niveaux ; le tableau déplié détaille une ligne par contrat.
+
+## 5 novembre 2026 — Deux contrats de plus : portage salarial et temps partagé
+
+- « Contrats » propose désormais le portage salarial et le temps partagé, en plus du CDI, du CDD et du freelance.
+- Le portage se compare au TJM minimum, comme le freelance.
+- Une rémunération de temps partagé n'est jamais comparée telle quelle à un minimum temps plein : l'offre reste visible avec le point à vérifier « Rémunération à temps partiel », à ramener à un temps plein avant de décider.
+- Les annonces mentionnant « portage salarial », « temps partagé », « mi-temps » ou un rythme de 2 à 4 jours par semaine sont reconnues à l'ajout d'une offre.
+
+## 5 novembre 2026 — Ma recherche : finitions du champ de lieux
+
+- Le champ de recherche de lieu n'affiche plus qu'un seul contour net quand il est sélectionné, au lieu de deux cadres arrondis superposés.
+- Les boutons « Inclure » et « Exclure » restent dans le panneau et passent à la ligne quand la place manque, au lieu de dépasser sur le côté.
+
+## 5 novembre 2026 — Ma recherche : un seul champ pour les pays et régions
+
+- Les deux champs « Inclure » et « Exclure » sont remplacés par une recherche unique : tapez un lieu, puis Inclure (Entrée) ou Exclure (Maj+Entrée).
+- Les lieux choisis apparaissent dans une liste où chaque ligne bascule entre « Inclus » et « Exclu » sans la retaper, et se retire d'un clic.
+- Des raccourcis proposent les régions déjà connues (Union européenne, Amérique du Nord…).
+
+## 5 novembre 2026 — Ma recherche : tolérance sous le minimum
+
+- Un curseur de 0 à 20 % règle la tolérance sous les minimums de salaire et de TJM. À 0 %, valeur par défaut, le comportement strict est inchangé.
+- Une offre dont la rémunération connue se situe dans la tolérance reste dans « À examiner », comme exception, avec le point à vérifier « Sous votre minimum… » et un badge sur sa carte. En dessous de la tolérance, elle reste masquée.
+- Le texte d'aide donne les seuils calculés (« dès 52 250 € brut/an ou 475 € HT/jour ») ; l'étiquette « Tolérance » n'apparaît dans la barre de critères que si elle est réglée.
+
+## 5 novembre 2026 — Ma recherche : édition en place
+
+- Une étiquette de critère ouvre un panneau avec ce seul réglage (postes, contrats et présence, rémunération, lieux) ; sur téléphone, le réglage s'ouvre dans la page, sous les étiquettes. Échap ou « Terminé » ferme et rend le focus à l'étiquette.
+- Dans « Tout voir », « Modifier » ouvre le réglage sous la ligne concernée, sans quitter le tableau.
+- « Tout modifier » ouvre toujours le formulaire complet. Les listes de pays et menus ouverts depuis un panneau ne le referment plus.
+
+## 5 novembre 2026 — Ma recherche : enregistrement automatique et annulation
+
+- Contrats, présence, salaire et TJM s'enregistrent seuls 600 ms après la dernière modification ; le bouton « Enregistrer » disparaît. Un état indique « en attente », « enregistrement » ou « enregistré », avec « Réessayer » en cas d'échec. Quitter le formulaire enregistre la dernière modification.
+- Chaque enregistrement affiche ce qui a changé et le nombre d'offres à examiner qui en résulte (« TJM 500 € → 450 €/jour. 22 offres à examiner (+8). »), avec « Annuler » pour revenir aux critères précédents.
+- Un champ de rémunération vidé reste vide au lieu d'afficher 0 devant la saisie suivante.
+
+## 5 novembre 2026 — Ma recherche : critères lisibles d'un coup d'œil
+
+- « Ce que je recherche » s'affiche d'abord comme une ligne d'étiquettes : postes, contrats, présence, minimums de rémunération, score Jobgether et lieux ; les lieux exclus sont signalés à part.
+- « Tout voir » déplie un tableau rangé par thème (le poste, la présence, la rémunération, la géographie). Le choix replié ou déplié est mémorisé sur l'appareil.
+- Une étiquette ou le bouton « Modifier » d'une ligne ouvre le formulaire sur le bon champ ; « Terminé » revient à la vue précédente. Le score Jobgether s'ouvre sur sa carte dans « Alertes & flux ».
+- Un compte sans critères enregistrés voit toujours le formulaire ouvert, pour la première configuration.
+
+## 5 novembre 2026 — Ma recherche : icône et logos des sources
+
+- L’onglet Ma recherche utilise une icône de réglages au lieu d’une enveloppe.
+- Les logos des sources gardent une largeur de texte fixe et restent entiers dans leur cadre, quelle que soit la police disponible ; le logo Remote OK n’est plus coupé.
+- La mention « Radar ne collecte pas le contenu de ces sites et n’utilise aucun de vos comptes » apparaît une seule fois dans le suivi des jobboards au lieu d’être répétée sur chaque carte.
+
+## 5 novembre 2026 — Explication des minimums stricts
+
+Ma recherche décrit le masquage des rémunérations connues sous les minimums, y compris avec un contrat inconnu.
+
+## 5 novembre 2026 — Minimums de rémunération stricts
+
+Les salaires et TJM connus inférieurs aux minimums du compte sont exclus sans tolérance, y compris lorsque le contrat est inconnu. Ces offres sont masquées dans « À examiner ». Les montants absents restent à vérifier ; les sélections et candidatures existantes sont conservées.
+
+## 5 novembre 2026 — Profil accessible après une mise à jour
+
+- L'interface de Mon profil est chargée avec l'application pour qu'un onglet déjà ouvert puisse accéder aux expériences et documents même après le retrait des anciens fichiers du site.
+- Aucun rechargement automatique n'interrompt les saisies.
+
+## 5 novembre 2026 — Libellé du score Jobgether
+
+- Le réglage précise que le score minimal mesure le matching entre le CV et les offres ; la phrase d’aide redondante est retirée.
+
+## 5 novembre 2026 — Bornes du score Jobgether
+
+- La saisie du score reste entre 0 et 100, y compris lors d’une frappe ou d’un collage hors plage.
+
+## 5 novembre 2026 — Présentation de la carte Jobgether
+
+- La carte Jobgether aligne son titre, son état et ses actions sur mobile et ordinateur. Le réglage du score utilise un champ compact avec un seul contour de focus visible.
+
+## 5 novembre 2026 — Score Jobgether dans sa carte
+
+- Le score minimal des nouvelles offres se règle directement sur la carte Jobgether dans « Jobboards & alertes → Alertes & flux ».
+- Le champ compact accepte un entier de 0 à 100 et enregistre la valeur indépendamment des autres critères.
+
+## 5 novembre 2026 — Seuil Jobgether dans Ma recherche
+
+- Le seuil de score Jobgether est visible en haut de « Mes critères » et accessible directement depuis « Alertes & flux ».
+- La valeur enregistrée est affichée dans le raccourci vers le réglage.
+
+## 5 novembre 2026 — Titres des cartes Candidatures
+
+- Dans le Kanban, le titre ouvre toujours le dossier. La flèche superflue est retirée et les titres occupent au plus deux lignes, avec des points de suspension si nécessaire.
+- Les cartes se déplacent par glissement ou avec la poignée au clavier ; le bouton « Déplacer » et son choix de colonne redondants sont retirés.
+
+## 5 novembre 2026 — Tags des candidatures
+
+- Un dossier de candidature permet de créer des tags sans nom prérempli, de choisir une couleur, de les appliquer ou retirer de la carte, puis de les renommer ou supprimer après confirmation.
 - Les tags sont visibles sur les cartes du Kanban. Cliquer sur un tag filtre les candidatures ; un contrôle Signal permet aussi de choisir le filtre.
 - Fermer la fenêtre des tags avec Échap ou le bouton de fermeture rend le focus au bouton « Tag » du dossier.
 - Saisir un nom dans la recherche des tags puis appuyer sur Entrée ouvre la création avec ce nom repris. Le bouton Tag est dans l’en-tête du dossier ; les tags appliqués apparaissent sous ses onglets, sans section vide.
