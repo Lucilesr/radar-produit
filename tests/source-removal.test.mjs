@@ -91,7 +91,21 @@ test("suppression des sources : confirmation, persistance, isolation et réajout
   assert.equal((await saved({source:"Jobgether",selected:true})).state,"configured");
   assert.equal((await saved({source:"Jobgether",paused:true})).state,"paused");
   assert.equal((await saved({source:"Jobgether",notes:"Ne pas reprendre"})).state,"paused");
-  assert.equal((await saved({source:"Jobgether",paused:false})).state,"configured");
+  await Promise.all([
+    store.userSourceSetting("alice",{source:"Jobgether",paused:false}),
+    store.recordSourceVisit("alice",{source:"Jobgether",visited:true}),
+    store.userSourceSetting("alice",{source:"Jobgether",notes:"Note enregistrée en parallèle"}),
+  ]);
+  const jobgether=(await store.listSourceSettings("alice")).find(source=>source.source==="Jobgether");
+  assert.equal(jobgether.state,"configured");
+  assert.equal(jobgether.notes,"Note enregistrée en parallèle");
+  assert(Number.isFinite(Date.parse(jobgether.lastVisitedAt)));
+  await store.userSourceSetting("alice",{source:"Jobgether",paused:true});
+  await store.saveSourceSetting("alice","Jobgether",{state:"configured",health:"active",error:null});
+  const scanned=(await store.listSourceSettings("alice")).find(source=>source.source==="Jobgether");
+  assert.equal(scanned.state,"paused","la collecte déjà lancée ne reprend pas une source mise en pause");
+  assert.equal(scanned.health,"active");
+  assert.equal(scanned.error,null);
   assert.equal((await store.listSourceSettings("bob")).some(item=>item.source==="Apec"),false);
   sqlite.close();
 });

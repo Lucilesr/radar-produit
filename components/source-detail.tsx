@@ -1,5 +1,5 @@
 "use client";
-import { requestError } from "@/lib/request-error";
+import { SourceWriteError } from "@/components/source-actions";
 
 import { useState } from "react";
 import { ExternalLink, Trash2, X } from "lucide-react";
@@ -117,9 +117,9 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
             <a className="secondary-button" href={setting?.linkUrl || source.url} target="_blank" rel="noopener noreferrer">
               Ouvrir le site<ExternalLink size={14} aria-hidden />
             </a>
-            {visitable ? <WorkspaceButton variant="secondary" disabled={busy} onClick={async () => { setBusy(true); try { await onVisit(source); } finally { setBusy(false); } }}>J’ai fait le tour</WorkspaceButton> : null}
+            {visitable ? <WorkspaceButton variant="secondary" onClick={() => void onVisit(source)}>J’ai fait le tour</WorkspaceButton> : null}
           </div>
-          {visitable ? <p className="signal-help">Marquez la visite après avoir consulté la source.</p> : <p className="signal-help">{source.note}</p>}
+          {visitable ? <><p className="signal-help">{setting?.lastVisitedAt ? `Dernière visite le ${formatDate(setting.lastVisitedAt, "Indian/Mauritius")}.` : "Marquez la visite après avoir consulté la source."}</p><SourceWriteError source={source.name} kind="visit"/></> : <p className="signal-help">{source.note}</p>}
         </section>
 
         {visitable ? <section aria-label="Recherches">
@@ -136,7 +136,6 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
             <Switch checked={remindsInToday(setting)} disabled={busy} onCheckedChange={checked => void save({ remindInToday: checked })} />
             <span>Me le rappeler dans « Aujourd’hui »</span>
           </label>
-          {setting?.lastVisitedAt ? <p className="signal-help">Dernière visite le {formatDate(setting.lastVisitedAt, "Indian/Mauritius")}.</p> : <p className="signal-help">Jamais visitée depuis Radar.</p>}
         </section> : null} />
         {source.name==="Collective"?<CollectiveAlertPanel setting={setting} onSaved={onSaved}/>:null}
 

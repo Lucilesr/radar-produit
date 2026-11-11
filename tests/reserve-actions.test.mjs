@@ -49,8 +49,11 @@ test("réserve SQLite : décisions et annulation atomiques, sans perte ni compte
  const f=fixture(),store=await import(moduleUrl("lib/reserve-action-store.ts"));try{
   f.add("a");f.add("b");f.add("foreign",{user:"bob"});f.add("application",{status:"applied"});f.add("selection",{state:"selected"});
   const id=crypto.randomUUID(),command={id,action:"discard",ids:["a","b"]};let r=await store.reserveAction("alice",command,now);assert.equal(r.removed,2);assert(f.job("a").deleted_at);assert(f.job("b").deleted_at);
+  assert.equal(r.changes.find(change=>change.id==="a").deletedAt,f.job("a").deleted_at);
+  assert.equal(r.changes.find(change=>change.id==="a").dismissalReason,"not_interested");
   assert.deepEqual(await store.reserveAction("alice",command,now),r,"requête rejouée sans doubler le rangement");
-  assert.equal((await store.reserveAction("alice",{id,action:"undo"},now)).undone,true);assert.equal(f.job("a").deleted_at,null);assert.equal(f.job("b").review_state,"reopened");assert.equal(f.job("a").updated_at,now.toISOString());
+  const undone=await store.reserveAction("alice",{id,action:"undo"},now);assert.equal(undone.undone,true);
+  assert.equal(undone.changes.find(change=>change.id==="a").deletedAt,null);assert.equal(f.job("a").deleted_at,null);assert.equal(f.job("b").review_state,"reopened");assert.equal(f.job("a").updated_at,now.toISOString());
   assert.equal((await store.reserveAction("alice",command,now)).undone,true,"un ancien POST ne réapplique pas une action annulée");
   for(const ids of [["a","foreign"],["application"],["selection"],Array.from({length:51},(_,i)=>"x"+i)])await assert.rejects(()=>store.reserveAction("alice",{id:crypto.randomUUID(),action:"discard",ids},now));
   assert.equal(f.job("a").deleted_at,null);assert.equal(f.job("foreign").deleted_at,null);

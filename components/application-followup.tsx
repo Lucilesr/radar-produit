@@ -1,6 +1,6 @@
 "use client";
 import {useTabReturnRefresh} from "@/components/use-tab-return-refresh";
-import {useCallback,useEffect,useRef,useState} from "react";
+import {createContext,useCallback,useContext,useEffect,useRef,useState,useSyncExternalStore,type ReactNode} from "react";
 import {DateTimePicker} from "@/components/date-picker";
 import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from "@/components/ui/dialog";
 import {WorkspaceButton,WorkspaceFormError,WorkspaceFormSection} from "@/components/workspace-form";
@@ -9,16 +9,70 @@ import {applicationFollowup,latestFollowup,type ApplicationFollowup as Followup,
 import {formatDate,zonedInput,fromZonedInput} from "@/lib/application-workflow";
 import {confirmActivity} from "@/lib/activity-client";
 import {confirmedProgress} from "@/lib/progress-event";
+import {createSaveQueue} from "@/lib/save-queue";
 import {sessionWrite} from "@/lib/session-write";
 import type {JobRecord} from "@/lib/types";
-export function FollowupDoneButton({entry,onSaved,focusTargetId,onBusy,disabled=false}:{disabled?:boolean;entry:FollowupEntry;onSaved?:(followup?:Followup)=>void;focusTargetId?:string;onBusy?:(busy:boolean)=>void}){
- const [busy,setBusy]=useState(false),[error,setError]=useState("");const lock=useRef(false),trigger=useRef<HTMLButtonElement>(null);
- async function done(){if(lock.current||disabled)return;lock.current=true;setBusy(true);onBusy?.(true);setError("");const key=crypto.randomUUID();sessionWrite(key,true);
-  try{const saved=await confirmActivity({action:"followup_done",objectId:entry.id,stamp:entry.at,...(entry.appliedFor?{appliedFor:entry.appliedFor}:{})});window.dispatchEvent(new CustomEvent("radar:followup-done",{detail:{id:entry.id,at:entry.at,doneAt:saved.doneAt,followup:saved.followup}}));onSaved?.(saved.followup);confirmedProgress({kind:"followup_done",objectId:entry.id,stamp:entry.at});}
-  catch{setError("La relance n’est pas confirmée. Réessayez ce bouton pour relire son résultat ; Radar n’envoie aucun message.");}
-  finally{sessionWrite(key,false);lock.current=false;setBusy(false);onBusy?.(false);requestAnimationFrame(()=>{if(document.activeElement===document.body){if(trigger.current?.isConnected)trigger.current.focus();else if(focusTargetId)document.getElementById(focusTargetId)?.focus();}});}
- }
- return <div className="followup-confirm"><WorkspaceButton ref={trigger} variant="primary" disabled={disabled} busy={busy} onClick={()=>void done()}>J’ai fait cette relance</WorkspaceButton><WorkspaceFormError message={error}/></div>;
+type FollowupCommand = Pick<FollowupEntry, "id" | "at" | "appliedFor">;
+type FollowupReceipt = { command: FollowupCommand; doneAt: string; followup?: Followup };
+const followupKey = (command: FollowupCommand) => JSON.stringify([command.id, command.at, command.appliedFor]);
+function followupQueue() {
+  return createSaveQueue<{ pending: string[]; receipt?: FollowupReceipt }, FollowupCommand>({
+    initial: { pending: [] },
+    key: followupKey,
+    apply: (state, command) => ({ ...state, pending: [...state.pending, followupKey(command)] }),
+    onBusyChange: busy => sessionWrite("followup-done", busy),
+    async send(command) {
+      const saved = await confirmActivity({ action: "followup_done", objectId: command.id, stamp: command.at, ...(command.appliedFor ? { appliedFor: command.appliedFor } : {}) });
+      return { kind: "saved", state: { pending: [], receipt: { command, doneAt: saved.doneAt ?? new Date().toISOString(), followup: saved.followup } } };
+    },
+  });
+}
+const FollowupQueueContext = createContext<ReturnType<typeof followupQueue> | null>(null);
+
+export function FollowupActionsProvider({ children }: { children: ReactNode }) {
+  const [queue] = useState(followupQueue);
+  useEffect(() => queue.subscribeSaved(({ receipt }) => {
+    if (!receipt) return;
+    const { command, doneAt, followup } = receipt;
+    window.dispatchEvent(new CustomEvent("radar:followup-done", { detail: { id: command.id, at: command.at, doneAt, followup } }));
+    confirmedProgress({ kind: "followup_done", objectId: command.id, stamp: command.at });
+  }), [queue]);
+  return <FollowupQueueContext.Provider value={queue}>{children}</FollowupQueueContext.Provider>;
+}
+
+export function FollowupDoneButton({ entry, onSaved, focusTargetId, disabled = false }: {
+  disabled?: boolean; entry: FollowupEntry; onSaved?: (followup?: Followup) => void; focusTargetId?: string;
+}) {
+  const context = useContext(FollowupQueueContext);
+  if (!context) throw new Error("FollowupActionsProvider is required.");
+  const queue = context;
+  const { visible, failed } = useSyncExternalStore(queue.subscribe, queue.getSnapshot, queue.getSnapshot);
+  const id = followupKey(entry), status = useRef<HTMLSpanElement>(null), retry = useRef<HTMLButtonElement>(null);
+  const pending = visible.pending.includes(id);
+  const failure = failed.some(command => followupKey(command) === id);
+  useEffect(() => queue.subscribeSaved(({ receipt }) => {
+    if (!receipt || followupKey(receipt.command) !== id) return;
+    onSaved?.(receipt.followup);
+    requestAnimationFrame(() => {
+      if (document.activeElement === document.body && focusTargetId) document.getElementById(focusTargetId)?.focus({ preventScroll: true });
+    });
+  }), [queue, id, onSaved, focusTargetId]);
+  function done() {
+    const command = { id: entry.id, at: entry.at, appliedFor: entry.appliedFor };
+    void queue.enqueue(command).then(saved => {
+      if (!saved) requestAnimationFrame(() => {
+        if (document.activeElement === document.body) retry.current?.focus({ preventScroll: true });
+      });
+    });
+    requestAnimationFrame(() => {
+      if (document.activeElement === document.body) status.current?.focus({ preventScroll: true });
+    });
+  }
+  return <div className="followup-confirm">
+    {pending ? <span ref={status} tabIndex={-1} role="status">Relance notée · confirmation en cours</span>
+      : <WorkspaceButton ref={retry} variant="primary" disabled={disabled} onClick={done}>{failure ? "Réessayer" : "J’ai fait cette relance"}</WorkspaceButton>}
+    {failure ? <WorkspaceFormError message="La relance n’est pas confirmée."/> : null}
+  </div>;
 }
 export function ApplicationFollowupCard({job,onInterviews,initialEditor=false,onEditorClosed}:{job:JobRecord;onInterviews:()=>void;initialEditor?:boolean;onEditorClosed?:()=>void}){
  const [value,setValue]=useState<Followup|undefined>(job.applicationFollowup??applicationFollowup(job)),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(""),[editor,setEditor]=useState(initialEditor);
@@ -40,7 +94,7 @@ export function ApplicationFollowupCard({job,onInterviews,initialEditor=false,on
  return <div id={id} className="application-followup" tabIndex={-1} role="region" aria-label="Relance de cette candidature" aria-busy={busy||!ready&&!error}><WorkspaceFormSection title="Votre relance" description="Radar propose une relance 7 jours après l’envoi.">
  {!ready&&!error?<p role="status">Lecture du rappel…</p>:null}
  <div className="application-followup-row">{value?.doneAt?<p role="status">Relance notée faite le {formatDate(value.doneAt,zone,true)}.</p>:value?.eligible&&value.dueAt?<p>{value.proposed?"Date proposée à J+7":"Rappel choisi"} : <strong>{formatDate(value.dueAt,zone,true)}</strong> · {zone}</p>:value?.eligible?<p>Aucun rappel prévu pour cette candidature.</p>:job.interviews?.some(event=>event.state!=="cancelled")?<p>Un entretien a commencé : ses relances se règlent dans Entretiens.</p>:!job.appliedAt?<p>La date d’envoi n’est pas connue. Radar ne peut pas calculer J+7.</p>:<p>Cette étape de candidature n’a pas de rappel de relance.</p>}
- {value?.eligible?<div className="application-followup-actions">{entry&&!value.doneAt?<FollowupDoneButton entry={entry} disabled={!ready||busy} onBusy={setBusy} focusTargetId={id} onSaved={next=>{if(next)accept(next,false);}}/>:null}<WorkspaceButton ref={editTrigger} disabled={!ready||busy} onClick={()=>setEditor(true)}>{value.doneAt?"Prévoir une autre relance":value.dueAt?"Modifier la date":"Prévoir une relance"}</WorkspaceButton>{value.dueAt&&!value.doneAt?<WorkspaceButton disabled={!ready||busy} onClick={()=>void remove()}>Retirer le rappel</WorkspaceButton>:null}</div>:job.interviews?.some(event=>event.state!=="cancelled")?<WorkspaceButton onClick={onInterviews}>Ouvrir les entretiens</WorkspaceButton>:null}</div>
+ {value?.eligible?<div className="application-followup-actions">{entry&&!value.doneAt?<FollowupDoneButton entry={entry} disabled={!ready||busy} focusTargetId={id} onSaved={next=>{if(next)accept(next,false);}}/>:null}<WorkspaceButton ref={editTrigger} disabled={!ready||busy} onClick={()=>setEditor(true)}>{value.doneAt?"Prévoir une autre relance":value.dueAt?"Modifier la date":"Prévoir une relance"}</WorkspaceButton>{value.dueAt&&!value.doneAt?<WorkspaceButton disabled={!ready||busy} onClick={()=>void remove()}>Retirer le rappel</WorkspaceButton>:null}</div>:job.interviews?.some(event=>event.state!=="cancelled")?<WorkspaceButton onClick={onInterviews}>Ouvrir les entretiens</WorkspaceButton>:null}</div>
  <WorkspaceFormError message={error}/>{error?<WorkspaceButton ref={retry} disabled={busy} onClick={()=>void load({focus:true})}>Relire la relance</WorkspaceButton>:null}
  {editor&&value?.eligible&&ready?<FollowupDateEditor key={`followup-editor:${job.id}`} value={value} zone={zone} busy={busy} onSave={schedule} onClose={()=>{setEditor(false);onEditorClosed?.();requestAnimationFrame(()=>editTrigger.current?.focus());}}/>:null}
  </WorkspaceFormSection></div>;

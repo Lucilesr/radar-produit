@@ -1,4 +1,6 @@
 "use client";
+import { useSourceWrites } from "@/components/source-actions";
+import { mergeSourceSettings } from "@/lib/source-sync";
 import {HelpTooltip} from "@/components/help-tooltip";
 import { requestError } from "@/lib/request-error";
 
@@ -15,7 +17,7 @@ import { SourceRemovalDialog } from "@/components/source-removal-dialog";
 import { isSourceVisible } from "@/lib/source-visibility";
 import { SourceCard, type SourceSetting } from "@/components/source-card";
 import { SourceList } from "@/components/source-list";
-import { sessionWrite } from "@/lib/session-write";
+
 import { SourceDetail } from "@/components/source-detail";
 import { SourceAddSheet, type AddFilter } from "@/components/source-add-sheet";
 import { followedSourcesSummary, needsAction, sourceStatus } from "@/lib/source-status";
@@ -108,16 +110,12 @@ export function SourcePanel({overviewCriteria=false,displaySection="all",onSecti
   }
 
   async function sync(quiet=false){return onSync(quiet);}
-  async function visitSource(source:typeof sourceCatalog[number]){
-    const writeKey=crypto.randomUUID();sessionWrite(writeKey,true);
-    try{
-      const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,visited:true})});
-      const data=await response.json() as {source?:SourceSetting;error?:string};
-      if(!response.ok||!data.source)throw new Error(data.error??"Visite non enregistrée.");
-      onSourceSaved(data.source);notify({message:`${source.name} marqué comme consulté.`});
-    }catch(problem){notify({message:requestError(problem, "Visite non enregistrée."),tone:"error"});}finally{sessionWrite(writeKey,false);}
-  }
-  const onSourceSaved=(updated:SourceSetting)=>{const next=[updated,...(settings??[]).filter(item=>item.source!==updated.source)];setSettings(next);onSettingsChanged(next);};
+  const sourceWrites=useSourceWrites();
+  const visitSource=(source:typeof sourceCatalog[number])=>sourceWrites.visit(source.name);
+  const onSourceSaved=(updated:SourceSetting)=>{
+    setSettings(current=>mergeSourceSettings(current??[],[updated]));
+    onSettingsChanged([updated]);
+  };
   const alertCatalog=sourceCatalog.filter(source=>source.mode==="email"||source.mode==="rss"||source.mode==="api");
   const jobboardCatalog=sourceCatalog.filter(source=>source.mode==="web"||source.mode==="research");
   const sourceVisible=(name:string,defaults:Set<string>)=>isSourceVisible(name,settings??[],defaults);
