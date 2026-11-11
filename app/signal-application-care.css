@@ -2,3 +2,5 @@
 .signal-progress.is-segmented.application-card-care{height:6px}
 .signal-progress.is-segmented.application-card-care>span{background:var(--signal-mist)}
 .signal-progress.is-segmented.application-card-care>span>span{background:var(--signal-success)}
+
+.application-care-check[aria-busy="true"] { opacity: .8; }
