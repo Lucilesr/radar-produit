@@ -61,5 +61,5 @@ export function useRadarSession(owner:string,now:number){
   return checkpoints.enqueue({id:crypto.randomUUID(),owner,session:value,before,version,optimistic});
  }
  const failed=checkpointState.failed.find(change=>change.owner===owner);
- return {session,save,checkpoint,getCurrent:()=>viewSession(checkpoints.getSnapshot()),hasCheckpoint:()=>{const state=checkpoints.getSnapshot();return !!(state.sending||state.queued.length||state.failed.length);},checkpointPending:checkpointState.sending?.owner===owner,checkpointFailed:!!failed,retryCheckpoint:()=>{if(failed)void checkpoints.retry(failed.id);},ready:remote.ready&&!remote.reading&&!remote.error,busy:remote.busy>0,error:failed?"":conflictNotice||remote.error,reload:()=>{setConflictNotice("");return remote.reload();}};
+ return {session,save,checkpoint,getCurrent:()=>viewSession(checkpoints.getSnapshot()),hasCheckpoint:()=>{const state=checkpoints.getSnapshot();return !!(state.sending||state.queued.length||state.failed.length);},checkpointPending:checkpointState.sending?.owner===owner,checkpointFailed:!!failed,retryCheckpoint:()=>{if(failed)void checkpoints.retry(failed.id);},ready:remote.ready,busy:remote.busy>0,error:failed?"":conflictNotice||remote.error,reload:()=>{setConflictNotice("");return remote.reload();}};
 }

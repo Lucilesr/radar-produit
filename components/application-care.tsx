@@ -1,4 +1,5 @@
 "use client";
+import {useTabReturnRefresh} from "@/components/use-tab-return-refresh";
 import {useCallback,useEffect,useId,useRef,useState,useSyncExternalStore} from "react";
 import {useRadarNextSteps} from "@/components/next-steps-context";
 import {Checkbox} from "@/components/ui/checkbox";
@@ -50,17 +51,18 @@ export function ApplicationCare({ job }: { job: JobRecord }) {
     },
   }));
   const { visible: care, sending, failed } = useSyncExternalStore(queue.subscribe, queue.getSnapshot, queue.getSnapshot);
-  const load = useCallback(async (focus = false) => {
+  const load = useCallback(async ({focus=false,silent=false}: {focus?:boolean;silent?:boolean} = {}) => {
     const request = ++generation.current;
-    setLoadError("");
-    setReady(false);
+    if (!silent) setLoadError("");
     try {
       const response = await fetch(`/api/application-care/${job.id}`, { cache: "no-store", signal: AbortSignal.timeout(15000) });
       const { care } = await response.json() as { care?: Care };
       if (!response.ok || !care || !Number.isInteger(care.version)) throw new Error();
       if (!live.current || request !== generation.current) return;
-      queue.accept(care);
-      window.dispatchEvent(new CustomEvent("radar:application-care", { detail: { id: job.id, care: queue.getSnapshot().confirmed } }));
+      if (!silent || care.version > queue.getSnapshot().confirmed.version) {
+        queue.accept(care);
+        window.dispatchEvent(new CustomEvent("radar:application-care", { detail: { id: job.id, care: queue.getSnapshot().confirmed } }));
+      }
       setReady(true);
       if (focus) requestAnimationFrame(() => {
         const field = careChecks.find(item => !queue.getSnapshot().visible[item.id])?.id ?? "cv";
@@ -68,22 +70,20 @@ export function ApplicationCare({ job }: { job: JobRecord }) {
       });
     } catch {
       if (!live.current || request !== generation.current) return;
-      setLoadError("Les repères de cette candidature ne peuvent pas être relus. Les derniers choix confirmés restent affichés.");
+      if (!silent) setLoadError("Les repères de cette candidature ne peuvent pas être relus. Les derniers choix confirmés restent affichés.");
       if (focus) requestAnimationFrame(() => reload.current?.focus());
     }
   }, [job.id, prefix, queue]);
   useEffect(() => {
     live.current = true;
     const frame = requestAnimationFrame(() => void load());
-    const focus = () => { if (!queue.getSnapshot().sending) void load(); };
-    window.addEventListener("focus", focus);
     return () => {
       live.current = false;
       generation.current++;
       cancelAnimationFrame(frame);
-      window.removeEventListener("focus", focus);
     };
-  }, [load, queue]);
+  }, [load]);
+  useTabReturnRefresh(`care:${job.id}`, () => void load({silent:ready}));
   useEffect(() => {
     if (!ready || !currentStep) return;
     const frame = requestAnimationFrame(() => {
@@ -113,7 +113,7 @@ export function ApplicationCare({ job }: { job: JobRecord }) {
       </fieldset>
       <p className="signal-help" role="status">{sending ? "Enregistrement…" : !ready && !loadError ? "Lecture de la check-list…" : ""}</p>
       <WorkspaceFormError message={loadError}/>
-      {loadError ? <WorkspaceButton ref={reload} onClick={() => void load(true)}>Relire la check-list</WorkspaceButton> : null}
+      {loadError ? <WorkspaceButton ref={reload} onClick={() => void load({focus:true})}>Relire la check-list</WorkspaceButton> : null}
       {failed.map(({ field }) => <div key={field}>
         <WorkspaceFormError message={`La case « ${careChecks.find(item => item.id === field)?.label} » n’a pas été enregistrée.`}/>
         <WorkspaceButton disabled={!ready} onClick={() => {

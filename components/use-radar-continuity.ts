@@ -1,5 +1,6 @@
 "use client";
 import {useCallback,useEffect,useMemo,useSyncExternalStore} from "react";
+import {useTabReturnRefresh} from "@/components/use-tab-return-refresh";
 import type {RadarContinuity} from "@/lib/radar-continuity";
 import type {StoredLot} from "@/lib/daily-lot";
 import type {RadarSession} from "@/lib/radar-session";
@@ -8,10 +9,11 @@ type Entry={view:View;snapshot:string;listeners:Set<()=>void>;read:Promise<Radar
 const empty:View={ready:false,reading:false,busy:0,error:"",state:null,activeVersion:null},serverSnapshot=JSON.stringify(empty),entries=new Map<string,Entry>();
 function entry(owner:string){let found=entries.get(owner);if(!found){found={view:{...empty},snapshot:serverSnapshot,listeners:new Set(),read:null};entries.set(owner,found);}return found;}
 function publish(owner:string){const current=entry(owner);current.snapshot=JSON.stringify(current.view);current.listeners.forEach(listener=>listener());}
-function merge(owner:string,state:RadarContinuity){
+function merge(owner:string,state:RadarContinuity,silent=false){
  if(state?.ownerId!==owner||!Number.isInteger(state.lotVersion)||!Number.isInteger(state.sessionVersion))throw new Error("La connexion a changé. Rechargez votre espace.");
  const current=entry(owner),old=current.view.state;
- current.view.state=old?{ownerId:owner,lot:state.lotVersion>=old.lotVersion?state.lot:old.lot,lotVersion:Math.max(old.lotVersion,state.lotVersion),session:state.sessionVersion>=old.sessionVersion?state.session:old.session,sessionVersion:Math.max(old.sessionVersion,state.sessionVersion)}:state;
+ const accepts=(next:number,previous:number)=>next>previous||!silent&&next===previous;
+ current.view.state=old?{ownerId:owner,lot:accepts(state.lotVersion,old.lotVersion)?state.lot:old.lot,lotVersion:Math.max(old.lotVersion,state.lotVersion),session:accepts(state.sessionVersion,old.sessionVersion)?state.session:old.session,sessionVersion:Math.max(old.sessionVersion,state.sessionVersion)}:state;
  current.view.ready=true;
 }
 export function continuityView(owner:string){return entry(owner).view;}
@@ -23,10 +25,10 @@ export function waitForContinuityWrites(owner:string){
   current.listeners.add(idle);
  });
 }
-export async function reloadContinuity(owner:string,force=true):Promise<RadarContinuity|null>{
+export async function reloadContinuity(owner:string,force=true,silent=false):Promise<RadarContinuity|null>{
  if(!owner)return null;const current=entry(owner);if(current.read)return current.read;if(!force&&current.view.ready)return current.view.state;
- current.view.reading=true;current.view.error="";publish(owner);
- current.read=(async()=>{try{const response=await fetch("/api/radar-continuity",{cache:"no-store",headers:{"X-Radar-Owner":owner},signal:AbortSignal.timeout(15000)});const result=await response.json() as {state:RadarContinuity;error?:string};if(!response.ok)throw new Error(result.error);merge(owner,result.state);return current.view.state;}catch{current.view.error="Les repères du compte n’ont pas pu être relus. Vos décisions restent conservées ; réessayez avant de reprendre le tri ou la séance.";return null;}finally{current.view.reading=false;current.read=null;publish(owner);}})();return current.read;
+ current.view.reading=true;if(!silent)current.view.error="";publish(owner);
+ current.read=(async()=>{try{const response=await fetch("/api/radar-continuity",{cache:"no-store",headers:{"X-Radar-Owner":owner},signal:AbortSignal.timeout(15000)});const result=await response.json() as {state:RadarContinuity;error?:string};if(!response.ok)throw new Error(result.error);merge(owner,result.state,silent);return current.view.state;}catch{if(!silent||!current.view.ready)current.view.error="Les repères du compte n’ont pas pu être relus. Vos décisions restent conservées ; réessayez avant de reprendre le tri ou la séance.";return null;}finally{current.view.reading=false;current.read=null;publish(owner);}})();return current.read;
 }
 async function write(owner:string,body:Record<string,unknown>,activate?:boolean,onConflict?:()=>void){
  const current=entry(owner);if(!current.view.ready&&!await reloadContinuity(owner,false))return null;
@@ -47,6 +49,7 @@ export function useRadarContinuity(owner:string,enabled=true){
  const subscribe=useCallback((listener:()=>void)=>{const current=entry(owner);current.listeners.add(listener);return()=>current.listeners.delete(listener);},[owner]);
  const snapshot=useCallback(()=>entry(owner).snapshot,[owner]);const raw=useSyncExternalStore(subscribe,snapshot,()=>serverSnapshot);
  const view=useMemo(()=>JSON.parse(raw) as View,[raw]);
- useEffect(()=>{if(!enabled||!owner)return;const frame=requestAnimationFrame(()=>void reloadContinuity(owner,false));const focus=()=>{if(!entry(owner).view.busy)void reloadContinuity(owner);};window.addEventListener("focus",focus);return()=>{cancelAnimationFrame(frame);window.removeEventListener("focus",focus);};},[owner,enabled]);
+ useEffect(()=>{if(!enabled||!owner)return;const frame=requestAnimationFrame(()=>void reloadContinuity(owner,false));return()=>cancelAnimationFrame(frame);},[owner,enabled]);
+ useTabReturnRefresh(`continuity:${owner}`,()=>void reloadContinuity(owner,true,true),enabled&&!!owner);
  return {...view,reload:()=>reloadContinuity(owner)};
 }
