@@ -1,5 +1,5 @@
 "use client";
-import {useCallback,useEffect,useId,useMemo,useRef,useState} from "react";
+import {useCallback,useEffect,useId,useMemo,useRef,useState,useSyncExternalStore} from "react";
 import {Check,X} from "lucide-react";
 import {useRadarNextSteps} from "@/components/next-steps-context";
 import {useIsMobile} from "@/hooks/use-mobile";
@@ -13,25 +13,81 @@ import {weekKey,weekRhythms,weekActions,weekActionDescription,planHeld,commitmen
 import {useWeekSeries,WeekSeriesControls,SeriesSummary} from "@/components/week-series";
 import {weekMonday} from "@/lib/week-series";
 import {confirmedProgress} from "@/lib/progress-event";
+import {createSaveQueue} from "@/lib/save-queue";
 import {sessionWrite} from "@/lib/session-write";
 import {interviewThemes} from "@/lib/radar-reach";
 import type {CandidateProfile,JobRecord} from "@/lib/types";
 export type WeekTarget={id:string;type:"job"|"source"|"story";label:string};
 type PlanCommand={version:number;plan?:WeekPlan;id?:string;done?:boolean};
+type CheckAction={id:string;done:boolean;at:string;week:string};
+
+async function putPlan(command:PlanCommand){
+ const response=await fetch("/api/week-plan",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(command),signal:AbortSignal.timeout(15000)});
+ const data=await response.json() as WeekPlanState&{state?:WeekPlanState;error?:string};
+ return {response,data};
+}
+
+function returnCheckFocus(id:string){
+ requestAnimationFrame(()=>{
+  if(document.activeElement!==document.body)return;
+  const check=document.getElementById(`week-check-${id}`);
+  (check?.getClientRects().length?check:document.getElementById("week-plan-title"))?.focus({preventScroll:true});
+ });
+}
+
+function becameHeld(previous:WeekPlanState,next:WeekPlanState){
+ const plan=next.plan;
+ if(!plan||planHeld(previous.plan)||!planHeld(plan))return false;
+ confirmedProgress({kind:"week_held",objectId:plan.week,stamp:plan.week});
+ return true;
+}
 export function WeekPlanCard({owner,profile,jobs,sources,allowMoment,onState,onOverlay,onTarget,requestOpen=false,onRequestConsumed}:{requestOpen?:boolean;onRequestConsumed:()=>void;owner:string;profile:CandidateProfile;jobs:JobRecord[];sources:{source:string;selected?:boolean;state?:string}[];allowMoment:boolean;onState:(state:WeekPlanState)=>void;onOverlay:(open:boolean)=>void;onTarget:(target:WeekTarget,action:WeekCommitment["action"])=>void}){
  const {queue,onAction:onNextAction}=useRadarNextSteps();
  const mobile=useIsMobile();
- const [state,setState]=useState<WeekPlanState>({version:profile.weekPlanRevision??0,plan:profile.weekPlan??null,history:profile.weekPlans??[]});
  const [ready,setReady]=useState(false),[error,setError]=useState(""),[busy,setBusy]=useState(false),[editor,setEditor]=useState(false),[moment,setMoment]=useState<"week"|"held"|null>(null),[clock,setClock]=useState(0),[pauseOpen,setPauseOpen]=useState(false);
  const lock=useRef(false),live=useRef(true),heldSeen=useRef(false);
+ const [completedOpen,setCompletedOpen]=useState<boolean|null>(null);
+ const celebrate=useCallback(()=>{
+  if(live.current&&!heldSeen.current){heldSeen.current=true;setMoment("held");}
+ },[]);
+ const [checks]=useState(()=>{
+  const writeKey=crypto.randomUUID();
+  return createSaveQueue<WeekPlanState,CheckAction>({
+   initial:{version:profile.weekPlanRevision??0,plan:profile.weekPlan??null,history:profile.weekPlans??[]},
+   key:action=>action.id,
+   version:state=>state.version,
+   apply:(state,action)=>state.plan?.week===action.week?{...state,plan:{...state.plan,commitments:state.plan.commitments.map(item=>item.id===action.id?{...item,doneAt:action.done?action.at:undefined}:item)}}:state,
+   async send(action,previous){
+    if(previous.plan?.week!==action.week||!previous.plan.commitments.some(item=>item.id===action.id))throw new Error("Action indisponible");
+    try{
+     const {response,data}=await putPlan({version:previous.version,id:action.id,done:action.done});
+     if(response.status===409&&data.state){
+      onState(data.state);
+      return {kind:"conflict",state:data.state};
+     }
+     if(!response.ok)throw new Error(data.error);
+     onState(data);
+     return {kind:"saved",state:data};
+    }finally{
+     if(document.activeElement?.id===`week-check-${action.id}`)returnCheckFocus(action.id);
+    }
+   },
+   onBusyChange:busy=>sessionWrite(writeKey,busy),
+  });
+ });
+ useEffect(()=>checks.subscribeSaved((next,previous)=>{if(becameHeld(previous,next))celebrate();}),[checks,celebrate]);
+ const checkState=useSyncExternalStore(checks.subscribe,checks.getSnapshot,checks.getSnapshot);
+ const state=checkState.confirmed;
  const deviceZone=clock?Intl.DateTimeFormat().resolvedOptions().timeZone:"UTC";
  const series=useWeekSeries(owner,state.version,deviceZone,!!clock),welcomeSeen=useRef<string|null>(null);
  const zone=series.state?.timeZone??deviceZone,week=clock?weekKey(clock,zone):"";
- const plan=state.plan?.week===week?state.plan:null,planBusy=busy||series.busy;
- const current=useRef(state);
- const accept=useCallback((next:WeekPlanState)=>{if(next.version<current.current.version)return;current.current=next;setState(next);onState(next);},[onState]);
+ const plan=checkState.visible.plan?.week===week?checkState.visible.plan:null,planBusy=busy||series.busy;
+ const held=state.plan?.week===week&&planHeld(state.plan);
+ const editorBusy=planBusy||!!checkState.sending;
+ const pendingChecks=new Set([checkState.sending,...checkState.queued].flatMap(action=>action?[action.id]:[]));
+ const accept=useCallback((next:WeekPlanState)=>{if(next.version<checks.getSnapshot().confirmed.version)return;checks.accept(next);onState(next);},[checks,onState]);
  const load=useCallback(async()=>{setError("");setReady(false);try{const r=await fetch("/api/week-plan",{cache:"no-store",signal:AbortSignal.timeout(15000)});const data=await r.json() as WeekPlanState;if(!r.ok||!Number.isInteger(data.version)||!Array.isArray(data.history))throw new Error();if(live.current){accept(data);setReady(true);}}catch{if(live.current)setError("Votre plan ne peut pas être relu. Les actions affichées sont la dernière version connue.");}},[accept]);
- useEffect(()=>{live.current=true;const frame=requestAnimationFrame(()=>{setClock(Date.now());void load();});const refresh=()=>{if(!lock.current){setClock(Date.now());void load();}};window.addEventListener("focus",refresh);const timer=window.setInterval(()=>setClock(Date.now()),60000);return()=>{live.current=false;cancelAnimationFrame(frame);window.removeEventListener("focus",refresh);window.clearInterval(timer);};},[load]);
+ useEffect(()=>{live.current=true;const frame=requestAnimationFrame(()=>{setClock(Date.now());void load();});const refresh=()=>{if(!lock.current&&!checks.getSnapshot().sending){setClock(Date.now());void load();}};window.addEventListener("focus",refresh);const timer=window.setInterval(()=>setClock(Date.now()),60000);return()=>{live.current=false;cancelAnimationFrame(frame);window.removeEventListener("focus",refresh);window.clearInterval(timer);};},[checks,load]);
  useEffect(()=>{onOverlay(editor||pauseOpen||!!moment);return()=>onOverlay(false);},[editor,pauseOpen,moment,onOverlay]);
  useEffect(()=>{
   if(!ready||!series.ready||!week||!allowMoment||requestOpen||editor||pauseOpen||moment||series.state?.welcomeSeen||welcomeSeen.current===week)return;
@@ -58,16 +114,16 @@ export function WeekPlanCard({owner,profile,jobs,sources,allowMoment,onState,onO
   return out;
  },[queue,targets]);
  useEffect(()=>{
-  if(!requestOpen||!ready||planBusy)return;
+  if(!requestOpen||!ready||editorBusy)return;
   const frame=requestAnimationFrame(()=>{setMoment(null);setEditor(true);onRequestConsumed();});
   return()=>cancelAnimationFrame(frame);
- },[requestOpen,ready,planBusy,onRequestConsumed]);
+ },[requestOpen,ready,editorBusy,onRequestConsumed]);
  async function write(command:PlanCommand):Promise<{ok:boolean;state?:WeekPlanState;error?:string}>{
-  if(lock.current||series.busy)return {ok:false,error:"Un enregistrement est déjà en cours."};lock.current=true;setBusy(true);setError("");const key=crypto.randomUUID();sessionWrite(key,true);
-  try{const response=await fetch("/api/week-plan",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(command),signal:AbortSignal.timeout(15000)});const data=await response.json() as WeekPlanState&{state?:WeekPlanState;error?:string};
+  if(lock.current||series.busy||checks.getSnapshot().sending)return {ok:false,error:"Un enregistrement est déjà en cours."};lock.current=true;setBusy(true);setError("");const key=crypto.randomUUID();sessionWrite(key,true);
+  try{const {response,data}=await putPlan(command);
    if(!response.ok){if(data.state)accept(data.state);return {ok:false,state:data.state,error:data.error??"Enregistrement non confirmé. Votre brouillon reste conservé."};}
-   const wasHeld=planHeld(current.current.plan);accept(data);await series.load();
-   if(!wasHeld&&planHeld(data.plan)){confirmedProgress({kind:"week_held",objectId:data.plan!.week,stamp:data.plan!.week});if(!heldSeen.current){heldSeen.current=true;setMoment("held");}}
+   const previous=checks.getSnapshot().confirmed;accept(data);await series.load();
+   if(becameHeld(previous,data))celebrate();
    return {ok:true,state:data};
   }catch{return {ok:false,error:"Enregistrement non confirmé. Votre brouillon et les actions déjà confirmées restent conservés."};}
   finally{sessionWrite(key,false);lock.current=false;setBusy(false);}
@@ -77,16 +133,30 @@ export function WeekPlanCard({owner,profile,jobs,sources,allowMoment,onState,onO
  function markWelcome(){if(moment==="week")void series.write("welcome");}
  function edit(){markWelcome();setMoment(null);setEditor(true);}
  function closeMoment(){markWelcome();setMoment(null);requestAnimationFrame(()=>document.getElementById("week-plan-title")?.focus());}
- function commitments(items:WeekCommitment[]){return <ul className="week-commitments">{items.map(item=><li key={item.id} className={item.doneAt?"is-done":""}><div className="week-commitment-main"><button id={`week-check-${item.id}`} type="button" role="checkbox" aria-checked={!!item.doneAt} aria-label={`Action réalisée : ${weekActionDescription(item)}`} className="week-check" disabled={!ready||planBusy} onClick={()=>{void write({version:state.version,id:item.id,done:!item.doneAt}).then(result=>{if(!result.ok)setError(result.error??"Enregistrement non confirmé.");requestAnimationFrame(()=>{if(document.activeElement!==document.body)return;const check=document.getElementById(`week-check-${item.id}`);(check?.getClientRects().length?check:document.getElementById("week-plan-title"))?.focus();});});}}>{item.doneAt?<Check size={18} aria-hidden/>:null}</button><div className="week-commitment-label"><span>{new Date(item.when).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"})} · {weekActionDescription(item)}</span></div></div></li>)}</ul>;}
- return <section className={`week-plan-card${planHeld(plan)?" is-held":""}`} aria-labelledby="week-plan-title" aria-busy={planBusy}>
+ function toggle(id:string){
+  const current=checks.getSnapshot().visible.plan;
+  const item=current?.commitments.find(action=>action.id===id);
+  if(!current||!item)return;
+  if(!item.doneAt)setCompletedOpen(true);
+  void checks.enqueue({id,week:current.week,done:!item.doneAt,at:new Date().toISOString()});
+  returnCheckFocus(id);
+ }
+ function commitments(items:WeekCommitment[]){return <ul className="week-commitments">{items.map(item=><li key={item.id} className={item.doneAt?"is-done":""}><div className="week-commitment-main"><button id={`week-check-${item.id}`} type="button" role="checkbox" aria-checked={!!item.doneAt} aria-busy={pendingChecks.has(item.id)} aria-label={`Action réalisée : ${weekActionDescription(item)}`} className="week-check" disabled={!ready||planBusy} onClick={()=>toggle(item.id)}>{item.doneAt?<Check size={18} aria-hidden/>:null}</button><div className="week-commitment-label"><span>{new Date(item.when).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"})} · {weekActionDescription(item)}</span></div></div></li>)}</ul>;}
+
+ return <section className={`week-plan-card${held?" is-held":""}`} aria-labelledby="week-plan-title" aria-busy={planBusy}>
   <div className="week-compact-heading"><h2 id="week-plan-title" tabIndex={-1}>Votre semaine</h2>{series.state?<strong className="week-series-badge">{series.state.streak} semaine{series.state.streak!==1?"s":""} tenue{series.state.streak!==1?"s":""}</strong>:null}</div>
-  {ready&&plan?.commitments.length?<p className="week-compact-overview" role="status">{completed} action{completed!==1?"s réalisées":" réalisée"} sur {plan.commitments.length}{planHeld(plan)?" · semaine tenue":""}</p>:null}
+  {ready&&plan?.commitments.length?<p className="week-compact-overview" role="status">{completed} action{completed!==1?"s réalisées":" réalisée"} sur {plan.commitments.length}{held?" · semaine tenue":""}</p>:null}
   {!clock||!ready&&!error?<p role="status">Lecture du plan de la semaine…</p>:null}
+  <p className="sr-only" role="status">{checkState.sending?"Enregistrement des actions de la semaine…":""}</p>
+  {checkState.failed.filter(action=>action.week===week).map(action=>{
+   const item=plan?.commitments.find(item=>item.id===action.id);
+   return item?<div key={action.id}><WorkspaceFormError message={`Enregistrement non confirmé · ${weekActionDescription(item)}`}/><WorkspaceButton disabled={planBusy} onClick={()=>{if(action.done)setCompletedOpen(true);void checks.retry(action.id);returnCheckFocus(action.id);}}>Réessayer</WorkspaceButton></div>:null;
+  })}
   <WorkspaceFormError message={error}/>{error?<WorkspaceButton disabled={planBusy} onClick={()=>void load()}>Relire le plan</WorkspaceButton>:null}
-  {plan?.commitments.length?<>{commitments(plan.commitments.filter(item=>!item.doneAt))}{completed?<details className="week-completed" open={!mobile}><summary>✓ {completed} action{completed!==1?"s réalisées":" réalisée"} <span aria-hidden>▸</span></summary>{commitments(plan.commitments.filter(item=>item.doneAt))}</details>:null}</>:clock&&ready?<div className="week-no-plan"><p>{plan?"Aucune action planifiée cette semaine":"Nouvelle semaine, page blanche"}</p><WorkspaceButton disabled={planBusy} onClick={edit}>Planifier mes actions · 3 min</WorkspaceButton></div>:null}
-  <details className="week-settings"><summary>Réglages de la semaine <span aria-hidden>▸</span></summary>{plan?.commitments.length?<WorkspaceButton disabled={!ready||planBusy} onClick={edit}>Modifier le plan</WorkspaceButton>:null}<WeekSeriesControls compact series={series} onOverlay={setPauseOpen}/>{plan?.commitments.length?<ul>{plan.commitments.filter(item=>!item.doneAt).map(item=><li key={item.id}><span>{weekActionDescription(item)}{commitmentOverdue(item,localNow)?" · À replanifier":""}</span><div>{item.targetId&&targets.some(t=>t.id===item.targetId&&t.type===item.targetType)?<WorkspaceButton disabled={planBusy} onClick={()=>onTarget({id:item.targetId!,type:item.targetType!,label:item.targetLabel??item.label},item.action)}>Ouvrir</WorkspaceButton>:null}<WorkspaceButton disabled={!ready||planBusy} onClick={edit}>Déplacer</WorkspaceButton></div></li>)}</ul>:null}</details>
+  {plan?.commitments.length?<>{commitments(plan.commitments.filter(item=>!item.doneAt))}{completed?<details className="week-completed" open={completedOpen??!mobile} onToggle={event=>setCompletedOpen(event.currentTarget.open)}><summary>✓ {completed} action{completed!==1?"s réalisées":" réalisée"} <span aria-hidden>▸</span></summary>{commitments(plan.commitments.filter(item=>item.doneAt))}</details>:null}</>:clock&&ready?<div className="week-no-plan"><p>{plan?"Aucune action planifiée cette semaine":"Nouvelle semaine, page blanche"}</p><WorkspaceButton disabled={editorBusy} onClick={edit}>Planifier mes actions · 3 min</WorkspaceButton></div>:null}
+  <details className="week-settings"><summary>Réglages de la semaine <span aria-hidden>▸</span></summary>{plan?.commitments.length?<WorkspaceButton disabled={!ready||editorBusy} onClick={edit}>Modifier le plan</WorkspaceButton>:null}<WeekSeriesControls compact series={series} onOverlay={setPauseOpen}/>{plan?.commitments.length?<ul>{plan.commitments.filter(item=>!item.doneAt).map(item=><li key={item.id}><span>{weekActionDescription(item)}{commitmentOverdue(item,localNow)?" · À replanifier":""}</span><div>{item.targetId&&targets.some(t=>t.id===item.targetId&&t.type===item.targetType)?<WorkspaceButton disabled={planBusy} onClick={()=>onTarget({id:item.targetId!,type:item.targetType!,label:item.targetLabel??item.label},item.action)}>Ouvrir</WorkspaceButton>:null}<WorkspaceButton disabled={!ready||editorBusy} onClick={edit}>Déplacer</WorkspaceButton></div></li>)}</ul>:null}</details>
   <SignalMoment open={!!moment&&!editor} onClose={closeMoment} title={moment==="held"?"Semaine tenue":series.state?.streak?"Nouvelle semaine":"Nouvelle semaine, page blanche"} description={moment==="held"?"Toutes les actions de votre plan sont cochées. Vous avez avancé à votre rythme.":"Choisissez un rythme qui vous convient. Vous pouvez aussi revenir plus tard."} actionLabel={moment==="held"?"Continuer":queue[0]?.label??"Revenir à Radar"} onAction={moment==="held"?closeMoment:()=>{if(queue[0]?.kind==="plan")edit();else{markWelcome();setMoment(null);if(queue[0])onNextAction(queue[0].action);}}}>{series.state?<SeriesSummary state={series.state}/>:null}{moment==="week"?<WorkspaceButton onClick={closeMoment}>Plus tard</WorkspaceButton>:null}</SignalMoment>
-  {editor&&week?<WeekPlanEditor key={week} state={state} week={week} zone={zone} targets={targets} suggestions={suggestions} busy={planBusy} onSave={write} onClose={()=>setEditor(false)}/>:null}
+  {editor&&week?<WeekPlanEditor key={week} state={state} week={week} zone={zone} targets={targets} suggestions={suggestions} busy={editorBusy} onSave={write} onClose={()=>setEditor(false)}/>:null}
  </section>;
 }
 

@@ -27,3 +27,7 @@ body:has([role="dialog"]) .radar-session-quit{visibility:hidden}
 .radar-app .next-step-home .today-focus{overflow:clip}
 
 .radar-session-counters{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+
+.session-detail-advance{margin-bottom:var(--signal-space-section)}
+.reading-session-advance{display:none}
+@media(max-width:760px){.reading-session-advance{display:block}}
