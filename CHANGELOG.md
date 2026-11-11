@@ -1,3 +1,7 @@
+## 11 novembre 2026 — Suggestions de critères dans Offres
+
+- Offres n’affiche plus le bandeau qui proposait d’ajuster les critères à partir des offres écartées. Les critères restent modifiables dans Mon radar.
+
 ## 10 novembre 2026 — Stabilité du tri des offres
 
 - Le menu de tri conserve la colonne des offres et la barre d’actions en place. Les cases cochées restent sélectionnées quand l’ordre change.
