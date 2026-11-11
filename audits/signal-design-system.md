@@ -30,7 +30,7 @@ La vue Kanban complémentaire de Candidatures utilise les mêmes cartes, tags, d
 
 ## Déplacement des candidatures (28 octobre 2026)
 
-La poignée du Kanban mesure 32 px sur bureau et 44 px sur mobile. Le titre reste un accès au dossier ; la poignée est la seule zone de prise tactile. Aperçu flottant et surlignage utilisent les surfaces, bordures et couleurs Signal. Le déplacement au clavier utilise Entrée/Espace, gauche/droite, Échap et Tab, avec annonces françaises et restauration de focus. Le statut n’est confirmé visuellement qu’après sauvegarde. Le choix de clôture réutilise boutons, erreur et fond flouté, dans un dialogue compact. Le sélecteur reste disponible. Conservation et limites : `signal-kanban-drag-2026-10-28.md`.
+La poignée du Kanban mesure 32 px sur bureau et 44 px sur mobile. Le titre reste un accès au dossier ; la poignée est la seule zone de prise tactile. Aperçu flottant et surlignage utilisent les surfaces, bordures et couleurs Signal. Le déplacement au clavier utilise Entrée/Espace, gauche/droite, Échap et Tab, avec annonces françaises et restauration de focus. La carte rejoint sa colonne dès le déplacement. La notification de confirmation attend la sauvegarde. Le choix de clôture réutilise boutons, erreur et fond flouté, dans un dialogue compact. Le sélecteur reste disponible. Conservation et limites : `signal-kanban-drag-2026-10-28.md`.
 
 ## Kanban et sauvegarde des saisies — 28 octobre
 

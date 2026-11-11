@@ -2,12 +2,36 @@
 import {SignalStepper} from "@/components/signal/signal-stepper";
 import {SignalMoment} from "@/components/signal/signal-moment";
 import {SignalCounter} from "@/components/signal/signal-counter";
-import {WorkspaceButton} from "@/components/workspace-form";
+import {WorkspaceButton,WorkspaceFormError} from "@/components/workspace-form";
 import {sessionLabels,type RadarSession,type SessionProgress} from "@/lib/radar-session";
 import type {WeekPlan} from "@/lib/week-plan";
 import type {JobRecord} from "@/lib/types";
-export function SessionStrip({session,onOpen,onNext,onQuit,onPause,busy}:{session:RadarSession;onOpen:()=>void;onNext:()=>void;onQuit:()=>void;onPause:()=>void;busy:boolean}){
-  return <section className="radar-session-strip" aria-label="Séance du jour"><div className="radar-session-heading"><strong>Votre séance · {sessionLabels[session.steps[session.current]]}</strong><WorkspaceButton className="radar-session-quit" disabled={busy} onClick={onQuit}>Quitter la séance</WorkspaceButton></div><SignalStepper steps={session.steps.map(step=>sessionLabels[step])} current={session.current}/><div className="radar-session-actions"><WorkspaceButton disabled={busy} onClick={onOpen}>Ouvrir l’étape</WorkspaceButton><WorkspaceButton disabled={busy} onClick={onNext}>{session.current===session.steps.length-1?"Terminer la séance":"Étape suivante"}</WorkspaceButton><WorkspaceButton disabled={busy} variant="quiet" onClick={onPause}>Reprendre plus tard</WorkspaceButton></div><p className="signal-help">Vous pouvez passer une étape. Le bilan compte seulement vos actions confirmées.</p></section>;
+type AdvanceProps={onNext:()=>void;busy:boolean;finishing:boolean;hasNext:boolean;checkpointPending:boolean;checkpointFailed:boolean;onRetry:()=>void};
+
+function SessionNext({onNext,busy,finishing,hasNext}:AdvanceProps){
+ return <WorkspaceButton data-session-next disabled={finishing||!hasNext&&busy} onClick={onNext}>{hasNext?"Étape suivante":"Terminer la séance"}</WorkspaceButton>;
+}
+function CheckpointFeedback({checkpointPending,checkpointFailed,onRetry}:AdvanceProps){
+ return <>
+   <p className={checkpointPending?"signal-help":"sr-only"} role="status">{checkpointPending?"Enregistrement du point de reprise…":""}</p>
+   {checkpointFailed?<div className="radar-session-actions"><WorkspaceFormError message="Le point de reprise n’a pas été enregistré."/><WorkspaceButton onClick={onRetry}>Réessayer</WorkspaceButton></div>:null}
+ </>;
+}
+export function SessionDetailAdvance(props:AdvanceProps){
+ return <div className="session-detail-advance" aria-label="Séance du jour"><div className="radar-session-actions"><SessionNext {...props}/></div><CheckpointFeedback {...props}/></div>;
+}
+export function SessionStrip({session,onOpen,onQuit,onPause,...advance}:{session:RadarSession;onOpen:()=>void;onQuit:()=>void;onPause:()=>void}&AdvanceProps){
+  return <section className="radar-session-strip" aria-label="Séance du jour">
+    <div className="radar-session-heading"><strong>Votre séance · {sessionLabels[session.steps[session.current]]}</strong><WorkspaceButton className="radar-session-quit" disabled={advance.busy} onClick={onQuit}>Quitter la séance</WorkspaceButton></div>
+    <SignalStepper steps={session.steps.map(step=>sessionLabels[step])} current={session.current}/>
+    <div className="radar-session-actions">
+      <WorkspaceButton disabled={advance.finishing} onClick={onOpen}>Ouvrir l’étape</WorkspaceButton>
+      <SessionNext {...advance}/>
+      <WorkspaceButton disabled={advance.busy} variant="quiet" onClick={onPause}>Reprendre plus tard</WorkspaceButton>
+    </div>
+    <CheckpointFeedback {...advance}/>
+    <p className="signal-help">Vous pouvez passer une étape. Le bilan compte seulement vos actions confirmées.</p>
+  </section>;
 }
 export function SessionFinish({result,gem,tomorrow,onClose,onGem,weekPlan}:{weekPlan?:WeekPlan|null;result:SessionProgress|null;gem?:JobRecord;tomorrow:number;onClose:()=>void;onGem:()=>void}){
   const completed = weekPlan?.commitments.filter(item=>item.doneAt).length ?? 0;

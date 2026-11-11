@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 let current = 0;
 const listeners = new Set<() => void>();
 const read = () => current || (current = Date.now());
-export function refreshRadarClock() { current = Date.now(); listeners.forEach(listener=>listener()); }
+export function refreshRadarClock() { current = Date.now(); listeners.forEach(listener=>listener()); return current; }
 function subscribe(listener: () => void) {
   listeners.add(listener);
   const timer = window.setInterval(refreshRadarClock, 60000);

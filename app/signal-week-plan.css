@@ -40,3 +40,5 @@
  .week-action-entry{grid-area:precision}
 }
 @media(max-width:640px){[data-slot=dialog-content].week-plan-editor{padding:0 20px 20px}.week-plan-head{margin:0 -20px;padding:20px 20px 12px}.week-plan-head h2{font-size:20px}}
+
+.week-check[aria-busy="true"]{opacity:.82}

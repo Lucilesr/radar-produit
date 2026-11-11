@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useId, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode, type TouchEvent as ReactTouchEvent } from "react";
+import { createContext, useContext, useId, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode, type TouchEvent as ReactTouchEvent } from "react";
 import { DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, pointerWithin, rectIntersection, useDndContext, useDraggable, useDroppable, useSensor, useSensors, type Announcements, type KeyboardCoordinateGetter } from "@dnd-kit/core";
 import { Dialog } from "radix-ui";
 import { GripVertical, MoreHorizontal } from "lucide-react";
@@ -35,6 +35,7 @@ export function ApplicationMoveMenu({job,columns,busy}:{job:JobRecord;columns:Pe
 
 function focusCard(id:string|null,attempt=0){
  requestAnimationFrame(()=>{
+  if (attempt && document.activeElement!==document.body) return;
   const handle=id?document.getElementById(`application-drag-${id}`):null;
   const ready=!!handle?.getClientRects().length&&!handle.hasAttribute("disabled");
   if(!ready&&attempt<3){focusCard(id,attempt+1);return;}
@@ -43,7 +44,7 @@ function focusCard(id:string|null,attempt=0){
  });
 }
 
-export function ApplicationDrag({ jobs, busy, onStatus, children, columns = defaultBoard().columns, onColumnMove }: { jobs: JobRecord[]; busy: string | null; onStatus: (job: JobRecord, status: JobStatus, columnId?: string) => Promise<boolean>; children: ReactNode; columns?: PersonalColumn[]; onColumnMove?: (id: string, targetId: string) => void }) {
+export function ApplicationDrag({ jobs, pending, onStatus, children, columns = defaultBoard().columns, onColumnMove }: { jobs: JobRecord[]; pending: ReadonlySet<string>; onStatus: (job: JobRecord, status: JobStatus, columnId: string) => Promise<boolean>; children: ReactNode; columns?: PersonalColumn[]; onColumnMove?: (id: string, targetId: string) => void }) {
   const columnName = (id: string) => columns.find(c => c.id === id)?.label ?? "l’étape précédente";
   const destinations = columns.filter(c => c.stage !== "other").map(c => c.id);
   const id = useId();
@@ -55,16 +56,14 @@ export function ApplicationDrag({ jobs, busy, onStatus, children, columns = defa
   const [closure, setClosure] = useState<"rejected" | "withdrawn" | "">("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const pendingFocus=useRef<string|null>(null);
-  useLayoutEffect(()=>{if(!busy&&pendingFocus.current){const id=pendingFocus.current;pendingFocus.current=null;focusCard(id);}},[busy,jobs]);
-  const lastMove=useRef<{jobId:string;target:string;reason?:JobStatus}|null>(null);
-  const locked = useRef(false), lastFocus = useRef<string | null>(null);
+  const lastFocus = useRef<string | null>(null);
+  const [closingBusy,setClosingBusy] = useState(false);
   const active = jobs.find(job => job.id === activeId), closing = jobs.find(job => job.id === closingId);
   const sensors = useSensors(useSensor(MouseSensor, { activationConstraint: { distance: 8 } }), useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 6 } }), useSensor(KeyboardSensor, {
     coordinateGetter: keyboardCoordinates(destinations), scrollBehavior: "auto", keyboardCodes: { start: ["Space", "Enter"], end: ["Space", "Enter"], cancel: ["Escape", "Tab"] },
   }));
   async function move(jobId: string, target: string, reason?: JobStatus) {
-    if (busy || locked.current) return;
+    if (closingBusy) return;
     const job = jobs.find(item => item.id === jobId);
     if (!job) { setMessage("Cette candidature n’est plus dans la vue. Aucun déplacement enregistré."); return; }
     lastFocus.current = jobId;
@@ -74,15 +73,20 @@ export function ApplicationDrag({ jobs, busy, onStatus, children, columns = defa
     const plan = applicationMove(job, column.stage, reason);
     if (plan.kind === "confirm-close") { setClosingId(jobId); setClosingTarget(target); setClosure(""); setError(""); return; }
     if (plan.kind !== "status" && plan.kind !== "none") { setMessage("Déplacement annulé. Étape conservée."); focusCard(jobId); return; }
-    pendingFocus.current=jobId;
-    lastMove.current={jobId,target,reason};
-    locked.current = true; setError(""); setMessage(`Enregistrement vers ${columnName(target)}…`);
-    try {
-      if (await onStatus(job, plan.kind === "status" ? plan.status : job.status, target)) { setClosingId(null); setMessage(`Candidature déplacée vers ${columnName(target)}. Notes et entretiens conservés.`); }
-      else { const problem = "Déplacement non confirmé. Le dernier statut confirmé reste affiché. Actualisez pour vérifier avant de réessayer."; setError(problem); setMessage(""); }
-    } catch { const problem = "Déplacement non confirmé. Actualisez pour vérifier ; vos notes et entretiens restent conservés."; setError(problem); setMessage(""); }
-    finally { locked.current = false; if (column.stage !== "closed") focusCard(jobId); }
+    if (reason) setClosingBusy(true);
+    setError("");
+    setMessage(`Enregistrement vers ${columnName(target)}…`);
+    const result = onStatus(job, plan.kind === "status" ? plan.status : job.status, target);
+    if (!reason) focusCard(jobId);
+    const saved = await result;
+    if (reason) {
+      setClosingBusy(false);
+      if (saved) setClosingId(null);
+      else setError("Déplacement non confirmé. Réessayez pour clore la candidature.");
+    }
+    setMessage(saved ? `Candidature déplacée vers ${columnName(target)}.` : "");
   }
+
   const announcements: Announcements = {
     onDragStart: ({ active }) => columnDrag(active.data.current) ? `Colonne ${columnName(columnDrag(active.data.current)!)} saisie. Choisissez sa nouvelle place.` : `Candidature ${jobs.find(job => job.id === active.id)?.company || ""} saisie. Choisissez une étape.`,
     onDragOver: ({ active, over }) => over ? (columnDrag(active.data.current) ? `Place de ${columnName(String(over.id))}.` : `Destination : ${columnName(String(over.id))}.`) : "Hors d’une étape. Relâcher annulera le déplacement.",
@@ -95,16 +99,15 @@ export function ApplicationDrag({ jobs, busy, onStatus, children, columns = defa
     onDragCancel={({ active }) => { const column = columnDrag(active.data.current); setActiveId(null); setActiveColumn(null); if (column) { setMessage("Colonne laissée à sa place."); document.getElementById(`application-column-drag-${column}`)?.focus(); return; } setMessage("Déplacement annulé. Étape conservée."); focusCard(String(active.id)); }}
     onDragEnd={({ active, over }) => { const column = columnDrag(active.data.current); setActiveId(null); setActiveColumn(null); if (column) { if (over && String(over.id) !== column) onColumnMove?.(column, String(over.id)); else setMessage("Colonne laissée à sa place."); requestAnimationFrame(() => document.getElementById(`application-column-drag-${column}`)?.focus({ preventScroll: true })); return; } if (over) void move(String(active.id), String(over.id)); else { setMessage("Déplacement annulé. Étape conservée."); focusCard(String(active.id)); } }}>
     <ApplicationMoveContext.Provider value={move}><div className="application-board-area"><div className="application-drag-guide"><p>Déplacez une carte pour changer d’étape.</p><HelpTooltip label="Déplacer une candidature">Menu ⋯ de la carte (« Déplacer vers »), ou sa poignée : Entrée puis flèches. Clore demande un motif.</HelpTooltip></div>
-    <p className={message ? "application-drag-help" : "sr-only"} role="status">{message}</p>
-    {error&&!closing?<div className="application-move-error"><WorkspaceFormError message={error}/><WorkspaceButton disabled={!!busy} onClick={()=>{const last=lastMove.current;if(last)void move(last.jobId,last.target,last.reason);}}>Réessayer le déplacement</WorkspaceButton></div>:null}
+    <p className={message ? "application-drag-help" : "sr-only"} role="status">{pending.size ? "Enregistrement des déplacements…" : message}</p>
     {children}
     <DragOverlay dropAnimation={null} zIndex={90}>{active ? <div className="application-drag-preview" aria-hidden><strong>{active.title}</strong><p>{active.company || "Entreprise à confirmer"}</p></div> : activeColumn ? <div className="application-drag-preview is-column" aria-hidden><strong>{columnName(activeColumn)}</strong><p>Colonne</p></div> : null}</DragOverlay>
-    <Dialog.Root open={!!closing} onOpenChange={open => { if (!open && !busy && !locked.current) { setClosingId(null); setError(""); } }}>
-      <Dialog.Portal><Dialog.Overlay className="application-move-overlay"/><Dialog.Content className="application-move-dialog" onEscapeKeyDown={event => { if (busy) event.preventDefault(); }} onPointerDownOutside={event => { if (busy) event.preventDefault(); }} onCloseAutoFocus={event => { event.preventDefault(); focusCard(lastFocus.current); }}>
+    <Dialog.Root open={!!closing} onOpenChange={open => { if (!open && !closingBusy) { setClosingId(null); setError(""); } }}>
+      <Dialog.Portal><Dialog.Overlay className="application-move-overlay"/><Dialog.Content className="application-move-dialog" onEscapeKeyDown={event => { if (closingBusy) event.preventDefault(); }} onPointerDownOutside={event => { if (closingBusy) event.preventDefault(); }} onCloseAutoFocus={event => { event.preventDefault(); focusCard(lastFocus.current); }}>
         <Dialog.Title>Clore cette candidature ?</Dialog.Title><Dialog.Description>Choisissez ce qui termine le processus. Les notes et les entretiens restent dans le dossier.</Dialog.Description>
         <p className="application-move-company">{closing?.title} · {closing?.company || "Entreprise à confirmer"}</p>
-        <fieldset disabled={!!busy}><legend>Motif de clôture</legend>{([["rejected", "Refus reçu"], ["withdrawn", "J’arrête le processus"]] as const).map(([value, label]) => <label key={value}><input type="radio" name={`closure-${id}`} value={value} checked={closure === value} onChange={() => { setClosure(value); setError(""); }}/>{label}</label>)}</fieldset>
-        <WorkspaceFormError message={error}/><div className="application-move-actions"><WorkspaceButton disabled={!!busy} onClick={() => { setClosingId(null); setError(""); }}>Annuler</WorkspaceButton><WorkspaceButton variant="danger" busy={!!busy} disabled={!closure} onClick={() => { if (closing && closure) void move(closing.id, closingTarget, closure); }}>{busy ? "Enregistrement…" : "Clore la candidature"}</WorkspaceButton></div>
+        <fieldset disabled={!!closingBusy}><legend>Motif de clôture</legend>{([["rejected", "Refus reçu"], ["withdrawn", "J’arrête le processus"]] as const).map(([value, label]) => <label key={value}><input type="radio" name={`closure-${id}`} value={value} checked={closure === value} onChange={() => { setClosure(value); setError(""); }}/>{label}</label>)}</fieldset>
+        <WorkspaceFormError message={error}/><div className="application-move-actions"><WorkspaceButton disabled={!!closingBusy} onClick={() => { setClosingId(null); setError(""); }}>Annuler</WorkspaceButton><WorkspaceButton variant="danger" busy={closingBusy} disabled={!closure} onClick={() => { if (closing && closure) void move(closing.id, closingTarget, closure); }}>{closingBusy ? "Enregistrement…" : "Clore la candidature"}</WorkspaceButton></div>
       </Dialog.Content></Dialog.Portal>
     </Dialog.Root>
   </div></ApplicationMoveContext.Provider></DndContext>;
@@ -116,9 +119,9 @@ export function ApplicationDropColumn({ column, stage = column, busy, children }
   return <section ref={setNodeRef} className={`application-column is-${stage}${isOver ? " is-drop-over" : ""}${active && !busy && stage !== "other" ? " is-drop-ready" : ""}`} aria-labelledby={`application-column-${column}`}>{children}</section>;
 }
 
-export function DraggableApplicationCard({ job, busy, title, children, column, menu }: { job: JobRecord; busy: boolean; title: ReactNode; children: ReactNode; column?: string; menu?: ReactNode }) {
+export function DraggableApplicationCard({ job, busy, pending, title, children, column, menu }: { job: JobRecord; busy: boolean; pending: boolean; title: ReactNode; children: ReactNode; column?: string; menu?: ReactNode }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useDraggable({ id: job.id, disabled: busy, data: { column: column ?? applicationColumn(job) } });
-  return <article ref={setNodeRef} className={`application-card${isDragging ? " is-dragging" : ""}`} aria-busy={busy}
+  return <article ref={setNodeRef} className={`application-card${isDragging ? " is-dragging" : ""}`} aria-busy={pending}
     onMouseDown={event => { if (!(event.target as Element).closest("input,textarea,select,[contenteditable=true],[role=combobox],[data-no-drag]")) listeners?.onMouseDown?.(event); }}
     onTouchStart={event => { if (!(event.target as Element).closest("input,textarea,select,[contenteditable=true],[role=combobox],[data-no-drag]")) listeners?.onTouchStart?.(event); }}>
     <div className="application-card-heading">{title}{menu}<button ref={setActivatorNodeRef} {...attributes} onKeyDown={event => listeners?.onKeyDown?.(event)} id={`application-drag-${job.id}`} type="button" className="application-drag-handle" disabled={busy} aria-label={`Déplacer la candidature : ${job.title} · ${job.company || "Entreprise à confirmer"}`} aria-roledescription="carte déplaçable" title="Glisser vers une autre étape · Entrée puis flèches au clavier"><GripVertical size={17} aria-hidden/></button></div>
