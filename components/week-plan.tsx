@@ -1,4 +1,5 @@
 "use client";
+import {useTabReturnRefresh} from "@/components/use-tab-return-refresh";
 import {useCallback,useEffect,useId,useMemo,useRef,useState,useSyncExternalStore} from "react";
 import {Check,X} from "lucide-react";
 import {useRadarNextSteps} from "@/components/next-steps-context";
@@ -75,19 +76,21 @@ export function WeekPlanCard({owner,profile,jobs,sources,allowMoment,onState,onO
    onBusyChange:busy=>sessionWrite(writeKey,busy),
   });
  });
- useEffect(()=>checks.subscribeSaved((next,previous)=>{if(becameHeld(previous,next))celebrate();}),[checks,celebrate]);
  const checkState=useSyncExternalStore(checks.subscribe,checks.getSnapshot,checks.getSnapshot);
  const state=checkState.confirmed;
  const deviceZone=clock?Intl.DateTimeFormat().resolvedOptions().timeZone:"UTC";
- const series=useWeekSeries(owner,state.version,deviceZone,!!clock),welcomeSeen=useRef<string|null>(null);
+ const series=useWeekSeries(owner,deviceZone,!!clock),welcomeSeen=useRef<string|null>(null);
+ const reloadSeries=series.load;
+ useEffect(()=>checks.subscribeSaved((next,previous)=>{void reloadSeries(true);if(becameHeld(previous,next))celebrate();}),[checks,celebrate,reloadSeries]);
  const zone=series.state?.timeZone??deviceZone,week=clock?weekKey(clock,zone):"";
  const plan=checkState.visible.plan?.week===week?checkState.visible.plan:null,planBusy=busy||series.busy;
  const held=state.plan?.week===week&&planHeld(state.plan);
  const editorBusy=planBusy||!!checkState.sending;
  const pendingChecks=new Set([checkState.sending,...checkState.queued].flatMap(action=>action?[action.id]:[]));
- const accept=useCallback((next:WeekPlanState)=>{if(next.version<checks.getSnapshot().confirmed.version)return;checks.accept(next);onState(next);},[checks,onState]);
- const load=useCallback(async()=>{setError("");setReady(false);try{const r=await fetch("/api/week-plan",{cache:"no-store",signal:AbortSignal.timeout(15000)});const data=await r.json() as WeekPlanState;if(!r.ok||!Number.isInteger(data.version)||!Array.isArray(data.history))throw new Error();if(live.current){accept(data);setReady(true);}}catch{if(live.current)setError("Votre plan ne peut pas être relu. Les actions affichées sont la dernière version connue.");}},[accept]);
- useEffect(()=>{live.current=true;const frame=requestAnimationFrame(()=>{setClock(Date.now());void load();});const refresh=()=>{if(!lock.current&&!checks.getSnapshot().sending){setClock(Date.now());void load();}};window.addEventListener("focus",refresh);const timer=window.setInterval(()=>setClock(Date.now()),60000);return()=>{live.current=false;cancelAnimationFrame(frame);window.removeEventListener("focus",refresh);window.clearInterval(timer);};},[checks,load]);
+ const accept=useCallback((next:WeekPlanState,silent=false)=>{const current=checks.getSnapshot().confirmed.version;if(next.version<current||silent&&next.version===current)return;checks.accept(next);onState(next);},[checks,onState]);
+ const load=useCallback(async(silent=false)=>{if(!silent)setError("");try{const r=await fetch("/api/week-plan",{cache:"no-store",signal:AbortSignal.timeout(15000)});const data=await r.json() as WeekPlanState;if(!r.ok||!Number.isInteger(data.version)||!Array.isArray(data.history))throw new Error();if(live.current){accept(data,silent);setReady(true);}}catch{if(live.current&&!silent)setError("Votre plan ne peut pas être relu. Les actions affichées sont la dernière version connue.");}},[accept]);
+ useEffect(()=>{live.current=true;const frame=requestAnimationFrame(()=>{setClock(Date.now());void load();});const timer=window.setInterval(()=>setClock(Date.now()),60000);return()=>{live.current=false;cancelAnimationFrame(frame);window.clearInterval(timer);};},[load]);
+ useTabReturnRefresh(`week-plan:${owner}`,()=>{setClock(Date.now());void load(ready);},!!owner);
  useEffect(()=>{onOverlay(editor||pauseOpen||!!moment);return()=>onOverlay(false);},[editor,pauseOpen,moment,onOverlay]);
  useEffect(()=>{
   if(!ready||!series.ready||!week||!allowMoment||requestOpen||editor||pauseOpen||moment||series.state?.welcomeSeen||welcomeSeen.current===week)return;

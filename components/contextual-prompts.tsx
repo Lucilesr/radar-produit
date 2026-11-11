@@ -1,4 +1,5 @@
 "use client";
+import {useTabReturnRefresh} from "@/components/use-tab-return-refresh";
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from "react";
 import {WorkspaceButton,WorkspaceFormError} from "@/components/workspace-form";
 import {HelpTooltip} from "@/components/help-tooltip";
@@ -17,11 +18,20 @@ type Controller={state:PromptState;now:number;ready:boolean;busy:boolean;error:s
 const Context=createContext<Controller>({state:{later:{}},now:0,ready:false,busy:false,error:"",load:async()=>{},write:async()=>false});
 export function ContextualPromptsProvider({owner,now,onState,children}:{owner:string;now:number;onState:(state:PromptState,search?:SearchPreferences)=>void;children:ReactNode}){
  const [state,setState]=useState<PromptState>({later:{}}),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState("");
- const generation=useRef(0),lock=useRef(false),live=useRef(true),accept=useRef(onState);useEffect(()=>{accept.current=onState;},[onState]);
- const load=useCallback(async()=>{if(lock.current)return;const request=++generation.current;setError("");try{const r=await fetch("/api/contextual-prompts",{cache:"no-store",signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error();const data=await r.json() as {state:PromptState};if(live.current&&generation.current===request){setState(data.state);setReady(true);accept.current(data.state);}}catch{if(live.current&&generation.current===request)setError("Vos propositions ne peuvent pas être relues. Vos choix restent conservés.");}},[]);
- useEffect(()=>{live.current=true;const frame=requestAnimationFrame(()=>void load());const focus=()=>void load();window.addEventListener("focus",focus);return()=>{live.current=false;generation.current++;cancelAnimationFrame(frame);window.removeEventListener("focus",focus);};},[owner,load]);
+ const confirmed=useRef<PromptState>({later:{}}),generation=useRef(0),lock=useRef(false),live=useRef(true),accept=useRef(onState);useEffect(()=>{accept.current=onState;},[onState]);
+ const load=useCallback(async(silent=false)=>{if(lock.current)return;const request=++generation.current;if(!silent)setError("");try{const r=await fetch("/api/contextual-prompts",{cache:"no-store",signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error();const data=await r.json() as {state:PromptState};if(live.current&&generation.current===request){
+   const previous=confirmed.current;
+   const newer=Object.entries(data.state.later).filter(([key,until])=>until>(previous.later[key]??""));
+   if(!silent||newer.length){
+    const next=silent?{later:{...previous.later,...Object.fromEntries(newer)}}:data.state;
+    confirmed.current=next;setState(next);accept.current(next);
+   }
+   setReady(true);
+  }}catch{if(live.current&&generation.current===request&&!silent)setError("Vos propositions ne peuvent pas être relues. Vos choix restent conservés.");}},[]);
+ useEffect(()=>{live.current=true;const frame=requestAnimationFrame(()=>void load());return()=>{live.current=false;generation.current++;cancelAnimationFrame(frame);};},[owner,load]);
+ useTabReturnRefresh(`prompts:${owner}`,()=>void load(ready),!!owner);
  async function write(command:Command){if(lock.current)return false;lock.current=true;generation.current++;setBusy(true);setError("");const key=crypto.randomUUID();sessionWrite(key,true);
-  try{const r=await fetch("/api/contextual-prompts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(command),signal:AbortSignal.timeout(15000)});const data=await r.json() as {state?:PromptState;searchPreferences?:SearchPreferences;error?:string};if(!r.ok||!data.state)throw new Error(data.error??"Choix non confirmé. Réessayez quand la connexion revient.");setState(data.state);setReady(true);accept.current(data.state,command.action==="level"?data.searchPreferences:undefined);requestAnimationFrame(()=>{if(document.activeElement===document.body)document.getElementById("workspace-title")?.focus({preventScroll:true});});return true;
+  try{const r=await fetch("/api/contextual-prompts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(command),signal:AbortSignal.timeout(15000)});const data=await r.json() as {state?:PromptState;searchPreferences?:SearchPreferences;error?:string};if(!r.ok||!data.state)throw new Error(data.error??"Choix non confirmé. Réessayez quand la connexion revient.");confirmed.current=data.state;setState(data.state);setReady(true);accept.current(data.state,command.action==="level"?data.searchPreferences:undefined);requestAnimationFrame(()=>{if(document.activeElement===document.body)document.getElementById("workspace-title")?.focus({preventScroll:true});});return true;
   }catch(problem){setError(requestError(problem,"Choix non confirmé. Réessayez quand la connexion revient."));return false;}finally{sessionWrite(key,false);lock.current=false;setBusy(false);}
  }
  return <Context.Provider value={{state:readPromptState(state,now),now,ready,busy,error,load,write}}>{children}</Context.Provider>;

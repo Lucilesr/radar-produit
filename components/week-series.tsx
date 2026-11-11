@@ -1,21 +1,23 @@
 "use client";
+import {useTabReturnRefresh} from "@/components/use-tab-return-refresh";
 import {useCallback,useEffect,useRef,useState} from "react";
 import {HelpTooltip} from "@/components/help-tooltip";
 import {ChoiceSelect} from "@/components/choice-select";
 import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from "@/components/ui/dialog";
 import {WorkspaceButton,WorkspaceFormError} from "@/components/workspace-form";
 import {pauseLabel,shiftWeek,type WeekSeries} from "@/lib/week-series";
-export function useWeekSeries(owner:string,planVersion:number,zone:string,enabled:boolean){
- const [state,setState]=useState<WeekSeries|null>(null),[error,setError]=useState(""),[reading,setReading]=useState(false),[busy,setBusy]=useState(false);
+export function useWeekSeries(owner:string,zone:string,enabled:boolean){
+ const [state,setState]=useState<WeekSeries|null>(null),[error,setError]=useState(""),[busy,setBusy]=useState(false);
  const lock=useRef(false),generation=useRef(0),live=useRef(true);
- const load=useCallback(async()=>{const request=++generation.current;setReading(true);setError("");try{const r=await fetch(`/api/week-series?zone=${encodeURIComponent(zone)}`,{cache:"no-store",signal:AbortSignal.timeout(15000)});const next=await r.json() as WeekSeries;if(!r.ok||!Number.isInteger(next.streak)||!Array.isArray(next.weeks))throw new Error();if(live.current&&request===generation.current)setState(next);return next;}catch{if(live.current&&request===generation.current)setError("Votre série ne peut pas être relue. Votre plan et ses actions restent conservés.");return null;}finally{if(live.current&&request===generation.current)setReading(false);}},[zone]);
- useEffect(()=>{live.current=true;if(!enabled)return;const frame=requestAnimationFrame(()=>void load());const refresh=()=>{if(!lock.current)void load();};window.addEventListener("focus",refresh);return()=>{live.current=false;generation.current++;cancelAnimationFrame(frame);window.removeEventListener("focus",refresh);};},[owner,planVersion,load,enabled]);
+ const load=useCallback(async(silent=false)=>{if(lock.current)return null;const request=++generation.current;if(!silent)setError("");try{const r=await fetch(`/api/week-series?zone=${encodeURIComponent(zone)}`,{cache:"no-store",signal:AbortSignal.timeout(15000)});const next=await r.json() as WeekSeries;if(!r.ok||!Number.isInteger(next.version)||!Number.isInteger(next.streak)||!Array.isArray(next.weeks))throw new Error();if(live.current&&request===generation.current)setState(current=>current&&(next.version<current.version||JSON.stringify(next)===JSON.stringify(current))?current:next);return next;}catch{if(live.current&&request===generation.current&&!silent)setError("Votre série ne peut pas être relue. Votre plan et ses actions restent conservés.");return null;}},[zone]);
+ useEffect(()=>{live.current=true;if(!enabled)return;const frame=requestAnimationFrame(()=>void load());return()=>{live.current=false;generation.current++;cancelAnimationFrame(frame);};},[owner,load,enabled]);
+ useTabReturnRefresh(`week-series:${owner}`,()=>void load(!!state),enabled&&!!owner);
  async function write(action:"pause"|"resume"|"welcome",weeks?:number){if(lock.current||!state)return false;lock.current=true;setBusy(true);setError("");generation.current++;
   try{const r=await fetch("/api/week-series",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,weeks,version:state.version,timeZone:zone}),signal:AbortSignal.timeout(15000)});const next=await r.json() as WeekSeries&{state?:WeekSeries;error?:string};if(!r.ok){if(next.state)setState(next.state);throw new Error(next.error);}setState(next);return true;}
   catch(problem){setError(problem instanceof Error&&problem.message&&!['TypeError','AbortError','TimeoutError'].includes(problem.name)?problem.message:"Choix non confirmé. Relisez votre série avant de réessayer.");return false;}
-  finally{lock.current=false;setBusy(false);setReading(false);}
+  finally{lock.current=false;setBusy(false);}
  }
- return {state,error,ready:!!state&&!reading&&!error,reading,busy,load,write};
+ return {state,error,ready:!!state,busy,load,write};
 }
 export function SeriesSummary({state,hideStreak=false}:{state:WeekSeries;hideStreak?:boolean}){return <div className="week-series-summary" aria-live="polite">{!hideStreak?<strong className="week-series-badge">{state.streak} semaine{state.streak!==1?"s":""} tenue{state.streak!==1?"s":""}</strong>:null}<span>{state.jokers} joker{state.jokers!==1?"s":""}{hideStreak?"":" disponible"+(state.jokers!==1?"s":"")} sur 2</span>{state.pauseStart?<p>{state.paused?"Pause en cours":"Pause prévue"} · {pauseLabel(state.pauseStart,state.pauseEnd!)}. Votre série est conservée.</p>:null}</div>;}
 export function WeekSeriesControls({series,onOverlay,compact=false}:{compact?:boolean;series:ReturnType<typeof useWeekSeries>;onOverlay:(open:boolean)=>void}){

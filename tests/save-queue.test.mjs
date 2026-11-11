@@ -175,3 +175,17 @@ test("Une semaine tenue est annoncée après la confirmation de la dernière cas
   }
   assert.deepEqual(receipts,[[1,0],[2,1],[3,2]]);
 });
+
+test("La relecture du plan applique la version distante sous une case en cours d’envoi", async () => {
+  const {queue,calls} = setup();
+  const saved = queue.enqueue({field:"a",checked:true});
+  queue.accept({a:false,b:true,c:false,d:false,version:2});
+  assert.equal(queue.getSnapshot().visible.a,true);
+  assert.equal(queue.getSnapshot().visible.b,true);
+  calls[0].conflict({a:false,b:true,c:false,d:false,version:2});
+  await setImmediate();
+  assert.equal(calls[1].version,2);
+  calls[1].confirm();
+  assert.equal(await saved,true);
+  assert.deepEqual(queue.getSnapshot().confirmed,{a:true,b:true,c:false,d:false,version:3});
+});

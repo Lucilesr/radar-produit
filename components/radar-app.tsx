@@ -154,7 +154,7 @@ function RadarWorkspace({ ownerId, userName, userEmail, signOutPath = "/signout-
   const [weekOverlay,setWeekOverlay]=useState(false),[planRequested,setPlanRequested]=useState(false);
   const consumePlanRequest=useCallback(()=>setPlanRequested(false),[setPlanRequested]);
   const nextStepZone=useDisplayTimeZone();
-  const acceptWeek=useCallback((state:WeekPlanState)=>setProfile(profile=>({...profile,weekPlan:state.plan,weekPlans:state.history,weekPlanRevision:state.version})),[setProfile]);
+  const acceptWeek=useCallback((state:WeekPlanState)=>setProfile(profile=>state.version<(profile.weekPlanRevision??0)?profile:{...profile,weekPlan:state.plan,weekPlans:state.history,weekPlanRevision:state.version}),[setProfile]);
   const [storyTheme,setStoryTheme]=useState<InterviewTheme|null>(null);
   const [scanOpen,setScanOpen]=useState(false);
   const scanOpener=useRef<HTMLElement|null>(null),autoScanned=useRef(false);
