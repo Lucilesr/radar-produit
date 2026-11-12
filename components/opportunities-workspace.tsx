@@ -24,10 +24,10 @@ import type { CandidateProfile, JobRecord, JobStatus } from "@/lib/types";
 const views: [OpportunityView,string][]=[["to_review","À examiner"],["selected","Ma sélection"]];
 const retiredViews = [["archived","Archives"],["trash","Corbeille"]] as const;
 const remote={full_remote:"Full remote",exceptional:"Présence ponctuelle",hybrid:"Hybride",onsite:"Sur site",unknown:"Remote à confirmer"};
-export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,tools,sessionAdvance,enabled=true,onReload,onReserveChanged,reserveActions,lot,jobs,rescueOffers=[],counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,profile,decisions,onRetryLot,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
+export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,tools,sessionAdvance,enabled=true,onReload,onReserveChanged,reserveActions,lot,jobs,rescueOffers=[],counts,filter,onFilter,query,onClearSearch,activeId,view,onOpen,onClose,onOpenCarnet,profile,decisions,onRetryLot,onReview,onDelete,onDeleteMany,onRestore,onStatus,onNote,onChange,onApplication,onViewChange,trashBusy,currentJob}: {
   source?:string;onClearSource?:()=>void;enabled?:boolean;onReload?:()=>Promise<boolean>;onReserveChanged:(roleChanged:boolean)=>Promise<boolean>;reserveActions:ReturnType<typeof useReserveActions>;rescueOffers?:JobRecord[];
   tools?:ReactNode;contextualPrompt?:ReactNode;sessionAdvance?:ReactNode;lot?:DailyLot|null; currentJob?:JobRecord|null; jobs:JobRecord[];counts:Record<OpportunityView,number>;filter:OpportunityView;onFilter:(view:OpportunityView)=>void;query:string;onClearSearch:()=>void;
-  activeId?:string;view:WorkspaceView;onOpen:(job:JobRecord)=>void;onClose:()=>void;profile:CandidateProfile;
+  activeId?:string;view:WorkspaceView;onOpen:(job:JobRecord)=>void;onClose:()=>void;onOpenCarnet:()=>void;profile:CandidateProfile;
   decisions:Pick<ReturnType<typeof useOfferDecisions>,"pending"|"failed"|"retry"|"lockErrors">;onRetryLot:(key:string)=>void;
   onReview:(job:JobRecord,state:"to_review"|"selected"|"later")=>Promise<boolean>;onDelete:(job:JobRecord)=>Promise<boolean>;onDeleteMany:(jobs:JobRecord[])=>void;onRestore:(job:JobRecord)=>Promise<boolean>;
   onStatus:(id:string,status:JobStatus)=>Promise<boolean>;onNote:(id:string,note:string)=>Promise<boolean>;onChange:(job:JobRecord)=>void;onApplication:(job:JobRecord)=>void;
@@ -198,7 +198,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
         {active.deletedAt&&active.dismissalNote?<p className="workspace-caption">{active.dismissalNote}</p>:null}
         {!archived&&!active.deletedAt&&!applied&&reviewState(active)!=="later"?<WorkspaceButton variant="quiet" disabled={actionsBusy||editing} onClick={()=>review("later")} aria-keyshortcuts={profile.preferences?.triageShortcuts!==false?"L":undefined}>Plus tard</WorkspaceButton>:null}
         {sessionAdvance?<div className="reading-session-advance">{sessionAdvance}</div>:null}
-        <OfferWorkspace key={active.id} onEditingChange={setEditing} showApplicationAction={false} showAnnouncement={false} job={active} profile={profile} initialView={view} onViewChange={next=>onViewChange(active,next)} context="opportunity" onStatus={onStatus} onNote={onNote} onChange={updated=>{if(kept?.job.id===updated.id)setRetained({...kept,job:updated});onChange(updated);}} onOpenApplication={()=>onApplication(active)}/>
+        <OfferWorkspace key={active.id} onEditingChange={setEditing} showApplicationAction={false} showAnnouncement={false} job={active} profile={profile} initialView={view} onViewChange={next=>onViewChange(active,next)} context="opportunity" onStatus={onStatus} onNote={onNote} onChange={updated=>{if(kept?.job.id===updated.id)setRetained({...kept,job:updated});onChange(updated);}} onOpenApplication={()=>onApplication(active)} onOpenCarnet={onOpenCarnet}/>
         <OpportunityReadingNotes/>
         </div>
         <div role="group" aria-label="Actions sur cette offre" className="opportunity-decision signal-opportunity-actions">

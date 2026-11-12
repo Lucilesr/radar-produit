@@ -8,7 +8,39 @@ export function briefOffer(job:BriefOffer):BriefOffer{
   return {id,title,company,contractType,annualSalary,dailyRate,remoteMode,onsiteCadence,onsiteDaysPerWeek,onsiteDaysPerMonth,remoteCountry,language,description,sourceUrl,applicationUrl};
 }
 export type BriefQuestion={question:string;characterLimit:number|null};
-export function createCandidateBrief(context:{offer:BriefOffer;facts:ApprovedFacts;questions?:BriefQuestion[]},language:"fr"|"en"="fr"){
+type BriefContext = { offer: BriefOffer; facts: ApprovedFacts; questions?: BriefQuestion[] };
+type BriefExperience = { title: string; company: string; period: string };
+
+export function briefSummary({ offer, facts, questions }: BriefContext) {
+  const experiences = new Map<string, BriefExperience>();
+  for (const { experience } of facts) {
+    if (!experience || experiences.has(experience.id)) continue;
+    // The prompt already carries the experience heading and period.
+    const { title, role, organization, period } = experience;
+    const heading = title.toLocaleLowerCase("fr");
+    const hasRoleAndCompany = role && organization && role !== organization
+      && heading.includes(role.toLocaleLowerCase("fr"))
+      && heading.includes(organization.toLocaleLowerCase("fr"));
+    experiences.set(experience.id, {
+      title: hasRoleAndCompany ? role : title,
+      company: hasRoleAndCompany ? organization : "",
+      period,
+    });
+  }
+  return {
+    offer: { title: offer.title, company: offer.company },
+    experiences: [...experiences.values()],
+    questionCount: questions?.length ?? 0,
+  };
+}
+
+export function briefExperiencePreview(experiences: BriefExperience[]) {
+  const visible = experiences.slice(0, 4);
+  const remaining = experiences.length - visible.length;
+  return { visible, moreLabel: remaining ? `+ ${remaining} autre${remaining > 1 ? "s" : ""}` : "" };
+}
+
+export function createCandidateBrief(context:BriefContext,language:"fr"|"en"="fr"){
   const {offer:job,facts}=context;
   const evidence=facts.map(f=>"- ["+f.id+" v"+f.version+"] "+f.title+"\n  Contexte : "+(f.experience?f.experience.title+" ("+(f.experience.period||"période non précisée")+"). ":"")+f.context+"\n  Contribution personnelle : "+(f.contribution||"Non documentée : demander confirmation, ne pas la déduire.")+"\n  Résultat : "+(f.result||"Non documenté : ne pas inventer de métrique.")).join("\n");
   const questions=context.questions?.map((q,index)=>`${index+1}. ${q.question}\n   Limite : ${q.characterLimit ? `${q.characterLimit} caractères` : "non indiquée"}`).join("\n")||"Aucune question enregistrée.";

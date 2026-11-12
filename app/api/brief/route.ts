@@ -4,7 +4,7 @@ import { getDb } from "@/db";
 import { jobs } from "@/db/schema";
 import { ensureSameOrigin } from "@/lib/server";
 import { approvedFacts } from "@/lib/experience-store";
-import { briefOffer,createCandidateBrief } from "@/lib/candidate-brief";
+import { briefOffer, briefSummary, createCandidateBrief } from "@/lib/candidate-brief";
 import { listApplicationQuestions } from "@/lib/application-question-store";
 export async function POST(request:Request){
   const headers={"Cache-Control":"private, no-store"};
@@ -18,6 +18,6 @@ export async function POST(request:Request){
     const [facts,questions]=await Promise.all([approvedFacts(user.userId,"application"),listApplicationQuestions(user.userId,body.jobId)]);
     const context={offer:briefOffer(row as Parameters<typeof briefOffer>[0]),facts,questions:questions.map(({question,characterLimit})=>({question,characterLimit}))};
     const language=body.language==="en"||(!body.language&&row.language!=="fr"&&row.language!=="unknown")?"en":"fr";
-    return Response.json({brief:createCandidateBrief(context,language),factCount:facts.length},{headers});
+    return Response.json({brief:createCandidateBrief(context,language),factCount:facts.length,summary:briefSummary(context)},{headers});
   }catch{return Response.json({error:"Préparation impossible : aucune donnée privée n’a été envoyée."},{status:400,headers});}
 }
