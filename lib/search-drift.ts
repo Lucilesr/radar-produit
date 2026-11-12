@@ -1,3 +1,4 @@
+import { supportsSourceSearch } from "./source-catalog";
 import { foldTerm, searchedTerms } from "./search-tracks";
 import { allRolesLabel } from "./web-discovery";
 import type { SearchPreferences } from "./types";
@@ -21,7 +22,8 @@ export function searchDrift(search: SavedSearch, preferences: SearchPreferences)
 }
 
 /** Searches saved on a source: one per role for which links were kept, grouped search aside. */
-export function sourceSavedSearches(setting: { searchLinks?: Record<string, { Google?: string; Site?: string }> } | undefined): SavedSearch[] {
+export function sourceSavedSearches(setting: { source?: string; searchLinks?: Record<string, { Google?: string; Site?: string }> } | undefined): SavedSearch[] {
+  if (!supportsSourceSearch(setting?.source)) return [];
   return Object.entries(setting?.searchLinks ?? {})
     .filter(([role, links]) => role !== allRolesLabel && links && (links.Site || links.Google))
     .map(([role]) => ({ id: role, terms: [role] }));

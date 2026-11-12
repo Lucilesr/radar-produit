@@ -1,6 +1,6 @@
 export const sourceCatalog = [
   { name: "Collective", group: "France · CDI & freelance", url: "https://app.collective.work/talent/jobs", mode: "email", note: "Alertes email par poste, en français et en anglais. Les offres sans rémunération annoncée y restent fréquentes." },
-  { name: "Malt", group: "France · freelance", url: "https://www.malt.fr/", mode: "email", note: "Propositions de mission et notifications. Ne pas modifier la visibilité ou le profil public sans validation." },
+  { name: "Malt", group: "France · freelance", url: "https://www.malt.fr/", mode: "email", note: "Sur Malt, les entreprises vous contactent pour vous proposer des missions." },
   { name: "LinkedIn Jobs", group: "Annonces en français · tous pays", url: "https://www.linkedin.com/jobs/", mode: "web", note: "Recherche ouverte manuellement via un index public." },
   { name: "Apec", group: "France · CDI", url: "https://www.apec.fr/candidat/recherche-emploi.html/emploi", mode: "email", note: "CDI, télétravail total et partiel. Une recherche sans filtre salaire évite de perdre les offres non chiffrées." },
   { name: "Welcome to the Jungle", group: "Annonces en français · tous pays", url: "https://www.welcometothejungle.com/fr", mode: "web", note: "Recherche ouverte manuellement via un index public." },
@@ -18,5 +18,13 @@ export const sourceCatalog = [
   { name: "Mon site", group: "Ajout volontaire", url: "", mode: "web", note: "Un site que vous suivez vous-même. Collez l’URL de votre recherche ; Radar n’y collecte rien et n’utilise aucun compte." },
   { name: "Post LinkedIn", group: "Ajout volontaire", url: "https://www.linkedin.com/", mode: "manual", note: "Pas d'activation automatique : ajouter uniquement un lien et un texte fourni volontairement." },
 ] as const;
+export function supportsSourceSearch(name: string | undefined) {
+  return name !== "Malt";
+}
+
+export function sourceOpenUrl(source: { name: string; url: string }, setting?: { linkUrl?: string }) {
+  return (supportsSourceSearch(source.name) && setting?.linkUrl) || source.url;
+}
+
 export const sourceNames: [string, ...string[]] = ["Autre", "Ajout manuel", ...sourceCatalog.map(source => source.name)];
 export const broadMailQuery = 'newer_than:14d -in:spam -in:trash {from:linkedin.com from:apec.fr from:welcometothejungle.com from:free-work.com from:indeed.com from:indeed.fr from:hellowork.com}';

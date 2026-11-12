@@ -12,7 +12,7 @@ export const sourceGuidance: Record<SourceName, { steps: [string, ...string[]]; 
     result: "Radar conserve le lien et le rythme de visite. Il n’ouvre pas le site à votre place et n’y collecte rien.",
   },
   Malt: {
-    steps: ["Ouvrez Malt et vérifiez les notifications de missions dans votre compte.", "Notez ici les critères suivis et la fréquence de vérification. Revenez sur les propositions reçues pour examiner chaque mission."],
+    steps: ["Ouvrez Malt pour consulter vos messages et les propositions de mission reçues.", "Notez ici les propositions à suivre et choisissez à quelle fréquence consulter votre compte."],
     result: "Radar mémorise votre suivi. Il ne modifie pas votre profil Malt et ne récupère pas vos messages.",
   },
   "LinkedIn Jobs": {

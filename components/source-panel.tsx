@@ -144,7 +144,7 @@ export function SourcePanel({overviewCriteria=false,criteriaActionsTarget,displa
   const followedSources=[...jobboardCatalog,...alertCatalog].filter(source=>sourceVisible(source.name,allInitialSources));
   const suggested=settings?suggestedSources([...jobboardCatalog,...alertCatalog],searchPreferences(profile.searchPreferences),followedSources.map(source=>source.name)):[];
   // Same rule as the « Action requise » filter: a status to handle or a saved search that drifted.
-  const needingAction=settings?followedSources.filter(source=>{const setting=settings.find(item=>item.source===source.name);return needsAction(sourceStatus(setting,source.mode))||sourceDrift(setting,searchPreferences(profile.searchPreferences)).length>0;}).length:0;
+  const needingAction=settings?followedSources.filter(source=>{const setting=settings.find(item=>item.source===source.name);return needsAction(sourceStatus({...setting,source:source.name},source.mode))||sourceDrift(setting,searchPreferences(profile.searchPreferences)).length>0;}).length:0;
   const summary=settings?followedSourcesSummary(followedSources.length,needingAction):"";
   async function addSuggested(name:string,trigger:HTMLElement){
     suggestionTrigger.current=trigger;

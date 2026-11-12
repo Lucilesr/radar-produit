@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { WorkspaceButton, WorkspaceFormError } from "@/components/workspace-form";
 import { useWorkspaceFeedback } from "@/components/workspace-feedback";
 import { formatDate } from "@/lib/application-workflow";
-import { sourceCatalog } from "@/lib/source-catalog";
+import { sourceCatalog, sourceOpenUrl, supportsSourceSearch } from "@/lib/source-catalog";
 import { SourceLogo } from "@/components/source-logo";
 import { searchPreferences } from "@/lib/search-preferences";
 import type { CandidateProfile } from "@/lib/types";
@@ -24,7 +24,8 @@ export function SourceCard({ source, setting, count, hidden, profile, onSaveSear
   const notify=useWorkspaceFeedback();
   const [draft,setDraft]=useState<{notes:string;linkUrl:string}|null>(null);
   const current=draft??{notes:setting?.notes??"",linkUrl:setting?.linkUrl??""};
-  const configured=hasSourceConfiguration(setting,source.mode);
+  const showSearchLink = supportsSourceSearch(source.name);
+  const configured=hasSourceConfiguration({...setting,source:source.name},source.mode);
   const savedState=setting?.state==="paused"?"paused":configured?"configured":"not_configured";
   const [busy,setBusy]=useState(false),[error,setError]=useState("");
   const locked=useRef(false);
@@ -33,7 +34,7 @@ export function SourceCard({ source, setting, count, hidden, profile, onSaveSear
     if(locked.current)return;
     locked.current=true;setBusy(true);setError("");
     try{
-      const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,...current})});
+      const response=await fetch("/api/sources",{signal:AbortSignal.timeout(15000),method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:source.name,notes:current.notes,...(showSearchLink?{linkUrl:current.linkUrl}:{})})});
       const data=await response.json() as {error?:string;source?:SourceSetting};
       if(!response.ok||!data.source)throw new Error(data.error??"Configuration non enregistrée.");
       onSaved(data.source);setDraft(null);notify({message:`Configuration de ${source.name} enregistrée.`});
@@ -63,15 +64,15 @@ export function SourceCard({ source, setting, count, hidden, profile, onSaveSear
     {!embedded ? <div className="signal-source-heading"><div className="signal-source-identity"><span className="signal-source-logo"><SourceLogo name={source.name}/></span><div><h2 id={title}>{source.name}</h2><p className="signal-help">{source.group}</p></div></div><div className="signal-source-tools"><span className="quiet-tag">{count} fiche{count!==1?"s":""}</span>{onRemove?<WorkspaceButton variant="quiet" disabled={busy} aria-label={`Supprimer ${source.name}`} title={`Supprimer ${source.name}`} onClick={onRemove}><Trash2 size={16} aria-hidden/></WorkspaceButton>:null}</div></div> : null}
     {!embedded ? <span className="signal-source-status" data-state={savedState}>{savedState==="paused"?"En pause":configured?"Configurée":"À configurer"}</span> : null}
     {!embedded ? <p className="signal-source-description">{source.note}</p> : null}
-    {!embedded ? <a href={setting?.linkUrl||source.url} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a> : null}
+    {!embedded ? <a href={sourceOpenUrl(source, setting)} target="_blank" rel="noopener noreferrer" className="secondary-button signal-source-link"><ExternalLink size={14} aria-hidden/>Ouvrir {source.name}</a> : null}
     {setting?.lastSyncedAt?<p className="signal-help">Dernière collecte réussie le {formatDate(setting.lastSyncedAt,"Indian/Mauritius",true)}</p>:null}
     {!embedded&&setting?.verification?<p className="signal-help">{setting.verification}</p>:null}
     <WorkspaceFormError message={setting?.error??""}/>
     <ExpandableSection className="source-research signal-source-config" title="Configurer cette source" defaultOpen={embedded && !configured} status={dirty?<span className="quiet-tag">Non enregistré</span>:null}>
       <ExpandableSection className="source-setup-help" title="Voir les étapes"><ol className="source-setup-steps">{sourceGuidance[source.name].steps.map((step,index)=><li key={index}>{step}</li>)}</ol><p className="signal-help">{sourceGuidance[source.name].result}</p></ExpandableSection>
       <form onSubmit={event=>{event.preventDefault();void save();}} className="signal-source-form">
-        <label className="workspace-field">{embedded ? (source.mode === "rss" ? "Lien du flux" : "Lien de recherche ou d’alerte") : `Lien de recherche, d’alerte ou de flux · ${source.name}`}<input type="url" className="mt-1 w-full rounded-lg border border-[#d0d4e4] px-3 py-2 text-sm" maxLength={2048} disabled={busy} value={current.linkUrl} onChange={event=>setDraft({...current,linkUrl:event.target.value})} placeholder={source.url}/><span className="signal-help">URL https à ouvrir. Vide = page générale. Ce lien ne change pas la synchronisation du flux.</span></label>
-        <label className="workspace-field">{embedded ? "Notes" : `Recherche et notes · ${source.name}`}<Textarea rows={3} maxLength={1500} disabled={busy} value={current.notes} onChange={event=>setDraft({...current,notes:event.target.value})} placeholder="Recherche, filtres, fréquence ou prochaine action…"/></label>
+        {showSearchLink ? <label className="workspace-field">{embedded ? (source.mode === "rss" ? "Lien du flux" : "Lien de recherche ou d’alerte") : `Lien de recherche, d’alerte ou de flux · ${source.name}`}<input type="url" className="mt-1 w-full rounded-lg border border-[#d0d4e4] px-3 py-2 text-sm" maxLength={2048} disabled={busy} value={current.linkUrl} onChange={event=>setDraft({...current,linkUrl:event.target.value})} placeholder={source.url}/><span className="signal-help">URL https à ouvrir. Vide = page générale. Ce lien ne change pas la synchronisation du flux.</span></label> : null}
+        <label className="workspace-field">{embedded || !showSearchLink ? "Notes" : `Recherche et notes · ${source.name}`}<Textarea rows={3} maxLength={1500} disabled={busy} value={current.notes} onChange={event=>setDraft({...current,notes:event.target.value})} placeholder={showSearchLink ? "Recherche, filtres, fréquence ou prochaine action…" : "Propositions reçues, fréquence ou prochaine action…"}/></label>
         <WorkspaceFormError message={error}/>
         <div className="signal-source-actions"><WorkspaceButton type="submit" variant="primary" busy={busy}>{!busy?<Save size={14} aria-hidden/>:null}Enregistrer mon suivi</WorkspaceButton></div>
       </form>

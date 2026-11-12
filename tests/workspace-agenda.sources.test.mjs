@@ -11,7 +11,7 @@ function moduleUrl(name, imports = {}) {
 }
 const { sourcesToVisit } = await import(moduleUrl("workspace-agenda", {
   "./application-workflow": moduleUrl("application-workflow", { "./work-arrangement": moduleUrl("work-arrangement") }),
-  "./source-status": moduleUrl("source-status"),
+  "./source-status": moduleUrl("source-status", { "./source-catalog": moduleUrl("source-catalog") }),
 }));
 const now = new Date("2026-11-05T09:00:00Z");
 const daysAgo = days => new Date(now.getTime() - days * 86400000).toISOString();

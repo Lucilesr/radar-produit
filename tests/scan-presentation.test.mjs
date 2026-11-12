@@ -27,6 +27,8 @@ test("Q2b : trois visites les plus anciennes, jamais visitées d’abord, pauses
  assert(!all.some(item=>item.name==="Post LinkedIn"));
  assert.equal(visitUrl({name:"Mon site",url:""},[{source:"Mon site",linkUrl:"https://example.org/offres-fictives"}]),"https://example.org/offres-fictives");
  assert.equal(visitUrl({name:"Mon site",url:""},[{source:"Mon site",linkUrl:"javascript:alert(1)"}]),null);
+ const malt = sourceCatalog.find(source => source.name === "Malt");
+ assert.equal(visitUrl(malt, [{ source: "Malt", linkUrl: "https://example.test/ancienne-recherche" }]), malt.url);
 });
 test("Q2b : activation réelle et libellés des états",()=>{
  assert.deepEqual(scanPlan([]).map(item=>item.state),["waiting","paused"]);

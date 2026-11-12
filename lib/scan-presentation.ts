@@ -1,3 +1,4 @@
+import { sourceOpenUrl } from "./source-catalog";
 import {demoScanSources,demoScanState} from "./demo-scan-plan";
 import { automaticSources, type SourceReading } from "./source-sync";
 import { isSourceVisible } from "./source-visibility";
@@ -31,7 +32,7 @@ export function scanSourceGroups(catalog: readonly CatalogSource[], settings: re
   return { visits: visits.slice(0, 3), otherVisits: visits.slice(3), paused: catalog.filter(source => source.mode !== "manual" && !active(source)) };
 }
 export function visitUrl(source: CatalogSource, settings: readonly SourceSetting[]) {
-  const value = settings.find(item => item.source === source.name)?.linkUrl || source.url;
+  const value = sourceOpenUrl(source, settings.find(item => item.source === source.name));
   try { const url = new URL(value); return ["https:", "http:"].includes(url.protocol) ? url.href : null; } catch { return null; }
 }
 /** Positions depend on identity, not order, so an arriving source never moves old echoes. */
