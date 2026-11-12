@@ -5,6 +5,7 @@
 ## 12 novembre 2026 — Lecture et actions des offres
 
 - La fiche affiche les informations à compléter près des champs concernés. L’annonce s’ouvre sur cinq lignes avec « Lire plus » et un lien source à côté du titre. Les conditions et dates ont leur onglet. La barre du bas regroupe les décisions et l’édition.
+- « Modifier » est aligné à droite de la barre des offres. L’action « Plus tard » et son raccourci L sont retirés de la fiche.
 
 ## 12 novembre 2026 — Édition des annonces
 

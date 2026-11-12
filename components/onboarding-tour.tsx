@@ -21,7 +21,7 @@ const setup: Step[] = [
 ];
 const tour = (demo: boolean): Step[] => [
   { target: "nav-dashboard", title: "Aujourd’hui", detail: "Trois blocs : votre séance, votre semaine et le radar. Une prochaine étape et deux pistes au plus. Vous pouvez passer ou arrêter ; seules les actions confirmées comptent.", action: "click" },
-  { target: "nav-offers", title: "Offres", detail: "Triez votre lot du jour : sélectionner, Plus tard ou écarter. Le lot reste stable pendant le tri. La réserve et les archives permettent de retrouver une offre.", action: "click" },
+  { target: "nav-offers", title: "Offres", detail: "Triez votre lot du jour : sélectionner ou écarter. Le lot reste stable pendant le tri. La réserve et les archives permettent de retrouver une offre.", action: "click" },
   { target: "nav-pipeline", title: "Candidatures", detail: "Retrouvez vos dossiers, leur préparation, les relances et les entretiens. Radar n’envoie aucun message. Après un refus, un bilan privé reste facultatif.", action: "click" },
   { target: "nav-radar", title: "Mon radar", detail: demo ? "Critères, sources fictives, carnet et documents. Le compte est dans l’avatar." : "Critères, sources, carnet et documents. Le compte est dans l’avatar.", action: "click" },
 ];
