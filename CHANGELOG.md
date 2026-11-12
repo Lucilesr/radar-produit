@@ -1,3 +1,7 @@
+## 12 novembre 2026 — Raisons positives dans la fiche d’offre
+
+- Les coches de « Pourquoi elle remonte » passent au vert Signal. Les points à vérifier gardent leur gris.
+
 ## 12 novembre 2026 — Score d’adéquation des offres
 
 - Le score sur 100 et son libellé coloré apparaissent dans la liste et la fiche d’offre.

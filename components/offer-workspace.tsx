@@ -183,7 +183,7 @@ function AlignedOfferRead({job,onEdit,editRef}:{job:JobRecord;onEdit:()=>void;ed
   const mystery=isMysteryOffer(job),url=job.sourceUrl||job.applicationUrl;
   return <div className="aligned-offer-read">
     {mystery?<p className="offer-mystery aligned-offer-mystery"><strong>Fiche mystère</strong> · Complétez-la pour révéler son adéquation.</p>:null}
-    {!mystery?<section className="aligned-offer-reasons"><h3>Pourquoi elle remonte</h3><ul>{job.reasons.slice(0,4).map((reason,i)=><li key={i}><CheckCircle2 size={16} aria-hidden/>{reason}</li>)}</ul>{job.flags.length?<ul className="aligned-offer-warnings" aria-label="Points à vérifier">{job.flags.map((flag,i)=><li key={i}><CircleHelp size={16} aria-hidden/>{flag}</li>)}</ul>:null}</section>:null}
+    {!mystery?<section className="aligned-offer-reasons"><h3>Pourquoi elle remonte</h3><ul className="aligned-offer-positives">{job.reasons.slice(0,4).map((reason,i)=><li key={i}><CheckCircle2 size={16} aria-hidden/>{reason}</li>)}</ul>{job.flags.length?<ul className="aligned-offer-warnings" aria-label="Points à vérifier">{job.flags.map((flag,i)=><li key={i}><CircleHelp size={16} aria-hidden/>{flag}</li>)}</ul>:null}</section>:null}
     <section className="aligned-offer-description">
       <div className="aligned-offer-description-heading">
         <h3>L’annonce</h3>
