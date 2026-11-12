@@ -8,7 +8,7 @@ import {ApplicationFollowupCard} from "@/components/application-followup";
 import { requestError } from "@/lib/request-error";
 import { briefExperiencePreview, type briefSummary } from "@/lib/candidate-brief";
 
-import { AutosaveStatus, NoteHistory, useAutosave, useSavedForm } from "@/components/autosave";
+import { AutosaveStatus, NoteHistory, useAutosave, useDraftPreload, useSavedForm } from "@/components/autosave";
 import { sourceNames } from "@/lib/source-catalog";
 import { OfferForm } from "@/components/offer-form";
 import { countryLabel } from "@/lib/countries";
@@ -68,9 +68,10 @@ export function ApplicationTrackingAction({job,onStatus,onOpenApplication,disabl
   return <button type="button" className="secondary-button reading-application-action" disabled={starting||disabled} aria-busy={starting} onClick={async()=>{if(hasApplication(job)){onOpenApplication();return;}setStarting(true);try{await onStatus(job.id,"applied");}finally{setStarting(false);}}}>{starting?<LoaderCircle size={14} className="animate-spin" aria-hidden/>:null}{hasApplication(job)?"Voir dans Candidatures":"J’ai postulé"}</button>;
 }
 
-export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onOpenCarnet, onCancelApplication, onViewChange, showApplicationAction = true, showAnnouncement = true, onEditingChange,compactApplication=false,startFollowupEdit=false }: {
+export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onOpenCarnet, onCancelApplication, onViewChange, showApplicationAction = true, showAnnouncement = true, onEditingChange,editActionBar,compactApplication=false,startFollowupEdit=false }: {
   compactApplication?:boolean;startFollowupEdit?:boolean;
   onEditingChange?: (editing:boolean)=>void;
+  editActionBar?: HTMLElement|null;
   showApplicationAction?: boolean;
   showAnnouncement?: boolean;
   onViewChange?: (view: WorkspaceView) => void;
@@ -99,9 +100,10 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
   const labels: Record<WorkspaceView, string> = { offer: "L’offre", application: "Ma candidature", interviews: `Entretiens (${job.interviews?.length ?? 0})`, brief: "Préparer / brief" };
   const tabs = workspaceSections(context);
   const activeView = context === "opportunity" && (view === "application" || view === "interviews") ? "offer" : view;
+  useDraftPreload(activeView==="offer"&&!job.deletedAt?`offer:${job.id}`:"");
   useEffect(() => { if (activeView !== "application" || job.status !== "offer") return; const frame = requestAnimationFrame(() => { noteEditorRef.current?.focus({preventScroll:true}); noteEditorRef.current?.scrollIntoView({block:"center"}); }); return () => cancelAnimationFrame(frame); }, [activeView,job.id,job.status]);
   const announcement = showAnnouncement ? <div className="signal-external-link">{sourceUrl || applyUrl ? <a href={sourceUrl || applyUrl} target="_blank" rel="noopener noreferrer" className="secondary-button"><ExternalLink size={14} aria-hidden />Voir l’annonce</a> : <span className="offer-link-missing">Lien de l’annonce à renseigner</span>}</div> : null;
-  const editor = <OfferEditor job={job} onSaved={updated => { onChange(updated); finishEditing(); if (mystery && !isMysteryOffer(updated)) { if(context==="opportunity"&&isGoodFind(updated))setRevealed(updated); else notify({ message: revealMessage(updated) }); } }} onCancel={finishEditing} />;
+  const editor = <OfferEditor job={job} actionBar={editActionBar} onSaved={updated => { onChange(updated); finishEditing(); if (mystery && !isMysteryOffer(updated)) { if(context==="opportunity"&&isGoodFind(updated))setRevealed(updated); else notify({ message: revealMessage(updated) }); } }} onCancel={finishEditing} />;
   if(context==="opportunity")return <div className="signal-offer-workspace aligned-offer-workspace">
     {announcement}
     <AlignedOfferFacts job={job}/>
@@ -307,8 +309,8 @@ function Signals({ title, items, tone }: { title: string; items: string[]; tone:
   return <section className={`offer-signal offer-signal--${tone}`}><h3 className="offer-section-title"><Icon size={17} aria-hidden="true" />{title}</h3><ul>{items.length ? items.map(item => <li key={item}>{item}</li>) : <li>Aucun signal confirmé à ce stade.</li>}</ul></section>;
 }
 
-function OfferEditor({ job, onSaved, onCancel }: { job: JobRecord; onSaved: (job: JobRecord) => void; onCancel: () => void }) {
-  return <OfferForm draftKey={`offer:${job.id}`} job={job} onCancel={onCancel} onSave={async input=>{const {source,...facts}=input;onSaved(await requestJob(`/api/jobs/${job.id}`,"PUT",sourceNames.includes(source)?input:facts));}}/>;
+function OfferEditor({ job, onSaved, onCancel, actionBar }: { job: JobRecord; actionBar?: HTMLElement|null; onSaved: (job: JobRecord) => void; onCancel: () => void }) {
+  return <OfferForm draftKey={`offer:${job.id}`} actionBar={actionBar} job={job} onCancel={onCancel} onSave={async input=>{const {source,...facts}=input;onSaved(await requestJob(`/api/jobs/${job.id}`,"PUT",sourceNames.includes(source)?input:facts));}}/>;
 }
 
 function InterviewManager({ job, onChange }: { job: JobRecord; onChange: (job: JobRecord, message?:string) => void }) {

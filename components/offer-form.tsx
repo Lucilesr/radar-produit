@@ -2,7 +2,9 @@
 import { requestError } from "@/lib/request-error";
 import { AutosaveStatus, useSavedForm } from "@/components/autosave";
 import { cloneElement, useEffect, useId, useRef, useState, type ReactElement } from "react";
+import { createPortal } from "react-dom";
 import { Check, LoaderCircle } from "lucide-react";
+import { WorkspaceButton, WorkspaceFormError } from "@/components/workspace-form";
 import { DatePicker } from "@/components/date-picker";
 import { ChoiceSelect } from "@/components/choice-select";
 import { OfferPrefill } from "@/components/offer-prefill";
@@ -15,9 +17,11 @@ import type { JobInput } from "@/lib/types";
 import type { EmployerOfferPreview as EmployerOfferPreviewData } from "@/lib/employer-offer";
 
 function Field({label,children}:{label:string;children:ReactElement<{id?:string}>}) {const id=useId();return <div className="offer-form-field"><label htmlFor={id} className="form-control-label">{label}</label>{cloneElement(children,{id})}</div>;}
-export function OfferForm({job,onSave,onCancel,draftKey=""}:{draftKey?:string;job?:JobInput;onSave:(input:JobInput)=>Promise<void>;onCancel:()=>void}) {
+export function OfferForm({job,onSave,onCancel,draftKey="",actionBar}:{actionBar?:HTMLElement|null;draftKey?:string;job?:JobInput;onSave:(input:JobInput)=>Promise<void>;onCancel:()=>void}) {
  const demo=useDemoMode();
  const descriptionRef=useRef<HTMLTextAreaElement>(null);
+ const formId=useId();
+ const saving=useRef(false);
  const initialDraft={...workDraft(job??{}),title:job?.title??"",company:job?.company??"",contractType:job?.contractType??"other",annualSalary:job?.annualSalary?.toString()??"",dailyRate:job?.dailyRate?.toString()??"",announcedLocation:job?.announcedLocation??"",source:job?.source??"Ajout manuel",sourceUrl:job?.sourceUrl??"",applicationUrl:job?.applicationUrl??"",publishedAt:job?.publishedAt?.slice(0,10)??"",contentCoverage:job?.contentCoverage??"unknown",description:job?.description??""};
  // Optional bounds keep older saved drafts readable; new drafts persist them with the amount.
  const savedForm=useSavedForm<typeof initialDraft & Pick<JobInput,"salaryMin"|"salaryMax"|"dailyRateMin"|"dailyRateMax">>(draftKey,initialDraft);
@@ -26,10 +30,36 @@ export function OfferForm({job,onSave,onCancel,draftKey=""}:{draftKey?:string;jo
  const [busy,setBusy]=useState(false),[error,setError]=useState("");
  const [employerUrl,setEmployerUrl]=useState(""),[employerBusy,setEmployerBusy]=useState(false),[employerError,setEmployerError]=useState(""),[employerPreview,setEmployerPreview]=useState<EmployerOfferPreviewData|null>(null);
  const update=<K extends keyof typeof draft>(key:K,value:typeof draft[K])=>setDraft(current=>({...current,[key]:value,...(key==="annualSalary"&&value!==current[key]?{salaryMin:null,salaryMax:null}:key==="dailyRate"&&value!==current[key]?{dailyRateMin:null,dailyRateMax:null}:{})}));
- function payload():JobInput {return {salaryMin:job?.salaryMin??null,salaryMax:job?.salaryMax??null,dailyRateMin:job?.dailyRateMin??null,dailyRateMax:job?.dailyRateMax??null,...draft,...workPayload(draft),annualSalary:draft.annualSalary===""?null:Number(draft.annualSalary),dailyRate:draft.dailyRate===""?null:Number(draft.dailyRate),sourceUrl:draft.sourceUrl||undefined};}
+ const originalBounds={salaryMin:job?.salaryMin??null,salaryMax:job?.salaryMax??null,dailyRateMin:job?.dailyRateMin??null,dailyRateMax:job?.dailyRateMax??null};
+ function payload():JobInput {return {...originalBounds,...draft,...workPayload(draft),annualSalary:draft.annualSalary===""?null:Number(draft.annualSalary),dailyRate:draft.dailyRate===""?null:Number(draft.dailyRate),sourceUrl:draft.sourceUrl||undefined};}
  function apply(patch:Partial<JobInput>) {setDraft(current=>({...current,...workDraft({...workPayload(current),...patch}),title:patch.title??current.title,company:patch.company??current.company,contractType:patch.contractType??current.contractType,...(patch.annualSalary!=null?{annualSalary:String(patch.annualSalary),salaryMin:patch.salaryMin??null,salaryMax:patch.salaryMax??null}:{}),...(patch.dailyRate!=null?{dailyRate:String(patch.dailyRate),dailyRateMin:patch.dailyRateMin??null,dailyRateMax:patch.dailyRateMax??null}:{})}));}
  async function loadEmployerPreview() { setEmployerBusy(true); setEmployerError(""); setEmployerPreview(null); try { const response=await fetch("/api/employer-offer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:employerUrl}),signal:AbortSignal.timeout(15000)}); const data=await response.json() as {offer?:EmployerOfferPreviewData;error?:string}; if(!response.ok||!data.offer) throw new Error(data.error||"Fiche employeur indisponible."); setEmployerPreview(data.offer); } catch(problem) { setEmployerError(requestError(problem,"Lecture non confirmée.")); } finally { setEmployerBusy(false); } }
- return <form className="offer-form" onSubmit={async event=>{event.preventDefault();setBusy(true);setError("");try{await onSave(payload());if(draftKey)savedForm.save.document.confirmedElsewhere("");}catch(problem){setError(requestError(problem,"Enregistrement non confirmé. Votre saisie est conservée."));}finally{setBusy(false);}}}>
+ const modified=Object.entries(initialDraft).some(([key,value])=>draft[key as keyof typeof initialDraft]!==value)
+   || Object.entries(originalBounds).some(([key,value])=>{
+     const bound=draft[key as keyof typeof originalBounds];
+     return bound!==undefined&&bound!==value;
+   });
+ const canSave=savedForm.ready&&!!draft.title.trim()&&(!actionBar||modified)&&savedForm.save.state.phase!=="conflict";
+ const saveLabel=busy?"Enregistrement…":actionBar?"Enregistrer":job?"Enregistrer l’offre":"Ajouter l’offre";
+ const saveButton=<WorkspaceButton variant="primary" type="submit" form={formId} busy={busy} disabled={!canSave}>{busy?null:<Check size={16} aria-hidden/>}{saveLabel}</WorkspaceButton>;
+ const backButton=<WorkspaceButton disabled={busy} onClick={onCancel}>{draftKey?"Retour":"Annuler"}</WorkspaceButton>;
+
+ return <form id={formId} className="offer-form" onSubmit={async event=>{
+  event.preventDefault();
+  if(saving.current||!canSave)return;
+  saving.current=true;
+  setBusy(true);
+  setError("");
+  try{
+   await onSave(payload());
+   if(draftKey)savedForm.save.document.confirmedElsewhere("");
+  }catch(problem){
+   setError(requestError(problem,"Enregistrement non confirmé. Votre saisie est conservée."));
+  }finally{
+   saving.current=false;
+   setBusy(false);
+  }
+ }}>
   {draftKey?<AutosaveStatus save={savedForm.save} draft/>:null}
   <Field label="Descriptif de l’offre"><Textarea ref={descriptionRef} rows={8} maxLength={12000} value={draft.description} onChange={e=>update("description",e.target.value)} placeholder="Collez les missions, exigences et conditions de l’annonce…" disabled={busy||!savedForm.ready}/></Field>
   <OfferPrefill text={draft.description} current={payload()} onApply={apply} disabled={busy||!savedForm.ready}/>
@@ -41,6 +71,6 @@ export function OfferForm({job,onSave,onCancel,draftKey=""}:{draftKey?:string;jo
   <Field label="Lieu annoncé dans l’offre"><input maxLength={240} value={draft.announcedLocation} onChange={e=>update("announcedLocation",e.target.value)} placeholder="Ex. Paris, France · Europe · Télétravail mondial" disabled={busy||!savedForm.ready}/></Field>
   <div className="form-grid"><DatePicker label="Date de publication confirmée" value={draft.publishedAt} onChange={value=>update("publishedAt",value)} disabled={busy||!savedForm.ready}/><ChoiceSelect label="Niveau de détail" value={draft.contentCoverage} onChange={value=>update("contentCoverage",value as NonNullable<JobInput["contentCoverage"]>)} options={[{value:"unknown",label:"À confirmer"},{value:"full",label:"Description complète"},{value:"summary",label:"Synthèse"},{value:"partial",label:"Notification partielle"}]} disabled={busy||!savedForm.ready}/><Field label="Lien de l’offre"><input type="url" value={draft.sourceUrl} onChange={e=>update("sourceUrl",e.target.value)} disabled={busy||!savedForm.ready}/></Field><Field label="Lien pour postuler"><input type="url" value={draft.applicationUrl} onChange={e=>update("applicationUrl",e.target.value)} disabled={busy||!savedForm.ready}/></Field></div>
   <div className="inline-help"><span>Informations de l’annonce</span><HelpTooltip label="Faits de l’offre">Complétez les conditions annoncées. Vous pouvez renseigner les conditions négociées dans les notes de candidature.</HelpTooltip></div>
-  {error?<p role="alert" className="experience-error">{error}</p>:null}<div className="experience-actions"><button type="submit" className="radar-add-button" disabled={busy||!savedForm.ready||!draft.title.trim()}>{busy?<LoaderCircle size={16} className="animate-spin"/>:<Check size={16}/>} {busy?"Enregistrement…":job?"Enregistrer l’offre":"Ajouter l’offre"}</button><button type="button" className="secondary-button" disabled={busy||!savedForm.ready} onClick={onCancel}>{draftKey?"Retour":"Annuler"}</button></div>
+  {actionBar?createPortal(<><WorkspaceFormError message={error}/>{backButton}{saveButton}</>,actionBar):<><WorkspaceFormError message={error}/><div className="experience-actions">{saveButton}{backButton}</div></>}
  </form>;
 }
