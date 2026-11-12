@@ -46,7 +46,7 @@ Une relance est proposée à **J+7** après l’envoi enregistré, pour une cand
 
 Dans **Entretiens**, planifiez un rendez-vous ou renseignez sa date passée, puis notez son bilan et la suite. Les horaires suivent le fuseau affiché. Après un refus, **Ce que je garde**, **Ce que je change** et l’espace libre composent un bilan facultatif. **Valider mon bilan privé** est séparé du brouillon ; **Candidatures → Mes leçons** permet de le retrouver.
 
-La bascule **Kanban / Entonnoir** (**Liste / Entonnoir** sur téléphone) remplace le suivi par l’entonnoir. **Entonnoir** reste grisé jusqu’à cinq envois enregistrés ; son aide indique combien il en manque. Il décrit les quatre-vingt-dix derniers jours du journal. Les sources et les suites viennent des faits conservés, sans histoire reconstituée. Le rythme mensuel décrit le passé, sans prédiction.
+La bascule **Kanban / Entonnoir** (**Liste / Entonnoir** sur téléphone) remplace le suivi par l’entonnoir. **Entonnoir** reste grisé jusqu’à cinq envois enregistrés ; son aide indique combien il en manque. Le bilan couvre les candidatures enregistrées, y compris les dossiers sans date d’envoi, les refus et les retraits. Une candidature peut avoir plusieurs rendez-vous et compte une seule fois dans le passage à l’entretien. Le rythme mensuel repose sur les candidatures dont l’envoi est daté dans les quatre-vingt-dix derniers jours.
 
 ## Régler le radar et préparer ses histoires
 

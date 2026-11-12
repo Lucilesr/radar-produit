@@ -48,10 +48,18 @@ test("L4 : seuil quatre/cinq, aucun historique inventé et taux sans dénominate
 });
 test("L4 : cohortes, taux observés et sources photographiées à l’envoi",()=>{
  const events=Array.from({length:10},(_,i)=>send("job"+i,40,i<4?"Collectif fictif":i<7?"Réseau fictif":"Veille fictive"));for(const i of [0,1,2,4])events.push(interview("i"+i,"job"+i));events.push(e("application_stage_changed","job0",10,{to:"offer",source:"Autre source actuelle"}));
- const value=rules.applicationFunnel(events,now);assert.equal(value.applications,10);assert.equal(value.interviews,4);assert.equal(value.offers,1);assert.equal(value.applicationInterviewRate,.4);assert.equal(value.interviewOfferRate,.25);assert.equal(value.monthlyInterviews,4/3);assert.deepEqual(value.sources.map(s=>[s.source,s.applications,s.interviews]),[["Collectif fictif",4,3],["Réseau fictif",3,1],["Veille fictive",3,0]]);assert.match(rules.funnelMonthlyLabel(4/3),/1,3 entretiens/);
+ const value=rules.applicationFunnel(events,now);assert.equal(value.applications,10);assert.equal(value.interviews,4);assert.equal(value.offers,1);assert.equal(value.applicationInterviewRate,.4);assert.equal(value.interviewOfferRate,.25);assert.equal(value.monthlyInterviews,4/3);assert.deepEqual(value.sources.map(s=>[s.source,s.applications,s.interviews]),[["Collectif fictif",4,3],["Réseau fictif",3,1],["Veille fictive",3,0]]);assert.match(rules.funnelMonthlyLabel(4/3),/1,3 candidature avec entretien/);
 });
-test("L4 : limite exacte90jours, dates futures/invalides et anciens dossiers exclus",()=>{
- const events=[send("edge",90),send("old",90.0001),send("future",-1),{...send("invalid"),createdAt:"???"},interview("old-interview","old",5),e("application_stage_changed","old",2,{to:"offer"})];assert.equal(rules.applicationFunnel(events,now).applications,1);assert.equal(rules.applicationFunnel(events,now).interviews,0);assert.equal(rules.applicationFunnel(events,now).offers,0);
+test("Le bilan inclut les anciens envois et le rythme retient les envois des 90 derniers jours", () => {
+  const recent = Array.from({ length: 4 }, (_, i) => send("recent-" + i));
+  const events = [...recent, send("edge", 90), send("old", 90.0001), send("future", -1),
+    { ...send("invalid"), createdAt: "???" }, interview("edge-interview", "edge", 5),
+    interview("old-interview", "old", 5), e("application_stage_changed", "old", 2, { to: "offer" })];
+  const value = rules.applicationFunnel(events, now);
+  assert.equal(value.applications, 6);
+  assert.equal(value.interviews, 2);
+  assert.equal(value.offers, 1);
+  assert.equal(value.monthlyInterviews, 1 / 3);
 });
 test("L4 : envoi annulé et nouvel envoi, rendez-vous et reçus sans doublon",()=>{
  const original=send("job",50),events=[original,{...original},e("application_cancelled","job",49),send("job",30),interview("i1","job",25),interview("i1","job",20),interview("i2","job",18),e("interview_noted","i1",15,{jobId:"job",outcome:"offer"},"interview"),e("application_stage_changed","job",14,{to:"offer"})];const value=rules.applicationFunnel(events,now);assert.equal(value.applications,1);assert.equal(value.interviews,1);assert.equal(value.offers,1);assert.equal(value.interviewOfferRate,1);assert.deepEqual(rules.applicationFunnel([...events].reverse(),now),value);
@@ -61,19 +69,19 @@ test("L4 : rendez-vous annulé sans échange noté, déclaration d’étape et o
  events.push(e("interview_noted","meeting",9,{jobId:"job",outcome:"waiting"},"interview"));value=rules.applicationFunnel(events,now);assert.equal(value.interviews,1);assert.equal(value.offersWithoutInterview,0);
  const stage=rules.applicationFunnel([send("manual"),e("application_stage_changed","manual",2,{to:"interview"})],now);assert.equal(stage.interviews,1);
 });
-test("L4 SQLite : requête privée, absence d’inférence des statuts et agrégats sans texte privé",async()=>{
+test("L4 SQLite : requête privée et agrégats sans texte privé",async()=>{
  const f=fixture(),store=await import(moduleUrl("lib/application-funnel-store.ts"));try{
- f.sqlite.prepare("INSERT INTO jobs(id,user_id,fingerprint,title,status) VALUES('old','alice','old','TITRE_PRIVE','offer')").run();
+ f.sqlite.prepare("INSERT INTO jobs(id,user_id,fingerprint,title,status) VALUES('old','alice','old','TITRE_PRIVE','closed')").run();
  const events=[send("a",30),interview("i-a","a",20),e("application_stage_changed","a",10,{to:"offer"}),send("b",30,"Source B"),send("foreign",30)];for(const event of events)f.sqlite.prepare("INSERT INTO activity_events(id,user_id,action,object_type,object_id,created_at,data) VALUES(?,?,?,?,?,?,?)").run(event.id,event.objectId==='foreign'?'bob':'alice',event.action,event.objectType,event.objectId,event.createdAt,JSON.stringify(event.data));
- const value=await store.readApplicationFunnel("alice",new Date(now));assert.equal(value.applications,2);assert.equal(value.interviews,1);assert.equal(value.offers,1);assert.ok(value.firstRecordedAt);assert.doesNotMatch(JSON.stringify(value),/SECRET_PROFILE|TITRE_PRIVE|foreign/);assert.equal((await store.readApplicationFunnel("bob",new Date(now))).applications,1);assert.equal((await store.readApplicationFunnel("nobody",new Date(now))).applications,0);
+ const value=await store.readApplicationFunnel("alice",new Date(now));assert.equal(value.applications,2);assert.equal(value.interviews,1);assert.equal(value.offers,1);assert.doesNotMatch(JSON.stringify(value),/SECRET_PROFILE|TITRE_PRIVE|foreign/);assert.equal((await store.readApplicationFunnel("bob",new Date(now))).applications,1);assert.equal((await store.readApplicationFunnel("nobody",new Date(now))).applications,0);
  const api=await import(moduleUrl("app/api/application-funnel/route.ts"));globalThis.__trashUser=null;assert.equal((await api.GET()).status,401);globalThis.__trashUser='alice';const r=await api.GET();assert.equal(r.status,200);assert.equal(r.headers.get('Cache-Control'),'private, no-store');
  }finally{f.sqlite.close();}
 });
 
-test("L4 démo : dix envois, quatre entretiens, une offre, jamais de réinjection dans un compte existant",async()=>{
+test("L4 démo : les anciens envois enrichissent le bilan, sans réinjection dans un compte existant",async()=>{
  const f=fixture(),demo=await import(moduleUrl("lib/recruiter-demo.ts")),store=await import(moduleUrl("lib/application-funnel-store.ts")),owner="demo:funnel-fixture";try{
   await assert.rejects(()=>demo.ensureRecruiterDemo("alice",{funnelDemo:true}));assert.equal(await demo.ensureRecruiterDemo(owner,{funnelDemo:true}),true);
-  const value=await store.readApplicationFunnel(owner);assert.equal(value.applications,10);assert.equal(value.interviews,4);assert.equal(value.offers,1);assert.equal(value.sources.find(source=>source.source==='Collectif fictif').interviews,3);
+  const value=await store.readApplicationFunnel(owner);assert.equal(value.applications,13);assert.equal(value.interviews,5);assert.equal(value.offers,2);assert.equal(value.monthlyInterviews,4/3);assert.equal(value.sources.find(source=>source.source==='Collectif fictif').interviews,3);
   const before=f.sqlite.prepare("SELECT count(*) n FROM activity_events WHERE user_id=?").get(owner).n;assert.equal(await demo.ensureRecruiterDemo(owner,{funnelDemo:true}),false);assert.equal(f.sqlite.prepare("SELECT count(*) n FROM activity_events WHERE user_id=?").get(owner).n,before);
  }finally{f.sqlite.close();}
 });
@@ -94,7 +102,8 @@ test("L’Entonnoir compte les envois datés déjà en entretien et évite les d
   saveJob.run("old","alice","old","Envoi hors période","applied","2026-06-01T12:00:00Z");
   saveJob.run("foreign","bob","foreign","Autre compte","applied","2026-11-01T12:00:00Z");
   const value=await store.readApplicationFunnel("alice",new Date(now));
-  assert.equal(value.applications,5);
+  assert.equal(value.applications,7);
+  assert.equal(value.applicationsWithoutDate,1);
   assert.equal(value.interviews,1);
   assert.equal(value.visible,true);
   assert.equal(value.missing,0);
@@ -115,4 +124,62 @@ test("L4 API : un événement illisible produit une erreur plutôt qu’un taux 
  const f=fixture(),api=await import(moduleUrl("app/api/application-funnel/route.ts")),store=await import(moduleUrl("lib/application-funnel-store.ts"));try{
   f.sqlite.prepare("INSERT INTO activity_events(id,user_id,action,object_type,object_id,created_at,data) VALUES('broken','alice','application_sent','job','a',?,'broken')").run(new Date(Date.now()-1000).toISOString());await assert.rejects(()=>store.readApplicationFunnel("alice"));assert.equal((await api.GET()).status,503);assert.equal((await store.readApplicationFunnel("bob")).applications,0);
  }finally{f.sqlite.close();}
+});
+
+test("Malt : quatre dossiers, trois rendez-vous pour une conversion et deux candidatures retirées", async () => {
+  const { sqlite } = fixture();
+  const store = await import(moduleUrl("lib/application-funnel-store.ts"));
+  try {
+    const saveJob = sqlite.prepare(`INSERT INTO jobs
+      (id, user_id, fingerprint, title, source, source_url, status, applied_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+    const rows = [
+      ["sent", "Malt", "applied", "2026-10-24T10:00:00Z", "https://www.malt.fr/"],
+      ["waiting", "malt", "awaiting_response", null, null],
+      ["withdrawn", "Ajout manuel", "withdrawn", null, "https://www.malt.fr/"],
+      ["archived-withdrawn", "Malt", "withdrawn", null, null],
+      ["old-archive", "Malt", "closed", null, null],
+      ["not-sent", "Malt", "new", null, null],
+      ["undone", "Malt", "applied", null, null],
+      ["historical-offer", "Source B", "offer", null, null],
+      ["cancelled-meeting", "Source B", "interview", null, null],
+      ["fake-domain", "Autre", "applied", null, "https://malt.fr.example.org/"],
+      ["linkedin-job", "Ajout manuel", "applied", null, "https://www.linkedin.com/jobs/view/123"],
+      ["linkedin-post", "Ajout manuel", "applied", null, "https://www.linkedin.com/posts/exemple"],
+      ["different-source", "Collective", "rejected", null, "https://www.malt.fr/"],
+    ];
+    for (const [id, source, status, appliedAt, url] of rows) saveJob.run(id, "alice", id, "Dossier fictif", source, url, status, appliedAt);
+    sqlite.prepare("UPDATE jobs SET deleted_at = ? WHERE id = 'archived-withdrawn'").run("2026-11-06T12:00:00Z");
+    const saveMeeting = sqlite.prepare(`INSERT INTO interviews
+      (id, job_id, user_id, label, start_at, end_at, time_zone, state, data, created_at, updated_at)
+      VALUES (?, ?, ?, 'Rendez-vous fictif', ?, ?, 'Europe/Paris', ?, ?, ?, ?)`);
+    const at = "2026-11-01T10:00:00Z";
+    for (let i = 0; i < 3; i++) saveMeeting.run("round-" + i, "waiting", "alice", at, at, "reviewed", "{}", at, at);
+    saveMeeting.run("wrong-user", "sent", "bob", at, at, "reviewed", "{}", at, at);
+    saveMeeting.run("cancelled", "cancelled-meeting", "alice", at, at, "cancelled", "{}", at, at);
+    saveMeeting.run("offer", "historical-offer", "alice", at, at, "reviewed", '{"outcome":"offer"}', at, at);
+
+    const record = sqlite.prepare(`INSERT INTO activity_events
+      (id, user_id, action, object_type, object_id, created_at, data) VALUES (?, 'alice', ?, ?, ?, ?, ?)`);
+    record.run("sent", "application_sent", "job", "sent", "2026-10-24T10:00:00.000Z", '{"source":"Malt"}');
+    record.run("stage", "application_stage_changed", "job", "waiting", at, '{"to":"interview"}');
+    record.run("meeting", "interview_noted", "interview", "round-0", at, '{"jobId":"waiting"}');
+    record.run("cancelled-send", "application_cancelled", "job", "undone", at, '{}');
+
+    const value = await store.readApplicationFunnel("alice", new Date(now));
+    assert.deepEqual(value.sources.find(source => source.source === "Malt"),
+      { source: "Malt", applications: 4, interviews: 1, offers: 0, rate: .25, applicationsWithoutDate: 3 });
+    assert.deepEqual(value.sources.find(source => source.source === "Source B"),
+      { source: "Source B", applications: 2, interviews: 1, offers: 1, rate: .5, applicationsWithoutDate: 2 });
+    for (const source of ["Autre", "LinkedIn Jobs", "Post LinkedIn", "Collective"]) {
+      assert.equal(value.sources.find(group => group.source === source).applications, 1);
+    }
+    assert.equal(value.applications, 10);
+    assert.equal(value.applicationsWithoutDate, 9);
+    assert.equal(value.interviews, 2);
+    assert.equal(value.applicationInterviewRate, .2);
+    assert.equal(value.interviewOfferRate, .5);
+    assert.equal(value.monthlyInterviews, null);
+  } finally {
+    sqlite.close();
+  }
 });
