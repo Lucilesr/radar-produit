@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, ChevronUp, Pencil, Plus } from "lucide-react";
 import { SearchPreferencesForm, type CriteriaFormPart, type CriteriaSaveStatus, type CriteriaFormHandle } from "@/components/search-preferences-form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -41,7 +42,7 @@ function storeView(view: View) {
 }
 
 /** Criteria read at a glance, expanded on demand, and edited with the existing form. */
-export function SearchCriteriaPanel({ overview=false,profile, jobs, onSave, onOpenJobgether, active = true,domainContent }: { overview?:boolean;domainContent?:React.ReactNode; profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void; active?:boolean }) {
+export function SearchCriteriaPanel({ overview=false,profile, jobs, onSave, onOpenJobgether, active = true,domainContent,actionsTarget }: { overview?:boolean;domainContent?:React.ReactNode; profile: CandidateProfile; jobs: JobRecord[]; onSave: (profile: CandidateProfile) => Promise<boolean>; onOpenJobgether: () => void; active?:boolean; actionsTarget?:HTMLDivElement|null }) {
   // A first visit keeps the form open so the onboarding step can save the first criteria.
   const firstSetup = !profile.searchPreferences;
   const [resting, setResting] = useState<Exclude<View,"edit">>(()=>overview?"summary":readView());
@@ -145,26 +146,16 @@ export function SearchCriteriaPanel({ overview=false,profile, jobs, onSave, onOp
   useEffect(()=>{if(!adding||addTarget?.id!=='level')return;const frame=requestAnimationFrame(()=>document.querySelector<HTMLElement>('#search-criteria-add-inline button,.search-criteria-popover button')?.focus());return()=>cancelAnimationFrame(frame);},[adding,addTarget?.id]);
   function done() { void finishEditor(() => { returnFocus.current = true; setView(resting); }); }
 
-  return <section className="search-criteria-panel" aria-labelledby="search-criteria-title">
-    <header className="search-criteria-panel-header">
-      <div>
-        <div className="search-criteria-title-line"><h2 id="search-criteria-title" className="source-heading">{overview?"Vos critères":"Critères"}</h2><span className="signal-help" role="status">{justSaved?"Enregistré à l’instant":"Enregistrés automatiquement"}</span></div>
-        <div className="criteria-help-line"><p>Vos critères trient les offres.</p><HelpTooltip label="Critères">Les offres hors critères sont masquées dans « À examiner ».</HelpTooltip></div>
-      </div>
-      <div className="search-criteria-panel-actions">
-        {view === "edit"
-          ? <><span className="search-criteria-save-summary"><span role="status">{saveStatus.state==="error"?"Non enregistré":saveStatus.state==="draft"?"À enregistrer avec Terminé":saveStatus.state==="pending"||saveStatus.state==="saving"?"Enregistrement…":"Enregistré"}</span>{saveStatus.state==="error"&&saveStatus.retry?<WorkspaceButton variant="quiet" onClick={saveStatus.retry}>Réessayer</WorkspaceButton>:null}<span>{countToReview(jobs,preferences)} offres à examiner</span></span>{firstSetup&&!committing&&saveStatus.state!=="draft"?null:<WorkspaceButton variant="primary" busy={committing} onClick={done}>Terminé</WorkspaceButton>}</>
-          : <>
-            <WorkspaceButton variant="quiet" aria-expanded={view === "details"} aria-controls="search-criteria-details" onClick={toggle}>
-              {view === "details" ? "Replier" : "Tout voir"}{view === "details" ? <ChevronUp size={15} aria-hidden /> : <ChevronDown size={15} aria-hidden />}
-            </WorkspaceButton>
-            <WorkspaceButton ref={editButton} onClick={() => edit(null)}><Pencil size={14} aria-hidden />Tout modifier</WorkspaceButton>
-          </>}
-      </div>
-    </header>
+  const detailsToggle = <WorkspaceButton variant="quiet" aria-expanded={view === "details"} aria-controls="search-criteria-details" onClick={toggle}>
+    {view === "details" ? "Replier" : "Tout voir"}{view === "details" ? <ChevronUp size={15} aria-hidden /> : <ChevronDown size={15} aria-hidden />}
+  </WorkspaceButton>;
+  const editAction = view === "edit"
+    ? firstSetup && !committing && saveStatus.state !== "draft" ? null
+      : <WorkspaceButton variant="primary" busy={committing} onClick={done}>Terminé</WorkspaceButton>
+    : <WorkspaceButton ref={editButton} onClick={() => edit(null)}><Pencil size={14} aria-hidden />Tout modifier</WorkspaceButton>;
+  const saveSummary = view === "edit" ? <span className="search-criteria-save-summary"><span role="status">{saveStatus.state==="error"?"Non enregistré":saveStatus.state==="draft"?"À enregistrer avec Terminé":saveStatus.state==="pending"||saveStatus.state==="saving"?"Enregistrement…":"Enregistré"}</span>{saveStatus.state==="error"&&saveStatus.retry?<WorkspaceButton variant="quiet" onClick={saveStatus.retry}>Réessayer</WorkspaceButton>:null}<span>{countToReview(jobs,preferences)} offres à examiner</span></span> : null;
 
-    {view === "summary"&&overview&&!preferences.roles.length?<p className="signal-help">Choisissez votre poste pour commencer.</p>:null}
-    {view === "summary" ? <ul className="search-criteria-tokens" aria-label="Critères enregistrés">
+  const summary = view === "summary" ? <ul className="search-criteria-tokens" role="list" aria-label="Critères enregistrés">
       {criteriaTokens(preferences).filter(()=>!overview||preferences.roles.length>0).filter(token=>!["searchTracks","matchScore"].includes(token.id)).map(token => {
         const label = `${token.label} : ${token.fullValue}. Modifier${modified.has(token.id)?". Modifié lors de cette visite":""}`;
         const content = <><span>{token.label}</span><strong>{token.value}</strong>{modified.has(token.id)?<span className="search-criteria-changed-dot" aria-hidden="true"/>:null}</>;
@@ -202,7 +193,28 @@ export function SearchCriteriaPanel({ overview=false,profile, jobs, onSave, onOp
           </PopoverContent>
         </Popover>
       </li> : null}
-    </ul> : null}
+    </ul> : null;
+
+  return <section className="search-criteria-panel" aria-labelledby={overview ? undefined : "search-criteria-title"}>
+    {overview ? <>
+      {actionsTarget && createPortal(editAction, actionsTarget)}
+      {saveSummary}
+    </> : <header className="search-criteria-panel-header">
+      <div>
+        <div className="search-criteria-title-line"><h2 id="search-criteria-title" className="source-heading">Critères</h2><span className="signal-help" role="status">{justSaved?"Enregistré à l’instant":"Enregistrés automatiquement"}</span></div>
+        <div className="criteria-help-line"><p>Vos critères trient les offres.</p><HelpTooltip label="Critères">Les offres hors critères sont masquées dans « À examiner ».</HelpTooltip></div>
+      </div>
+      <div className="search-criteria-panel-actions">
+        {view === "edit" ? saveSummary : detailsToggle}
+        {editAction}
+      </div>
+    </header>}
+
+    {view === "summary" && overview && !preferences.roles.length ? <p className="signal-help">Choisissez votre poste pour commencer.</p> : null}
+    {overview && view !== "edit" ? <div className="search-criteria-overview-row">
+      {summary}
+      {detailsToggle}
+    </div> : summary}
     {view === "summary" && mobile && adding ? <div id="search-criteria-add-inline" className="search-criteria-inline-editor">
       {addTarget
         ? <>
