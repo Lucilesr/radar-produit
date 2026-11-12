@@ -11,7 +11,12 @@
 .opportunities-workspace .reading-detail-heading{gap:20px;margin-bottom:24px}.opportunities-workspace .opportunity-detail-header h2{font:750 34px/1.12 var(--font-display);letter-spacing:-.01em;margin:9px 0 0;overflow-wrap:anywhere}
 .opportunities-workspace .reading-company-line{font-size:13px;gap:4px 10px}.opportunities-workspace .review-source{font-size:13px}
 .aligned-offer-fit{flex:none;display:grid;gap:4px;max-width:190px;padding:14px 16px;border-radius:var(--signal-radius-card);background:var(--signal-mist);font-size:12px;line-height:1.4}
-.aligned-offer-fit>strong{font:750 28px/1 var(--font-display);color:var(--signal-petrol-ink)}.aligned-offer-fit small{font:500 13px/1 var(--font-sans)}.aligned-offer-fit .workspace-badge{border:0;padding:0;background:transparent}
+.aligned-offer-fit>strong{font:750 28px/1 var(--font-display);color:var(--offer-fit-ink,var(--signal-petrol-ink))}.aligned-offer-fit small{font:500 13px/1 var(--font-sans)}.aligned-offer-fit .workspace-badge:not(.is-scored){border:0;padding:0;background:transparent}
+:is(.offer-fit-badge,.aligned-offer-fit)[data-fit=very_close]{--offer-fit-ink:var(--signal-success);--offer-fit-bg:var(--signal-success-bg)}
+:is(.offer-fit-badge,.aligned-offer-fit)[data-fit=close]{--offer-fit-ink:var(--signal-petrol);--offer-fit-bg:var(--signal-mist)}
+:is(.offer-fit-badge,.aligned-offer-fit)[data-fit=to_weigh]{--offer-fit-ink:var(--signal-warning);--offer-fit-bg:var(--signal-warning-bg)}
+:is(.offer-fit-badge,.aligned-offer-fit)[data-fit=far]{--offer-fit-ink:var(--signal-danger);--offer-fit-bg:var(--signal-danger-bg)}
+.offer-fit-badge.is-scored{color:var(--offer-fit-ink);background:var(--offer-fit-bg);white-space:nowrap;overflow-wrap:normal;justify-self:start}
 .aligned-offer-fit>span:last-child{color:var(--signal-petrol-ink)}
 .aligned-offer-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0}
 .opportunities-workspace .aligned-offer-facts>.review-condition-row{display:block;border:0;border-radius:var(--signal-radius-control);padding:12px;background:var(--signal-mist)}
