@@ -235,6 +235,6 @@ export function SearchCriteriaPanel({ overview=false,profile, jobs, onSave, onOp
     </div> : null}
 
     {view === "edit" ? <SearchPreferencesForm commitRef={formCommit} jobs={jobs} profile={profile} onSave={saveWithImpact} showIntro={false} table onStatusChange={reportStatus} onOpenJobgether={onOpenJobgether} /> : null}
-    {domainContent}
+    {domainContent && <div hidden={overview && view !== "edit"}>{domainContent}</div>}
   </section>;
 }
