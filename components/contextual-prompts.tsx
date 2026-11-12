@@ -3,6 +3,7 @@ import {useTabReturnRefresh} from "@/components/use-tab-return-refresh";
 import {createContext,useCallback,useContext,useEffect,useRef,useState,useSyncExternalStore} from "react";
 import {WorkspaceButton,WorkspaceFormError} from "@/components/workspace-form";
 import {HelpTooltip} from "@/components/help-tooltip";
+import {X} from "lucide-react";
 import {useRadarNextSteps} from "@/components/next-steps-context";
 import {nextContextualStep,type ContextualStep} from "@/lib/next-steps";
 import {postponePrompt,promptVisible,readPromptState,type PromptState} from "@/lib/contextual-prompts";
@@ -111,11 +112,36 @@ export function PromptWriteError({ promptKey }: { promptKey: string }) {
 }
 export function useContextualPrompts(){return useContext(Context);}
 export function PromptReadError(){const controller=useContextualPrompts();return controller.error&&!controller.ready?<div className="contextual-prompt"><WorkspaceFormError message={controller.error}/><WorkspaceButton onClick={()=>void controller.load()}>Relire les propositions</WorkspaceButton></div>:null;}
-export function ContextualPromptCard({step}:{step:ContextualStep|null}){
- const controller=useContextualPrompts(),{onAction}=useRadarNextSteps();
- if(!controller.ready)return <PromptReadError/>;
- if(!step||!promptVisible(controller.state,step.key,controller.now))return null;
- return <section className="contextual-prompt" aria-label={step.label} aria-busy={controller.busy}><div className="contextual-prompt-heading"><strong>{step.label}</strong><HelpTooltip label="Proposition au bon moment">« Plus tard » masque cette proposition pendant 7 jours.</HelpTooltip></div><div className="contextual-prompt-actions">{step.kind==="level"?<div className="contextual-level-choices" role="group" aria-label="Choisir le niveau visé">{([{value:"confirmed",label:"Confirmé"},{value:"senior",label:"Senior"},{value:"lead",label:"Lead"},{value:"any",label:"Peu importe"}] as const).map(choice=><WorkspaceButton key={choice.value} disabled={controller.busy} onClick={()=>void controller.write({action:"level",level:choice.value})}>{choice.label}</WorkspaceButton>)}</div>:step.action?<WorkspaceButton disabled={controller.busy} onClick={()=>onAction(step.action!)}>{step.kind==="interview"?"Ouvrir mon carnet":step.kind==="lesson"?"En faire une histoire":"Voir cette source"}</WorkspaceButton>:null}<WorkspaceButton variant="quiet" onClick={()=>void controller.write({action:"later",key:step.key})}>Plus tard</WorkspaceButton></div><PromptWriteError promptKey={step.key}/></section>;
+export function ContextualPromptCard({ step }: { step: ContextualStep | null }) {
+  const controller = useContextualPrompts();
+  const { onAction } = useRadarNextSteps();
+  if (!controller.ready) return <PromptReadError />;
+  if (!step || !promptVisible(controller.state, step.key, controller.now)) return null;
+
+  const sourceReminder = step.kind === "source";
+  const action = step.action;
+  const postpone = () => void controller.write({ action: "later", key: step.key });
+
+  return <section className="contextual-prompt" data-kind={step.kind} aria-label={step.label} aria-busy={controller.busy}>
+    <div className="contextual-prompt-heading">
+      <strong>{step.label}</strong>
+      <HelpTooltip label="Proposition au bon moment">{sourceReminder ? "La croix masque ce rappel pendant 7 jours." : "« Plus tard » masque cette proposition pendant 7 jours."}</HelpTooltip>
+    </div>
+    {sourceReminder ? <button type="button" className="signal-dialog-close contextual-prompt-dismiss" aria-label="Masquer ce rappel pendant 7 jours" onClick={postpone}>
+      <X size={16} aria-hidden />
+    </button> : null}
+    <div className="contextual-prompt-actions">
+      {step.kind === "level" ? <div className="contextual-level-choices" role="group" aria-label="Choisir le niveau visé">
+        {([{ value: "confirmed", label: "Confirmé" }, { value: "senior", label: "Senior" }, { value: "lead", label: "Lead" }, { value: "any", label: "Peu importe" }] as const).map(choice => (
+          <WorkspaceButton key={choice.value} disabled={controller.busy} onClick={() => void controller.write({ action: "level", level: choice.value })}>{choice.label}</WorkspaceButton>
+        ))}
+      </div> : action ? <WorkspaceButton disabled={controller.busy} onClick={() => onAction(action)}>
+        {step.kind === "interview" ? "Ouvrir mon carnet" : step.kind === "lesson" ? "En faire une histoire" : "Voir cette source"}
+      </WorkspaceButton> : null}
+      {!sourceReminder ? <WorkspaceButton variant="quiet" onClick={postpone}>Plus tard</WorkspaceButton> : null}
+    </div>
+    <PromptWriteError promptKey={step.key} />
+  </section>;
 }
 export function OfferContextPrompt({lot,profile,sources}:{lot:DailyLot|null|undefined;profile:CandidateProfile;sources:SourceSetting[]}){
  const controller=useContextualPrompts(),{queue}=useRadarNextSteps(),search=searchPreferences(profile.searchPreferences);
