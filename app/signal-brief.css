@@ -1,9 +1,16 @@
 /* Approved brief: one prompt, flat questions, editable character count. */
 .signal-brief{width:100%;max-width:960px;margin-inline:auto;display:grid;gap:20px;min-width:0}
-.signal-prompt-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}
-.signal-prompt-heading>div:first-child{flex:1 1 280px;min-width:0}
-.signal-prompt-heading .signal-help{max-width:52ch}
-.signal-prompt-actions{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.signal-prompt-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:16px var(--signal-space-section);margin-block:12px;color:var(--signal-ink);font:400 13px/1.6 var(--font-sans);overflow-wrap:anywhere}
+.radar-app .signal-prompt-summary h4{margin:0 0 6px;font:600 13px/1.5 var(--font-sans);color:var(--signal-ink)}
+.signal-prompt-deliverables{list-style:disc;padding-inline-start:1.25em}
+.signal-prompt-summary dt{font-weight:600}
+.signal-prompt-summary dd{margin:0 0 6px}
+.signal-prompt-experiences .signal-help{margin-top:0}
+.signal-prompt-warning{padding:8px 10px;background:var(--signal-warning-bg);color:var(--signal-warning);border-radius:var(--signal-radius-control)}
+.signal-prompt-warning p{display:flex;align-items:flex-start;gap:8px;margin:0}
+.signal-prompt-warning svg{flex:none;margin-top:2px}
+.signal-prompt-warning .signal-quiet-button{text-decoration:underline;text-underline-offset:3px}
+.signal-prompt-actions{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-top:12px}
 .signal-brief-language{width:200px;min-width:0}
 .signal-prompt-preview{margin-top:12px}
 .signal-prompt-preview>summary{width:fit-content;cursor:pointer;color:var(--signal-petrol);font:500 12px/1.6 var(--font-sans);padding:4px 0;text-decoration:underline;text-underline-offset:3px}
@@ -36,10 +43,9 @@ body .signal-limit-control>input{width:96px;min-height:28px!important;padding:2p
 .signal-archived-question{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border-bottom:1px solid var(--signal-line);font-size:12px}
 
 @media(max-width:760px){
- .signal-prompt-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px;align-items:end}
+ .signal-prompt-actions{display:grid;grid-template-columns:minmax(0,1fr);width:100%;gap:8px}
  .signal-brief-language{width:auto}
  .signal-prompt-actions .signal-form-button{min-height:44px;padding-inline:8px}
- .signal-prompt-heading{gap:14px}
  .brief-question-actions>.signal-save-hint{flex-basis:100%}
  body .signal-limit-control>input{font-size:16px;min-height:44px!important}
  .brief-question-tools{justify-content:flex-start}

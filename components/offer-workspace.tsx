@@ -6,6 +6,7 @@ import { formatPayRangeShort } from "@/lib/pay-range";
 import {ApplicationLessonCard} from "@/components/application-lesson";
 import {ApplicationFollowupCard} from "@/components/application-followup";
 import { requestError } from "@/lib/request-error";
+import { briefExperiencePreview, type briefSummary } from "@/lib/candidate-brief";
 
 import { AutosaveStatus, NoteHistory, useAutosave, useSavedForm } from "@/components/autosave";
 import { sourceNames } from "@/lib/source-catalog";
@@ -19,7 +20,7 @@ import { NoteEditor, NoteText } from "@/components/note-editor";
 import { WorkspaceButton, WorkspaceFormError, WorkspaceFormSection, WorkspaceSaveActions, useWorkspaceEditorFocus } from "@/components/workspace-form";
 import { useEffect, useRef, useState } from "react";
 import { Tabs } from "radix-ui";
-import { CalendarDays, CalendarPlus, CheckCircle2, CircleHelp, Copy, ExternalLink, LoaderCircle, Pencil, Undo2 } from "lucide-react";
+import { CalendarDays, CalendarPlus, CheckCircle2, CircleAlert, CircleHelp, Copy, ExternalLink, LoaderCircle, Pencil, Undo2 } from "lucide-react";
 import { ChoiceSelect, type ChoiceOption } from "@/components/choice-select";
 import { SourceLogo } from "@/components/source-logo";
 import {useRadarClock} from "@/components/use-radar-clock";
@@ -67,12 +68,13 @@ export function ApplicationTrackingAction({job,onStatus,onOpenApplication,disabl
   return <button type="button" className="secondary-button reading-application-action" disabled={starting||disabled} aria-busy={starting} onClick={async()=>{if(hasApplication(job)){onOpenApplication();return;}setStarting(true);try{await onStatus(job.id,"applied");}finally{setStarting(false);}}}>{starting?<LoaderCircle size={14} className="animate-spin" aria-hidden/>:null}{hasApplication(job)?"Voir dans Candidatures":"J’ai postulé"}</button>;
 }
 
-export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onCancelApplication, onViewChange, showApplicationAction = true, showAnnouncement = true, onEditingChange,compactApplication=false,startFollowupEdit=false }: {
+export function OfferWorkspace({ job, profile, initialView, context, onChange, onStatus, onNote, onOpenApplication, onOpenCarnet, onCancelApplication, onViewChange, showApplicationAction = true, showAnnouncement = true, onEditingChange,compactApplication=false,startFollowupEdit=false }: {
   compactApplication?:boolean;startFollowupEdit?:boolean;
   onEditingChange?: (editing:boolean)=>void;
   showApplicationAction?: boolean;
   showAnnouncement?: boolean;
   onViewChange?: (view: WorkspaceView) => void;
+  onOpenCarnet: () => void;
   job: JobRecord; profile: CandidateProfile; initialView: WorkspaceView; context: "opportunity" | "application"; onChange: (job: JobRecord, message?: string) => void;
   onStatus: (id: string, status: JobStatus) => Promise<boolean>; onNote: (id: string, note: string) => Promise<boolean>; onOpenApplication: () => void; onCancelApplication?: () => Promise<boolean>;
 }) {
@@ -109,7 +111,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
         {!job.deletedAt&&showApplicationAction?<ApplicationTrackingAction job={job} onStatus={onStatus} onOpenApplication={onOpenApplication}/>:null}
       </div>
       <Tabs.Content value="offer">{editing?editor:<AlignedOfferRead job={job} onEdit={()=>setEditing(true)} editRef={editTrigger}/>}</Tabs.Content>
-      <Tabs.Content value="brief" className="space-y-5"><ApplicationCare key={`care:${job.id}`} job={job}/><PrivateBrief key={job.id} jobId={job.id}/></Tabs.Content>
+      <Tabs.Content value="brief" className="space-y-5"><ApplicationCare key={`care:${job.id}`} job={job}/><PrivateBrief key={job.id} jobId={job.id} onOpenCarnet={onOpenCarnet}/></Tabs.Content>
     </Tabs.Root>
     <SignalMoment className="aligned-offer-moment" open={!!revealed} onClose={()=>setRevealed(null)} title="Bonne pioche" description={revealed?`Cette offre colle à vos critères · ${revealed.fit} sur 100`:undefined} actionLabel="Voir la fiche"/>
   </div>;
@@ -162,7 +164,7 @@ export function OfferWorkspace({ job, profile, initialView, context, onChange, o
     </div> : null}
     {activeView==="interviews"&&job.status==="rejected"?<ApplicationLessonCard key={`lesson-interviews:${job.id}`} job={job}/>:null}
     {activeView === "interviews" ? <InterviewManager job={job} onChange={onChange} /> : null}
-    {activeView === "brief" ? <PrivateBrief key={job.id} jobId={job.id} /> : null}
+    {activeView === "brief" ? <PrivateBrief key={job.id} jobId={job.id} onOpenCarnet={onOpenCarnet} /> : null}
   </div>;
 }
 function AlignedOfferFacts({job}:{job:JobRecord}) {
@@ -198,22 +200,60 @@ export function OfferFitCard({job}:{job:JobRecord}) {
   if(isMysteryOffer(job))return null;
   return <div className="aligned-offer-fit"><strong>{job.fitLabel&&job.fit!=null?`${job.fit}`:"—"}<small>{job.fitLabel&&job.fit!=null?" / 100":""}</small></strong><FitBadge job={job}/><span>{job.confidence==="high"?"Confiance élevée":job.confidence==="medium"?"Informations partielles":"Fiche à compléter"}</span>{job.missing?.length?<span>À confirmer : {job.missing.join(", ")}</span>:null}</div>;
 }
-function PrivateBrief({ jobId }: { jobId: string }) {
+type BriefResponse = { brief: string; factCount: number; summary: ReturnType<typeof briefSummary> };
+
+function PromptSummary({ factCount, summary, onOpenCarnet }: Pick<BriefResponse, "factCount" | "summary"> & { onOpenCarnet: () => void }) {
+  const { offer, experiences, questionCount } = summary;
+  const { visible, moreLabel } = briefExperiencePreview(experiences);
+  return <div className="signal-prompt-summary">
+    <div>
+      <h4>Ce que ChatGPT va préparer</h4>
+      <ul className="signal-prompt-deliverables">
+        <li>Les ajustements du CV, fondés sur vos expériences</li>
+        <li>Un message court</li>
+        <li>Les réponses aux questions du recruteur, dans leur limite de caractères</li>
+        <li>Une checklist de validation avant envoi</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Sur quoi il s’appuie</h4>
+      <dl>
+        <dt>Offre</dt><dd>{offer.title} chez {offer.company || "une entreprise à confirmer"}</dd>
+        <dt>Expériences</dt>
+        <dd>{factCount === 0 ? <div className="signal-prompt-warning">
+          <p role="alert"><CircleAlert size={16} aria-hidden />Aucune expérience autorisée pour les candidatures : le prompt ne pourra pas s’appuyer sur votre parcours.</p>
+          <a href="?tab=radar&amp;section=carnet" className="signal-quiet-button" onClick={event => {
+            if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            onOpenCarnet();
+          }}>Ouvrir mon carnet</a>
+        </div> : visible.length ? <ul className="signal-prompt-experiences">
+          {visible.map(({ title, company, period }, index) => <li key={index}>{[title, company, period].filter(Boolean).join(" · ")}</li>)}
+          {moreLabel ? <li className="signal-help">{moreLabel}</li> : null}
+        </ul> : "Faits autorisés sans expérience associée"}</dd>
+        <dt>Questions</dt><dd>{questionCount ? `${questionCount} question${questionCount > 1 ? "s" : ""} du recruteur` : "Aucune question enregistrée"}</dd>
+      </dl>
+    </div>
+  </div>;
+}
+
+function PrivateBrief({ jobId, onOpenCarnet }: { jobId: string; onOpenCarnet: () => void }) {
   const notify=useWorkspaceFeedback();
-  const [brief, setBrief] = useState("");
+  const [result, setResult] = useState<BriefResponse | null>(null);
   const [language, setLanguage] = useState<"fr" | "en">("fr");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [loading, setLoading] = useState(true);
+  const brief = result?.brief ?? "";
   useEffect(() => {
     let active = true;
-    setBrief(""); setError(""); setCopied(false); setLoading(true);
+    setResult(null); setError(""); setCopied(false); setLoading(true);
     fetch("/api/brief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId, language }), signal: AbortSignal.timeout(15000) })
       .then(async response => {
-        const data = await response.json() as { error?: string; brief: string };
+        const data = await response.json() as BriefResponse & { error?: string };
         if (!response.ok) throw new Error(data.error ?? "Prompt indisponible.");
-        if (active) setBrief(data.brief);
+        if (active) setResult(data);
       })
       .catch(problem => { if (active) setError(requestError(problem, "Prompt indisponible.")); })
       .finally(() => { if (active) setLoading(false); });
@@ -221,9 +261,15 @@ function PrivateBrief({ jobId }: { jobId: string }) {
   }, [jobId, language, refresh]);
   async function copyPrompt(){try{await navigator.clipboard.writeText(brief);setCopied(true);notify({message:"Prompt copié. Collez-le dans ChatGPT."});}catch{setError("Copie impossible : sélectionnez le texte.");notify({message:"Copie impossible : sélectionnez le texte.",tone:"error"});}}
   return <div className="signal-brief">
-    <section className="signal-prompt-section" aria-label="Prompt ChatGPT"><div className="signal-prompt-heading"><div><div className="inline-help"><h3>Prompt ChatGPT</h3></div><p className="signal-help">Annonce, parcours validé et questions. Copiez dans ChatGPT, puis collez la réponse ci-dessous.</p></div><div className="signal-prompt-actions"><div className="signal-brief-language"><ChoiceSelect label="Langue des réponses" value={language} onChange={value=>setLanguage(value as "fr"|"en")} options={[{value:"fr",label:"Français"},{value:"en",label:"Anglais professionnel simple"}]}/></div><WorkspaceButton variant="primary" disabled={loading||!brief} onClick={()=>void copyPrompt()}><Copy size={14} aria-hidden/>{copied?"Prompt copié":"Copier le prompt"}</WorkspaceButton></div></div>
+    <section className="signal-prompt-section" aria-label="Prompt ChatGPT">
+      <h3>Prompt ChatGPT</h3>
+      {!loading && result ? <PromptSummary factCount={result.factCount} summary={result.summary} onOpenCarnet={onOpenCarnet} /> : null}
+      <div className="signal-prompt-actions">
+        <div className="signal-brief-language"><ChoiceSelect label="Langue des réponses" value={language} onChange={setLanguage} options={[{value:"fr",label:"Français"},{value:"en",label:"Anglais professionnel simple"}]}/></div>
+        <WorkspaceButton variant="primary" disabled={loading||!brief} onClick={()=>void copyPrompt()}><Copy size={14} aria-hidden/>{copied?"Prompt copié":"Copier le prompt"}</WorkspaceButton>
+      </div>
       {loading?<p className="signal-help" role="status">Chargement du prompt…</p>:null}<WorkspaceFormError message={error}/>{error?<WorkspaceButton onClick={()=>setRefresh(value=>value+1)}>Réessayer</WorkspaceButton>:null}
-      {!loading&&brief?<details className="signal-prompt-preview"><summary>Voir le contenu du prompt</summary><pre>{brief}</pre></details>:null}
+      {!loading&&brief?<details className="signal-prompt-preview"><summary>Voir le texte complet</summary><pre>{brief}</pre></details>:null}
       {!loading&&!brief&&!error?<p className="signal-help">Aucun prompt disponible pour cette offre.</p>:null}
     </section>
     <ApplicationQuestions jobId={jobId} onSaved={()=>setRefresh(value=>value+1)}/>

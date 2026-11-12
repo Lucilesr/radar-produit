@@ -1,3 +1,7 @@
+## 12 novembre 2026 — Résumé du brief ChatGPT
+
+- Le brief présente l’offre, les expériences autorisées utilisées et le nombre de questions. Il renvoie au carnet quand aucun fait n’est autorisé.
+
 ## 11 novembre 2026 — Fluidité des actions courantes
 
 - Les actions sur les tags, les relances, les propositions, la réserve, les sources, le confort et les termes apparaissent immédiatement. Chaque enregistrement se confirme en arrière-plan avec une reprise ciblée en cas d’échec.

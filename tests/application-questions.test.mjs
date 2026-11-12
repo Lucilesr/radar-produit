@@ -101,3 +101,22 @@ test("brief : questions et limites seulement, jamais les brouillons", async () =
   assert.match(api, /questions\.map\(\(\{question,characterLimit\}\)/);
   assert.doesNotMatch(api, /answer:|candidateNote|interviews/);
 });
+
+test("résumé du brief : expériences distinctes, aperçu limité à quatre et absence de faits", async () => {
+  const { briefSummary, briefExperiencePreview } = await import(moduleUrl("lib/candidate-brief.ts"));
+  const offer = { id: "offre-fictive", title: "Product Manager", company: "Noroît", description: "Texte de l’annonce" };
+  const experience = index => ({ id: `exp-${index}`, title: `Société fictive ${index} — Product Owner`, role: "Product Owner", organization: `Société fictive ${index}`, period: "2022–2024" });
+  const facts = [1, 1, 2, 3, 4, 5, 6].map(index => ({ experience: experience(index), context: "Détail de parcours" }));
+  const questions = [{ question: "Pourquoi ce produit ?", characterLimit: 200 }, { question: "Quel résultat ?", characterLimit: null }];
+  const summary = briefSummary({ offer, facts: [...facts, { experience: null }], questions });
+  assert.deepEqual(summary.offer, { title: "Product Manager", company: "Noroît" });
+  assert.equal(summary.questionCount, 2);
+  assert.deepEqual(summary.experiences, [1, 2, 3, 4, 5, 6].map(index => ({ title: "Product Owner", company: `Société fictive ${index}`, period: "2022–2024" })));
+  assert.deepEqual(briefExperiencePreview(summary.experiences), { visible: summary.experiences.slice(0, 4), moreLabel: "+ 2 autres" });
+  assert.deepEqual(briefExperiencePreview(summary.experiences.slice(0, 3)), { visible: summary.experiences.slice(0, 3), moreLabel: "" });
+  const headingOnly = briefSummary({ offer, facts: [{ experience: { ...experience(1), title: "Mission en régie" } }] });
+  assert.deepEqual(headingOnly.experiences, [{ title: "Mission en régie", company: "", period: "2022–2024" }]);
+  const empty = briefSummary({ offer, facts: [] });
+  assert.deepEqual(empty, { offer: summary.offer, experiences: [], questionCount: 0 });
+  assert.deepEqual(briefExperiencePreview(empty.experiences), { visible: [], moreLabel: "" });
+});
