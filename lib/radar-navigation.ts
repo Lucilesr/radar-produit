@@ -7,13 +7,13 @@ export type SearchSection="criteria"|"channels"|"outreach";
 export function readSearchSection(value:string|null):SearchSection{return value==="channels"||value==="outreach"?value:"criteria";}
 const sectionAliases:Record<string,RadarSection|"account">={criteria:"criteria",search:"criteria",channels:"sources",sources:"sources",outreach:"outreach",experiences:"carnet",experience:"carnet",carnet:"carnet",stories:"stories",documents:"documents",months:"months",portee:"reach",reach:"reach",lessons:"lessons",account:"account"};
 export function radarSection(value:string|null):RadarSection|"account"|undefined{return value&&Object.hasOwn(sectionAliases,value)?sectionAliases[value]:undefined;}
-export type RadarRoute={tab:RadarTab;source?:string;section?:RadarSection;filter:"to_review"|"selected"|"good_matches"|"trash"|"archived";query:string;offer?:string;view:"offer"|"application"|"interviews"|"brief"};
+export type RadarRoute={tab:RadarTab;source?:string;section?:RadarSection;filter:"to_review"|"selected"|"good_matches"|"trash"|"archived";query:string;offer?:string;view:"offer"|"conditions"|"application"|"interviews"|"brief"};
 export const defaultRoute:RadarRoute={tab:"dashboard",filter:"to_review",query:"",view:"offer"};
 /** Resolve legacy bookmarks before rendering, so direct visits and Back agree. */
 export function readRadarRoute(search:string):RadarRoute{
  const params=new URLSearchParams(search);
  const valid=<T extends string>(value:string|null,values:readonly T[],fallback:T)=>values.includes(value as T)?value as T:fallback;
- const view=valid(params.get("view"),["offer","application","interviews","brief"] as const,"offer");
+ const view=valid(params.get("view"),["offer","conditions","application","interviews","brief"] as const,"offer");
  const oldTab=params.get("tab"),explicit=radarSection(params.get("section"));
  let tab=valid(oldTab,["dashboard","offers","pipeline","radar","account"] as const,params.has("offer")&&view==="interviews"?"pipeline":"dashboard"),section:RadarSection|"account"|undefined;
  if(oldTab==="profile"){tab="radar";section=explicit??radarSection(params.get("profile"))??"carnet";}

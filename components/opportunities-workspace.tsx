@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowLeft, Check, Bookmark, Trash2, Undo2, ShieldCheck, Archive } from "lucide-react";
+import { ArrowLeft, Check, Bookmark, Pencil, Trash2, Undo2, ShieldCheck, Archive } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ApplicationTrackingAction, OfferFitCard, FitBadge, OfferSourceBadge, OfferWorkspace, type WorkspaceView } from "@/components/offer-workspace";
 import {WorkspaceButton,WorkspaceFormError} from "@/components/workspace-form";
@@ -34,7 +34,8 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
   onViewChange:(job:JobRecord,view:WorkspaceView)=>void;trashBusy:boolean;
 }) {
   const [selection,setSelection]=useState<string[]>([]),[selecting,setSelecting]=useState(false),[error,setError]=useState<{jobId:string;message:string}|null>(null);
-  const [editing,setEditing]=useState(false);
+  const [editingId,setEditingId]=useState<string|null>(null);
+  const editTrigger=useRef<HTMLButtonElement>(null);
   const [editActionBar,setEditActionBar]=useState<HTMLDivElement|null>(null);
   const [applyingId,setApplyingId]=useState<string|null>(null);
   const [dateOrder,setDateOrder]=useState<"newest"|"oldest">("newest");
@@ -61,6 +62,8 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
   const selected=selectionInView(orderedJobs,selection);
   const openedJob=activeId?(displayJobs.find(job=>job.id===activeId)??(currentJob?.id===activeId?currentJob:undefined)):undefined;
   const active=openedJob??retainedJob??displayJobs[0];
+  const editing=editingId===active?.id;
+  if(editingId&&!editing)setEditingId(null);
   const heldOutside=!!kept&&!jobs.some(job=>job.id===kept.job.id);
   const retiredView=filter==="archived"||filter==="trash";
   const viewHelp=inReserve?"Le reste de vos offres, consultable à tout moment.":filter==="selected"?"Votre sélection à traiter.":filter==="good_matches"?"Offres proches de vos critères, selon Radar.":"Les offres qu’il vous reste à examiner.";
@@ -110,7 +113,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
     if(window.matchMedia("(max-width:760px)").matches)title.current?.closest(".opportunity-detail")?.scrollIntoView({block:"start"});
     else if(readingPane.current&&readingPane.current.getBoundingClientRect().top>0)readingPane.current.scrollIntoView({block:"start",behavior:"instant"});
   },[activeId,active?.id]);
-  function close(){onClose();requestAnimationFrame(()=>{const button=opener.current;(button?.isConnected && button.getClientRects().length?button:document.getElementById("workspace-title"))?.focus({preventScroll:true});});}
+  function close(){setEditingId(null);onClose();requestAnimationFrame(()=>{const button=opener.current;(button?.isConnected && button.getClientRects().length?button:document.getElementById("workspace-title"))?.focus({preventScroll:true});});}
   function advance(job:JobRecord){
     const index=displayJobs.findIndex(item=>item.id===job.id);
     const following=displayJobs[index+1]??displayJobs[index-1];
@@ -197,9 +200,8 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
         {error&&error.jobId===active.id?<WorkspaceState error title="Choix non enregistré" action={onReload?<button type="button" className="secondary-button" disabled={trashBusy} onClick={()=>void onReload()}>Relire les offres pour vérifier</button>:undefined}>{error.message}</WorkspaceState>:null}
         {heldOutside?<p className="sr-only" role="status">{hasApplication(active)?"Candidature enregistrée. L’offre reste ouverte pendant votre lecture.":reviewState(active)==="selected"?"Offre sélectionnée. Elle reste ouverte pendant votre lecture.":reviewState(active)==="later"?"Offre gardée pour plus tard, dans la réserve.":"Offre remise à examiner. Elle reste ouverte pendant votre lecture."}</p>:null}
         {active.deletedAt&&active.dismissalNote?<p className="workspace-caption">{active.dismissalNote}</p>:null}
-        {!archived&&!active.deletedAt&&!applied&&reviewState(active)!=="later"?<WorkspaceButton variant="quiet" disabled={actionsBusy||editing} onClick={()=>review("later")} aria-keyshortcuts={profile.preferences?.triageShortcuts!==false?"L":undefined}>Plus tard</WorkspaceButton>:null}
         {sessionAdvance?<div className="reading-session-advance">{sessionAdvance}</div>:null}
-        <OfferWorkspace key={active.id} onEditingChange={setEditing} editActionBar={editActionBar} showApplicationAction={false} showAnnouncement={false} job={active} profile={profile} initialView={view} onViewChange={next=>onViewChange(active,next)} context="opportunity" onStatus={onStatus} onNote={onNote} onChange={updated=>{if(kept?.job.id===updated.id)setRetained({...kept,job:updated});onChange(updated);}} onOpenApplication={()=>onApplication(active)} onOpenCarnet={onOpenCarnet}/>
+        <OfferWorkspace key={active.id} editControl={{active:editing,trigger:editTrigger,actionBar:editActionBar,onClose:()=>setEditingId(current=>current===active.id?null:current)}} showApplicationAction={false} showAnnouncement={false} job={active} profile={profile} initialView={view} onViewChange={next=>onViewChange(active,next)} context="opportunity" onStatus={onStatus} onNote={onNote} onChange={updated=>{if(kept?.job.id===updated.id)setRetained({...kept,job:updated});onChange(updated);}} onOpenApplication={()=>onApplication(active)} onOpenCarnet={onOpenCarnet}/>
         <OpportunityReadingNotes/>
         </div>
         <div ref={setEditActionBar} role="group" aria-label={editing?"Enregistrer les modifications":"Actions sur cette offre"} className={`opportunity-decision signal-opportunity-actions${editing?" is-editing":""}`}>
@@ -222,6 +224,11 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
               return saved;
             }finally{setApplyingId(null);}
           }} onOpenApplication={()=>onApplication(active)}/>
+          {!archived && !active.deletedAt && !applied && reviewState(active)!=="later" ? <WorkspaceButton className="opportunity-later" variant="quiet" disabled={actionsBusy} onClick={()=>review("later")} aria-keyshortcuts={profile.preferences?.triageShortcuts!==false?"L":undefined}>Plus tard</WorkspaceButton> : null}
+          {!active.deletedAt ? <WorkspaceButton ref={editTrigger} className="opportunity-edit" aria-label="Modifier l’annonce" disabled={actionsBusy} onClick={()=>{
+            if(view!=="offer")onViewChange(active,"offer");
+            setEditingId(active.id);
+          }}><Pencil size={16} aria-hidden />Modifier</WorkspaceButton> : null}
           </>:null}
         </div>
       </section>:null}
