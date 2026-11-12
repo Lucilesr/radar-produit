@@ -2,9 +2,14 @@
 
 - « Voir cette source » est aligné à droite. Une croix permet de masquer le rappel pendant sept jours.
 
+## 12 novembre 2026 — Critères de Mon radar
+
+- La ligne « Domaine » disparaît de la lecture de « Ce que je cherche ». Les termes du domaine restent accessibles dans « Tout modifier ».
+
 ## 12 novembre 2026 — Lecture et actions des offres
 
 - La fiche affiche les informations à compléter près des champs concernés. L’annonce s’ouvre sur cinq lignes avec « Lire plus » et un lien source à côté du titre. Les conditions et dates ont leur onglet. La barre du bas regroupe les décisions et l’édition.
+- « Modifier » est aligné à droite de la barre des offres. L’action « Plus tard » et son raccourci L sont retirés de la fiche.
 
 ## 12 novembre 2026 — Édition des annonces
 

@@ -62,15 +62,12 @@
  .aligned-offer-read .aligned-offer-mystery{font-size:12px;padding-inline:8px}
  .opportunities-workspace .opportunity-decision{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 12px max(12px,env(safe-area-inset-bottom));margin:0;border-top:1px solid var(--signal-line);box-shadow:0 -8px 20px #173d4b08}
  .opportunities-workspace .opportunity-decision:is(.is-editing,:has(>.opportunity-edit)){grid-template-columns:repeat(2,minmax(0,1fr))}
- .opportunities-workspace .opportunity-decision:has(>.opportunity-later){grid-template-columns:repeat(6,minmax(0,1fr))}
- .opportunity-decision:has(>.opportunity-later)>button{grid-column:span 2}
- .opportunity-decision:has(>.opportunity-later)>:is(.opportunity-later,.opportunity-edit){grid-column:span 3}
+ .radar-app:has(.radar-page[data-offer-open=true] .opportunity-edit) .onboarding-tour:not(.is-inline){bottom:calc(128px + env(safe-area-inset-bottom))}
  .opportunities-workspace .opportunity-decision>button{min-height:44px;min-width:0;padding:8px 4px;gap:5px;font-size:13px;line-height:1.2;white-space:normal}.opportunity-decision kbd{display:none}
  .opportunities-workspace .daily-lot-headline strong{font-size:20px}.opportunities-workspace .review-toolbar-actions>button,.opportunities-workspace .help-tooltip-trigger,.opportunities-workspace [data-slot=select-trigger]{min-height:44px}.opportunities-workspace .help-tooltip-trigger{min-width:44px}.opportunities-workspace .workspace-tabs button{min-height:44px}
 }
 
 @media(max-width:360px){
- .opportunities-workspace .opportunity-decision:has(>.opportunity-later)>button:nth-child(-n+2){flex-direction:column;gap:2px;padding-block:5px}
  .aligned-offer-workspace .signal-offer-nav>[role=tablist]{gap:6px 8px}
  .aligned-offer-workspace .signal-offer-nav>[role=tablist]>button{font-size:13px;padding-inline:3px}
 }
@@ -79,6 +76,8 @@
  .opportunities-workspace .opportunity-detail{display:flex;flex-direction:column;overflow:hidden}
  .aligned-offer-reading-content{flex:1;min-height:0;overflow-y:auto}
  .opportunities-workspace .opportunity-decision{position:static;flex:none;margin-top:12px}
+ .opportunity-decision>.opportunity-edit{margin-inline-start:auto}
+ .radar-app:has(.opportunity-edit) .onboarding-tour:not(.is-inline){bottom:calc(128px + env(safe-area-inset-bottom))}
  .aligned-offer-reading-content:focus-visible{outline-offset:-3px}
 }
 
