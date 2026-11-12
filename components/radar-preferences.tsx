@@ -74,7 +74,7 @@ export function RadarPreferencesSettings({ initial, onSaved }: { initial?: Radar
     {failed.some(choice => choice.field === "motion") ? <div><WorkspaceFormError message="Réglage des animations non confirmé."/><WorkspaceButton onClick={() => retryChoice("motion", reduceId)}>Réessayer</WorkspaceButton></div> : null}
     <label htmlFor={keysId} className="radar-preference-row">
       <Checkbox id={keysId} className="radar-preference-toggle" checked={visible.triageShortcuts !== false} disabled={!ready} onCheckedChange={checked => void queue.enqueue({ field: "shortcuts", checked: checked === true })}/>
-      <span><strong>Activer les raccourcis de tri S, L et X</strong></span>
+      <span><strong>Activer les raccourcis de tri S et X</strong></span>
     </label>
     {failed.some(choice => choice.field === "shortcuts") ? <div><WorkspaceFormError message="Réglage des raccourcis non confirmé."/><WorkspaceButton onClick={() => retryChoice("shortcuts", keysId)}>Réessayer</WorkspaceButton></div> : null}
     <p role="status" className="signal-help">{sending ? "Enregistrement…" : failed.length ? "Derniers choix confirmés affichés." : saved ? "Réglages enregistrés dans votre compte." : "Dernier choix enregistré."}</p>

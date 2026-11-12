@@ -9,5 +9,5 @@ export function normalizeTriageDismissals(value: unknown, now = Date.now()): Rec
 
 export function triageShortcut(key: string, context: { open: boolean; editing: boolean; disabled?: boolean; modifier?: boolean; repeat?: boolean }) {
   if (!context.open || context.editing || context.disabled || context.modifier || context.repeat) return null;
-  return ({ s: "selected", l: "later", x: "discard" } as const)[key.toLowerCase() as "s" | "l" | "x"] ?? null;
+  return ({ s: "selected", x: "discard" } as const)[key.toLowerCase() as "s" | "x"] ?? null;
 }

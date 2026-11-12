@@ -121,7 +121,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
     if(following&&following.id!==job.id)onOpen(following);
     else close();
   }
-  function review(decision?:"to_review"|"selected"|"later"){
+  function review(decision?:"to_review"|"selected"){
     if(!active||actionsBusy||editing)return;
     const next=decision??(reviewState(active)==="selected"?"to_review":"selected");
     setError(null);
@@ -137,14 +137,14 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
     const handle=(event:KeyboardEvent)=>{
       const target=event.target instanceof Element?event.target:null;
       const action=triageShortcut(event.key,{open:enabled&&!!activeId&&!!active&&!active.deletedAt&&!hasApplication(active),editing:editing||!!target?.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="combobox"],[role="textbox"],[role="dialog"],[role="alertdialog"],[role="listbox"],[role="menu"]'),disabled:profile.preferences?.triageShortcuts===false||actionsBusy,modifier:event.altKey||event.metaKey||event.ctrlKey,repeat:event.repeat});
-      if(!action||event.defaultPrevented||!active||(action==="later"&&archived))return;
+      if(!action||event.defaultPrevented)return;
       event.preventDefault();
       if(action==="discard")discard();
-      else review(action==="selected"?undefined:action);
+      else review();
     };
     window.addEventListener("keydown",handle);
     return()=>window.removeEventListener("keydown",handle);
-  },[editing,enabled,activeId,active,profile.preferences?.triageShortcuts,actionsBusy,archived,discard,review]);
+  },[editing,enabled,activeId,active,profile.preferences?.triageShortcuts,actionsBusy,discard,review]);
   const decisionFeedback=<>
     <p className="sr-only" role="status">{decisions.pending&&!decisions.lockErrors.length?"Enregistrement des décisions en cours…":""}</p>
     {decisions.lockErrors.map(key=><WorkspaceState key={key} error title="Le lot du jour n’a pas pu être verrouillé" action={<WorkspaceButton onClick={()=>onRetryLot(key)}>Réessayer</WorkspaceButton>}>Les décisions restent en attente de confirmation.</WorkspaceState>)}
@@ -224,7 +224,6 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
               return saved;
             }finally{setApplyingId(null);}
           }} onOpenApplication={()=>onApplication(active)}/>
-          {!archived && !active.deletedAt && !applied && reviewState(active)!=="later" ? <WorkspaceButton className="opportunity-later" variant="quiet" disabled={actionsBusy} onClick={()=>review("later")} aria-keyshortcuts={profile.preferences?.triageShortcuts!==false?"L":undefined}>Plus tard</WorkspaceButton> : null}
           {!active.deletedAt ? <WorkspaceButton ref={editTrigger} className="opportunity-edit" aria-label="Modifier l’annonce" disabled={actionsBusy} onClick={()=>{
             if(view!=="offer")onViewChange(active,"offer");
             setEditingId(active.id);

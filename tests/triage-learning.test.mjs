@@ -7,7 +7,7 @@ const {normalizeTriageDismissals,triageShortcut}=await import("data:text/javascr
 const now=Date.UTC(2026,10,7,12), day=86400000;
 test("Q1d : S/L/X sur une offre ouverte, jamais pendant la saisie ou une commande modifiée",()=>{
  const context={open:true,editing:false};
- assert.equal(triageShortcut("s",context),"selected");assert.equal(triageShortcut("L",context),"later");assert.equal(triageShortcut("x",context),"discard");
+ assert.equal(triageShortcut("s",context),"selected");assert.equal(triageShortcut("L",context),null);assert.equal(triageShortcut("x",context),"discard");
  for(const override of [{open:false},{editing:true},{disabled:true},{modifier:true},{repeat:true}])assert.equal(triageShortcut("s",{...context,...override}),null);
  assert.equal(triageShortcut("Enter",context),null);
 });
