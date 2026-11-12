@@ -70,7 +70,7 @@ Le [glossaire](glossaire.md) précise les termes employés.
 
 Dans un lot contenant une offre Senior ou Lead, Radar peut vous demander le niveau visé. Cliquez sur Confirmé, Senior, Lead ou Peu importe pour enregistrer ce choix ; l’ouverture du lot ne modifie aucun critère. Dans l’éditeur des critères, les changements attendent toujours « Terminé ».
 
-Un entretien planifié propose de préparer une histoire dans le carnet. Après un bilan privé, « En faire une histoire ? » ouvre un thème sans recopier automatiquement vos textes. Le lot terminé peut proposer une source manuelle de la file commune. Les termes restent sous leur expérience validée. Chaque « Plus tard » masque sa proposition sept jours sur le compte ; recharger ou changer d’écran ne la rétablit pas.
+Un entretien planifié propose de préparer une histoire dans le carnet. Après un bilan privé, « En faire une histoire ? » ouvre un thème sans recopier automatiquement vos textes. Le lot terminé peut proposer une source manuelle de la file commune. Les termes restent sous leur expérience validée. La croix du rappel de source et « Plus tard » sur les autres propositions appliquent un report de sept jours sur le compte.
 
 ### Balayage vivant
 

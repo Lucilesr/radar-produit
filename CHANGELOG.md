@@ -1,3 +1,7 @@
+## 12 novembre 2026 — Rappel de source
+
+- « Voir cette source » est aligné à droite. Une croix permet de masquer le rappel pendant sept jours.
+
 ## 12 novembre 2026 — Critères de Mon radar
 
 - La ligne « Domaine » disparaît de la lecture de « Ce que je cherche ». Les termes du domaine restent accessibles dans « Tout modifier ».

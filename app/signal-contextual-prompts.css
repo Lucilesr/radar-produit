@@ -6,4 +6,15 @@
 .contextual-prompt-actions button{min-height:44px}
 .contextual-prompt .help-tooltip-trigger{width:44px;min-width:44px;height:44px;min-height:44px}
 
+.radar-app .contextual-prompt[data-kind=source]{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 12px;padding-block-start:4px}
+.contextual-prompt[data-kind=source]>.contextual-prompt-heading{grid-area:2/1;flex-wrap:nowrap}
+.contextual-prompt[data-kind=source]>.contextual-prompt-actions{grid-area:2/2;justify-self:end}
+.contextual-prompt>.contextual-prompt-dismiss{grid-area:1/2;justify-self:end;width:44px;min-height:44px}
+.contextual-prompt[data-kind=source]>:last-child:not(.contextual-prompt-actions){grid-column:1/-1;margin-top:8px}
+
 @media(max-width:640px){.radar-app .contextual-prompt{padding:12px}.contextual-prompt-heading{align-items:flex-start}.contextual-prompt-heading>strong{flex:1;min-width:0}}
+
+@media(max-width:360px){
+  .contextual-prompt[data-kind=source]>.contextual-prompt-heading{grid-column:1/-1}
+  .contextual-prompt[data-kind=source]>.contextual-prompt-actions{grid-row:3}
+}
