@@ -16,7 +16,7 @@ import { hasApplication } from "@/lib/opportunity-views";
 import { sourceDrift, type Drift } from "@/lib/search-drift";
 import { searchPreferences } from "@/lib/search-preferences";
 import { maxTermsPerTrack, maxTracks, searchTracksFor, trackKindLabels, trackQuery } from "@/lib/search-tracks";
-import type { sourceCatalog } from "@/lib/source-catalog";
+import { sourceOpenUrl, supportsSourceSearch, type sourceCatalog } from "@/lib/source-catalog";
 import { remindsInToday, sourceKind, sourceStatus, statusLabels, statusTones, visitEvery, visitRhythms } from "@/lib/source-status";
 import { searchUrl, validSearchLink } from "@/lib/web-discovery";
 import type { CandidateProfile, JobRecord } from "@/lib/types";
@@ -53,8 +53,9 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
   const preferences = searchPreferences(profile.searchPreferences);
   const kind = sourceKind(source.mode);
   const visitable = kind === "manual" || source.mode === "email";
-  const status = sourceStatus(setting, source.mode);
-  const searches = sourceSearches(source, setting, profile);
+  const status = sourceStatus({ ...setting, source: source.name }, source.mode);
+  const showSearches = visitable && supportsSourceSearch(source.name);
+  const searches = showSearches ? sourceSearches(source, setting, profile) : [];
   const drift = sourceDrift(setting, preferences);
   const found = jobs.filter(job => job.source === source.name);
   const applied = found.filter(hasApplication).length;
@@ -102,7 +103,7 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
         <span className="source-detail-logo"><SourceLogo name={source.name} compact /></span>
         <SheetTitle>{source.name}</SheetTitle>
         <SheetDescription>
-          {visitable ? "Source à consulter" : kind === "automatic" ? "Collecte automatique" : "Autre piste"}
+          {source.name === "Malt" ? "Propositions de mission" : visitable ? "Source à consulter" : kind === "automatic" ? "Collecte automatique" : "Autre piste"}
         </SheetDescription>
         <div className="source-detail-head-actions">
           <span className="signal-source-pill" data-tone={statusTones[status]}>{statusLabels[status]}</span>
@@ -114,15 +115,16 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
         <section className="source-detail-action" aria-labelledby="source-detail-open">
           <h3 id="source-detail-open" className="sr-only">Consulter la source</h3>
           <div className="source-detail-buttons">
-            <a className="secondary-button" href={setting?.linkUrl || source.url} target="_blank" rel="noopener noreferrer">
-              Ouvrir le site<ExternalLink size={14} aria-hidden />
+            <a className="secondary-button" href={sourceOpenUrl(source, setting)} target="_blank" rel="noopener noreferrer">
+              {source.name === "Malt" ? "Ouvrir Malt" : "Ouvrir le site"}<ExternalLink size={14} aria-hidden />
             </a>
             {visitable ? <WorkspaceButton variant="secondary" onClick={() => void onVisit(source)}>J’ai fait le tour</WorkspaceButton> : null}
           </div>
+          {source.name === "Malt" ? <p className="signal-help">{source.note}</p> : null}
           {visitable ? <><p className="signal-help">{setting?.lastVisitedAt ? `Dernière visite le ${formatDate(setting.lastVisitedAt, "Indian/Mauritius")}.` : "Marquez la visite après avoir consulté la source."}</p><SourceWriteError source={source.name} kind="visit"/></> : <p className="signal-help">{source.note}</p>}
         </section>
 
-        {visitable ? <section aria-label="Recherches">
+        {showSearches ? <section aria-label="Recherches">
           <ul className="source-detail-searches">{searches.map(search => <li key={search.id}>
             <span><strong>{search.label}</strong><span className="signal-help">{search.detail}</span></span>
             <a className="secondary-button" href={search.url} target="_blank" rel="noopener noreferrer">Ouvrir<ExternalLink size={13} aria-hidden /></a>

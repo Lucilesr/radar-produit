@@ -15,7 +15,7 @@ const locations = moduleUrl("location-criteria", { "./countries": countries, "./
 const tracks = moduleUrl("search-tracks");
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations, "./search-tracks": tracks });
 const { searchPreferences } = await import(preferences);
-const { suggestedSources, matchesSourceQuery, rankSources, sourceTags } = await import(moduleUrl("source-suggestions", { "./source-status": moduleUrl("source-status") }));
+const { suggestedSources, matchesSourceQuery, rankSources, sourceTags } = await import(moduleUrl("source-suggestions", { "./source-status": moduleUrl("source-status", { "./source-catalog": moduleUrl("source-catalog") }) }));
 
 // Fictional catalogue entries.
 const sources = [

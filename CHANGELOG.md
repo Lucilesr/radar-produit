@@ -1,3 +1,7 @@
+## 12 novembre 2026 — Propositions Malt
+
+- La fiche Malt ouvre directement la plateforme pour consulter les propositions reçues. Les recherches générées et le champ de lien disparaissent de ses réglages.
+
 ## 12 novembre 2026 — Actions des critères de Mon radar
 
 - « Tout modifier » s’aligne à droite du titre « Ce que je cherche ». « Tout voir » se place à droite après les critères et passe sur la ligne suivante quand la place manque.

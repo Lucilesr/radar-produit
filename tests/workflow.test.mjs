@@ -82,7 +82,10 @@ test("RSS ignore autres métiers, URL externe et protocole non web", () => {
 
 const agendaSource = readFileSync(new URL("../lib/workspace-agenda.ts", import.meta.url), "utf8");
 const statusSource = readFileSync(new URL("../lib/source-status.ts", import.meta.url), "utf8");
-const statusJs = "data:text/javascript;base64," + Buffer.from(ts.transpileModule(statusSource, {compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText).toString("base64");
+const catalogSource = readFileSync(new URL("../lib/source-catalog.ts", import.meta.url), "utf8");
+const catalogJs = "data:text/javascript;base64," + Buffer.from(ts.transpileModule(catalogSource, {compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText).toString("base64");
+const statusJs = "data:text/javascript;base64," + Buffer.from(ts.transpileModule(statusSource, {compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText
+ .replace('"./source-catalog"', JSON.stringify(catalogJs))).toString("base64");
 const agendaJs = ts.transpileModule(agendaSource, {compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText
  .replace('"./application-workflow"', '"data:text/javascript;base64,'+Buffer.from("export const terminalStatuses=[\"rejected\",\"withdrawn\",\"closed\"];").toString("base64")+'"')
  .replace('"./source-status"', JSON.stringify(statusJs));

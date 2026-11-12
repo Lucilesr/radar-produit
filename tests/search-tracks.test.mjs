@@ -16,7 +16,7 @@ const tracks = moduleUrl("search-tracks");
 const preferences = moduleUrl("search-preferences", { "./location-criteria": locations, "./search-tracks": tracks });
 const { searchPreferences } = await import(preferences);
 const { legacySearchTracks, normalizeSearchTracks, searchTracksFor, searchedTerms, trackQuery } = await import(tracks);
-const { searchDrift, sourceDrift } = await import(moduleUrl("search-drift", { "./search-tracks": tracks, "./web-discovery": moduleUrl("web-discovery") }));
+const { searchDrift, sourceDrift } = await import(moduleUrl("search-drift", { "./search-tracks": tracks, "./web-discovery": moduleUrl("web-discovery"), "./source-catalog": moduleUrl("source-catalog") }));
 
 test("sans pistes enregistrées, une seule piste est déduite des postes", () => {
   const derived = searchTracksFor({ roles: ["Data Analyst", "Analytics Engineer"] });
@@ -72,4 +72,5 @@ test("les écarts d'une source viennent de ses recherches enregistrées", () => 
   // « Tous les postes » is the grouped search, not a title: it is never an écart.
   assert.deepEqual(sourceDrift(setting, account).map(drift => drift.value), ["Product Builder"]);
   assert.deepEqual(sourceDrift(undefined, account), []);
+  assert.deepEqual(sourceDrift({ ...setting, source: "Malt" }, account), []);
 });

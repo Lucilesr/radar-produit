@@ -2,7 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { sourceSettings } from "@/db/schema";
-import { sourceCatalog } from "./source-catalog";
+import { sourceCatalog, supportsSourceSearch } from "./source-catalog";
 import { parseWwrFeed } from "./rss-offers";
 import { saveOffer } from "./job-store";
 import { validSearchLink } from "./web-discovery";
@@ -58,13 +58,14 @@ export async function userSourceSetting(userId: string, value: unknown) {
     paused: z.boolean().optional(), notes: z.string().max(1500).optional(),
     linkUrl: z.string().trim().max(2048).optional(), selected: z.boolean().optional(),
   }).strict().parse(value);
-  if (input.linkUrl && !validSearchLink(input.linkUrl)) throw new Error("Lien invalide");
   const source = sourceCatalog.find(source => source.name === input.source)!;
+  const linkUrl = supportsSourceSearch(source.name) ? input.linkUrl : undefined;
+  if (linkUrl && !validSearchLink(linkUrl)) throw new Error("Lien invalide");
   const previous = (await listSourceSettings(userId)).find(setting => setting.source === input.source);
-  const fields = { ...(input.notes !== undefined ? { notes: input.notes } : {}), ...(input.linkUrl !== undefined ? { linkUrl: input.linkUrl } : {}), ...(input.selected !== undefined ? { selected: input.selected } : {}) };
+  const fields = { ...(input.notes !== undefined ? { notes: input.notes } : {}), ...(linkUrl !== undefined ? { linkUrl } : {}), ...(input.selected !== undefined ? { selected: input.selected } : {}) };
   const canPause = source.mode === "api" || source.mode === "rss";
   const paused = canPause && (input.paused ?? input.state === "paused");
-  const state = paused ? "paused" : hasSourceConfiguration({ ...previous, ...fields }, source.mode) ? "configured" : "not_configured";
+  const state = paused ? "paused" : hasSourceConfiguration({ ...previous, ...fields, source: source.name }, source.mode) ? "configured" : "not_configured";
   return saveSourceSetting(userId, input.source, { ...fields, state }, input.paused === undefined && input.state === undefined);
 }
 /** Retire la carte du suivi sans effacer ses réglages ni les offres associées. */

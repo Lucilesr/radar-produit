@@ -8,7 +8,7 @@ import { SourceLogo } from "@/components/source-logo";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { WorkspaceButton } from "@/components/workspace-form";
 import { formatDate } from "@/lib/application-workflow";
-import { sourceCatalog } from "@/lib/source-catalog";
+import { sourceCatalog, sourceOpenUrl } from "@/lib/source-catalog";
 import { sourceDrift } from "@/lib/search-drift";
 import { searchPreferences } from "@/lib/search-preferences";
 import { needsAction, sourceKind, sourceStatus, statusActions, statusLabels, statusTones, type SourceStatus } from "@/lib/source-status";
@@ -30,7 +30,7 @@ export function SourceList({ sources, settings, jobs, profile, onOpen, onVisit }
   const preferences = searchPreferences(profile.searchPreferences);
   const [filter, setFilter] = useState<SourceFilter>("all");
   const settingFor = (name: string) => settings.find(item => item.source === name);
-  const statusFor = (source: Source) => sourceStatus(settingFor(source.name), source.mode);
+  const statusFor = (source: Source) => sourceStatus({ ...settingFor(source.name), source: source.name }, source.mode);
   // A saved search looking for a title the account dropped also needs attention.
   const driftFor = (source: Source) => sourceDrift(settingFor(source.name), preferences);
   const attention = (source: Source) => needsAction(statusFor(source)) || driftFor(source).length > 0;
@@ -66,7 +66,7 @@ export function SourceList({ sources, settings, jobs, profile, onOpen, onVisit }
               <span className="signal-source-row-meta">{rowMeta(status, setting, count)}</span>
               <span className="signal-source-row-actions">
                 {kind === "manual"
-                  ? <a className="secondary-button" href={setting?.linkUrl || source.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden />Ouvrir</a>
+                  ? <a className="secondary-button" href={sourceOpenUrl(source, setting)} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden />Ouvrir</a>
                   : null}
                 {kind === "manual"
                   ? <WorkspaceButton variant="quiet" onClick={() => void onVisit(source)}>J’ai fait le tour</WorkspaceButton>

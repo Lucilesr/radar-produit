@@ -5,7 +5,8 @@ import ts from "typescript";
 
 function moduleUrl(name) {
   const source = readFileSync(new URL(`../lib/${name}.ts`, import.meta.url), "utf8");
-  const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
+  let compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
+  if (name === "source-status") compiled = compiled.replace('"./source-catalog"', JSON.stringify(moduleUrl("source-catalog")));
   return "data:text/javascript;base64," + Buffer.from(compiled).toString("base64");
 }
 const { followedSourcesSummary, hasSourceConfiguration, sourceKind, sourceStatus, needsAction, defaultVisitEveryDays, remindsInToday, visitEvery, visitRhythms } = await import(moduleUrl("source-status"));
@@ -77,6 +78,7 @@ test("le résumé des sources suivies compte les sources et celles qui demandent
 
 test("la configuration suit les réglages réels, jamais une déclaration ni des notes", () => {
   assert.equal(hasSourceConfiguration(undefined, "email"), false);
+  assert.equal(sourceStatus({ source: "Malt" }, "email", now), "ok");
   assert.equal(hasSourceConfiguration({ state: "configured" }, "email"), false);
   assert.equal(sourceStatus({ state: "configured" }, "email", now), "to_configure");
   assert.equal(sourceStatus({ linkUrl: "https://example.test/alert" }, "email", now), "ok");
