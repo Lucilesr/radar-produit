@@ -8,7 +8,7 @@ export function hasApplication(job: JobRecord) {
 
 export function workspaceSections(context: "opportunity" | "application") {
   return context === "opportunity"
-    ? ["offer", "brief"] as const
+    ? ["offer", "conditions", "brief"] as const
     : ["offer", "application", "interviews", "brief"] as const;
 }
 

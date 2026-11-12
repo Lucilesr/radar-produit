@@ -31,7 +31,7 @@ test("vues distinctes : score, choix et candidature ne se substituent pas", () =
 });
 
 test("la fiche Opportunités prépare l’offre ; le suivi détaillé reste dans Candidatures", () => {
-  assert.deepEqual([...workspaceSections("opportunity")], ["offer", "brief"]);
+  assert.deepEqual([...workspaceSections("opportunity")], ["offer", "conditions", "brief"]);
   assert.deepEqual([...workspaceSections("application")], ["offer", "application", "interviews", "brief"]);
 });
 

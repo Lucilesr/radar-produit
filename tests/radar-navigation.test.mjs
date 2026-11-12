@@ -36,6 +36,9 @@ test("P5 : navigation métier, filtres, recherche et paramètres externes sont c
  const route=readRadarRoute("?tab=offers&filter=selected&q=Product&offer=demo&view=brief");
  assert.deepEqual(readRadarRoute(radarSearch(route,"?utm_source=demo")),route);
  assert.match(radarSearch(route,"?utm_source=demo"),/utm_source=demo/);
+ const conditions=readRadarRoute("?tab=offers&offer=demo&view=conditions");
+ assert.equal(conditions.view,"conditions");
+ assert.deepEqual(readRadarRoute(radarSearch(conditions)),conditions);
  const closed=readRadarRoute(radarSearch({...route,offer:undefined},"?offer=demo&view=brief"));
  assert.equal(closed.offer,undefined);assert.equal(closed.view,"offer");assert.equal(closed.filter,"selected");
  assert.equal(readRadarRoute("?offer=demo&view=interviews").tab,"pipeline");
