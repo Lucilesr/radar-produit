@@ -83,7 +83,7 @@ export type FitLabel = "very_close" | "close" | "to_weigh" | "far";
 export const fitLabels: Record<FitLabel, string> = { very_close: "Très proche", close: "Proche", to_weigh: "À jauger", far: "Loin" };
 
 /**
- * Label shown instead of a figure. The title and pay alone say nothing about the job itself:
+ * Label associated with a score. The title and pay alone say nothing about the job itself:
  * without its level or missions, the offer must be completed first.
  */
 export function fitLabel(fit: number | null | undefined, parts: FitParts = {}, toWeigh = false): FitLabel | undefined {

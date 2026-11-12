@@ -198,7 +198,13 @@ function AlignedOfferRead({job,onEdit,editRef}:{job:JobRecord;onEdit:()=>void;ed
 }
 export function OfferFitCard({job}:{job:JobRecord}) {
   if(isMysteryOffer(job))return null;
-  return <div className="aligned-offer-fit"><strong>{job.fitLabel&&job.fit!=null?`${job.fit}`:"—"}<small>{job.fitLabel&&job.fit!=null?" / 100":""}</small></strong><FitBadge job={job}/><span>{job.confidence==="high"?"Confiance élevée":job.confidence==="medium"?"Informations partielles":"Fiche à compléter"}</span>{job.missing?.length?<span>À confirmer : {job.missing.join(", ")}</span>:null}</div>;
+  const scored = job.fitLabel && job.fit != null;
+  return <div className="aligned-offer-fit" data-fit={scored ? job.fitLabel : undefined}>
+    <strong aria-hidden={scored || undefined}>{scored ? <>{job.fit}<small> / 100</small></> : "—"}</strong>
+    <FitBadge job={job}/>
+    <span>{job.confidence==="high"?"Confiance élevée":job.confidence==="medium"?"Informations partielles":"Fiche à compléter"}</span>
+    {job.missing?.length?<span>À confirmer : {job.missing.join(", ")}</span>:null}
+  </div>;
 }
 type BriefResponse = { brief: string; factCount: number; summary: ReturnType<typeof briefSummary> };
 
@@ -276,12 +282,14 @@ function PrivateBrief({ jobId, onOpenCarnet }: { jobId: string; onOpenCarnet: ()
   </div>;
 }
 
-const fitTones = { very_close: "is-success", close: "", to_weigh: "is-warning", far: "" } as const;
-
-/** Score v2 label shown instead of a figure; the figure stays readable on hover and by screen readers. */
 export function FitBadge({ job }: { job: Pick<JobRecord, "fit" | "fitLabel" | "confidence" | "conditions" | "fitParts" | "deletedAt"> }) {
   if (isMysteryOffer(job)) return <span className="workspace-badge offer-fit-badge" data-fit="mystery" title="Bon poste, fiche trop courte : complétez-la pour révéler son adéquation.">Fiche mystère</span>;
-  if (job.fitLabel) return <span className={`workspace-badge offer-fit-badge ${fitTones[job.fitLabel]}`} data-fit={job.fitLabel} title={`Adéquation ${job.fit} sur 100`}>{fitLabels[job.fitLabel]}<span className="sr-only"> : adéquation {job.fit} sur 100</span></span>;
+  if (job.fitLabel && job.fit != null) {
+    const label = fitLabels[job.fitLabel];
+    return <span className="workspace-badge offer-fit-badge is-scored" data-fit={job.fitLabel} role="group" aria-label={`Adéquation ${job.fit} sur 100, ${label.toLocaleLowerCase("fr")}`}>
+      <span aria-hidden="true"><b>{job.fit}</b> · {label}</span>
+    </span>;
+  }
   if (job.fit != null) return <span className="workspace-badge offer-fit-badge" data-fit="incomplete" title="Niveau et missions inconnus : complétez la fiche pour la juger.">Fiche incomplète</span>;
   return null;
 }
@@ -290,7 +298,6 @@ function FitSummary({ job }: { job: JobRecord }) {
   if (job.fit === undefined) return null;
   const missing = job.missing ?? [];
   return <p className="offer-fit"><FitBadge job={job} />
-    {job.fitLabel ? <span className="offer-fit-detail">Adéquation {job.fit} sur 100</span> : null}
     {missing.length ? <span className="offer-fit-detail">{job.fitLabel ? "Inconnu" : "À compléter"} : {missing.join(", ")}</span> : <span className="offer-fit-detail">Fiche complète</span>}
   </p>;
 }

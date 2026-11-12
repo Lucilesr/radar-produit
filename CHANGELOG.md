@@ -1,3 +1,7 @@
+## 12 novembre 2026 — Score d’adéquation des offres
+
+- Le score sur 100 et son libellé coloré apparaissent dans la liste et la fiche d’offre.
+
 ## 12 novembre 2026 — Résumé du brief ChatGPT
 
 - Le brief présente l’offre, les expériences autorisées utilisées et le nombre de questions. Il renvoie au carnet quand aucun fait n’est autorisé.
