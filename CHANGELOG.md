@@ -1,3 +1,7 @@
+## 12 novembre 2026 — Actions des critères de Mon radar
+
+- « Tout modifier » s’aligne à droite du titre « Ce que je cherche ». « Tout voir » se place à droite après les critères et passe sur la ligne suivante quand la place manque.
+
 ## 12 novembre 2026 — Rappel de source
 
 - « Voir cette source » est aligné à droite. Une croix permet de masquer le rappel pendant sept jours.
