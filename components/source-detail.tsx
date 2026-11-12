@@ -154,7 +154,6 @@ export function SourceDetail({ source, setting, jobs, profile, onClose, onSaveSe
       </div>
       <div className="source-detail-footer">
         <WorkspaceButton variant="danger" onClick={() => onRemove(source)}><Trash2 size={15} aria-hidden />Supprimer la source</WorkspaceButton>
-        <SheetClose asChild><WorkspaceButton variant="secondary">Fermer</WorkspaceButton></SheetClose>
         {onQuitSession?<WorkspaceButton className="source-session-exit" disabled={busy||sessionWriting} onClick={onQuitSession}>Quitter la séance</WorkspaceButton>:null}
       </div>
     </SheetContent>
