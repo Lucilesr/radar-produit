@@ -234,7 +234,7 @@ function AlignedOfferRead({ job }: { job: JobRecord }) {
   }, [description, expanded]);
 
   return <div className="aligned-offer-read">
-    {!mystery?<section className="aligned-offer-reasons"><h3>Pourquoi elle remonte</h3><ul className="aligned-offer-positives">{job.reasons.slice(0,4).map((reason,i)=><li key={i}><CheckCircle2 size={16} aria-hidden/>{reason}</li>)}</ul>{job.flags.length?<ul className="aligned-offer-warnings" aria-label="Points à vérifier">{job.flags.map((flag,i)=><li key={i}><CircleHelp size={16} aria-hidden/>{flag}</li>)}</ul>:null}</section>:null}
+    {!mystery?<section className="aligned-offer-reasons"><h3>Pourquoi elle remonte</h3><ul className="aligned-offer-positives" data-fit-scored={!!visibleFit(job)}>{job.reasons.slice(0,4).map((reason,i)=><li key={i}><CheckCircle2 size={16} aria-hidden/>{reason}</li>)}</ul>{job.flags.length?<ul className="aligned-offer-warnings" aria-label="Points à vérifier">{job.flags.map((flag,i)=><li key={i}><CircleHelp size={16} aria-hidden/>{flag}</li>)}</ul>:null}</section>:null}
     <section className="aligned-offer-description">
       <div className="aligned-offer-description-heading">
         <h3>L’annonce</h3>
@@ -268,13 +268,17 @@ function AlignedOfferConditions({ job }: { job: JobRecord }) {
     {job.notificationAt ? <ConditionRow label="Notification source" value={formatDate(job.notificationAt)} /> : null}
   </dl>;
 }
-export function OfferFitCard({job}:{job:JobRecord}) {
-  if(isMysteryOffer(job))return null;
-  const scored = job.fitLabel && job.fit != null;
-  return <div className="aligned-offer-fit" data-fit={scored ? job.fitLabel : undefined}>
-    <strong aria-hidden={scored || undefined}>{scored ? <>{job.fit}<small> / 100</small></> : "—"}</strong>
-    <FitBadge job={job}/>
-    <span>{job.confidence==="high"?"Confiance élevée":job.confidence==="medium"?"Informations partielles":"Fiche à compléter"}</span>
+function visibleFit({ fit, fitLabel }: Pick<JobRecord, "fit" | "fitLabel">) {
+  return fit != null && fitLabel ? { score: fit, label: fitLabel } : null;
+}
+
+export function OfferFitCard({ job }: { job: JobRecord }) {
+  if (isMysteryOffer(job)) return null;
+  const fit = visibleFit(job);
+  return <div className="aligned-offer-fit" data-fit={fit?.label}>
+    {fit ? <strong aria-hidden>{fit.score}<small> / 100</small></strong> : null}
+    <FitBadge job={job} />
+    {fit && job.confidence === "high" ? <span>Confiance élevée</span> : null}
   </div>;
 }
 type BriefResponse = { brief: string; factCount: number; summary: ReturnType<typeof briefSummary> };
@@ -355,14 +359,14 @@ function PrivateBrief({ jobId, onOpenCarnet }: { jobId: string; onOpenCarnet: ()
 
 export function FitBadge({ job }: { job: Pick<JobRecord, "fit" | "fitLabel" | "confidence" | "conditions" | "fitParts" | "deletedAt"> }) {
   if (isMysteryOffer(job)) return <span className="workspace-badge offer-fit-badge" data-fit="mystery" title="Bon poste, fiche trop courte : complétez-la pour révéler son adéquation.">Fiche mystère</span>;
-  if (job.fitLabel && job.fit != null) {
-    const label = fitLabels[job.fitLabel];
-    return <span className="workspace-badge offer-fit-badge is-scored" data-fit={job.fitLabel} role="group" aria-label={`Adéquation ${job.fit} sur 100, ${label.toLocaleLowerCase("fr")}`}>
-      <span aria-hidden="true"><b>{job.fit}</b> · {label}</span>
+  const fit = visibleFit(job);
+  if (fit) {
+    const label = fitLabels[fit.label];
+    return <span className="workspace-badge offer-fit-badge is-scored" data-fit={fit.label} role="group" aria-label={`Adéquation ${fit.score} sur 100, ${label.toLocaleLowerCase("fr")}`}>
+      <span aria-hidden="true"><b>{fit.score}</b> · {label}</span>
     </span>;
   }
-  if (job.fit != null) return <span className="workspace-badge offer-fit-badge" data-fit="incomplete" title="Niveau et missions inconnus : complétez la fiche pour la juger.">Fiche incomplète</span>;
-  return null;
+  return <span className="workspace-badge offer-fit-badge" data-fit="incomplete" title="Complétez la fiche pour voir son adéquation.">Fiche incomplète</span>;
 }
 
 function FitSummary({ job }: { job: JobRecord }) {
