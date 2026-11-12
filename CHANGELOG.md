@@ -1,3 +1,7 @@
+## 12 novembre 2026 — Calcul de l’entonnoir
+
+- Le bilan et les taux par source incluent les candidatures enregistrées sans date d’envoi, même après un refus ou un retrait. Les sources génériques sont précisées quand le lien identifie une plateforme. Le rythme mensuel reste calculé sur les envois datés des 90 derniers jours.
+
 ## 12 novembre 2026 — Actions de la fiche source
 
 - « Supprimer la source » s’aligne à droite. La croix en haut de la fiche permet de la fermer.

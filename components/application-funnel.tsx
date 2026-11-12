@@ -12,17 +12,81 @@ import {formatDate} from "@/lib/application-workflow";
 export type FunnelProps={value:Funnel|null;loading:boolean;error:string;refresh:()=>Promise<boolean>};
 type Props=FunnelProps;
 const rate=(value:number|null)=>value==null?"Non calculable":`${Math.round(value*100)} %`;
-export function FunnelHeadline({value,loading,error,refresh}:Props){
- if(!value?.visible&&!error)return null;
- return <div className="funnel-headline" role="region" aria-label="Tendance de vos candidatures" aria-busy={loading}>{value?.visible?<p>{funnelMonthlyLabel(value.monthlyInterviews)}</p>:null}<HelpTooltip label="Tendance des candidatures">Calculée sur les 90 derniers jours.</HelpTooltip>{error?<><WorkspaceFormError message={error}/><WorkspaceButton disabled={loading} onClick={()=>void refresh()}>Relire la tendance</WorkspaceButton></>:null}</div>;
+export function FunnelHeadline({ value, loading, error, refresh }: Props) {
+  const monthly = value?.visible ? value.monthlyInterviews : null;
+  if (monthly == null && !error) return null;
+  return (
+    <div className="funnel-headline" role="region" aria-label="Tendance de vos candidatures" aria-busy={loading}>
+      {monthly != null && <>
+        <p>{funnelMonthlyLabel(monthly)}</p>
+        <HelpTooltip label="Tendance des candidatures">Rythme calculé sur les candidatures envoyées et datées des 90 derniers jours.</HelpTooltip>
+      </>}
+      {error && <><WorkspaceFormError message={error}/><WorkspaceButton disabled={loading} onClick={() => void refresh()}>Relire la tendance</WorkspaceButton></>}
+    </div>
+  );
 }
-export function ApplicationFunnel({value,loading,error,refresh}:Props){
- const zone=useDisplayTimeZone();
- async function retry(){await refresh();requestAnimationFrame(()=>document.getElementById("application-funnel-title")?.focus());}
- return <section className="application-funnel" aria-busy={loading}><WorkspacePanelHeader id="application-funnel-title" title="Votre entonnoir réaliste" actions={<WorkspaceButton disabled={loading} onClick={()=>void retry()}>Actualiser les chiffres</WorkspaceButton>}/><div className="criteria-help-line"><p className="signal-help">Vos envois et leurs suites, sur 90 jours.</p><HelpTooltip label="Lire l’entonnoir">Vos envois et leurs suites, hors envois annulés. Avec peu de candidatures, les taux varient beaucoup.</HelpTooltip></div><WorkspaceFormError message={error}/>{error?<WorkspaceButton disabled={loading} onClick={()=>void retry()}>Réessayer la lecture</WorkspaceButton>:null}{loading?<p role="status">Lecture de votre entonnoir…</p>:null}
- {value&&!value.visible?<p className="funnel-threshold" role="status">Encore {value.missing} candidature{value.missing>1?"s":""} pour voir votre entonnoir</p>:null}
- {value?.visible?<><p className="funnel-monthly">{funnelMonthlyLabel(value.monthlyInterviews)}</p><div className="funnel-stages"><SignalCounter announce value={value.applications} label="candidatures envoyées"/><SignalCounter announce value={value.interviews} label="avec entretien"/><SignalCounter announce value={value.offers} label="avec offre reçue"/></div><div className="funnel-rates"><section><h3>Candidature → entretien</h3><strong>{rate(value.applicationInterviewRate)}</strong><SignalProgress value={value.interviews} max={Math.max(1,value.applications)} label="Part des candidatures avec entretien"/><p>{value.interviews} sur {value.applications} candidatures.</p></section><section><h3>Entretien → offre</h3><strong>{rate(value.interviewOfferRate)}</strong>{value.interviews?<><SignalProgress value={value.offers-value.offersWithoutInterview} max={value.interviews} label="Part des candidatures avec entretien puis offre"/><p>{value.offers-value.offersWithoutInterview} sur {value.interviews} candidatures avec entretien.</p></>:<p>Ce taux apparaîtra au premier entretien enregistré.</p>}</section></div>{value.offersWithoutInterview?<p className="signal-help">{value.offersWithoutInterview} offre(s) reçue(s) sans entretien antérieurement enregistré : elles restent dans le total, sans inventer d’étape pour calculer le taux.</p>:null}<section aria-labelledby="funnel-sources-title"><h3 id="funnel-sources-title">Les sources qui mènent aux entretiens</h3><ul className="funnel-sources">{value.sources.map(source=><li key={source.source}><h4>{source.source}</h4><p><strong>{source.interviews}</strong> avec entretien sur {source.applications} candidature{source.applications>1?"s":""} · {rate(source.rate)}</p></li>)}</ul></section></>:null}
- {value?<p className="signal-help">Période : {formatDate(value.windowStart,zone)} au {formatDate(value.windowEnd,zone)}.{value.firstRecordedAt?` Premiers événements disponibles le ${formatDate(value.firstRecordedAt,zone)}.`:" Votre journal ne contient pas encore d’événement de candidature."}</p>:null}</section>;
+
+export function ApplicationFunnel({ value, loading, error, refresh }: Props) {
+  const zone = useDisplayTimeZone();
+  async function retry() {
+    await refresh();
+    requestAnimationFrame(() => document.getElementById("application-funnel-title")?.focus());
+  }
+  const offersAfterInterview = value ? value.offers - value.offersWithoutInterview : 0;
+  return (
+    <section className="application-funnel" aria-busy={loading}>
+      <WorkspacePanelHeader id="application-funnel-title" title="Votre entonnoir" actions={
+        <WorkspaceButton disabled={loading} onClick={() => void retry()}>Actualiser les chiffres</WorkspaceButton>
+      }/>
+      <div className="criteria-help-line">
+        <p className="signal-help">Toutes les candidatures enregistrées et leurs suites.</p>
+        <HelpTooltip label="Lire l’entonnoir">Chaque candidature compte une fois, même après un refus ou un retrait. Plusieurs entretiens pour la même candidature comptent comme une seule conversion. Les envois annulés sont exclus.</HelpTooltip>
+      </div>
+      <WorkspaceFormError message={error}/>
+      {error && <WorkspaceButton disabled={loading} onClick={() => void retry()}>Réessayer la lecture</WorkspaceButton>}
+      {loading && <p role="status">Lecture de votre entonnoir…</p>}
+      {value && !value.visible && <p className="funnel-threshold" role="status">Encore {value.missing} candidature{value.missing > 1 ? "s" : ""} pour voir votre entonnoir</p>}
+      {value?.visible && <>
+        {value.monthlyInterviews != null && <>
+          <p className="funnel-monthly">{funnelMonthlyLabel(value.monthlyInterviews)}</p>
+          <p className="signal-help">Pour les candidatures envoyées du {formatDate(value.windowStart, zone)} au {formatDate(value.windowEnd, zone)}.</p>
+        </>}
+        <div className="funnel-stages">
+          <SignalCounter announce value={value.applications} label="candidatures envoyées"/>
+          <SignalCounter announce value={value.interviews} label="avec entretien"/>
+          <SignalCounter announce value={value.offers} label="avec offre reçue"/>
+        </div>
+        {value.applicationsWithoutDate > 0 && <p className="signal-help">Dont {value.applicationsWithoutDate} sans date d’envoi.</p>}
+        <div className="funnel-rates">
+          <section>
+            <h3>Candidature → entretien</h3>
+            <strong>{rate(value.applicationInterviewRate)}</strong>
+            <SignalProgress value={value.interviews} max={value.applications} label="Part des candidatures avec entretien"/>
+            <p>{value.interviews} sur {value.applications} candidatures.</p>
+          </section>
+          <section>
+            <h3>Entretien → offre</h3>
+            <strong>{rate(value.interviewOfferRate)}</strong>
+            {value.interviews > 0 ? <>
+              <SignalProgress value={offersAfterInterview} max={value.interviews} label="Part des candidatures avec entretien puis offre"/>
+              <p>{offersAfterInterview} sur {value.interviews} candidatures avec entretien.</p>
+            </> : <p>Ce taux apparaîtra au premier entretien enregistré.</p>}
+          </section>
+        </div>
+        {value.offersWithoutInterview > 0 && <p className="signal-help">Offres reçues sans entretien antérieur confirmé · {value.offersWithoutInterview}</p>}
+        <section aria-labelledby="funnel-sources-title">
+          <h3 id="funnel-sources-title">Les sources qui mènent aux entretiens</h3>
+          <ul className="funnel-sources">
+            {value.sources.map(source => <li key={source.source}>
+              <h4>{source.source}</h4>
+              <p><strong>{source.interviews}</strong> avec entretien sur {source.applications} candidature{source.applications > 1 ? "s" : ""} · {rate(source.rate)}</p>
+              {source.applicationsWithoutDate > 0 && <p className="signal-help">Dont {source.applicationsWithoutDate} sans date d’envoi.</p>}
+            </li>)}
+          </ul>
+        </section>
+      </>}
+    </section>
+  );
 }
 
 export type ApplicationView="board"|"funnel";
