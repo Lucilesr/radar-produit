@@ -1,3 +1,7 @@
+## 12 novembre 2026 — Actions de la fiche source
+
+- « Supprimer la source » s’aligne à droite. La croix en haut de la fiche permet de la fermer.
+
 ## 12 novembre 2026 — Propositions Malt
 
 - La fiche Malt ouvre directement la plateforme pour consulter les propositions reçues. Les recherches générées et le champ de lien disparaissent de ses réglages.

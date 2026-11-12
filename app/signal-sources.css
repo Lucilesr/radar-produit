@@ -483,7 +483,7 @@
 .source-detail .source-setup-help .library-section-title{font-weight:500}
 .source-detail .source-setup-steps{margin:8px 0;padding-left:22px;font-size:13px;line-height:1.6}
 
-.source-detail-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;padding:14px 22px;border-top:1px solid var(--signal-line);background:var(--signal-paper);padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.source-detail-footer{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-shrink:0;padding:14px 22px;border-top:1px solid var(--signal-line);background:var(--signal-paper);padding-bottom:max(14px,env(safe-area-inset-bottom))}
 .source-detail :is(input,textarea,.choice-select-trigger){font:inherit;max-width:100%}
 .source-detail .signal-source-actions{margin:0}
 @media(max-width:640px){.source-detail .source-detail-head{padding-left:16px}.source-detail-body{padding-inline:16px}.source-detail-footer{padding-inline:16px}.source-detail :is(input,textarea,.choice-select-trigger){font-size:16px}}
