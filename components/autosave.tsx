@@ -32,6 +32,12 @@ function documentFor(owner:string,key:string,initial:string,limit:number) {
   const document=new AutosaveDocument(transport,cache,initial,limit,key.startsWith("note:")?value=>window.dispatchEvent(new CustomEvent("radar-note-saved",{detail:{owner,id:key.slice(5),value}})):undefined);
   if(typeof window!=="undefined")documents.set(identity,document);return document;
 }
+export function useDraftPreload(key: string) {
+  const owner = useContext(Owner);
+  useEffect(() => {
+    if (owner && key) void documentFor(owner, key, "", 30000).start();
+  }, [owner, key]);
+}
 export function useAutosave(key:string,initial:string,limit=30000) {
   const owner=useContext(Owner);
   const document=useMemo(()=>documentFor(owner,key,initial,limit),[owner,key,initial,limit]);

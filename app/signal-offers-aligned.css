@@ -39,6 +39,8 @@
 .aligned-offer-archive>span{display:flex;align-items:center;gap:8px}.aligned-offer-archive>button{min-height:44px}
 .opportunities-workspace .opportunity-decision{position:sticky;bottom:0;z-index:5;display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:10px;padding:16px 0;margin:20px 0 0;border:0;border-top:1px solid var(--signal-line);background:var(--signal-paper)}
 .opportunities-workspace .opportunity-decision>:is(button,a){min-height:48px;flex:none;border-radius:var(--signal-radius-control);display:inline-flex;justify-content:center;align-items:center;gap:8px;padding:10px 14px;white-space:nowrap;font-size:14px}
+.opportunities-workspace .opportunity-decision.is-editing{flex-wrap:wrap}
+.opportunity-decision.is-editing>.signal-form-error{flex-basis:100%;grid-column:1/-1;margin:0}
 .opportunity-decision kbd{font:500 11px/1 var(--font-sans);border:1px solid currentColor;border-radius:var(--signal-radius-control);opacity:.65;padding:3px}
 .opportunities-workspace .opportunity-reading-notes{margin-top:0;padding:12px 0;border:0;font-size:11px}
 .aligned-offer-tools{font-size:14px;margin-bottom:10px}.aligned-offer-tools[open]{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.aligned-offer-tools[open]>summary{width:100%}.aligned-offer-tools .radar-search{display:flex!important;margin:0;max-width:400px;flex:1}.aligned-offer-tools input{min-height:44px}.aligned-offer-tools>button{min-height:44px}
@@ -57,6 +59,7 @@
  .aligned-offer-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:0}.opportunities-workspace .aligned-offer-facts dd{margin-top:6px}.aligned-offer-read{gap:24px}.aligned-offer-read h3{font-size:20px}
  .aligned-offer-read .aligned-offer-mystery{font-size:12px;padding-inline:8px}
  .opportunities-workspace .opportunity-decision{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 12px max(12px,env(safe-area-inset-bottom));margin:0;border-top:1px solid var(--signal-line);box-shadow:0 -8px 20px #173d4b08}
+ .opportunities-workspace .opportunity-decision.is-editing{grid-template-columns:repeat(2,minmax(0,1fr))}
  .opportunities-workspace .opportunity-decision>button{min-height:52px;min-width:0;padding:8px 4px;gap:5px;font-size:13px;line-height:1.2;white-space:normal}.opportunity-decision kbd{display:none}
  .opportunities-workspace .daily-lot-headline strong{font-size:20px}.opportunities-workspace .review-toolbar-actions>button,.opportunities-workspace .help-tooltip-trigger,.opportunities-workspace [data-slot=select-trigger]{min-height:44px}.opportunities-workspace .help-tooltip-trigger{min-width:44px}.opportunities-workspace .workspace-tabs button{min-height:44px}
 }

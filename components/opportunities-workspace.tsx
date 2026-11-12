@@ -35,6 +35,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
 }) {
   const [selection,setSelection]=useState<string[]>([]),[selecting,setSelecting]=useState(false),[error,setError]=useState<{jobId:string;message:string}|null>(null);
   const [editing,setEditing]=useState(false);
+  const [editActionBar,setEditActionBar]=useState<HTMLDivElement|null>(null);
   const [applyingId,setApplyingId]=useState<string|null>(null);
   const [dateOrder,setDateOrder]=useState<"newest"|"oldest">("newest");
   // Score v2 S4: up to five mystery offers lead « À examiner », whatever the chosen order.
@@ -198,10 +199,11 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
         {active.deletedAt&&active.dismissalNote?<p className="workspace-caption">{active.dismissalNote}</p>:null}
         {!archived&&!active.deletedAt&&!applied&&reviewState(active)!=="later"?<WorkspaceButton variant="quiet" disabled={actionsBusy||editing} onClick={()=>review("later")} aria-keyshortcuts={profile.preferences?.triageShortcuts!==false?"L":undefined}>Plus tard</WorkspaceButton>:null}
         {sessionAdvance?<div className="reading-session-advance">{sessionAdvance}</div>:null}
-        <OfferWorkspace key={active.id} onEditingChange={setEditing} showApplicationAction={false} showAnnouncement={false} job={active} profile={profile} initialView={view} onViewChange={next=>onViewChange(active,next)} context="opportunity" onStatus={onStatus} onNote={onNote} onChange={updated=>{if(kept?.job.id===updated.id)setRetained({...kept,job:updated});onChange(updated);}} onOpenApplication={()=>onApplication(active)} onOpenCarnet={onOpenCarnet}/>
+        <OfferWorkspace key={active.id} onEditingChange={setEditing} editActionBar={editActionBar} showApplicationAction={false} showAnnouncement={false} job={active} profile={profile} initialView={view} onViewChange={next=>onViewChange(active,next)} context="opportunity" onStatus={onStatus} onNote={onNote} onChange={updated=>{if(kept?.job.id===updated.id)setRetained({...kept,job:updated});onChange(updated);}} onOpenApplication={()=>onApplication(active)} onOpenCarnet={onOpenCarnet}/>
         <OpportunityReadingNotes/>
         </div>
-        <div role="group" aria-label="Actions sur cette offre" className="opportunity-decision signal-opportunity-actions">
+        <div ref={setEditActionBar} role="group" aria-label={editing?"Enregistrer les modifications":"Actions sur cette offre"} className={`opportunity-decision signal-opportunity-actions${editing?" is-editing":""}`}>
+          {!editing?<>
           <button type="button" className={selectedOffer?"signal-selected-button":"radar-add-button"} aria-pressed={selectedOffer} disabled={!!active.deletedAt||applied||actionsBusy||editing} onClick={()=>void review()}>
             <Bookmark size={16} aria-hidden/>{selectedOffer?"Sélectionnée":"Sélectionner"}{profile.preferences?.triageShortcuts!==false&&!active.deletedAt&&!applied?<kbd>S</kbd>:null}
           </button>
@@ -220,6 +222,7 @@ export function OpportunitiesWorkspace({source,onClearSource,contextualPrompt,to
               return saved;
             }finally{setApplyingId(null);}
           }} onOpenApplication={()=>onApplication(active)}/>
+          </>:null}
         </div>
       </section>:null}
     </div>}

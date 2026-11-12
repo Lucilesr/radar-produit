@@ -1,3 +1,7 @@
+## 12 novembre 2026 — Édition des annonces
+
+- Le brouillon se charge dès l’ouverture de la fiche. Pendant l’édition, la barre d’actions permet de revenir à la lecture et d’enregistrer les modifications.
+
 ## 12 novembre 2026 — Raisons positives dans la fiche d’offre
 
 - Les coches de « Pourquoi elle remonte » passent au vert Signal. Les points à vérifier gardent leur gris.
