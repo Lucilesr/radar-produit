@@ -52,9 +52,17 @@ const eventOrder: Record<string, number> = {
   interview_cancelled: 4,
   application_cancelled: 5,
 };
-const sourcesByName = new Map<string, string>(sourceCatalog.map(({ name }) => [name.toLowerCase(), name]));
-const sourceDomains = sourceCatalog.filter(({ url, name }) => url && name !== "Post LinkedIn")
-  .map(({ name, url }) => ({ name, domain: new URL(url).hostname.replace(/^(www|app|fr)\./, "") }));
+const extraSourceDomains = [
+  { name: "Malt", domain: "malt.com" },
+  { name: "Indeed", domain: "indeed.fr" },
+  { name: "Working Nomads", domain: "workingnomads.com" },
+];
+const sourcesByName = new Map([...sourceCatalog, ...extraSourceDomains].map(({ name }) => [name.toLowerCase(), name]));
+const sourceDomains = [
+  ...sourceCatalog.filter(({ url, name }) => url && name !== "Post LinkedIn")
+    .map(({ name, url }) => ({ name, domain: new URL(url).hostname.replace(/^(www|app|fr)\./, "") })),
+  ...extraSourceDomains,
+];
 const genericSources = new Set(["", "manual", "ajout manuel", "autre", "source non renseignée"]);
 const sendStatuses = new Set(["applied", "interview", "awaiting_response", "next_step", "offer", "rejected", "withdrawn"]);
 const interviewStatuses = new Set(["interview", "next_step"]);

@@ -183,3 +183,26 @@ test("Malt : quatre dossiers, trois rendez-vous pour une conversion et deux cand
     sqlite.close();
   }
 });
+
+test("Les liens du catalogue et les domaines alternatifs retrouvent la même source", async () => {
+  const { sourceCatalog } = await import(moduleUrl("lib/source-catalog.ts"));
+  const catalogLinks = sourceCatalog.filter(({ url, name }) => url && name !== "Post LinkedIn")
+    .map(({ name, url }) => [name, url]);
+  const links = [...catalogLinks,
+    ["Malt", "https://www.malt.com/"],
+    ["Indeed", "https://www.indeed.fr/viewjob?jk=fictif"],
+    ["Working Nomads", "https://www.workingnomads.com/jobs/exemple"],
+    ["Post LinkedIn", "https://www.linkedin.com/feed/update/urn:li:activity:123"],
+    ["Ajout manuel", "https://jobs.ashbyhq.com/atelier/exemple"],
+    ["Ajout manuel", "https://jobs.lever.co/atelier/exemple"],
+    ["Ajout manuel", "https://job-boards.eu.greenhouse.io/atelier/jobs/123"],
+    ["Ajout manuel", "https://www.linkedin.com/in/profil-fictif"],
+    ["Ajout manuel", "https://www.indeed.fr.example.org/viewjob"],
+  ];
+  for (const [source, sourceUrl] of links) {
+    const event = send("fictif", 10, "Ajout manuel");
+    const job = { id: "fictif", source: "Ajout manuel", sourceUrl, applicationUrl: null, appliedAt: event.createdAt, status: "applied" };
+    const value = rules.applicationFunnel([event, interview("entretien", job.id, 5)], now, [job]);
+    assert.deepEqual(value.sources.map(({ source, applications, interviews }) => [source, applications, interviews]), [[source, 1, 1]], sourceUrl);
+  }
+});
