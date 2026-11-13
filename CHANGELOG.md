@@ -1,3 +1,7 @@
+## 13 novembre 2026 — Attribution des candidatures par source
+
+- L’Entonnoir reconnaît les liens Working Nomads et les domaines alternatifs de Malt et d’Indeed lorsque la source du dossier est générique.
+
 ## 12 novembre 2026 — Calcul de l’entonnoir
 
 - Le bilan et les taux par source incluent les candidatures enregistrées sans date d’envoi, même après un refus ou un retrait. Les sources génériques sont précisées quand le lien identifie une plateforme. Le rythme mensuel reste calculé sur les envois datés des 90 derniers jours.
